@@ -1,0 +1,54 @@
+--- src/adapters/insightFetcher.js	2026-04-17 17:30:00.000000000 +0000
++++ src/adapters/insightFetcher.js	2026-04-17 19:04:21.182923133 +0000
+@@ -1,16 +1,37 @@
+-import { fetchNewsForInsight } from './newsFetcher.js';
+-import { fetchEmbeddings } from './embeddingsAdapter.js';
+-import { extractEntities } from './nlpAdapter.js';
+-import { runInsightPipeline } from '../insight/src/pipeline/pipeline.js';
+-
+-export async function fetchAndProcessInsights() {
+-  const articles = await fetchNewsForInsight();
+-  if (!articles.length) return [];
+-
+-  const results = await runInsightPipeline(articles, {
+-    embeddingsAdapter: fetchEmbeddings,
+-    nlpAdapter: extractEntities
+-  });
++import { runInsightPipeline, applyIncrementalUpdate, DEFAULT_CONFIG, normalizeStory } from '../insight/src/index.ts';
++import { fetchStoriesForSlot as fetchRawStoriesForSlot } from './newsFetcher.js';
++import { getEmbeddings } from './embeddingsAdapter.js';
++import { extractEntities, extractVerbs, extractNumbers, extractKeywords } from './nlpAdapter.js';
+
+-  return results.clusters || [];
++export async function slotFetcher(slot) {
++  const rawStories = await fetchRawStoriesForSlot(slot);
++  if (!rawStories.length) return [];
++
++  const texts = rawStories.map((story) => `${story.title || ''} ${story.summary || ''}`.trim());
++  const embeddings = await getEmbeddings(texts);
++
++  const enriched = await Promise.all(rawStories.map(async (raw, index) => {
++    const text = texts[index];
++    const [entities, keywords, verbs, numbers] = await Promise.all([
++      extractEntities(text),
++      extractKeywords(text),
++      extractVerbs(text),
++      extractNumbers(text),
++    ]);
++
++    return normalizeStory(
++      raw,
++      slot,
++      DEFAULT_CONFIG,
++      embeddings[index],
++      entities,
++      keywords,
++      verbs,
++      numbers,
++    );
++  }));
++
++  return enriched.filter(Boolean);
+ }
++
++export { runInsightPipeline, applyIncrementalUpdate, DEFAULT_CONFIG };

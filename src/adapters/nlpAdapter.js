@@ -1,0 +1,67 @@
+// FIX M-3: added Trichy, Tiruchirappalli, Tamil Nadu, Oman, and other missing
+// regional targets that appear in REGION_TAGS config
+const CITIES = [
+    // Global metros
+    "New York", "London", "Tokyo", "Paris", "Beijing", "Sydney", "Berlin",
+    "Toronto", "Chicago", "Singapore", "Dubai",
+    // Indian national
+    "India", "Delhi", "New Delhi", "Mumbai", "Bangalore", "Bengaluru",
+    "Kolkata", "Hyderabad",
+    // Tamil Nadu — primary regional targets
+    "Chennai", "Trichy", "Tiruchirappalli", "Tamil Nadu", "TN",
+    "Coimbatore", "Madurai", "Salem", "Tirunelveli", "Vellore",
+    // Oman / Gulf — primary regional targets
+    "Muscat", "Oman", "Dubai", "Abu Dhabi", "Riyadh",
+    // Other South Asia
+    "Pakistan", "Bangladesh", "Sri Lanka", "Nepal",
+    // Major world countries
+    "China", "US", "USA", "UK", "Russia", "Brazil", "Australia",
+    "Canada", "Japan", "Germany", "France", "Italy",
+];
+const VERBS = ["launches", "bans", "acquires", "crashes", "rises", "falls", "signs", "approves", "rejects", "announces", "declares", "invests", "warns", "halts", "suspends", "resumes", "fires", "hires", "merges", "buys", "sells", "drops", "increases", "decreases", "wins", "loses", "surges", "plummets", "soars", "tumbles", "introduces", "unveils", "cancels", "delays", "postpones", "extends", "shortens", "expands", "shrinks", "grows"];
+const ORGS = ["Apple", "Google", "Microsoft", "Amazon", "Facebook", "Meta", "Tesla", "Nvidia", "Samsung", "Intel", "IBM", "Oracle", "Cisco", "Sony", "Toyota", "Honda", "Commerce Ministry", "Finance Ministry", "Supreme Court", "High Court", "RBI", "SEBI", "BCCI", "ICC", "FIFA", "UN", "WHO", "IMF", "World Bank"];
+
+export async function extractEntities(text) {
+    const entities = { people: [], orgs: [], places: [], products: [], symbols: [] };
+    CITIES.forEach(city => { if (text.includes(city)) entities.places.push(city); });
+    ORGS.forEach(org => { if (text.includes(org)) entities.orgs.push(org); });
+    const capitalizedMatches = text.match(/([A-Z][a-z]+(?=\s[A-Z])(?:\s[A-Z][a-z]+)+)/g);
+    if (capitalizedMatches) {
+        capitalizedMatches.forEach(match => {
+            if (!CITIES.includes(match) && !ORGS.includes(match)) {
+                if (match !== "Commerce Ministry") entities.orgs.push(match);
+            }
+        });
+    }
+    entities.places = [...new Set(entities.places)];
+    entities.orgs = [...new Set(entities.orgs)];
+    return entities;
+}
+
+export async function extractVerbs(text) {
+    const verbs = [];
+    const lowerText = text.toLowerCase();
+    VERBS.forEach(verb => {
+        const regex = new RegExp(`\\b${verb}\\b`, 'g');
+        if (regex.test(lowerText)) verbs.push(verb);
+    });
+    return [...new Set(verbs)];
+}
+
+export async function extractNumbers(text) {
+    const numbers = [];
+    const regex = /(?:₹|\$|€|£)?\d+(?:,\d+)*(?:\.\d+)?\s*(?:crore|lakh|million|billion|trillion|M|B|K|%|percent)?/gi;
+    let match;
+    while ((match = regex.exec(text)) !== null) {
+        numbers.push(match[0].trim());
+    }
+    return [...new Set(numbers)];
+}
+
+export async function extractKeywords(text) {
+    const words = text.toLowerCase().split(/\W+/).filter(w => w.length > 4);
+    const freq = {};
+    words.forEach(w => freq[w] = (freq[w] || 0) + 1);
+    const sorted = Object.keys(freq).sort((a, b) => freq[b] - freq[a]);
+    return sorted.slice(0, Math.max(3, Math.min(5, sorted.length)));
+}

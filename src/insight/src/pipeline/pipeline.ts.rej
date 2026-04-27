@@ -1,0 +1,66 @@
+--- src/insight/src/pipeline/pipeline.ts	2026-04-17 17:30:00.000000000 +0000
++++ src/insight/src/pipeline/pipeline.ts	2026-04-17 19:04:19.482291864 +0000
+@@ -10,7 +10,7 @@
+   getCachedSlot, setCachedSlot, mergeSlotStories,
+   slotsNeedingFetch, needsPrewarm, cacheStatus,
+ } from "../cache/cacheManager";
+-import { removeHardDuplicates } from "../dedup/dedup";
++import { removeHardDuplicates, eventSimilarity, applyClusterOverrides } from "../dedup/dedup";
+ import { clusterIntoParentEvents, createCanonicalParent } from "../cluster/cluster";
+ import { scoreAndRankParents } from "../ranking/ranking";
+ import { buildChildTree, isWeakTree, tryReplaceWeakestChild } from "../tree/treeBuilder";
+@@ -93,8 +93,11 @@
+   // ── Step 9: Select top N parents, handle weak tree demotion ────────────────
+   const topParents = selectTopParentsWithWeakTreeCheck(ranked, storiesById, cfg, hiddenIds);
+
+-  // ── Step 10: Cache the "now" parents for possible incremental update ────────
+-  setCachedSlot("now", freshBySlot["now"] ?? [], cfg, topParents);
++  // FIX M-5: do NOT pass topParents to setCachedSlot for "now" —
++  // getCachedSlot("now") always returns null so the parents were never read back.
++  // "now" stories are cached purely so mergeSlotStories can tag them correctly
++  // on the next incremental call.
++  setCachedSlot("now", freshBySlot["now"] ?? [], cfg);
+
+   return {
+     parents:        topParents,
+@@ -128,6 +131,12 @@
+     const children = buildChildTree(parent, clusterStories, cfg, hiddenIds);
+     parent.childStoryIds = children.map(c => c.id);
+
++    // FIX H-4: populate hiddenDuplicateIds on the parent itself so the UI
++    // can show "N similar hidden". Filter the pipeline-level hiddenIds set
++    // down to only IDs that belong to this parent's cluster.
++    const clusterIdSet = new Set(parent.clusterStoryIds);
++    parent.hiddenDuplicateIds = [...hiddenIds].filter(id => clusterIdSet.has(id));
++
+     // Weak tree check: demote if below minimum quality children
+     if (isWeakTree(children, cfg)) {
+       parent.weakTree = true;
+@@ -164,8 +173,6 @@
+   if (truly_new.length === 0) return existingResult;
+
+   // For each new story, find which parent it belongs to (or flag as new parent candidate)
+-  const { clusterIntoParentEvents } = require("../cluster/cluster");
+-  const allExistingStories = [...storiesById.values()];
+
+   for (const story of truly_new) {
+     storiesById.set(story.id, story);
+@@ -176,7 +183,6 @@
+       const rep = getClusterRepStory(parent, storiesById);
+       if (!rep) continue;
+
+-      const { eventSimilarity, applyClusterOverrides } = require("../dedup/dedup");
+       const rawSim = eventSimilarity(story, rep);
+       const rule   = applyClusterOverrides(story, rep, rawSim, cfg);
+
+@@ -195,6 +201,10 @@
+         const updated = tryReplaceWeakestChild(parent, currentChildren, story, cfg, hiddenIds);
+         parent.childStoryIds = updated.map(c => c.id);
+
++        // FIX H-4: keep per-parent hidden list in sync after incremental replacement
++        const clusterIdSet = new Set(parent.clusterStoryIds);
++        parent.hiddenDuplicateIds = [...hiddenIds].filter(id => clusterIdSet.has(id));
++
+         matched = true;
+         break;
+       }

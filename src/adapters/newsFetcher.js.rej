@@ -1,0 +1,131 @@
+--- src/adapters/newsFetcher.js	2026-04-17 17:30:00.000000000 +0000
++++ src/adapters/newsFetcher.js	2026-04-17 19:04:19.444246039 +0000
+@@ -1,17 +1,113 @@
+-import { fetchNewsData } from '../services/newsService.js';
++// FIX C-5: wire real fetchNews from newsService; mock data removed entirely
++// eslint-disable-next-line
++import { fetchNews } from "../services/newsService.js";
+
+-export async function fetchNewsForInsight() {
+-  const news = await fetchNewsData();
+-  if (!news || !news.articles) {
+-    return [];
+-  }
+-  return news.articles.map(article => ({
+-    id: article.url || Math.random().toString(36).substring(7),
+-    title: article.title || '',
+-    snippet: article.description || '',
+-    content: article.content || '',
+-    url: article.url || '',
+-    publishedAt: article.publishedAt || new Date().toISOString(),
+-    source: article.source?.name || 'Unknown'
+-  }));
++function hashString(str) {
++    let hash = 0x811c9dc5;
++    for (let i = 0; i < str.length; i++) {
++        hash ^= str.charCodeAt(i);
++        hash = (hash * 0x01000193) >>> 0;
++    }
++    return Math.abs(hash).toString(36);
++}
++
++// Queries per slot — cast broadly enough to return results in the time window
++const SLOT_QUERIES = {
++    now:      "latest news today",
++    minus4h:  "news today India world",
++    minus12h: "news India world economy",
++    minus24h: "India world news yesterday",
++};
++
++// Map source names to the sourceGroup keys used by normalize.ts TIER_MAP
++function toSourceGroup(sourceName) {
++    if (!sourceName) return "unknown_group";
++    const lower = sourceName.toLowerCase().replace(/\s+/g, "_");
++    const MAP = {
++        "the_hindu":          "the_hindu",
++        "hindu":              "the_hindu",
++        "bbc":                "bbc",
++        "bbc_news":           "bbc",
++        "reuters":            "reuters",
++        "ndtv":               "ndtv",
++        "ndtv_news":          "ndtv",
++        "times_of_india":     "toi",
++        "toi":                "toi",
++        "financial_express":  "financial express",
++        "the_financial_express": "financial express",
++        "moneycontrol":       "moneycontrol",
++        "oman_observer":      "oman observer",
++        "oman_daily_observer":"oman observer",
++        "bloomberg":          "bloomberg",
++        "ap":                 "ap",
++        "associated_press":   "ap",
++    };
++    return MAP[lower] || lower + "_group";
++}
++
++/**
++ * Returns RawStory[] for the given snapshot slot.
++ * Uses the real newsService fetchNews under the hood.
++ * Falls back to an empty array on network failure — pipeline handles gracefully.
++ */
++export async function fetchStoriesForSlot(slot) {
++    const now = Date.now();
++    const WINDOWS = {
++        now:      { minAge: 0,              maxAge: 2  * 60 * 60 * 1000 },
++        minus4h:  { minAge: 3  * 60 * 60 * 1000, maxAge: 5  * 60 * 60 * 1000 },
++        minus12h: { minAge: 10 * 60 * 60 * 1000, maxAge: 14 * 60 * 60 * 1000 },
++        minus24h: { minAge: 20 * 60 * 60 * 1000, maxAge: 28 * 60 * 60 * 1000 },
++    };
++
++    const { minAge, maxAge } = WINDOWS[slot] ?? WINDOWS.now;
++    const query = SLOT_QUERIES[slot] ?? "latest news";
++
++    let articles = [];
++    try {
++        articles = await fetchNews(query) ?? [];
++    } catch (err) {
++        console.warn(`[newsFetcher] fetchNews failed for slot=${slot}:`, err.message);
++        return [];
++    }
++
++    const rawStories = [];
++
++    for (const item of articles) {
++        const title   = (item.title || item.headline || "").trim();
++        const summary = (item.summary || item.description || item.text || "").trim();
++        const url     = (item.url || item.link || "").trim();
++        const source  = (item.source?.name || item.source || "Unknown").trim();
++
++        if (!title || !url) continue;
++
++        // Determine publishedAt — prefer explicit field, fall back to slot midpoint
++        let publishedAt = 0;
++        const rawDate = item.publishedAt || item.pubDate || item.date || item.releaseDate;
++        if (rawDate) {
++            const parsed = typeof rawDate === "number" ? rawDate : new Date(rawDate).getTime();
++            if (!isNaN(parsed)) publishedAt = parsed;
++        }
++        if (!publishedAt) {
++            // Assign to midpoint of the slot window as best estimate
++            publishedAt = now - (minAge + (maxAge - minAge) / 2);
++        }
++
++        const age = now - publishedAt;
++        if (age < minAge || age > maxAge) continue;
++
++        rawStories.push({
++            id:          item.id || item.article_id || hashString(url || title),
++            title,
++            summary:     summary || "No summary available.",
++            source,
++            sourceGroup: toSourceGroup(source),
++            url,
++            publishedAt,
++            category:    item.category || "General",
++            region:      item.region || "",
++            language:    item.language || "en",
++        });
++    }
++
++    return rawStories;
+ }

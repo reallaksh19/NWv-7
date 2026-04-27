@@ -1,0 +1,13 @@
+--- src/insight/src/ranking/ranking.ts	2026-04-17 17:30:00.000000000 +0000
++++ src/insight/src/ranking/ranking.ts	2026-04-17 19:04:19.532084543 +0000
+@@ -103,7 +103,9 @@
+   ).length;
+
+   const recentAvg = (countNow + countMinus4) / 2;
+-  const oldAvg    = countOld / 2 || 0.5; // avoid div/0
++  // FIX M-2: use 0 as the "no history" baseline — was 0.5, which penalised
++  // newly breaking stories that have no older snapshot presence
++  const oldAvg    = countOld > 0 ? countOld / 2 : 0;
+
+   const rawMomentum = (recentAvg - oldAvg) / 5;
+   return sigmoid(rawMomentum);

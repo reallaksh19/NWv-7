@@ -1,0 +1,24 @@
+--- src/insight/src/dedup/dedup.ts	2026-04-17 17:30:00.000000000 +0000
++++ src/insight/src/dedup/dedup.ts	2026-04-17 19:04:19.499972704 +0000
+@@ -224,7 +224,8 @@
+ const OFFICIAL_SIGNALS = [
+   /spokesperson/i, /minister/i, /official statement/i, /company said/i,
+   /regulator said/i, /police confirmed/i, /government said/i, /mea/i,
+-  /secretary/i, /chairman/i, /ceo said/i, /announced/i,
++  /secretary/i, /chairman/i, /ceo said/i, /officially announced/i,
++  /government announced/i, /ministry announced/i, /regulator announced/i,
+ ];
+
+ const MARKET_SIGNALS = [
+@@ -235,8 +236,9 @@
+
+ const FACT_UPDATE_SIGNALS = [
+   /toll (rises?|climbs?) to/i, /revised estimate/i, /updated count/i,
+-  /latest figures/i, /now confirmed/i, /correction:/i, /figures updated/i,
+-  /new data/i,
++  /latest figures/i, /now confirmed/i, /figures updated/i,
++  /new data/i, /updated figures/i,
++  // NOTE: "correction:" deliberately removed — it belongs in CORRECTION_SIGNALS only
+ ];
+
+ const EXPERT_SIGNALS = [

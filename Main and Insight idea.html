@@ -1,0 +1,1332 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Meridian</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+:root{
+  --bg:#0A0D11;--bg2:#12171E;--bgc:rgba(18,23,30,0.6);
+  --txt:#FFFFFF;--txt2:#D0D7DE;--muted:#9CA5B0;
+  --teal:#00D4AA;--blue:#58A6FF;--warn:#F0883E;--red:#FF4757;--green:#3FB950;
+  --border:rgba(48,54,61,0.65);--bsoft:rgba(255,255,255,0.06);
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --r12:12px;--r16:16px;--r20:20px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--txt);font-family:'Inter',system-ui,sans-serif;height:100%}
+body{
+  background:
+    radial-gradient(900px 400px at 50% -5%,rgba(0,212,170,0.09),transparent 60%),
+    radial-gradient(600px 400px at 95% 5%,rgba(88,166,255,0.07),transparent 60%),
+    var(--bg);
+}
+#root{height:100%}
+
+/* ── Shell ── */
+.shell{max-width:480px;margin:0 auto;height:100%;display:flex;flex-direction:column}
+
+/* ── Header ── */
+.hdr{
+  position:sticky;top:0;z-index:40;
+  background:rgba(10,13,17,0.92);backdrop-filter:blur(22px);
+  border-bottom:1px solid var(--border);
+}
+.hdr-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 14px;
+}
+.hdr-left{display:flex;align-items:center;gap:10px}
+
+/* App icon — Meridian globe mark */
+.app-icon{
+  width:34px;height:34px;border-radius:10px;flex-shrink:0;
+  background:linear-gradient(145deg,#004d3d 0%,#00D4AA 55%,#58A6FF 100%);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 12px rgba(0,212,170,0.35);
+}
+
+/* Refresh chip */
+.refresh-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:var(--mono);font-size:0.65rem;color:var(--muted);
+  padding:3px 8px;border-radius:999px;
+  border:1px solid var(--border);background:rgba(255,255,255,0.03);
+}
+.refresh-chip .rdot{
+  width:6px;height:6px;border-radius:50%;background:var(--green);
+  box-shadow:0 0 6px rgba(63,185,80,0.7);
+  animation:rp 2.5s ease-in-out infinite;
+}
+@keyframes rp{50%{opacity:.4;transform:scale(.8)}}
+
+.hdr-right{display:flex;gap:6px}
+.iconbtn{
+  width:34px;height:34px;border-radius:10px;border:1px solid var(--border);
+  background:var(--bgc);color:var(--txt2);
+  display:inline-flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;transition:.15s;
+}
+.iconbtn:hover{color:var(--teal);border-color:rgba(0,212,170,0.4)}
+
+/* ── Market Ticker (Main only) ── */
+.ticker-wrap{
+  border-top:1px solid var(--border);
+  background:rgba(10,13,17,0.5);
+  padding:0;overflow:hidden;height:32px;display:flex;align-items:center;
+}
+.ticker-label{
+  flex-shrink:0;
+  font-family:var(--mono);font-size:0.6rem;font-weight:600;
+  letter-spacing:0.14em;text-transform:uppercase;color:var(--teal);
+  padding:0 10px 0 14px;border-right:1px solid var(--border);
+  height:100%;display:flex;align-items:center;
+  background:rgba(0,212,170,0.05);
+}
+.ticker-track{
+  display:flex;align-items:center;
+  animation:tickscroll 38s linear infinite;
+  white-space:nowrap;padding:0 0;
+}
+.ticker-track:hover{animation-play-state:paused}
+@keyframes tickscroll{
+  0%{transform:translateX(0)}
+  100%{transform:translateX(-50%)}
+}
+.ticker-item{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:0 18px;border-right:1px solid rgba(255,255,255,0.05);
+}
+.ticker-name{font-family:var(--mono);font-size:0.68rem;color:var(--muted);font-weight:500}
+.ticker-price{font-family:var(--mono);font-size:0.72rem;font-weight:600;color:var(--txt2)}
+.ticker-chg{font-family:var(--mono);font-size:0.68rem;font-weight:600}
+.ticker-chg.up{color:var(--green)}
+.ticker-chg.dn{color:var(--red)}
+
+/* ── Scroll area ── */
+.scroll{flex:1;overflow-y:auto;padding:14px 14px 90px}
+.scroll::-webkit-scrollbar{width:0}
+
+/* ════════════════════
+   WEATHER — old style
+   ════════════════════ */
+.wx-card{
+  border-radius:var(--r16);overflow:hidden;margin-bottom:16px;
+  background:linear-gradient(160deg,#0d2035 0%,#0a1520 60%,#0A0D11 100%);
+  border:1px solid rgba(88,166,255,0.2);
+}
+.wx-cities{display:grid;grid-template-columns:repeat(3,1fr)}
+.wx-city{
+  padding:14px 10px 12px;display:flex;flex-direction:column;align-items:center;
+  gap:6px;cursor:pointer;transition:.15s;border-right:1px solid rgba(255,255,255,0.06);position:relative;
+}
+.wx-city:last-child{border-right:none}
+.wx-city.active{background:rgba(88,166,255,0.1)}
+.wx-city.active::after{
+  content:"";position:absolute;bottom:0;left:20%;right:20%;height:2px;
+  background:var(--blue);border-radius:2px 2px 0 0;
+}
+.wx-city .cname{font-size:0.67rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted)}
+.wx-city.active .cname{color:var(--blue)}
+.wx-city .cico{font-size:1.9rem;line-height:1}
+.wx-city .ctemp{font-size:1.35rem;font-weight:700;font-family:var(--mono);letter-spacing:-0.02em}
+.wx-forecast{
+  padding:10px 14px;border-top:1px solid rgba(255,255,255,0.06);
+  display:flex;align-items:flex-start;gap:8px;
+}
+.wx-forecast .bot{font-size:0.9rem;flex-shrink:0}
+.wx-forecast .ftxt{font-size:0.82rem;color:var(--txt2);line-height:1.45}
+.wx-ribbon{
+  display:flex;overflow-x:auto;padding:10px 14px 12px;
+  border-top:1px solid rgba(255,255,255,0.06);
+}
+.wx-ribbon::-webkit-scrollbar{display:none}
+.wx-slot{
+  flex:0 0 auto;display:flex;flex-direction:column;align-items:center;
+  gap:4px;padding:0 12px;border-right:1px solid rgba(255,255,255,0.05);
+}
+.wx-slot:last-child{border-right:none}
+.wx-slot .stime{font-size:0.65rem;color:var(--muted);font-family:var(--mono)}
+.wx-slot .sico{font-size:1.2rem;line-height:1}
+.wx-slot .stemp{font-size:0.82rem;font-weight:600;font-family:var(--mono)}
+.wx-slot .spop{font-size:0.6rem;font-family:var(--mono)}
+.wx-slot .spop.rain{color:#58a6ff}
+.wx-slot .spop.dry{color:var(--muted)}
+
+/* ════════════════════
+   MAIN — news cards
+   ════════════════════ */
+.breaking-banner{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 14px;border-radius:var(--r12);
+  background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.3);
+  margin-bottom:14px;cursor:pointer;
+}
+.bpulse{
+  width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0;
+  box-shadow:0 0 0 0 rgba(255,71,87,.7);animation:rpulse 1.6s infinite;
+}
+@keyframes rpulse{0%{box-shadow:0 0 0 0 rgba(255,71,87,.7)}70%{box-shadow:0 0 0 8px rgba(255,71,87,0)}100%{box-shadow:0 0 0 0 rgba(255,71,87,0)}}
+.bhl{font-size:0.85rem;font-weight:600;color:#ffb0b7;flex:1;line-height:1.3}
+.barr{color:var(--muted);font-size:0.8rem}
+
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin:18px 0 10px}
+.sec-hdr h2{display:flex;align-items:center;gap:8px;font-size:1rem;font-weight:700}
+.sec-hdr .cnt{font-family:var(--mono);font-size:0.72rem;color:var(--muted);display:flex;align-items:center;gap:6px}
+.live-badge{
+  font-size:0.58rem;font-weight:700;letter-spacing:0.14em;padding:2px 7px;
+  border-radius:999px;background:rgba(63,185,80,0.15);color:var(--green);
+  border:1px solid rgba(63,185,80,0.4);text-transform:uppercase;
+}
+
+.ncard{
+  padding:13px 14px 14px;border-radius:var(--r16);
+  background:linear-gradient(180deg,rgba(22,27,34,0.6),rgba(14,18,24,0.6));
+  border:1px solid var(--border);margin-bottom:10px;cursor:pointer;transition:.18s;
+}
+.ncard:hover{border-color:rgba(0,212,170,0.35);transform:translateY(-1px)}
+.nmeta{display:flex;align-items:center;gap:7px;margin-bottom:6px;flex-wrap:wrap}
+.nsrc{font-size:0.72rem;font-weight:600;color:var(--blue);font-family:var(--mono)}
+.nstars{color:var(--warn);font-size:0.65rem;letter-spacing:-1px}
+.ndiv{width:3px;height:3px;border-radius:50%;background:var(--muted);opacity:.45;flex-shrink:0}
+.ntime{font-size:0.7rem;color:var(--muted);font-family:var(--mono)}
+.nsrccnt{font-size:0.65rem;padding:2px 7px;border-radius:6px;background:rgba(255,255,255,0.04);border:1px solid var(--bsoft);color:var(--muted);font-family:var(--mono)}
+.ntag{font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:2px 7px;border-radius:999px}
+.ntag.breaking{background:rgba(255,71,87,0.14);color:#ff8c96;border:1px solid rgba(255,71,87,0.35)}
+.ntag.trending{background:rgba(240,136,62,0.14);color:#f0b070;border:1px solid rgba(240,136,62,0.35)}
+.ncard h3{font-size:0.98rem;font-weight:600;line-height:1.35;letter-spacing:-0.005em;text-wrap:pretty}
+.ncard h3 .arr{color:var(--teal);font-size:0.85em;margin-left:4px;opacity:.8}
+.nsum{margin-top:6px;font-size:0.83rem;color:var(--txt2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ncritics{margin-top:8px;padding:8px 10px;border-radius:10px;background:rgba(88,166,255,0.07);border-left:2px solid rgba(88,166,255,0.5);font-size:0.78rem;color:var(--txt2);line-height:1.4}
+.ncritics strong{color:var(--blue);font-weight:600}
+
+/* ════════════════════
+   INSIGHT TAB
+   ════════════════════ */
+.ins-pulse{
+  display:flex;align-items:center;gap:14px;padding:14px;border-radius:var(--r20);
+  background:
+    radial-gradient(300px 160px at 80% 0%,rgba(0,212,170,0.15),transparent 60%),
+    linear-gradient(180deg,rgba(22,27,34,0.7),rgba(14,18,24,0.7));
+  border:1px solid var(--border);margin-bottom:14px;position:relative;overflow:hidden;
+}
+.ins-pulse::before{
+  content:"";position:absolute;inset:-1px;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(120deg,rgba(0,212,170,0.4),transparent 40%,transparent 60%,rgba(88,166,255,0.3));
+  mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;padding:1px;
+}
+.ins-ring{position:relative;width:80px;height:80px;flex-shrink:0}
+.ins-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ins-ring .ircenter{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ins-ring .irscore{font-size:1.3rem;font-weight:700;font-family:var(--mono)}
+.ins-ring .irslbl{font-size:0.55rem;color:var(--muted);letter-spacing:0.15em;text-transform:uppercase}
+.ins-body{flex:1;min-width:0}
+.eyebrow{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:0.6rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--teal);margin-bottom:6px}
+.eyebrow .bip{width:6px;height:6px;border-radius:50%;background:var(--teal);box-shadow:0 0 6px var(--teal);animation:livepulse 1.8s infinite}
+@keyframes livepulse{50%{transform:scale(1.4);opacity:.5}}
+.ins-body p{font-size:0.88rem;font-weight:600;line-height:1.3;color:var(--txt)}
+.ins-body p em{color:var(--teal);font-style:normal}
+.ins-meta{margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;font-family:var(--mono);font-size:0.65rem;color:var(--muted)}
+.ins-meta b{color:var(--txt2);font-weight:500}
+
+.sstrip{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:16px}
+.sig{border:1px solid var(--border);border-radius:13px;background:var(--bgc);padding:9px 7px 10px;display:flex;flex-direction:column;gap:3px;position:relative;overflow:hidden;align-items:flex-start}
+.sig::after{content:"";position:absolute;left:10px;right:10px;top:0;height:2px;border-radius:0 0 2px 2px;background:var(--tone,var(--muted));opacity:.85}
+.sig .snum{font-size:1.05rem;font-weight:700;font-family:var(--mono);letter-spacing:-0.02em}
+.sig .slb{font-size:0.58rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;line-height:1.2}
+.sig[data-t="info"]{--tone:var(--blue)}.sig[data-t="warn"]{--tone:var(--warn)}.sig[data-t="good"]{--tone:var(--green)}.sig[data-t="teal"]{--tone:var(--teal)}.sig[data-t="mute"]{--tone:#55606C}
+
+.isec{display:flex;align-items:center;justify-content:space-between;margin:20px 0 10px}
+.isec h3{font-size:0.9rem;font-weight:700;letter-spacing:-0.01em;color:var(--txt);display:flex;align-items:center;gap:8px}
+.isec .glyph{width:22px;height:22px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;background:rgba(0,212,170,0.1);color:var(--teal);font-size:0.72rem;border:1px solid rgba(0,212,170,0.28);flex-shrink:0}
+.isec .imeta{font-family:var(--mono);font-size:0.65rem;color:var(--muted)}.isec .imeta b{color:var(--txt2)}
+
+.icard{border:1px solid var(--border);border-radius:var(--r16);background:linear-gradient(180deg,rgba(22,27,34,0.6),rgba(14,18,24,0.6));margin-bottom:10px;overflow:hidden;transition:.18s}
+.icard:hover{border-color:rgba(0,212,170,0.3)}
+.icard.open{border-color:rgba(0,212,170,0.5)}
+.icard-top{display:grid;grid-template-columns:28px 1fr 36px;gap:10px;padding:13px 12px;cursor:pointer;align-items:start}
+.irank{font-family:var(--mono);font-size:0.95rem;font-weight:600;color:var(--muted);padding-top:2px;text-align:center}
+.icard[data-top="true"] .irank{color:var(--teal)}
+.ibody{min-width:0}
+.imeta-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:5px}
+.isource{font-size:0.7rem;font-weight:600;color:var(--txt2);font-family:var(--mono)}
+.idot{width:3px;height:3px;border-radius:50%;background:var(--muted);opacity:.45;flex-shrink:0}
+.itime{font-size:0.68rem;color:var(--muted);font-family:var(--mono)}
+.itag{font-size:0.58rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:2px 7px;border-radius:999px}
+.itag.breaking{background:rgba(255,71,87,0.14);color:#ff8c96;border:1px solid rgba(255,71,87,0.35)}
+.itag.multi{background:rgba(63,185,80,0.12);color:#7ee38a;border:1px solid rgba(63,185,80,0.3)}
+.icard h3{font-size:0.96rem;font-weight:600;line-height:1.33;letter-spacing:-0.005em;text-wrap:pretty}
+.iimpact{margin-top:9px;display:flex;align-items:center;gap:9px}
+.ibar{flex:1;height:4px;border-radius:3px;background:rgba(255,255,255,0.05);overflow:hidden}
+.ibar span{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--teal),var(--blue))}
+.ival{font-family:var(--mono);font-size:0.66rem;color:var(--muted);min-width:36px;text-align:right}
+.isrcs{margin-top:7px;display:flex;gap:5px;flex-wrap:wrap}
+.isrcs .s{font-size:0.62rem;color:var(--muted);font-family:var(--mono);padding:2px 6px;border-radius:6px;background:rgba(255,255,255,0.03);border:1px solid var(--bsoft)}
+
+.expand-btn{
+  width:32px;height:32px;border-radius:10px;border:1px solid var(--border);
+  background:rgba(255,255,255,0.03);color:var(--muted);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:.18s;flex-shrink:0;font-size:1.1rem;line-height:1;align-self:flex-start;margin-top:2px;
+}
+.expand-btn:hover{color:var(--teal);border-color:rgba(0,212,170,0.4)}
+.icard.open .expand-btn{color:var(--teal);border-color:rgba(0,212,170,0.5);background:rgba(0,212,170,0.08)}
+
+.iexpand{border-top:1px solid var(--border);background:rgba(10,13,17,0.5)}
+.iexpand-inner{padding:14px 14px 16px}
+.exp-block{margin-bottom:14px}.exp-block:last-child{margin-bottom:0}
+.exp-label{font-size:0.62rem;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.exp-label .dot{width:6px;height:6px;border-radius:50%;background:var(--teal);opacity:.8}
+.exp-summary{font-size:0.86rem;color:var(--txt2);line-height:1.55}
+.critics-box{padding:10px 12px;border-radius:12px;background:rgba(88,166,255,0.06);border-left:2px solid rgba(88,166,255,0.55)}
+.critics-box .ctxt{font-size:0.85rem;color:var(--txt2);line-height:1.5;font-style:italic}
+.src-list{display:flex;flex-direction:column;gap:6px}
+.src-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,0.025);border:1px solid var(--bsoft)}
+.src-item .sname{font-size:0.8rem;font-weight:600;color:var(--txt2);font-family:var(--mono);min-width:68px}
+.src-item .sdesc{font-size:0.76rem;color:var(--muted);flex:1;line-height:1.3}
+.src-item .stime{font-size:0.63rem;color:var(--muted);font-family:var(--mono);flex-shrink:0}
+.src-item .ang{font-size:0.58rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:2px 6px;border-radius:999px;flex-shrink:0}
+.src-item .ang.same{background:rgba(63,185,80,0.1);color:#7ee38a;border:1px solid rgba(63,185,80,0.28)}
+.src-item .ang.diff{background:rgba(88,166,255,0.1);color:#90bfff;border:1px solid rgba(88,166,255,0.28)}
+.angle-list{display:flex;flex-direction:column;gap:6px}
+.angle-item{padding:9px 11px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid var(--bsoft)}
+.angle-item .acat{font-size:0.6rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--teal);margin-bottom:4px}
+.angle-item .atxt{font-size:0.82rem;color:var(--txt2);line-height:1.35}
+.sent-row{display:flex;gap:8px}
+.sent-pill{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 6px;border-radius:11px;border:1px solid var(--bsoft);background:rgba(255,255,255,0.02)}
+.sent-pill .sl{font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:700}
+.sent-pill .sv{font-size:1rem;font-weight:700;font-family:var(--mono)}
+.sent-pill.pos{border-color:rgba(63,185,80,0.3);background:rgba(63,185,80,0.05)}.sent-pill.pos .sl,.sent-pill.pos .sv{color:var(--green)}
+.sent-pill.neg{border-color:rgba(255,71,87,0.3);background:rgba(255,71,87,0.05)}.sent-pill.neg .sl,.sent-pill.neg .sv{color:#ff8c96}
+.sent-pill.neu .sl,.sent-pill.neu .sv{color:var(--muted)}
+
+.covgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;padding:14px;border-radius:var(--r16);background:var(--bgc);border:1px solid var(--border)}
+.covcell{padding:9px 10px;border-radius:11px;background:rgba(255,255,255,0.025);border:1px solid var(--bsoft);min-height:62px;display:flex;flex-direction:column;gap:4px}
+.covcell .ctop{display:flex;align-items:center;justify-content:space-between}
+.covcell .cname{font-size:0.75rem;font-weight:600;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:68px}
+.covcell .cdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.covcell[data-s="ok"] .cdot{background:var(--green);box-shadow:0 0 7px rgba(63,185,80,0.6)}
+.covcell[data-s="q"] .cdot{background:#55606C}
+.covcell[data-s="err"] .cdot{background:var(--red);box-shadow:0 0 7px rgba(255,71,87,0.5)}
+.covcell[data-s="err"]{border-color:rgba(255,71,87,0.3);background:rgba(255,71,87,0.04)}
+.covcell[data-s="q"]{opacity:.6}
+.covcell .ccount{font-family:var(--mono);font-size:0.67rem;color:var(--muted)}
+.covcell .cbar{height:3px;border-radius:2px;background:rgba(255,255,255,0.05);overflow:hidden;margin-top:auto}
+.covcell .cbar span{display:block;height:100%;border-radius:2px;background:var(--teal)}
+.covcell[data-s="err"] .cbar span{background:var(--red)}
+
+/* ════════════════════
+   MARKET TAB
+   ════════════════════ */
+
+/* Mood banner */
+.mkt-mood{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;border-radius:var(--r12);margin-bottom:14px;
+  background:rgba(63,185,80,0.07);border:1px solid rgba(63,185,80,0.25);
+}
+.mkt-mood.neg{background:rgba(255,71,87,0.07);border-color:rgba(255,71,87,0.25)}
+.mkt-mood.neu{background:rgba(255,255,255,0.03);border-color:var(--border)}
+.mkt-mood .mlabel{font-size:0.8rem;font-weight:600;color:var(--green)}
+.mkt-mood.neg .mlabel{color:#ff8c96}
+.mkt-mood.neu .mlabel{color:var(--muted)}
+.mkt-mood .msub{font-size:0.7rem;color:var(--muted);margin-top:2px}
+.mkt-mood .mpill{
+  font-family:var(--mono);font-size:0.6rem;font-weight:700;letter-spacing:0.1em;
+  padding:3px 10px;border-radius:999px;text-transform:uppercase;
+  background:rgba(63,185,80,0.15);color:var(--green);border:1px solid rgba(63,185,80,0.35);
+}
+.mkt-mood.neg .mpill{background:rgba(255,71,87,0.15);color:#ff8c96;border-color:rgba(255,71,87,0.35)}
+.mkt-mood.neu .mpill{background:rgba(255,255,255,0.04);color:var(--muted);border-color:var(--border)}
+
+/* Primary indices grid 2x2 */
+.mkt-idx-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.mkt-idx{
+  padding:12px 13px;border-radius:var(--r12);
+  background:linear-gradient(160deg,rgba(22,27,34,0.8),rgba(14,18,24,0.6));
+  border:1px solid var(--border);position:relative;overflow:hidden;
+}
+.mkt-idx.up{border-color:rgba(63,185,80,0.3)}
+.mkt-idx.dn{border-color:rgba(255,71,87,0.3)}
+.mkt-idx .iname{font-size:0.68rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.mkt-idx .ival{font-size:1.15rem;font-weight:700;font-family:var(--mono);letter-spacing:-0.02em;color:var(--txt)}
+.mkt-idx .ichg{font-size:0.75rem;font-weight:600;font-family:var(--mono);margin-top:3px}
+.mkt-idx.up .ichg{color:var(--green)}
+.mkt-idx.dn .ichg{color:#ff8c96}
+.mkt-idx .irange{font-size:0.62rem;color:var(--muted);font-family:var(--mono);margin-top:4px}
+/* Sparkline inside index card */
+.mkt-idx .ispark{
+  position:absolute;bottom:0;right:0;opacity:.25;
+}
+
+/* Global rail */
+.mkt-global-rail{
+  display:flex;overflow-x:auto;gap:0;margin-bottom:14px;
+  border-radius:var(--r12);border:1px solid var(--border);
+  background:rgba(14,18,24,0.5);
+}
+.mkt-global-rail::-webkit-scrollbar{display:none}
+.mkt-glob{
+  flex:0 0 auto;padding:10px 14px;border-right:1px solid var(--border);
+  display:flex;flex-direction:column;gap:3px;min-width:100px;
+}
+.mkt-glob:last-child{border-right:none}
+.mkt-glob .gn{font-size:0.65rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em}
+.mkt-glob .gv{font-size:0.88rem;font-weight:700;font-family:var(--mono);color:var(--txt)}
+.mkt-glob .gc{font-size:0.7rem;font-weight:600;font-family:var(--mono)}
+.mkt-glob.up .gc{color:var(--green)}
+.mkt-glob.dn .gc{color:#ff8c96}
+
+/* Section card */
+.mkt-sec{
+  border-radius:var(--r16);border:1px solid var(--border);
+  background:linear-gradient(180deg,rgba(22,27,34,0.5),rgba(14,18,24,0.5));
+  margin-bottom:12px;overflow:hidden;
+}
+.mkt-sec-hdr{
+  padding:12px 14px 10px;border-bottom:1px solid rgba(255,255,255,0.04);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.mkt-sec-hdr h3{font-size:0.88rem;font-weight:700;color:var(--txt);display:flex;align-items:center;gap:7px}
+.mkt-sec-hdr .eyebrow{font-size:0.6rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.mkt-sec-hdr .sub{font-family:var(--mono);font-size:0.62rem;color:var(--muted)}
+
+/* Movers */
+.mkt-movers{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.mkt-col{padding:10px 12px}
+.mkt-col:first-child{border-right:1px solid rgba(255,255,255,0.04)}
+.mkt-col-title{font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:8px}
+.mkt-col-title.g{color:var(--green)}
+.mkt-col-title.r{color:#ff8c96}
+.mkt-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);
+}
+.mkt-row:last-child{border-bottom:none}
+.mkt-row .sym{font-size:0.78rem;font-weight:600;font-family:var(--mono);color:var(--txt2)}
+.mkt-row .vol{font-size:0.6rem;color:var(--muted);margin-top:1px;font-family:var(--mono)}
+.mkt-row .px{font-size:0.78rem;font-weight:700;font-family:var(--mono);color:var(--txt);text-align:right}
+.mkt-row .pchg{font-size:0.68rem;font-weight:600;font-family:var(--mono);text-align:right}
+.mkt-row .pchg.g{color:var(--green)}
+.mkt-row .pchg.r{color:#ff8c96}
+
+/* Sector heatmap */
+.mkt-heatmap{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:6px;
+  padding:10px 12px 12px;
+}
+.mkt-htile{
+  padding:10px 8px;border-radius:11px;text-align:center;
+  border:1px solid transparent;
+}
+.mkt-htile.up{background:rgba(63,185,80,0.1);border-color:rgba(63,185,80,0.25)}
+.mkt-htile.dn{background:rgba(255,71,87,0.1);border-color:rgba(255,71,87,0.2)}
+.mkt-htile .hn{font-size:0.62rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px}
+.mkt-htile .hv{font-size:0.82rem;font-weight:700;font-family:var(--mono);color:var(--txt)}
+.mkt-htile .hc{font-size:0.7rem;font-weight:600;font-family:var(--mono)}
+.mkt-htile.up .hc{color:var(--green)}
+.mkt-htile.dn .hc{color:#ff8c96}
+
+/* Macro list */
+.mkt-macro{padding:8px 12px 12px;display:flex;flex-direction:column;gap:6px}
+.mkt-mrow{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 11px;border-radius:10px;
+  background:rgba(255,255,255,0.025);border:1px solid var(--bsoft);
+}
+.mkt-mrow .mn{font-size:0.82rem;font-weight:600;color:var(--txt)}
+.mkt-mrow .mu{font-size:0.62rem;color:var(--muted);margin-top:2px}
+.mkt-mrow .mv{font-size:0.88rem;font-weight:700;font-family:var(--mono);text-align:right}
+.mkt-mrow .mc{font-size:0.7rem;font-weight:600;font-family:var(--mono);text-align:right}
+.mkt-mrow .mc.g{color:var(--green)}
+.mkt-mrow .mc.r{color:#ff8c96}
+
+/* FII/DII flows */
+.mkt-flow{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 12px 12px}
+.mkt-fcard{
+  padding:11px 12px;border-radius:12px;
+  background:rgba(255,255,255,0.025);border:1px solid var(--bsoft);
+}
+.mkt-fcard .ft{font-size:0.75rem;font-weight:700;color:var(--txt2);margin-bottom:8px;letter-spacing:0.06em}
+.mkt-frow{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.78rem}
+.mkt-frow:last-child{border-bottom:none;padding-top:6px}
+.mkt-frow span:first-child{color:var(--muted)}
+.mkt-frow strong.g{color:var(--green)}
+.mkt-frow strong.r{color:#ff8c96}
+.mkt-frow strong.net{color:var(--txt);font-weight:700}
+.mkt-flow-footer{padding:6px 12px 10px;font-family:var(--mono);font-size:0.62rem;color:var(--muted);text-align:right}
+
+/* IPO */
+.mkt-ipo{padding:8px 12px 12px;display:flex;flex-direction:column;gap:8px}
+.mkt-ipo-item{
+  padding:11px 12px;border-radius:11px;
+  background:rgba(255,255,255,0.025);border:1px solid var(--bsoft);
+  display:flex;align-items:center;gap:12px;
+}
+.mkt-ipo-item .ipill{
+  font-size:0.58rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;
+  padding:2px 7px;border-radius:999px;flex-shrink:0;align-self:flex-start;
+}
+.mkt-ipo-item .ipill.live{background:rgba(63,185,80,0.15);color:var(--green);border:1px solid rgba(63,185,80,0.4)}
+.mkt-ipo-item .ipill.up{background:rgba(88,166,255,0.12);color:#90bfff;border:1px solid rgba(88,166,255,0.3)}
+.mkt-ipo-item .ipill.closed{background:rgba(255,255,255,0.04);color:var(--muted);border:1px solid var(--bsoft)}
+.mkt-ipo-item .iname{font-size:0.85rem;font-weight:600;color:var(--txt);margin-bottom:3px}
+.mkt-ipo-item .imeta{font-size:0.7rem;color:var(--muted)}
+.mkt-ipo-item .iprice{font-family:var(--mono);font-size:0.82rem;font-weight:700;color:var(--txt2);flex-shrink:0;text-align:right}
+.mkt-ipo-item .igmp{font-family:var(--mono);font-size:0.68rem;flex-shrink:0;text-align:right}
+.mkt-ipo-item .igmp.g{color:var(--green)}
+.mkt-ipo-item .igmp.r{color:#ff8c96}
+
+/* disclaimer */
+.mkt-disclaimer{
+  padding:10px 14px;text-align:center;font-size:0.65rem;color:var(--muted);
+  font-family:var(--mono);line-height:1.5;margin-top:4px;
+}
+
+/* ── Bottom nav ── */
+.bnav{
+  position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:0 auto;
+  background:rgba(10,13,17,0.94);backdrop-filter:blur(24px);
+  border-top:1px solid var(--border);
+  padding:6px 6px 10px;display:grid;grid-template-columns:repeat(5,1fr);z-index:50;
+}
+.bnav a{
+  text-decoration:none;color:var(--muted);display:flex;flex-direction:column;
+  align-items:center;gap:3px;padding:6px 2px;border-radius:10px;
+  font-size:0.6rem;letter-spacing:0.02em;transition:.15s;cursor:pointer;
+}
+.bnav a .bi{font-size:1.05rem;line-height:1;display:flex;align-items:center;justify-content:center;height:20px}
+.bnav a.active{color:var(--teal)}
+.bnav a.active .bi{filter:drop-shadow(0 0 6px rgba(0,212,170,0.55))}
+
+@media(max-width:360px){
+  .sstrip{grid-template-columns:repeat(5,1fr)}
+  .covgrid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState} = React;
+
+/* ── App icon SVG (Meridian globe mark) ── */
+const AppIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+    <circle cx="11" cy="11" r="8.5" stroke="rgba(255,255,255,0.92)" strokeWidth="1.4"/>
+    <ellipse cx="11" cy="11" rx="4.2" ry="8.5" stroke="rgba(255,255,255,0.7)" strokeWidth="1.2"/>
+    <line x1="2.5" y1="11" x2="19.5" y2="11" stroke="rgba(255,255,255,0.45)" strokeWidth="1"/>
+    <line x1="4.5" y1="7" x2="17.5" y2="7" stroke="rgba(255,255,255,0.25)" strokeWidth="0.8"/>
+    <line x1="4.5" y1="15" x2="17.5" y2="15" stroke="rgba(255,255,255,0.25)" strokeWidth="0.8"/>
+  </svg>
+);
+
+/* ── Insight nav icon ── */
+const InsightIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 3v18h18"/><path d="M7 14l3-3 4 4 5-6"/>
+  </svg>
+);
+
+/* ── Market ticker data ── */
+const TICKERS = [
+  {name:'NIFTY 50',price:'22,847',chg:'+0.43%',up:true},
+  {name:'SENSEX',price:'75,234',chg:'+0.38%',up:true},
+  {name:'DOW',price:'38,910',chg:'+0.21%',up:true},
+  {name:'NASDAQ',price:'17,432',chg:'-0.14%',up:false},
+  {name:'S&P 500',price:'5,218',chg:'+0.09%',up:true},
+  {name:'GOLD',price:'$2,341',chg:'+0.67%',up:true},
+  {name:'SILVER',price:'$29.4',chg:'-0.31%',up:false},
+  {name:'USD/INR',price:'₹83.42',chg:'-0.08%',up:false},
+  {name:'CRUDE',price:'$73.6',chg:'-1.80%',up:false},
+];
+const TICKER_DOUBLED = [...TICKERS,...TICKERS];
+
+/* ── Weather data ── */
+const WX_CITIES = [
+  {id:'chennai',name:'Chennai',ico:'⛅',temp:34,
+   forecast:'Mostly cloudy skies for the next 8 hours. Isolated shower possible after 6 PM.',
+   hourly:[{t:'Now',ico:'⛅',temp:34,pop:0},{t:'2 PM',ico:'⛅',temp:35,pop:15},{t:'4 PM',ico:'🌦',temp:35,pop:40},{t:'6 PM',ico:'🌧',temp:33,pop:65},{t:'8 PM',ico:'🌧',temp:31,pop:55},{t:'10 PM',ico:'🌦',temp:30,pop:30}]},
+  {id:'trichy',name:'Trichy',ico:'☀️',temp:37,
+   forecast:'Clear and hot. Temperature peaks at 38° around 3 PM, easing to 32° by 9 PM.',
+   hourly:[{t:'Now',ico:'☀️',temp:37,pop:0},{t:'2 PM',ico:'☀️',temp:38,pop:0},{t:'4 PM',ico:'⛅',temp:37,pop:5},{t:'6 PM',ico:'⛅',temp:35,pop:10},{t:'8 PM',ico:'🌙',temp:33,pop:0},{t:'10 PM',ico:'🌙',temp:32,pop:0}]},
+  {id:'muscat',name:'Muscat',ico:'🌤',temp:32,
+   forecast:'Partly cloudy and warm. Pleasant northerly breeze expected after 5 PM.',
+   hourly:[{t:'Now',ico:'🌤',temp:32,pop:0},{t:'2 PM',ico:'🌤',temp:33,pop:0},{t:'4 PM',ico:'⛅',temp:33,pop:0},{t:'6 PM',ico:'⛅',temp:31,pop:0},{t:'8 PM',ico:'🌙',temp:29,pop:0},{t:'10 PM',ico:'🌙',temp:28,pop:0}]},
+];
+
+/* ── News data ── */
+const MAIN_STORIES = [
+  {id:'s1',src:'BBC',stars:5,time:'6h',srcCount:3,isBreaking:true,
+   hl:'Israeli air strikes kill at least 32 Palestinians in Gaza, rescue officials say',
+   sum:"Israel's military confirmed the strikes, which come during a ceasefire that Israel and Hamas accuse each other of breaking.",
+   critics:"Critics argue both sides are using the pause strategically rather than as a path to permanent peace."},
+  {id:'s2',src:'Reuters',stars:4,time:'2h',srcCount:4,isTrending:true,
+   hl:'India & EU close in on landmark trade pact ahead of Brussels summit',
+   sum:'Negotiators resolved differences on auto tariffs and data localisation, paving the way for a framework agreement.',
+   critics:null},
+  {id:'s3',src:'AP',stars:4,time:'4h',srcCount:2,isBreaking:true,
+   hl:'Typhoon makes landfall on Luzon; schools and flights shut across northern Philippines',
+   sum:'Super Typhoon Carina made landfall with sustained winds of 195 km/h, triggering the highest storm signal in 6 provinces.',
+   critics:'Disaster experts criticise the 12-hour evacuation window as insufficient.'},
+  {id:'s4',src:'The Hindu',stars:3,time:'5h',srcCount:2,
+   hl:'Tamil Nadu monsoon update: heavy showers forecast for Trichy and delta districts',
+   sum:'IMD issues orange alert for four delta districts as southwest monsoon intensifies over Bay of Bengal.',
+   critics:null},
+  {id:'s5',src:'Bloomberg',stars:4,time:'1h',srcCount:3,isTrending:true,
+   hl:'Oil slips as OPEC+ signals gradual supply return; Brent under $74',
+   sum:'OPEC+ confirmed phased production increase from August. Goldman Sachs cut year-end Brent forecast to $78.',
+   critics:'Bears argue demand growth is structurally slowing while EV adoption accelerates.'},
+];
+
+const INSIGHT_STORIES = [
+  {id:'i1',rank:1,src:'BBC',time:'6h',srcCount:3,isBreaking:true,impact:0.94,top:true,
+   hl:'Israeli air strikes kill at least 32 Palestinians in Gaza, rescue officials say',
+   sum:"Israel's military confirmed the strikes, coming during a ceasefire both sides accuse each other of breaking. Death toll expected to rise as rescue teams work through rubble.",
+   critics:"Critics argue both parties are leveraging the pause diplomatically rather than pursuing a durable settlement. Human rights organisations calling for independent verification.",
+   sources:[{name:'BBC',angle:'same',desc:'Confirmed strikes; quotes rescue official directly',time:'6h'},{name:'Reuters',angle:'diff',desc:'Focuses on diplomatic fallout at UN Security Council',time:'5h'},{name:'Al Jazeera',angle:'diff',desc:'Ground-level reporting; civilian testimonies',time:'7h'}],
+   angles:[{cat:'Diplomatic',txt:'UN Security Council emergency session called; US abstains from ceasefire resolution vote'},{cat:'Humanitarian',txt:'WHO reports hospitals in northern Gaza at 140% capacity, surgical supplies critical'},{cat:'Political',txt:'Hamas blames Israel for ceasefire collapse; Israeli PM cites rocket fire from Rafah'}],
+   sent:{pos:8,neg:74,neu:18},srcs:['BBC','Reuters','AP']},
+  {id:'i2',rank:2,src:'Reuters',time:'2h',srcCount:4,impact:0.88,top:true,
+   hl:'India & EU close in on landmark trade pact ahead of Brussels summit',
+   sum:"Negotiators from India and the EU have resolved differences on auto tariffs and data localisation, paving the way for a framework agreement at next month's summit.",
+   critics:'Trade analysts warn services liberalisation remains unresolved. A framework deal is not a final deal.',
+   sources:[{name:'Reuters',angle:'same',desc:'Cites unnamed negotiator; tariff figures confirmed',time:'2h'},{name:'FT',angle:'diff',desc:'Sceptical; highlights pharma IP sticking points',time:'3h'},{name:'Business Standard',angle:'same',desc:'India commerce ministry positive statement',time:'1h'},{name:'ET',angle:'diff',desc:'Focus on EV tariff carve-out demand from Germany',time:'4h'}],
+   angles:[{cat:'Trade',txt:'Auto tariffs may be phased out over 10 years rather than immediate removal'},{cat:'Tech',txt:'Data localisation waiver for EU cloud providers in exchange for GDPR adequacy'},{cat:'Political',txt:'Brussels summit May 8 seen as hard deadline for framework sign-off'}],
+   sent:{pos:68,neg:12,neu:20},srcs:['Reuters','FT','BS','ET']},
+  {id:'i3',rank:3,src:'AP',time:'4h',srcCount:2,isBreaking:true,impact:0.79,top:true,
+   hl:'Typhoon makes landfall on Luzon; schools and flights shut across northern Philippines',
+   sum:'Super Typhoon Carina made landfall near Aurora province at 3 AM local time with sustained winds of 195 km/h, triggering the highest storm signal in 6 provinces.',
+   critics:'Disaster management experts criticise the 12-hour evacuation window. Pre-positioning of relief goods was adequate per NDRRMC.',
+   sources:[{name:'AP',angle:'same',desc:'Wind speed, landfall co-ordinates confirmed',time:'4h'},{name:'Inquirer',angle:'diff',desc:'Human impact; evacuation camp conditions',time:'3h'}],
+   angles:[{cat:'Weather',txt:'PAGASA: Typhoon may weaken to tropical storm by evening crossing Luzon mountains'},{cat:'Logistics',txt:'NAIA suspends all flights until further notice; 180 cancellations'}],
+   sent:{pos:5,neg:81,neu:14},srcs:['AP','Inquirer']},
+  {id:'i4',rank:4,src:'The Hindu',time:'5h',srcCount:2,impact:0.71,top:false,
+   hl:'Tamil Nadu monsoon update: heavy showers forecast for Trichy and delta districts',
+   sum:'IMD issues orange alert for four delta districts as southwest monsoon intensifies over the Bay of Bengal. Trichy collectorate orders pre-emptive closure of low-lying areas.',
+   critics:"Local farmers welcome the rains but fear flash flooding in Cauvery delta zone after last year's embankment breaches.",
+   sources:[{name:'The Hindu',angle:'same',desc:'IMD bulletin; official district orders',time:'5h'},{name:'DT Next',angle:'diff',desc:'Ground report from Trichy; waterlogging in Woraiyur',time:'4h'}],
+   angles:[{cat:'Agriculture',txt:'Paddy transplanting season may be advanced if rains sustain through June second week'},{cat:'Infrastructure',txt:'PWD on standby; 3 check dams near capacity in Ariyalur district'}],
+   sent:{pos:35,neg:28,neu:37},srcs:['The Hindu','DT Next']},
+  {id:'i5',rank:5,src:'Bloomberg',time:'1h',srcCount:3,impact:0.63,top:false,
+   hl:'Oil slips as OPEC+ signals gradual supply return; Brent under $74',
+   sum:'Brent crude fell 1.8% to $73.60 after OPEC+ confirmed a phased production increase from August. Goldman Sachs cut its year-end Brent forecast to $78 from $85.',
+   critics:'Bears argue demand growth is structurally slowing while EV adoption accelerates. Bulls point to geopolitical risk premium being under-priced.',
+   sources:[{name:'Bloomberg',angle:'same',desc:'Price data, OPEC+ delegate quotes',time:'1h'},{name:'WSJ',angle:'diff',desc:'US shale response; Texas rig count rising',time:'2h'},{name:'Reuters',angle:'same',desc:'IEA demand forecast reiterated',time:'3h'}],
+   angles:[{cat:'Markets',txt:'Aramco ADR down 2.1%; energy sector heaviest drag on S&P 500 today'},{cat:'Geopolitics',txt:'Iran output rising quietly — OPEC+ internal friction mounting'}],
+   sent:{pos:22,neg:55,neu:23},srcs:['Bloomberg','WSJ','Reuters']},
+];
+
+const COVERAGE=[
+  {id:'world',name:'World',s:'ok',n:10,t:10},{id:'india',name:'India',s:'ok',n:8,t:10},
+  {id:'tn',name:'Tamil Nadu',s:'ok',n:6,t:8},{id:'trichy',name:'Trichy',s:'ok',n:4,t:6},
+  {id:'muscat',name:'Muscat',s:'ok',n:5,t:6},{id:'biz',name:'Business',s:'ok',n:7,t:8},
+  {id:'tech',name:'Tech',s:'err',n:0,t:6},{id:'social',name:'Social',s:'ok',n:12,t:12},
+  {id:'ent',name:'Entertainment',s:'q',n:0,t:6},
+];
+
+/* ── Stars ── */
+function Stars({n}){return <span style={{color:'#F0883E',fontSize:'0.65rem',letterSpacing:'-1px'}}>{'★'.repeat(n)+'☆'.repeat(5-n)}</span>}
+
+/* ── Market Ticker ── */
+function Ticker(){
+  return (
+    <div className="ticker-wrap">
+      <span className="ticker-label">Markets</span>
+      <div style={{flex:1,overflow:'hidden',height:'100%',display:'flex',alignItems:'center'}}>
+        <div className="ticker-track">
+          {TICKER_DOUBLED.map((t,i)=>(
+            <div key={i} className="ticker-item">
+              <span className="ticker-name">{t.name}</span>
+              <span className="ticker-price">{t.price}</span>
+              <span className={`ticker-chg ${t.up?'up':'dn'}`}>{t.up?'▲':'▼'} {t.chg.replace(/[+-]/,'')}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Weather ── */
+function Weather(){
+  const [active,setActive] = useState('muscat');
+  const city = WX_CITIES.find(c=>c.id===active);
+  return (
+    <div className="wx-card">
+      <div className="wx-cities">
+        {WX_CITIES.map(c=>(
+          <div key={c.id} className={`wx-city ${active===c.id?'active':''}`} onClick={()=>setActive(c.id)}>
+            <span className="cname">{c.name}</span>
+            <span className="cico">{c.ico}</span>
+            <span className="ctemp">{c.temp}°</span>
+          </div>
+        ))}
+      </div>
+      <div className="wx-forecast">
+        <span className="bot">🤖</span>
+        <span className="ftxt">{city.forecast}</span>
+      </div>
+      <div className="wx-ribbon">
+        {city.hourly.map((h,i)=>(
+          <div key={i} className="wx-slot">
+            <span className="stime">{h.t}</span>
+            <span className="sico">{h.ico}</span>
+            <span className="stemp">{h.temp}°</span>
+            <span className={`spop ${h.pop>20?'rain':'dry'}`}>{h.pop>20?`💧${h.pop}%`:'—'}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── NCard ── */
+function NCard({s}){
+  return (
+    <div className="ncard">
+      <div className="nmeta">
+        <span className="nsrc">{s.src}</span><Stars n={s.stars}/>
+        <span className="ndiv"/><span className="ntime">{s.time} ago</span>
+        {s.srcCount>1&&<span className="nsrccnt">#{s.srcCount} Sources</span>}
+        {s.isBreaking&&<span className="ntag breaking">⚡ Breaking</span>}
+        {s.isTrending&&<span className="ntag trending">🔥 Trending</span>}
+      </div>
+      <h3>• {s.hl} <span className="arr">↗</span></h3>
+      {s.sum&&<p className="nsum">{s.sum}</p>}
+      {s.critics&&<div className="ncritics"><strong>Critics Take:</strong> "{s.critics}"</div>}
+    </div>
+  );
+}
+
+/* ── ICard ── */
+function ICard({story}){
+  const [open,setOpen]=useState(false);
+  const pct=Math.round(story.impact*100);
+  return (
+    <div className={`icard ${open?'open':''}`} data-top={story.top?'true':'false'}>
+      <div className="icard-top" onClick={()=>setOpen(o=>!o)}>
+        <div className="irank">{String(story.rank).padStart(2,'0')}</div>
+        <div className="ibody">
+          <div className="imeta-row">
+            <span className="isource">{story.src}</span><span className="idot"/>
+            <span className="itime">{story.time} ago</span>
+            {story.isBreaking&&<span className="itag breaking">⚡ Breaking</span>}
+            {story.srcCount>1&&<span className="itag multi">{story.srcCount} sources</span>}
+          </div>
+          <h3>{story.hl}</h3>
+          <div className="iimpact"><div className="ibar"><span style={{width:`${pct}%`}}/></div><div className="ival">{story.impact.toFixed(2)}</div></div>
+          <div className="isrcs">{story.srcs.map(s=><span key={s} className="s">{s}</span>)}</div>
+        </div>
+        <button className="expand-btn" tabIndex={-1}>{open?'−':'+'}</button>
+      </div>
+      {open&&(
+        <div className="iexpand"><div className="iexpand-inner">
+          <div className="exp-block">
+            <div className="exp-label"><span className="dot"/>Summary</div>
+            <p className="exp-summary">{story.sum}</p>
+          </div>
+          {story.critics&&(
+            <div className="exp-block">
+              <div className="exp-label"><span className="dot" style={{background:'var(--blue)'}}/>Critics Take</div>
+              <div className="critics-box"><p className="ctxt">"{story.critics}"</p></div>
+            </div>
+          )}
+          <div className="exp-block">
+            <div className="exp-label"><span className="dot" style={{background:'var(--warn)'}}/>Other Sources</div>
+            <div className="src-list">{story.sources.map((src,i)=>(
+              <div key={i} className="src-item">
+                <span className="sname">{src.name}</span>
+                <span className="sdesc">{src.desc}</span>
+                <span className="stime">{src.time}</span>
+                <span className={`ang ${src.angle}`}>{src.angle==='same'?'Same angle':'New angle'}</span>
+              </div>
+            ))}</div>
+          </div>
+          <div className="exp-block">
+            <div className="exp-label"><span className="dot" style={{background:'#9b59ff'}}/>Related Angles</div>
+            <div className="angle-list">{story.angles.map((a,i)=>(
+              <div key={i} className="angle-item">
+                <div className="acat">{a.cat}</div>
+                <div className="atxt">{a.txt}</div>
+              </div>
+            ))}</div>
+          </div>
+          <div className="exp-block">
+            <div className="exp-label"><span className="dot" style={{background:'var(--green)'}}/>Sentiment</div>
+            <div className="sent-row">
+              <div className="sent-pill pos"><span className="sl">Positive</span><span className="sv">{story.sent.pos}%</span></div>
+              <div className="sent-pill neg"><span className="sl">Negative</span><span className="sv">{story.sent.neg}%</span></div>
+              <div className="sent-pill neu"><span className="sl">Neutral</span><span className="sv">{story.sent.neu}%</span></div>
+            </div>
+          </div>
+        </div></div>
+      )}
+    </div>
+  );
+}
+
+/* ── Main Tab ── */
+function MainTab(){
+  return (
+    <div className="scroll">
+      <div className="breaking-banner">
+        <span className="bpulse"/>
+        <span className="bhl">Fed signals hold; dot plot leans hawkish — markets react</span>
+        <span className="barr">↗</span>
+      </div>
+      <Weather/>
+      <div className="sec-hdr">
+        <h2><span>⭐</span> Top Stories</h2>
+        <div className="cnt"><span className="live-badge">Live</span><span>(18)</span></div>
+      </div>
+      {MAIN_STORIES.map(s=><NCard key={s.id} s={s}/>)}
+    </div>
+  );
+}
+
+/* ── Insight Tab ── */
+function InsightTab(){
+  return (
+    <div className="scroll">
+      <div className="ins-pulse">
+        <div className="ins-ring">
+          <svg viewBox="0 0 100 100" aria-hidden="true">
+            <defs>
+              <linearGradient id="rg" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stopColor="#00D4AA"/><stop offset="1" stopColor="#58A6FF"/>
+              </linearGradient>
+            </defs>
+            <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="9"/>
+            <circle cx="50" cy="50" r="40" fill="none" stroke="url(#rg)" strokeWidth="9" strokeLinecap="round" strokeDasharray={`${0.86*251.2} 251.2`}/>
+          </svg>
+          <div className="ircenter">
+            <div className="irscore">86</div>
+            <div className="irslbl">Signal</div>
+          </div>
+        </div>
+        <div className="ins-body">
+          <div className="eyebrow"><span className="bip"/>Live feed</div>
+          <p>Day leans <em>positive</em> — <em>3 breaking</em> threads active</p>
+          <div className="ins-meta">
+            <span>27m ago</span><span>·</span>
+            <span><b>9</b>/9 sections</span><span>·</span>
+            <span>next in <b>03:42</b></span>
+          </div>
+        </div>
+      </div>
+      <div className="sstrip">
+        <div className="sig" data-t="info"><div className="snum">18</div><div className="slb">Ranked</div></div>
+        <div className="sig" data-t="warn"><div className="snum">3</div><div className="slb">Breaking</div></div>
+        <div className="sig" data-t="good"><div className="snum">12</div><div className="slb">Consensus</div></div>
+        <div className="sig" data-t="teal"><div className="snum">9<span style={{color:'var(--muted)',fontSize:'.75rem'}}>/9</span></div><div className="slb">Sections</div></div>
+        <div className="sig" data-t="mute"><div className="snum">27<span style={{color:'var(--muted)',fontSize:'.75rem'}}>m</span></div><div className="slb">Fresh</div></div>
+      </div>
+      <div className="isec">
+        <h3><span className="glyph">▲</span>Top Ranked</h3>
+        <span className="imeta"><b>5</b> shown · tap + to expand</span>
+      </div>
+      {INSIGHT_STORIES.map(s=><ICard key={s.id} story={s}/>)}
+      <div className="isec">
+        <h3><span className="glyph">◉</span>Section Coverage</h3>
+        <span className="imeta"><b>8</b> live · <b>1</b> error</span>
+      </div>
+      <div className="covgrid">
+        {COVERAGE.map(c=>(
+          <div key={c.id} className="covcell" data-s={c.s}>
+            <div className="ctop"><span className="cname">{c.name}</span><span className="cdot"/></div>
+            <div className="ccount">{c.s==='err'?'timeout':c.s==='q'?'queued':`${c.n}/${c.t}`}</div>
+            <div className="cbar"><span style={{width:`${c.s==='err'?8:c.s==='q'?25:Math.round(c.n/c.t*100)}%`}}/></div>
+          </div>
+        ))}
+      </div>
+      <div style={{height:'8px'}}/>
+    </div>
+  );
+}
+
+/* ── Market Tab ── */
+const MKT_INDICES=[
+  {name:'NIFTY 50',val:'22,847',chg:'+94',pct:'+0.41%',low:'22,601',high:'22,891',up:true},
+  {name:'SENSEX',val:'75,234',chg:'+285',pct:'+0.38%',low:'74,810',high:'75,350',up:true},
+  {name:'BANK NIFTY',val:'48,120',chg:'-112',pct:'-0.23%',low:'47,890',high:'48,410',up:false},
+  {name:'MIDCAP 150',val:'14,780',chg:'+62',pct:'+0.42%',low:'14,650',high:'14,820',up:true},
+];
+const MKT_GLOBAL=[
+  {name:'S&P 500',val:'5,218',pct:'+0.09%',up:true},
+  {name:'NASDAQ',val:'17,432',pct:'-0.14%',up:false},
+  {name:'DOW',val:'38,910',pct:'+0.21%',up:true},
+  {name:'NIKKEI',val:'38,460',pct:'+0.33%',up:true},
+  {name:'FTSE',val:'8,042',pct:'-0.07%',up:false},
+  {name:'HANG SENG',val:'17,284',pct:'-0.44%',up:false},
+];
+const MKT_GAINERS=[
+  {sym:'TATAMOTORS',vol:'12.4M',px:'₹925',pct:'+4.2%'},
+  {sym:'ADANIENT',vol:'8.1M',px:'₹3,210',pct:'+3.8%'},
+  {sym:'HCLTECH',vol:'5.3M',px:'₹1,620',pct:'+2.9%'},
+  {sym:'COALINDIA',vol:'9.7M',px:'₹485',pct:'+2.6%'},
+  {sym:'BPCL',vol:'6.2M',px:'₹334',pct:'+2.1%'},
+];
+const MKT_LOSERS=[
+  {sym:'BAJFINANCE',vol:'4.2M',px:'₹7,140',pct:'-3.1%'},
+  {sym:'TECHM',vol:'3.8M',px:'₹1,285',pct:'-2.4%'},
+  {sym:'HINDUNILVR',vol:'2.1M',px:'₹2,310',pct:'-1.8%'},
+  {sym:'WIPRO',vol:'4.9M',px:'₹465',pct:'-1.5%'},
+  {sym:'AXISBANK',vol:'7.3M',px:'₹1,082',pct:'-1.2%'},
+];
+const MKT_SECTORS=[
+  {name:'IT',val:'34,210',pct:'+1.2%',up:true},
+  {name:'Auto',val:'22,840',pct:'+2.1%',up:true},
+  {name:'Pharma',val:'18,920',pct:'+0.8%',up:true},
+  {name:'FMCG',val:'55,310',pct:'-0.4%',up:false},
+  {name:'Realty',val:'8,240',pct:'+1.6%',up:true},
+  {name:'Metal',val:'9,830',pct:'-0.9%',up:false},
+  {name:'Energy',val:'30,140',pct:'+0.3%',up:true},
+  {name:'Banking',val:'48,120',pct:'-0.2%',up:false},
+  {name:'Media',val:'2,140',pct:'+0.6%',up:true},
+];
+const MKT_COMMODITIES=[
+  {name:'Gold',unit:'₹/10g',val:'₹72,450',pct:'+0.67%',up:true},
+  {name:'Silver',unit:'₹/kg',val:'₹89,200',pct:'-0.31%',up:false},
+  {name:'Crude',unit:'$/bbl',val:'$73.60',pct:'-1.80%',up:false},
+];
+const MKT_FX=[
+  {name:'USD/INR',val:'₹83.42',pct:'-0.08%',up:false},
+  {name:'EUR/INR',val:'₹89.74',pct:'+0.12%',up:true},
+  {name:'GBP/INR',val:'₹104.2',pct:'+0.05%',up:true},
+];
+const MKT_FIIDII={
+  date:'18 Apr 2026',
+  fii:{buy:'12,840',sell:'14,210',net:'-1,370'},
+  dii:{buy:'10,540',sell:'8,920',net:'+1,620'},
+};
+const MKT_IPO=[
+  {name:'Indira Fertilisers',status:'live',dates:'17–21 Apr',price:'₹420–440',gmp:'+₹38',gmpUp:true},
+  {name:'SolarTech Infra',status:'up',dates:'24–28 Apr',price:'₹180–190',gmp:'+₹22',gmpUp:true},
+  {name:'Nexgen Fabrics',status:'closed',dates:'Listed 12 Apr',price:'₹310',gmp:'-₹12',gmpUp:false},
+];
+
+function MktIdx({d}){
+  return (
+    <div className={`mkt-idx ${d.up?'up':'dn'}`}>
+      <div className="iname">{d.name}</div>
+      <div className="ival">{d.val}</div>
+      <div className="ichg">{d.up?'▲':'▼'} {d.chg} ({d.pct})</div>
+      <div className="irange">{d.low} – {d.high}</div>
+    </div>
+  );
+}
+
+function MarketTab(){
+  return (
+    <div className="scroll">
+      {/* Mood */}
+      <div className="mkt-mood">
+        <div>
+          <div className="mlabel">Broad risk-on tone</div>
+          <div className="msub">3 of 4 primary indices advancing</div>
+        </div>
+        <div className="mpill">Live · 14:32</div>
+      </div>
+
+      {/* Primary indices */}
+      <div className="mkt-idx-grid">
+        {MKT_INDICES.map(d=><MktIdx key={d.name} d={d}/>)}
+      </div>
+
+      {/* Global rail */}
+      <div className="mkt-global-rail">
+        {MKT_GLOBAL.map(g=>(
+          <div key={g.name} className={`mkt-glob ${g.up?'up':'dn'}`}>
+            <div className="gn">{g.name}</div>
+            <div className="gv">{g.val}</div>
+            <div className="gc">{g.up?'▲':'▼'} {g.pct.replace(/[+-]/,'')}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Top Movers */}
+      <div className="mkt-sec">
+        <div className="mkt-sec-hdr">
+          <div>
+            <div className="eyebrow">Live movers</div>
+            <h3>Top Movers</h3>
+          </div>
+          <span className="sub">NSE · Today</span>
+        </div>
+        <div className="mkt-movers">
+          <div className="mkt-col">
+            <div className="mkt-col-title g">▲ Gainers</div>
+            {MKT_GAINERS.map(s=>(
+              <div key={s.sym} className="mkt-row">
+                <div>
+                  <div className="sym">{s.sym}</div>
+                  <div className="vol">Vol {s.vol}</div>
+                </div>
+                <div>
+                  <div className="px">{s.px}</div>
+                  <div className="pchg g">{s.pct}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mkt-col">
+            <div className="mkt-col-title r">▼ Losers</div>
+            {MKT_LOSERS.map(s=>(
+              <div key={s.sym} className="mkt-row">
+                <div>
+                  <div className="sym">{s.sym}</div>
+                  <div className="vol">Vol {s.vol}</div>
+                </div>
+                <div>
+                  <div className="px">{s.px}</div>
+                  <div className="pchg r">{s.pct}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Sector heatmap */}
+      <div className="mkt-sec">
+        <div className="mkt-sec-hdr">
+          <div>
+            <div className="eyebrow">Rotation map</div>
+            <h3>Sectoral Indices</h3>
+          </div>
+        </div>
+        <div className="mkt-heatmap">
+          {MKT_SECTORS.map(s=>(
+            <div key={s.name} className={`mkt-htile ${s.up?'up':'dn'}`}>
+              <div className="hn">{s.name}</div>
+              <div className="hv">{s.val}</div>
+              <div className="hc">{s.up?'▲':'▼'} {s.pct.replace(/[+-]/,'')}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Commodities + FX side by side on same row */}
+      <div className="mkt-sec">
+        <div className="mkt-sec-hdr">
+          <div>
+            <div className="eyebrow">Macro watch</div>
+            <h3>Commodities</h3>
+          </div>
+          <span className="sub">Gold · Silver · Crude</span>
+        </div>
+        <div className="mkt-macro">
+          {MKT_COMMODITIES.map(c=>(
+            <div key={c.name} className="mkt-mrow">
+              <div>
+                <div className="mn">{c.name}</div>
+                <div className="mu">{c.unit}</div>
+              </div>
+              <div>
+                <div className="mv">{c.val}</div>
+                <div className={`mc ${c.up?'g':'r'}`}>{c.up?'▲':'▼'} {c.pct.replace(/[+-]/,'')}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="mkt-sec">
+        <div className="mkt-sec-hdr">
+          <div>
+            <div className="eyebrow">FX</div>
+            <h3>Currency Rates</h3>
+          </div>
+          <span className="sub">INR pairs</span>
+        </div>
+        <div className="mkt-macro">
+          {MKT_FX.map(c=>(
+            <div key={c.name} className="mkt-mrow">
+              <div>
+                <div className="mn">{c.name}</div>
+              </div>
+              <div>
+                <div className="mv">{c.val}</div>
+                <div className={`mc ${c.up?'g':'r'}`}>{c.up?'▲':'▼'} {c.pct.replace(/[+-]/,'')}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* FII/DII */}
+      <div className="mkt-sec">
+        <div className="mkt-sec-hdr">
+          <div>
+            <div className="eyebrow">Flows</div>
+            <h3>FII / DII Activity</h3>
+          </div>
+          <span className="sub">₹ Crores</span>
+        </div>
+        <div className="mkt-flow">
+          <div className="mkt-fcard">
+            <div className="ft">FII</div>
+            <div className="mkt-frow"><span>Buy</span><strong className="g">₹{MKT_FIIDII.fii.buy} Cr</strong></div>
+            <div className="mkt-frow"><span>Sell</span><strong className="r">₹{MKT_FIIDII.fii.sell} Cr</strong></div>
+            <div className="mkt-frow"><span>Net</span><strong className="r">₹{MKT_FIIDII.fii.net} Cr</strong></div>
+          </div>
+          <div className="mkt-fcard">
+            <div className="ft">DII</div>
+            <div className="mkt-frow"><span>Buy</span><strong className="g">₹{MKT_FIIDII.dii.buy} Cr</strong></div>
+            <div className="mkt-frow"><span>Sell</span><strong className="r">₹{MKT_FIIDII.dii.sell} Cr</strong></div>
+            <div className="mkt-frow"><span>Net</span><strong className="g">₹{MKT_FIIDII.dii.net} Cr</strong></div>
+          </div>
+        </div>
+        <div className="mkt-flow-footer">As of {MKT_FIIDII.date}</div>
+      </div>
+
+      {/* IPO */}
+      <div className="mkt-sec">
+        <div className="mkt-sec-hdr">
+          <div>
+            <div className="eyebrow">Primary issues</div>
+            <h3>IPO Tracker</h3>
+          </div>
+        </div>
+        <div className="mkt-ipo">
+          {MKT_IPO.map(ipo=>(
+            <div key={ipo.name} className="mkt-ipo-item">
+              <span className={`ipill ${ipo.status}`}>{ipo.status==='live'?'🟢 Live':ipo.status==='up'?'Upcoming':'Closed'}</span>
+              <div style={{flex:1,minWidth:0}}>
+                <div className="iname">{ipo.name}</div>
+                <div className="imeta">{ipo.dates} · {ipo.price}</div>
+              </div>
+              <div>
+                <div className="iprice">{ipo.price.split('–')[0]}</div>
+                <div className={`igmp ${ipo.gmpUp?'g':'r'}`}>GMP {ipo.gmp}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="mkt-disclaimer">* For informational purposes only. Not investment advice.</div>
+      <div style={{height:'8px'}}/>
+    </div>
+  );
+}
+
+/* ── Placeholder tab ── */
+function PlaceholderTab({label}){
+  return (
+    <div className="scroll" style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',height:'100%',gap:'12px',opacity:.45}}>
+      <div style={{fontSize:'2.5rem'}}>🚧</div>
+      <div style={{fontFamily:'var(--mono)',fontSize:'0.8rem',color:'var(--muted)',letterSpacing:'0.1em'}}>{label}</div>
+    </div>
+  );
+}
+
+/* ── Up Ahead Tab ── */
+function UpAheadTab(){
+  const CATEGORIES=[
+    {id:'movies',label:'Movies',ic:'🎬',items:[
+      {id:'m1',date:'Fri, 28 Apr',title:'Deadpool & Wolverine',desc:'Marvel Studios · Action',link:'#'},
+      {id:'m2',date:'Fri, 05 May',title:'Inside Out 2',desc:'Pixar · Animation',link:'#'},
+    ]},
+    {id:'sports',label:'Sports',ic:'⚽',items:[
+      {id:'sp1',date:'Sun, 26 Apr',title:'IPL: RCB vs MI',desc:'Indian Premier League',link:'#'},
+      {id:'sp2',date:'Wed, 29 Apr',title:'French Open Begins',desc:'Tennis · Roland Garros',link:'#'},
+    ]},
+    {id:'festivals',label:'Festivals',ic:'🎪',items:[
+      {id:'f1',date:'Sat, 27 Apr',title:'Chithirai Festival',desc:'Chennai · 48-day festival',link:'#'},
+      {id:'f2',date:'Mon, 01 May',title:'May Day Celebrations',desc:'Labour Day events',link:'#'},
+    ]},
+    {id:'sales',label:'Shopping',ic:'🏷️',items:[
+      {id:'sa1',date:'Fri, 28 Apr',title:'Summer Mega Sale',desc:'30-50% off · E-commerce',link:'#',isOffer:true},
+      {id:'sa2',date:'Sun, 30 Apr',title:'Fashion Week Sale',desc:'Exclusive discounts',link:'#',isOffer:true},
+    ]},
+    {id:'alerts',label:'Alerts',ic:'⚠️',items:[
+      {id:'al1',date:'Today · 14:30',title:'Heat Wave Alert',desc:'Tamil Nadu · High temp warning',link:'#',isAlert:true},
+      {id:'al2',date:'Tomorrow · 06:00',title:'Flight Delay Notice',desc:'Monsoon impact expected',link:'#',isAlert:true},
+    ]},
+  ];
+  return (
+    <div className="scroll">
+      <div style={{marginBottom:'12px'}}>
+        <div style={{fontSize:'0.75rem',fontWeight:700,letterSpacing:'0.15em',textTransform:'uppercase',color:'var(--teal)',marginBottom:'10px',paddingLeft:'2px'}}>Upcoming Events & Releases</div>
+      </div>
+      {CATEGORIES.map(cat=>(
+        <div key={cat.id} style={{marginBottom:'20px'}}>
+          <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'10px',paddingBottom:'8px',borderBottom:'1px solid var(--border)'}}>
+            <span style={{fontSize:'1.2rem'}}>{cat.ic}</span>
+            <h3 style={{fontSize:'0.9rem',fontWeight:700,color:'var(--txt)',margin:0}}>{cat.label}</h3>
+            <span style={{fontSize:'0.65rem',color:'var(--muted)',fontFamily:'var(--mono)',marginLeft:'auto'}}>{cat.items.length} items</span>
+          </div>
+          <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
+            {cat.items.map(item=>(
+              <div key={item.id} style={{
+                padding:'12px 14px',borderRadius:'var(--r12)',
+                background:'linear-gradient(180deg,rgba(22,27,34,0.6),rgba(14,18,24,0.6))',
+                border:'1px solid var(--border)',
+                display:'flex',alignItems:'center',gap:'12px',cursor:'pointer'
+              }}>
+                <div style={{flex:'0 0 auto'}}>
+                  <div style={{fontSize:'0.65rem',fontFamily:'var(--mono)',color:'var(--muted)',fontWeight:600,marginBottom:'2px'}}>{item.date}</div>
+                </div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:'0.88rem',fontWeight:600,color:'var(--txt)',marginBottom:'3px'}}>{item.title}</div>
+                  <div style={{fontSize:'0.75rem',color:'var(--muted)'}}>{item.desc}</div>
+                </div>
+                {item.isOffer && <span style={{fontSize:'0.8rem',padding:'2px 7px',borderRadius:'999px',background:'rgba(240,136,62,0.14)',color:'#f0b070',border:'1px solid rgba(240,136,62,0.35)',fontWeight:600,flexShrink:0}}>Offer</span>}
+                {item.isAlert && <span style={{fontSize:'0.8rem',padding:'2px 7px',borderRadius:'999px',background:'rgba(255,71,87,0.14)',color:'#ff8c96',border:'1px solid rgba(255,71,87,0.35)',fontWeight:600,flexShrink:0}}>Alert</span>}
+                <button style={{
+                  padding:'4px 10px',borderRadius:'8px',border:'1px solid var(--border)',
+                  background:'rgba(255,255,255,0.05)',color:'var(--teal)',fontSize:'0.75rem',
+                  fontWeight:600,cursor:'pointer',flexShrink:0,transition:'.15s'
+                }} onClick={e=>{e.target.innerHTML='✓ Added';e.target.style.color='var(--green)';setTimeout(()=>{e.target.innerHTML='+ Plan';e.target.style.color='var(--teal)'},2000)}}>+ Plan</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── Planner Tab ── */
+function PlannerTab(){
+  const PLAN_DATA=[
+    {date:'Wed, 24 Apr',items:[
+      {id:'p1',icon:'🎬',title:'Deadpool & Wolverine premiere',cat:'Movie',link:'#'},
+      {id:'p2',icon:'⚽',title:'IPL: RCB vs MI',cat:'Sports',link:'#'},
+    ]},
+    {date:'Fri, 26 Apr',items:[
+      {id:'p3',icon:'🎪',title:'Chithirai Festival opening',cat:'Festival',link:'#'},
+    ]},
+    {date:'Sun, 28 Apr',items:[
+      {id:'p4',icon:'🏷️',title:'Summer Mega Sale starts',cat:'Shopping',link:'#'},
+      {id:'p5',icon:'📚',title:'Book launch: New releases',cat:'Culture',link:'#'},
+    ]},
+  ];
+  const [undo,setUndo]=useState(null);
+  const handleRemove=(date,id)=>{
+    setUndo({date,id});
+    setTimeout(()=>setUndo(null),5000);
+  };
+  return (
+    <div className="scroll">
+      <div style={{marginBottom:'16px'}}>
+        <div style={{fontSize:'0.75rem',fontWeight:700,letterSpacing:'0.15em',textTransform:'uppercase',color:'var(--teal)',marginBottom:'10px'}}>Your Events</div>
+      </div>
+      {PLAN_DATA.length===0?(
+        <div style={{padding:'40px 20px',textAlign:'center',opacity:.5}}>
+          <div style={{fontSize:'2.5rem',marginBottom:'12px'}}>📭</div>
+          <div style={{fontSize:'0.9rem',color:'var(--muted)'}}>Your planner is empty</div>
+          <div style={{fontSize:'0.8rem',color:'var(--muted)',marginTop:'8px'}}>Find events in Up Ahead and add them</div>
+        </div>
+      ):(
+        PLAN_DATA.map(day=>(
+          <div key={day.date} style={{marginBottom:'16px'}}>
+            <div style={{
+              display:'inline-flex',alignItems:'center',gap:'8px',
+              padding:'5px 12px',borderRadius:'10px',
+              background:'rgba(0,212,170,0.1)',border:'1px solid rgba(0,212,170,0.3)',
+              marginBottom:'10px',
+            }}>
+              <span style={{fontSize:'0.75rem',fontWeight:700,color:'var(--teal)',letterSpacing:'0.06em',textTransform:'uppercase'}}>{day.date}</span>
+            </div>
+            <div style={{display:'flex',flexDirection:'column',gap:'6px'}}>
+              {day.items.map(item=>(
+                <div key={item.id} style={{
+                  padding:'11px 14px',borderRadius:'var(--r12)',
+                  background:'linear-gradient(180deg,rgba(22,27,34,0.4),rgba(14,18,24,0.4))',
+                  border:'1px solid var(--border)',
+                  display:'flex',alignItems:'center',gap:'12px',position:'relative'
+                }}>
+                  <span style={{fontSize:'1.2rem',flexShrink:0}}>{item.icon}</span>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:'0.87rem',fontWeight:600,color:'var(--txt)',marginBottom:'2px'}}>{item.title}</div>
+                    <div style={{fontSize:'0.68rem',color:'var(--muted)',textTransform:'capitalize'}}>{item.cat}</div>
+                  </div>
+                  <button style={{
+                    width:'28px',height:'28px',borderRadius:'8px',border:'1px solid var(--border)',
+                    background:'rgba(255,255,255,0.05)',color:'var(--muted)',
+                    display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',
+                    fontSize:'0.9rem',transition:'.15s',flexShrink:0
+                  }} onClick={()=>handleRemove(day.date,item.id)} title="Remove">✕</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))
+      )}
+      {undo && (
+        <div style={{
+          position:'fixed',bottom:'90px',left:'50%',transform:'translateX(-50%)',
+          padding:'10px 16px',borderRadius:'12px',background:'rgba(63,185,80,0.15)',
+          border:'1px solid rgba(63,185,80,0.4)',display:'flex',alignItems:'center',gap:'10px',
+          fontSize:'0.82rem',color:'var(--green)',fontWeight:600,zIndex:100
+        }}>
+          Item removed
+          <button onClick={()=>setUndo(null)} style={{background:'none',border:'none',color:'inherit',cursor:'pointer',fontWeight:700}}>Undo</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Root ── */
+function App(){
+  const [tab,setTab]=useState('main');
+  const NAV=[
+    {id:'main',label:'Main',ic:'🏠'},
+    {id:'insight',label:'Insight',ic:<InsightIcon/>},
+    {id:'upahead',label:'Up Ahead',ic:'🗓'},
+    {id:'planner',label:'Planner',ic:'📌'},
+    {id:'market',label:'Market',ic:'📈'},
+  ];
+  return (
+    <div className="shell">
+      {/* Header */}
+      <div className="hdr">
+        <div className="hdr-row">
+          <div className="hdr-left">
+            <div className="app-icon"><AppIcon/></div>
+            <div className="refresh-chip">
+              <span className="rdot"/>
+              27m ago
+            </div>
+          </div>
+          <div className="hdr-right">
+            <button className="iconbtn" title="Refresh">↻</button>
+            <button className="iconbtn" title="Settings">⚙</button>
+          </div>
+        </div>
+        {/* Market ticker — main tab only */}
+        {tab==='main' && <Ticker/>}
+      </div>
+
+      {/* Content */}
+      {tab==='main'    && <MainTab/>}
+      {tab==='insight' && <InsightTab/>}
+      {tab==='upahead' && <UpAheadTab/>}
+      {tab==='planner' && <PlannerTab/>}
+      {tab==='market'  && <PlaceholderTab label="MARKET"/>}
+
+      {/* Bottom nav — 5 items */}
+      <nav className="bnav">
+        {NAV.map(n=>(
+          <a key={n.id} className={tab===n.id?'active':''} onClick={e=>{e.preventDefault();setTab(n.id)}} href="#">
+            <span className="bi">{n.ic}</span>
+            <span>{n.label}</span>
+          </a>
+        ))}
+      </nav>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

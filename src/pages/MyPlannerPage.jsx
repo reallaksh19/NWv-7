@@ -141,7 +141,7 @@ function MyPlannerPage() {
     today.setHours(0,0,0,0);
     const sortedDates = Object.keys(planData).filter(dateStr => {
         const d = new Date(dateStr);
-        return isNaN(d.getTime()) || d >= today;
+        return !isNaN(d.getTime()) && d >= today;
     }).sort();
 
     return (
@@ -178,7 +178,7 @@ function MyPlannerPage() {
                                     </div>
                                     <div className="ua-plan-day-content" style={{ border: 'none', padding: '8px 0 0 0', background: 'transparent' }}>
                                         {items.map((item, idx) => (
-                                            <SwipeableItem key={idx} item={item} dateKey={dateKey} onRemove={removeWithUndo} onLongPressAction={handleLongPress} />
+                                            <SwipeableItem key={item.hiddenKey || item.canonicalId || item.id || idx} item={item} dateKey={dateKey} onRemove={removeWithUndo} onLongPressAction={handleLongPress} />
                                         ))}
                                     </div>
                                 </div>

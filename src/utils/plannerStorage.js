@@ -167,8 +167,24 @@ const plannerStorage = {
     addItem: (date, item) => {
         try {
             const parsed = readLocalPlan();
-            const normalizedItem = normalizePlanItem({ ...item, planDate: item?.planDate || date, eventDateKey: item?.eventDateKey || date, eventDate: item?.eventDate || date }, date);
+            const normalizedItem = normalizePlanItem({
+                ...item,
+                planDate: item?.planDate || date,
+                eventDateKey: item?.eventDateKey || date,
+                eventDate: item?.eventDate || date,
+            }, date);
             if (!normalizedItem) return false;
+
+            if (!normalizedItem.eventDateKey || normalizedItem.eventDateKey === 'nodate') {
+                if (import.meta.env?.DEV) {
+                    console.debug('[Planner] addItem skipped — no resolvable date', {
+                        title: normalizedItem.title,
+                        rawDate: date,
+                    });
+                }
+                return false;
+            }
+
             if (!parsed[date]) parsed[date] = [];
             if (!hasSimilarPlanItem(parsed[date], normalizedItem)) {
                 parsed[date].push(normalizedItem);
@@ -220,12 +236,32 @@ const plannerStorage = {
     },
     savePlanToApi: async (planData) => {
         try {
-            const normalizedPlan = pruneBlacklistedFromPlan(normalizePlanData(planData), plannerStorage.getBlacklist());
+            const normalizedPlan = pruneBlacklistedFromPlan(
+                normalizePlanData(planData),
+                plannerStorage.getBlacklist()
+            );
             writeLocalPlan(normalizedPlan);
             if (isStaticHostRuntime()) return true;
-            await fetch(`${API_BASE}/user_plan`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(normalizedPlan) });
+
+            const response = await fetch(`${API_BASE}/user_plan`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(normalizedPlan),
+            });
+
+            if (!response.ok) {
+                console.warn(
+                    `[Planner] savePlanToApi: server returned ${response.status} ${response.statusText}. ` +
+                    `Local plan is saved. Remote may be out of sync until next successful sync().`
+                );
+                return false;
+            }
+
             return true;
-        } catch (e) { console.warn('API save plan error:', e); return false; }
+        } catch (e) {
+            console.warn('[Planner] savePlanToApi: network error — local plan saved, remote not updated.', e.message);
+            return false;
+        }
     },
     addToBlacklist: (id) => {
         try {

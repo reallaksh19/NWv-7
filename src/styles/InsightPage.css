@@ -95,3 +95,28 @@
 .angle-item{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);border-radius:6px;padding:8px 10px}
 .angle-item .acat{font-family:monospace;font-size:0.6rem;color:#9b59ff;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px}
 .angle-item .atxt{font-size:0.8rem;color:#D0D7DE;line-height:1.4;margin:0;}
+
+/* ── Agent B additions ─────────────────────────────────────────────────────── */
+
+/* ParentCard hover state */
+.page-container.insight-page [data-parent-card]:hover {
+  border-color: rgba(0, 212, 170, 0.25) !important;
+}
+
+/* ChildStory list reset — ul inside children panel */
+.insight-page ul {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+/* Last child story — no bottom border */
+.insight-page li:last-child {
+  border-bottom: none !important;
+}
+
+/* AngleBadge min-width so short labels don't collapse */
+.insight-page .angle-badge {
+  min-width: 52px;
+  text-align: center;
+}

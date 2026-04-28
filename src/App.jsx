@@ -109,6 +109,7 @@ function App() {
                     <Route path="/refresh" element={<RefreshPage />} />
                     <Route path="/following" element={<FollowingPage />} />
                     <Route path="/following/:topicId" element={<TopicDetail />} />
+                    <Route path="/insight" element={<InsightPage />} />
                   </Routes>
                   <BottomNav />
                 </div>

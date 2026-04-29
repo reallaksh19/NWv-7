@@ -8,6 +8,8 @@ const PROXIES = [
     (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
     (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
     (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+    (url) => `https://crossorigin.me/${url}`,
+    (url) => `https://cors-anywhere.herokuapp.com/${url}`
 ];
 const CACHE_KEY = 'indian_market_data';
 const CACHE_TTL = 4 * 60 * 60 * 1000;
@@ -30,14 +32,52 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 10000) {
     }
 }
 
+const proxyHealth = new Map();
+const FAILURE_THRESHOLD = 3;
+const COOL_OFF_PERIOD = 5 * 60 * 1000;
+
+function getProxyBaseDomain(proxyGenStr) {
+    try {
+        const match = proxyGenStr.match(/https?:\/\/([^/]+)/);
+        return match ? match[1] : proxyGenStr;
+    } catch {
+        return proxyGenStr;
+    }
+}
+
 async function fetchThroughProxies(url, parser = 'json', timeoutMs = 10000) {
     for (const proxyGen of PROXIES) {
+        const proxyDomain = getProxyBaseDomain(proxyGen.toString());
+        const health = proxyHealth.get(proxyDomain) || { failures: 0, lastFailure: 0 };
+
+        if (health.failures >= FAILURE_THRESHOLD) {
+            if (Date.now() - health.lastFailure < COOL_OFF_PERIOD) {
+                console.warn(`[MarketService] Skipping proxy ${proxyDomain} due to circuit breaker`);
+                continue;
+            } else {
+                // Reset after cool-off period
+                health.failures = 0;
+                proxyHealth.set(proxyDomain, health);
+            }
+        }
+
         try {
             const response = await fetchWithTimeout(proxyGen(url), {}, timeoutMs);
-            if (!response.ok) continue;
+            if (!response.ok) {
+                health.failures += 1;
+                health.lastFailure = Date.now();
+                proxyHealth.set(proxyDomain, health);
+                continue;
+            }
+            // Reset failures on success
+            health.failures = 0;
+            proxyHealth.set(proxyDomain, health);
             return parser === 'text' ? await response.text() : await response.json();
         } catch (e) {
             console.warn(`[MarketService] Proxy failed: ${e.message}`);
+            health.failures += 1;
+            health.lastFailure = Date.now();
+            proxyHealth.set(proxyDomain, health);
         }
     }
     throw new Error(`Failed to fetch ${url}`);

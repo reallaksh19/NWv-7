@@ -7,11 +7,11 @@ function BottomNav() {
     const location = useLocation();
 
     const navItems = [
-        { path: '/', label: 'Main', icon: '\u{1F3E0}' },
-        { path: '/insight', label: 'Insight', icon: '\u{1F9E0}' },
-        { path: '/up-ahead', label: 'Up Ahead', icon: '\u{1F5D3}' },
-        { path: '/my-planner', label: 'Planner', icon: '\u{1F4CC}' },
-        { path: '/markets', label: 'Market', icon: '\u{1F4C8}' },
+        { path: '/', label: 'Main', icon: '🏠' },
+        { path: '/insight', label: 'Insight', icon: '📊' },
+        { path: '/up-ahead', label: 'Up Ahead', icon: '🗓️' },
+        { path: '/my-planner', label: 'Planner', icon: '📌' },
+        { path: '/markets', label: 'Market', icon: '📈' },
     ];
 
     return (

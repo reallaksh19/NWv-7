@@ -4,7 +4,11 @@ import { getRuntimeCapabilities } from "../runtime/runtimeCapabilities.js";
 
 const INDICES = { nifty50: '^NSEI', sensex: '^BSESN', niftyBank: '^NSEBANK', niftyIT: '^CNXIT', niftyMidcap: 'NIFTYMIDCAP150.NS', niftyPharma: '^CNXPHARMA', niftyAuto: '^CNXAUTO', sp500: '^GSPC', nasdaq: '^IXIC', dow: '^DJI', nikkei225: '^N225', hangSeng: '^HSI', ftse100: '^FTSE' };
 const YAHOO_BASE = 'https://query1.finance.yahoo.com/v8/finance/chart/';
-const PROXIES = [(url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`];
+const PROXIES = [
+    (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+];
 const CACHE_KEY = 'indian_market_data';
 const CACHE_TTL = 4 * 60 * 60 * 1000;
 const MARKET_SNAPSHOT_API = '/api/market_snapshot';
@@ -176,6 +180,7 @@ async function saveMarketSnapshot(snapshot) { if (isStaticHostRuntime()) return 
 
 export async function fetchAllMarketData() {
     if (isStaticHostRuntime()) {
+        // 1. Try cache first
         try {
             const cached = localStorage.getItem(CACHE_KEY);
             if (cached) {
@@ -184,11 +189,43 @@ export async function fetchAllMarketData() {
                 if (age < CACHE_TTL) return { ...parsed, isStale: true, staleReason: 'Static host cache' };
             }
         } catch {}
+
+        // 2. Try live Yahoo via CORS proxies (NEW — audit v3 fix)
+        try {
+            const [indices, mutualFunds, commodities, currencies] = await Promise.allSettled([
+                fetchIndices(), fetchMutualFunds(), fetchCommodities(), fetchCurrencyRates()
+            ]);
+            const result = {
+                indices: indices.status === 'fulfilled' ? indices.value : [],
+                mutualFunds: mutualFunds.status === 'fulfilled' ? mutualFunds.value : [],
+                ipo: { upcoming: [], live: [], recent: [] },
+                movers: { gainers: [], losers: [] },
+                sectorals: [],
+                commodities: commodities.status === 'fulfilled' ? commodities.value : [],
+                currencies: currencies.status === 'fulfilled' ? currencies.value : [],
+                fiidii: { fii: {}, dii: {}, date: '' },
+                fetchedAt: Date.now(),
+                generatedAt: new Date().toISOString(),
+                sourceHealth: {
+                    indices: indices.status === 'fulfilled' && indices.value.length > 0 ? 'live' : 'failed',
+                    mutualFunds: mutualFunds.status === 'fulfilled' ? 'live' : 'failed',
+                },
+                errors: {}
+            };
+            if (result.indices.length > 0) {
+                try { localStorage.setItem(CACHE_KEY, JSON.stringify(result)); } catch {}
+                return result;
+            }
+        } catch {}
+
+        // 3. Try static snapshot as last resort
         const snapshot = await fetchStaticSnapshot();
         if (snapshot) {
             return { ...snapshot, isSnapshot: true, fetchedAt: snapshot.generatedAt ? new Date(snapshot.generatedAt).getTime() : Date.now() };
         }
-        return { indices: [], mutualFunds: [], ipo: { upcoming: [], live: [], recent: [] }, movers: { gainers: [], losers: [] }, sectorals: [], commodities: [], currencies: [], fiidii: { fii: {}, dii: {}, date: '' }, fetchedAt: Date.now(), generatedAt: new Date().toISOString(), sourceHealth: {}, errors: {} };
+
+        // 4. Absolute last resort — empty
+        return { indices: [], mutualFunds: [], ipo: { upcoming: [], live: [], recent: [] }, movers: { gainers: [], losers: [] }, sectorals: [], commodities: [], currencies: [], fiidii: { fii: {}, dii: {}, date: '' }, fetchedAt: Date.now(), generatedAt: new Date().toISOString(), sourceHealth: {}, errors: { indices: 'All proxies failed on static host' } };
     }
 
     const [indices, mutualFunds, ipoData, movers, sectorals, commodities, currencies, fiidii] = await Promise.allSettled([fetchIndices(), fetchMutualFunds(), fetchIPOData(), fetchTopMovers(), fetchSectoralIndices(), fetchCommodities(), fetchCurrencyRates(), fetchFIIDII()]);

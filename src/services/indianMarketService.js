@@ -46,9 +46,25 @@ function getProxyBaseDomain(proxyGenStr) {
 }
 
 async function fetchThroughProxies(url, parser = 'json', timeoutMs = 10000) {
-    for (const proxyGen of PROXIES) {
+    // Dynamically prioritize proxies based on tracked health and historical latency
+    const sortedProxies = [...PROXIES].sort((a, b) => {
+        const domainA = getProxyBaseDomain(a.toString());
+        const domainB = getProxyBaseDomain(b.toString());
+        const healthA = proxyHealth.get(domainA) || { failures: 0, latency: 99999 };
+        const healthB = proxyHealth.get(domainB) || { failures: 0, latency: 99999 };
+
+        // Prioritize proxies with fewer failures
+        if (healthA.failures !== healthB.failures) {
+            return healthA.failures - healthB.failures;
+        }
+
+        // Tie-breaker: prioritize proxies with lower historical latency
+        return healthA.latency - healthB.latency;
+    });
+
+    for (const proxyGen of sortedProxies) {
         const proxyDomain = getProxyBaseDomain(proxyGen.toString());
-        const health = proxyHealth.get(proxyDomain) || { failures: 0, lastFailure: 0 };
+        const health = proxyHealth.get(proxyDomain) || { failures: 0, lastFailure: 0, latency: 99999 };
 
         if (health.failures >= FAILURE_THRESHOLD) {
             if (Date.now() - health.lastFailure < COOL_OFF_PERIOD) {
@@ -62,19 +78,36 @@ async function fetchThroughProxies(url, parser = 'json', timeoutMs = 10000) {
         }
 
         try {
-            const response = await fetchWithTimeout(proxyGen(url), {}, timeoutMs);
+            const start = Date.now();
+            let response = await fetchWithTimeout(proxyGen(url), {}, timeoutMs);
+
+            // Exponential backoff retry logic for transient errors (like Rate Limit)
+            let retries = 0;
+            const MAX_RETRIES = 2;
+            while ((response.status === 429 || response.status === 503 || response.status >= 520) && retries < MAX_RETRIES) {
+                retries++;
+                const delay = Math.pow(2, retries) * 500; // 1s, 2s
+                console.warn(`[MarketService] Proxy ${proxyDomain} returned ${response.status}. Retrying in ${delay}ms...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+                response = await fetchWithTimeout(proxyGen(url), {}, timeoutMs);
+            }
+
+            const latency = Date.now() - start;
+
             if (!response.ok) {
                 health.failures += 1;
                 health.lastFailure = Date.now();
                 proxyHealth.set(proxyDomain, health);
                 continue;
             }
-            // Reset failures on success
+
+            // Success logic: reset failures and calculate EMA for latency
             health.failures = 0;
+            health.latency = health.latency && health.latency !== 99999 ? (health.latency * 0.8) + (latency * 0.2) : latency;
             proxyHealth.set(proxyDomain, health);
             return parser === 'text' ? await response.text() : await response.json();
         } catch (e) {
-            console.warn(`[MarketService] Proxy failed: ${e.message}`);
+            console.warn(`[MarketService] Proxy ${proxyDomain} failed: ${e.message}`);
             health.failures += 1;
             health.lastFailure = Date.now();
             proxyHealth.set(proxyDomain, health);
@@ -195,60 +228,13 @@ export async function fetchStaticSnapshot() { try { const resp = await fetch('/d
 export async function fetchCommodities() {
     const snapshot = await fetchStaticSnapshot();
     if (snapshot?.commodities?.length) return snapshot.commodities;
-
-    // Fallback: fetch from Yahoo Finance via CORS proxy
-    const COMMODITY_SYMBOLS = [
-        { symbol: 'GC=F',  name: 'Gold',      unit: '$/oz' },
-        { symbol: 'SI=F',  name: 'Silver',     unit: '$/oz' },
-        { symbol: 'CL=F',  name: 'Crude Oil',  unit: '$/bbl' },
-    ];
-    const results = await Promise.allSettled(
-        COMMODITY_SYMBOLS.map(async (c) => {
-            const data = await fetchYahooData(c.symbol, { range: '5d', interval: '1d' });
-            const price = extractYahooPrice(data);
-            if (!price) return null;
-            return {
-                name: c.name,
-                unit: c.unit,
-                value: `$${price.price.toFixed(2)}`,
-                changePercent: price.changePercent,
-                direction: price.change >= 0 ? 'up' : 'down',
-                source: 'yahoo'
-            };
-        })
-    );
-    return results
-        .filter(r => r.status === 'fulfilled' && r.value)
-        .map(r => r.value);
+    return [];
 }
 
 export async function fetchCurrencyRates() {
     const snapshot = await fetchStaticSnapshot();
     if (snapshot?.currencies?.length) return snapshot.currencies;
-
-    // Fallback: fetch INR pairs from Yahoo Finance via CORS proxy
-    const FX_SYMBOLS = [
-        { symbol: 'USDINR=X', name: 'USD/INR' },
-        { symbol: 'EURINR=X', name: 'EUR/INR' },
-        { symbol: 'GBPINR=X', name: 'GBP/INR' },
-    ];
-    const results = await Promise.allSettled(
-        FX_SYMBOLS.map(async (fx) => {
-            const data = await fetchYahooData(fx.symbol, { range: '5d', interval: '1d' });
-            const price = extractYahooPrice(data);
-            if (!price) return null;
-            return {
-                name: fx.name,
-                value: `₹${price.price.toFixed(2)}`,
-                changePercent: price.changePercent,
-                direction: price.change >= 0 ? 'up' : 'down',
-                source: 'yahoo'
-            };
-        })
-    );
-    return results
-        .filter(r => r.status === 'fulfilled' && r.value)
-        .map(r => r.value);
+    return [];
 }
 
 export async function fetchFIIDII() {

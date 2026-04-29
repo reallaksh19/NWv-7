@@ -2,7 +2,7 @@
 export function getRuntimeCapabilities() {
   const isBrowser = typeof window !== 'undefined';
   const hostname = isBrowser ? window.location.hostname : '';
-  const isStaticHost = /github\.io$/i.test(hostname) || (isBrowser && localStorage.getItem('force_static_host') === 'true');
+  const isStaticHost = /github\.io$/i.test(hostname);
   const backendConfigured = !isStaticHost;
 
   return {

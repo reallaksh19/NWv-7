@@ -7,18 +7,10 @@ export function composeBalancedFeed(articles, limit = 20, maxTopicPercent = 40, 
     const topicCounts = new Map();
     const geoCounts = new Map();
 
-    // Quality gate: only articles above minimum impact score qualify for front page
-    // This prevents low-relevance filler (e.g. award show guides, celebrity gossip)
-    // from appearing in Top Stories. Minimum score of 2.5 keeps breaking news in.
-    const MIN_IMPACT = 2.5;
-    const qualified = articles.filter(a => (a.impactScore || 0) >= MIN_IMPACT);
-    // Safety: if fewer than 5 qualify (e.g. no news loaded yet), use top scored from full list
-    const pool = qualified.length >= 5
-        ? qualified
-        : [...articles].sort((a, b) => (b.impactScore || 0) - (a.impactScore || 0)).slice(0, limit * 2);
-
     // Sort by impact score (highest first)
-    const sorted = [...pool].sort((a, b) => (b.impactScore || 0) - (a.impactScore || 0));
+    // We assume impactScore is present, otherwise we default to 0.
+    // If scores are equal or missing, the original order is preserved roughly by the sort stability or nature of data.
+    const sorted = [...articles].sort((a, b) => (b.impactScore || 0) - (a.impactScore || 0));
 
     for (const article of sorted) {
         if (selected.length >= limit) break;

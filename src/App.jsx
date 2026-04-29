@@ -98,6 +98,7 @@ function App() {
                 <div className="app">
                   <Routes>
                     <Route path="/" element={<MainPage />} />
+                    <Route path="/insight" element={<InsightPage />} />
                     <Route path="/up-ahead" element={<UpAheadPage />} />
                     <Route path="/my-planner" element={<MyPlannerPage />} />
                     <Route path="/more" element={<MorePage />} />

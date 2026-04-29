@@ -151,13 +151,60 @@ export async function fetchStaticSnapshot() { try { const resp = await fetch('/d
 export async function fetchCommodities() {
     const snapshot = await fetchStaticSnapshot();
     if (snapshot?.commodities?.length) return snapshot.commodities;
-    return [];
+
+    // Fallback: fetch from Yahoo Finance via CORS proxy
+    const COMMODITY_SYMBOLS = [
+        { symbol: 'GC=F',  name: 'Gold',      unit: '$/oz' },
+        { symbol: 'SI=F',  name: 'Silver',     unit: '$/oz' },
+        { symbol: 'CL=F',  name: 'Crude Oil',  unit: '$/bbl' },
+    ];
+    const results = await Promise.allSettled(
+        COMMODITY_SYMBOLS.map(async (c) => {
+            const data = await fetchYahooData(c.symbol, { range: '5d', interval: '1d' });
+            const price = extractYahooPrice(data);
+            if (!price) return null;
+            return {
+                name: c.name,
+                unit: c.unit,
+                value: `$${price.price.toFixed(2)}`,
+                changePercent: price.changePercent,
+                direction: price.change >= 0 ? 'up' : 'down',
+                source: 'yahoo'
+            };
+        })
+    );
+    return results
+        .filter(r => r.status === 'fulfilled' && r.value)
+        .map(r => r.value);
 }
 
 export async function fetchCurrencyRates() {
     const snapshot = await fetchStaticSnapshot();
     if (snapshot?.currencies?.length) return snapshot.currencies;
-    return [];
+
+    // Fallback: fetch INR pairs from Yahoo Finance via CORS proxy
+    const FX_SYMBOLS = [
+        { symbol: 'USDINR=X', name: 'USD/INR' },
+        { symbol: 'EURINR=X', name: 'EUR/INR' },
+        { symbol: 'GBPINR=X', name: 'GBP/INR' },
+    ];
+    const results = await Promise.allSettled(
+        FX_SYMBOLS.map(async (fx) => {
+            const data = await fetchYahooData(fx.symbol, { range: '5d', interval: '1d' });
+            const price = extractYahooPrice(data);
+            if (!price) return null;
+            return {
+                name: fx.name,
+                value: `₹${price.price.toFixed(2)}`,
+                changePercent: price.changePercent,
+                direction: price.change >= 0 ? 'up' : 'down',
+                source: 'yahoo'
+            };
+        })
+    );
+    return results
+        .filter(r => r.status === 'fulfilled' && r.value)
+        .map(r => r.value);
 }
 
 export async function fetchFIIDII() {

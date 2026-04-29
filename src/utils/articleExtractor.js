@@ -3,25 +3,29 @@
  * Uses allOrigins CORS proxy + DOMParser to extract article body.
  */
 
+import { extractSchemaEventsFromHTML } from './schemaExtractor.js';
+
 const PROXY = 'https://api.allorigins.win/raw?url=';
 
 /**
  * Fetch and extract article text from a URL.
  * @param {string} url - Article URL
- * @returns {Promise<string>} Extracted text (may be empty)
+ * @returns {Promise<{text: string, schema: object|null}>} Extracted text and schema
  */
 export async function extractArticleText(url) {
-    if (!url) return '';
+    if (!url) return { text: '', schema: null };
 
     try {
         const proxyUrl = PROXY + encodeURIComponent(url);
         const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(12000) });
-        if (!res.ok) return '';
+        if (!res.ok) return { text: '', schema: null };
 
         const html = await res.text();
-        return parseArticleFromHTML(html);
+        const text = parseArticleFromHTML(html);
+        const schema = extractSchemaEventsFromHTML(html);
+        return { text, schema };
     } catch {
-        return '';
+        return { text: '', schema: null };
     }
 }
 

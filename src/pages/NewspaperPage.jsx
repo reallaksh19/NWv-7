@@ -182,7 +182,7 @@ const NewspaperPage = () => {
         if (!firstArticle?.link) return;
 
         try {
-            const text = await extractArticleText(firstArticle.link);
+            const { text } = await extractArticleText(firstArticle.link);
             if (text && text.length > 200) {
                 const summary = await summarizeText(text, 6);
                 if (summary) {

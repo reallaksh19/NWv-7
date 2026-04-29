@@ -650,8 +650,9 @@ function normalizeItem(item, feedSource, section = 'general') {
 
     // Dynamic Section Classification
     const detectedSection = classifySection(item.title || '', description || '', source);
-    // If classification found a match, use it. Otherwise, stick to the feed's section.
-    const finalSection = detectedSection || section;
+    // Only reclassify if the original feed section is 'general' (unclassified).
+    // Otherwise keep the feed's original section to prevent cross-section drift.
+    const finalSection = (section === 'general' && detectedSection) ? detectedSection : section;
 
     // NEW - Phase 7: Image Extraction
     let imageUrl = null;

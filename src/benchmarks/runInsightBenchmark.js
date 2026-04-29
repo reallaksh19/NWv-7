@@ -58,7 +58,6 @@ export async function runInsightBenchmark(pipelineFn) {
 
     const sortedVotes = Object.entries(clusterVotes).sort((a, b) => b[1] - a[1]);
     if (sortedVotes.length > 0) {
-      const majorityCluster = sortedVotes[0][0];
       const majorityCount = sortedVotes[0][1];
       correctAssignments += majorityCount;
       totalAssignments += clusterArticles.length;

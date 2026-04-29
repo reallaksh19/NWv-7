@@ -4,7 +4,6 @@
  */
 import { ITEMS, EXPECTED_OUTCOMES, buildPlannerBenchmarkItems } from './plannerBenchmark.js';
 import { buildCanonicalItems } from '../intelligence/canonicalItemBuilder.js';
-import { rankEligibleItems } from '../intelligence/eligibilityWindowing.js';
 
 export async function runPlannerBenchmark() {
   const rawItems = buildPlannerBenchmarkItems();

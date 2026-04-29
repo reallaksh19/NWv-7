@@ -2,74 +2,80 @@ const DEFAULT_FEED_SOURCE_REGISTRY = Object.freeze({
   alerts: {
     Chennai: [
       { url: 'https://www.thehindu.com/news/cities/chennai/feeder/default.rss', sourceType: 'general_news', trust: 'high' },
-      { url: 'https://www.dtnext.in/rss', sourceType: 'general_news', trust: 'medium' },
-      { url: 'https://news.google.com/rss/search?q=Chennai+traffic+advisory+OR+power+cut+OR+water+supply&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'medium' }
+      { url: 'https://www.dtnext.in/rss', sourceType: 'general_news', trust: 'high' },
+      { url: 'https://news.google.com/rss/search?q=Chennai+power+cut+OR+water+supply+OR+TANGEDCO+OR+metro+water&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'high' }
     ],
     Muscat: [
-      { url: 'https://www.omanobserver.om/rss', sourceType: 'general_news', trust: 'medium' },
-      { url: 'https://timesofoman.com/rss', sourceType: 'general_news', trust: 'medium' },
-      { url: 'https://news.google.com/rss/search?q=Muscat+traffic+advisory+OR+road+closure+OR+water+supply&hl=en-US&gl=US&ceid=US:en', sourceType: 'search', trust: 'medium' }
+      { url: 'https://www.omanobserver.om/rss', sourceType: 'general_news', trust: 'high' },
+      { url: 'https://timesofoman.com/rss', sourceType: 'general_news', trust: 'high' },
+      { url: 'https://news.google.com/rss/search?q=Muscat+road+closure+OR+advisory+OR+announcement&hl=en-US&gl=US&ceid=US:en', sourceType: 'search', trust: 'high' }
     ],
     Trichy: [
       { url: 'https://www.thehindu.com/news/cities/Tiruchirapalli/feeder/default.rss', sourceType: 'general_news', trust: 'high' },
-      { url: 'https://news.google.com/rss/search?q=Trichy+power+cut+OR+water+supply+OR+traffic+advisory&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'medium' }
+      { url: 'https://news.google.com/rss/search?q=Trichy+power+cut+OR+water+supply+OR+civic+alert&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'high' }
     ]
   },
   weather_alerts: {
     Chennai: [
-      { url: 'https://news.google.com/rss/search?q=IMD+Chennai+weather+warning&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'high' }
+      { url: 'https://news.google.com/rss/search?q=IMD+Chennai+weather+warning+OR+cyclone+OR+heavy+rain+alert&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'high' }
     ],
     Muscat: [
-      { url: 'https://news.google.com/rss/search?q=Muscat+weather+warning+OR+Oman+weather+advisory&hl=en-US&gl=US&ceid=US:en', sourceType: 'search', trust: 'high' }
+      { url: 'https://news.google.com/rss/search?q=Oman+Met+weather+warning+OR+thunderstorm+OR+flood+alert+Muscat&hl=en-US&gl=US&ceid=US:en', sourceType: 'search', trust: 'high' }
     ],
     Trichy: [
-      { url: 'https://news.google.com/rss/search?q=Trichy+weather+warning+OR+Tamil+Nadu+rain+alert&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'high' }
+      { url: 'https://news.google.com/rss/search?q=Trichy+weather+warning+OR+Tamil+Nadu+rain+alert+OR+IMD&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'high' }
     ]
   },
   shopping: {
     online: [
-      { url: 'https://news.google.com/rss/search?q=online+sale+OR+discount+OR+coupon+OR+promo+code&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'medium' },
-      { url: 'https://news.google.com/rss/search?q=Amazon+sale+OR+Flipkart+sale+OR+Myntra+sale&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'medium' }
+      { url: 'https://news.google.com/rss/search?q=Amazon+sale+OR+Flipkart+sale+OR+Myntra+sale+2025&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'high' },
+      { url: 'https://news.google.com/rss/search?q=online+shopping+sale+discount+coupon+India+2025&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'high' }
     ],
     Chennai: [
-      { url: 'https://news.google.com/rss/search?q=Chennai+sale+OR+discount+OR+mall+offer&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'medium' }
+      { url: 'https://news.google.com/rss/search?q=Chennai+sale+OR+T+Nagar+shopping+OR+Saravana+Stores+offer&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'high' }
     ],
     Muscat: [
-      { url: 'https://news.google.com/rss/search?q=Muscat+shopping+offer+OR+sale+OR+discount&hl=en-US&gl=US&ceid=US:en', sourceType: 'search', trust: 'medium' }
-    ],
-    Trichy: [
-      { url: 'https://news.google.com/rss/search?q=Trichy+sale+OR+discount+OR+shopping+festival&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'medium' }
+      { url: 'https://news.google.com/rss/search?q=Muscat+Lulu+sale+OR+Oman+shopping+offer+discount&hl=en-US&gl=US&ceid=US:en', sourceType: 'search', trust: 'high' }
     ]
   },
   airlines: {
     global: [
-      { url: 'https://news.google.com/rss/search?q=Oman+Air+fare+sale+OR+IndiGo+offer+OR+Air+India+sale+OR+SalamAir+offer&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'high' }
+      { url: 'https://news.google.com/rss/search?q=IndiGo+OR+Air+India+OR+Oman+Air+OR+SalamAir+fare+sale+booking+2025&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'high' }
     ]
   },
   events: {
     Chennai: [
-      { url: 'https://news.google.com/rss/search?q=Chennai+events+this+week+OR+concert+OR+exhibition+OR+workshop&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'medium' }
+      { url: 'https://news.google.com/rss/search?q=Chennai+upcoming+events+concert+exhibition+workshop+this+week&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'high' }
     ],
     Muscat: [
-      { url: 'https://news.google.com/rss/search?q=Muscat+events+this+week+OR+concert+OR+exhibition&hl=en-US&gl=US&ceid=US:en', sourceType: 'search', trust: 'medium' }
+      { url: 'https://news.google.com/rss/search?q=Muscat+upcoming+events+concert+exhibition+this+month&hl=en-US&gl=US&ceid=US:en', sourceType: 'search', trust: 'high' }
     ],
     Trichy: [
-      { url: 'https://news.google.com/rss/search?q=Trichy+events+this+week+OR+exhibition+OR+cultural+event&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'medium' }
+      { url: 'https://news.google.com/rss/search?q=Trichy+events+exhibition+cultural+event+this+week&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'high' }
     ]
   },
   movies: {
     India: [
       { url: 'https://www.hindustantimes.com/feeds/rss/entertainment/tamil-cinema/rssfeed.xml', sourceType: 'cinema', trust: 'high' },
       { url: 'https://www.hindustantimes.com/feeds/rss/entertainment/bollywood/rssfeed.xml', sourceType: 'cinema', trust: 'high' },
-      { url: 'https://news.google.com/rss/search?q=OTT+release+this+week+OR+Tamil+movie+release+OR+BookMyShow+showtimes&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'medium' }
+      { url: 'https://news.google.com/rss/search?q=upcoming+movie+release+date+theatre+OTT+India+2025&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'high' }
     ]
   },
   festivals: {
     India: [
-      { url: 'https://www.timeanddate.com/holidays/india/feed', sourceType: 'calendar', trust: 'high' }
+      { url: 'https://www.timeanddate.com/holidays/india/feed', sourceType: 'calendar', trust: 'high' },
+      { url: 'https://news.google.com/rss/search?q=India+public+holiday+OR+Pongal+OR+Diwali+OR+Republic+Day+2025&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'high' }
     ],
     Oman: [
-      { url: 'https://news.google.com/rss/search?q=Oman+public+holiday+OR+festival+date&hl=en-US&gl=US&ceid=US:en', sourceType: 'search', trust: 'medium' }
+      { url: 'https://news.google.com/rss/search?q=Oman+public+holiday+OR+Eid+OR+National+Day+2025&hl=en-US&gl=US&ceid=US:en', sourceType: 'search', trust: 'high' }
+    ]
+  },
+  civic: {
+    Chennai: [
+      { url: 'https://news.google.com/rss/search?q=Chennai+metro+water+OR+TANGEDCO+OR+corporation+notice+OR+civic+body&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'high' }
+    ],
+    Muscat: [
+      { url: 'https://news.google.com/rss/search?q=Muscat+municipality+OR+Oman+civic+announcement+OR+road+work&hl=en-US&gl=US&ceid=US:en', sourceType: 'search', trust: 'high' }
     ]
   }
 });
@@ -172,7 +178,7 @@ export function buildFeedFetchPlan({ categories = [], locations = [], registry =
 
     // If static host, aggressively trim lower-value feeds to save network/proxy bandwidth
     if (isStaticHost) {
-      sources = sources.filter(s => s.priorityScore >= 3 || s.trust === 'high').slice(0, 2);
+      sources = sources.filter(s => s.priorityScore >= 2 || s.trust !== 'low').slice(0, 3);
     }
 
     if (sources.length > 0) {

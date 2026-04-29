@@ -335,6 +335,15 @@ function UpAheadPage() {
                     <button className={`ua-toggle-btn ${view === 'alerts' ? 'active' : ''}`} onClick={() => setView('alerts')}>Alerts</button>
                     <button className={`ua-toggle-btn ${view === 'festivals' ? 'active' : ''}`} onClick={() => setView('festivals')}>Festivals</button>
                     <button className={`ua-toggle-btn ${view === 'feed' ? 'active' : ''}`} onClick={() => setView('feed')}>Timeline</button>
+                    {import.meta.env.DEV && (
+                      <button onClick={async () => {
+                        const { runPlannerBenchmark } = await import('../benchmarks/runPlannerBenchmark.js');
+                        const results = await runPlannerBenchmark();
+                        alert(`Planner Benchmark: ${results.summary}`);
+                      }} style={{fontSize:'0.7rem', padding:'4px 8px', marginLeft:'8px'}}>
+                        🧪 Benchmark
+                      </button>
+                    )}
                 </div>
 
                 {view === 'plan' && (
@@ -380,7 +389,41 @@ function UpAheadPage() {
                 {view === 'offers' && <div className="ua-tab-view"><ProgressBar active={loading || isRefreshing} /><GridSection items={offerItems} colorClass="type-shopping" emptyMessage="No offers found." isOffer={true} /></div>}
                 {view === 'events' && <div className="ua-tab-view"><ProgressBar active={loading || isRefreshing} /><GridSection items={[...(data.sections?.events || []), ...(data.sections?.sports || [])]} colorClass="type-event" emptyMessage="No upcoming events found." /></div>}
                 {view === 'alerts' && <div className="ua-tab-view"><ProgressBar active={loading || isRefreshing} /><GridSection items={combinedAlerts} colorClass="type-alert" emptyMessage="No alerts found." /></div>}
-                {view === 'festivals' && <div className="ua-tab-view"><ProgressBar active={loading || isRefreshing} />{renderEntertainmentStyleGrid(festivalCards, 'No festivals found.')}</div>}
+                {view === 'festivals' && (
+                  <div className="ua-tab-view">
+                    <ProgressBar active={loading || isRefreshing} />
+                    <div style={{display:'flex', gap:'8px', flexWrap:'wrap', marginBottom:'12px', alignItems:'center', padding:'8px'}}>
+                      {(settings.upAhead?.locations || ['Chennai','Muscat']).map(loc => (
+                        <span key={loc} className="ua-badge type-festival" style={{cursor:'pointer', display:'inline-flex', alignItems:'center', gap:'4px'}}>
+                          {loc}
+                          <span onClick={() => {
+                            const locs = (settings.upAhead?.locations || []).filter(l => l !== loc);
+                            if (locs.length > 0) {
+                              const UPDATED = { ...settings, upAhead: { ...settings.upAhead, locations: locs } };
+                              // Save via settings context if available
+                              console.log('Would save UPDATED settings:', UPDATED);
+                            }
+                          }} style={{opacity:0.7, cursor:'pointer'}}>✕</span>
+                        </span>
+                      ))}
+                      <button className="btn btn--secondary" style={{padding:'4px 12px', fontSize:'0.75rem'}}
+                        onClick={() => {
+                          const loc = prompt('Add location (e.g., Trichy, Dubai):');
+                          if (loc && loc.trim()) {
+                            const current = settings.upAhead?.locations || ['Chennai','Muscat'];
+                            if (!current.includes(loc.trim())) {
+                              current.push(loc.trim());
+                            }
+                          }
+                        }}>+ Add</button>
+                      <button className="btn btn--primary" style={{padding:'4px 12px', fontSize:'0.75rem'}}
+                        onClick={() => loadData({ forceRefresh: true })}>
+                        🔄 Fetch Festivals
+                      </button>
+                    </div>
+                    {renderEntertainmentStyleGrid(festivalCards, 'No festivals found. Tap "Fetch Festivals" to load.')}
+                  </div>
+                )}
 
                 {view === 'feed' && (
                     <div className="ua-timeline">

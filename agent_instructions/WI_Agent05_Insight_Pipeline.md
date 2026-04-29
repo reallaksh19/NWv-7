@@ -1,43 +1,33 @@
 # WI — Agent 05: Insight — Fix Pipeline (Embeddings + Slot Fetcher)
 **Sequence:** 5 of 10
 **Prerequisite:** Agent 01 complete
-**Estimated changes:** ~75 lines across 2 files
+**Estimated changes:** ~90 lines across 2 files
 
 ---
 
 ## Objective
-The Insight page either shows nothing or shows meaningless clusters because:
-1. The embeddings adapter returns fake vectors (all zeros except 2 values) so clustering groups articles by string length, not topic
-2. The news fetcher ignores the slot parameter and always queries "latest news" — every slot gets the same articles
+The Insight page shows "No Insights Available" because:
+1. **Mock embeddings** — produces near-identical vectors (382 zeros + 2 values) → cosine similarity ≈ 0.99 for ALL pairs → dedup removes everything
+2. **Same query all slots** — all 4 time slots fetch `"latest news"` → identical articles → no temporal diversity
+3. **ID collisions** — `newsService.js` generates `rss-0, rss-1` per call → IDs overwrite across slots in `storiesById` Map
+4. **Empty summaries** — RSS fallback hardcodes `"Latest coverage from Google News"` as summary → NLP extraction finds 0 entities
 
-Fix both issues using pure JavaScript (no external API required — works on static GitHub Pages).
+Fix using pure JavaScript (no external API — works on static GitHub Pages).
 
 ---
 
 ## File 1 of 2: `src/adapters/embeddingsAdapter.js`
 
-**What to do:** Replace the entire file with a TF-IDF based vector implementation.
+**What to do:** Replace the entire file with a **fixed-vocabulary** TF-IDF implementation.
 
-**BEFORE (entire file — 13 lines):**
-```javascript
-export async function getEmbeddings(texts) {
-  return texts.map(text => {
-    const vec = new Array(384).fill(0);
-    if (text && text.length > 0) {
-      vec[0] = text.length / 1000;
-      vec[1] = text.charCodeAt(0) / 255;
-    }
-    return vec;
-  });
-}
-```
+> ⚠️ **Audit v3 Critical Fix:** The vocabulary MUST be hardcoded (not corpus-derived). Corpus-derived vocabulary produces different vector dimensions per slot, breaking `cosineSimilarity` which checks `a.length !== b.length`.
 
-**AFTER (replace entire file with this):**
+**AFTER (replace entire file):**
 ```javascript
 /**
- * TF-IDF based embeddings — no external API needed, works on static GitHub Pages.
- * Produces sparse vectors where each dimension is a word, scored by TF-IDF weight.
- * Good enough for clustering similar news stories by topic.
+ * Fixed-vocabulary TF-IDF embeddings — works on static GitHub Pages.
+ * Uses a hardcoded 200-term vocabulary so vectors are ALWAYS 200 dimensions
+ * regardless of input corpus. This is critical for cross-slot clustering.
  */
 
 const STOP_WORDS = new Set([
@@ -47,6 +37,44 @@ const STOP_WORDS = new Set([
   'to','up','was','we','were','what','when','which','who','will','with'
 ]);
 
+// Fixed vocabulary — 200 curated news terms. Every vector is exactly 200 dimensions.
+const FIXED_VOCAB = [
+  'government','minister','prime','president','parliament','court','supreme',
+  'election','vote','party','opposition','congress','bjp','modi','rahul',
+  'economy','gdp','inflation','fiscal','deficit','budget','tax','reform',
+  'market','stock','shares','sensex','nifty','trading','rally','crash',
+  'bank','rbi','rate','repo','interest','loan','emi','credit','deposit',
+  'rupee','dollar','euro','currency','forex','exchange','reserve',
+  'oil','crude','petrol','diesel','gas','energy','power','coal','solar',
+  'gold','silver','commodity','metal','price','export','import','trade',
+  'company','profit','revenue','quarterly','results','earnings','growth',
+  'startup','funding','valuation','ipo','listing','investor','venture',
+  'technology','ai','artificial','intelligence','digital','software','data',
+  'cyber','security','privacy','hack','breach','cloud','computing',
+  'india','china','pakistan','usa','russia','ukraine','israel','gaza',
+  'chennai','mumbai','delhi','kolkata','bengaluru','hyderabad',
+  'muscat','oman','dubai','saudi','gulf','middle','east',
+  'cricket','ipl','football','sports','match','final','tournament',
+  'player','team','captain','coach','win','victory','defeat','score',
+  'army','military','defence','border','tension','ceasefire','attack',
+  'terror','security','police','arrest','investigation','crime',
+  'covid','vaccine','health','hospital','disease','medicine','doctor',
+  'education','university','school','student','exam','result',
+  'climate','flood','cyclone','earthquake','disaster','rain','storm',
+  'imd','warning','alert','rescue','relief','evacuation','shelter',
+  'infrastructure','road','highway','metro','railway','airport','bridge',
+  'housing','real','estate','property','construction','smart','city',
+  'film','movie','actor','director','release','box','office','ott',
+  'netflix','disney','bollywood','hollywood','tamil','telugu',
+  'festival','celebration','holiday','pongal','diwali','eid',
+  'supreme','verdict','law','bill','act','regulation','policy',
+  'un','nato','summit','bilateral','treaty','sanctions','diplomacy',
+  'women','child','rights','protest','rally','demonstration',
+  'agriculture','farmer','crop','msp','monsoon','irrigation',
+  'space','isro','nasa','satellite','launch','mission','orbit',
+  'dead','killed','casualties','injured','victims','accident'
+];
+
 function tokenize(text) {
   return String(text || '')
     .toLowerCase()
@@ -55,41 +83,18 @@ function tokenize(text) {
     .filter(t => t.length > 2 && !STOP_WORDS.has(t));
 }
 
-function computeTF(tokens) {
-  const freq = {};
-  tokens.forEach(t => { freq[t] = (freq[t] || 0) + 1; });
-  const total = tokens.length || 1;
-  Object.keys(freq).forEach(t => { freq[t] = freq[t] / total; });
-  return freq;
-}
-
 export async function getEmbeddings(texts) {
   if (!texts || texts.length === 0) return [];
 
-  // Step 1: tokenize all texts
-  const tokenized = texts.map(tokenize);
+  return texts.map(text => {
+    const tokens = tokenize(text);
+    // Sublinear TF: dampens high-frequency terms (audit v3 fix)
+    const freq = {};
+    tokens.forEach(t => { freq[t] = (freq[t] || 0) + 1; });
+    Object.keys(freq).forEach(t => { freq[t] = 1 + Math.log(freq[t]); });
 
-  // Step 2: compute IDF across corpus
-  const dfCounts = {};
-  tokenized.forEach(tokens => {
-    const unique = new Set(tokens);
-    unique.forEach(t => { dfCounts[t] = (dfCounts[t] || 0) + 1; });
-  });
-  const N = texts.length;
-  const idf = {};
-  Object.keys(dfCounts).forEach(t => {
-    idf[t] = Math.log(N / (dfCounts[t] + 1)) + 1;
-  });
-
-  // Step 3: build vocabulary (top 200 terms by IDF to keep vectors manageable)
-  const vocab = Object.keys(idf)
-    .sort((a, b) => idf[b] - idf[a])
-    .slice(0, 200);
-
-  // Step 4: for each text, build a 200-dim TF-IDF vector
-  return tokenized.map(tokens => {
-    const tf = computeTF(tokens);
-    return vocab.map(term => (tf[term] || 0) * (idf[term] || 0));
+    // Project onto fixed vocabulary — always exactly 200 dimensions
+    return FIXED_VOCAB.map(term => freq[term] || 0);
   });
 }
 ```
@@ -98,86 +103,106 @@ export async function getEmbeddings(texts) {
 
 ## File 2 of 2: `src/adapters/newsFetcher.js`
 
-**What to do:** Make `fetchStoriesForSlot` use the slot name to build a relevant query.
+**What to do:** Fix slot-specific queries, ID collisions, and summary extraction.
 
-**BEFORE (lines 4–21):**
-```javascript
-export async function fetchStoriesForSlot(slot) {
-  const news = await fetchNews('latest news', { newsApiKey: '' });
-  if (!news || !Array.isArray(news)) {
-    return [];
-  }
-  return news.map(article => ({
-    id: article.id || Math.random().toString(36).substring(7),
-    title: article.headline || '',
-    summary: article.summary || '',
-    content: article.summary || '',
-    url: article.url || '',
-    publishedAt: article.time ? new Date().toISOString() : new Date().toISOString(),
-    source: article.source || 'Unknown',
-    sourceGroup: 'digital'
-  }));
-}
-```
+> ⚠️ **Audit v3 Fixes applied:**
+> - IDs prefixed with slot name to prevent cross-slot collisions
+> - Summary uses `article.description || article.headline` (not hardcoded string)
+> - `publishedAt` kept as epoch number (not ISO string) — pipeline expects number
 
-**AFTER (replace the function body, keep `/* eslint-disable */` and import):**
+**AFTER (replace the function):**
 ```javascript
-// Maps slot names to specific search queries for more relevant news fetching
 const SLOT_QUERIES = {
-  world:         'world news top stories today',
-  india:         'India news today top stories',
-  business:      'India business economy markets today',
-  technology:    'technology startups AI innovation India',
-  entertainment: 'bollywood movies entertainment India',
-  sports:        'cricket IPL football sports India',
-  local:         'Chennai Tamil Nadu Trichy news today',
-  chennai:       'Chennai news today',
-  trichy:        'Trichy Tiruchirappalli news',
+  now:       'breaking news today top stories',
+  minus4h:   'India news today top headlines',
+  minus12h:  'world news top stories',
+  minus24h:  'business economy markets technology',
+  // Section-based slots (if used)
+  world:     'world news top stories today',
+  india:     'India news today top stories',
+  business:  'India business economy markets today',
+  technology:'technology AI startups innovation',
+  sports:    'cricket IPL football sports India',
+  chennai:   'Chennai Tamil Nadu news today',
 };
 
 export async function fetchStoriesForSlot(slot) {
   const query = SLOT_QUERIES[slot] || `${slot} news today`;
   const news = await fetchNews(query, { newsApiKey: '' });
-  if (!news || !Array.isArray(news)) {
-    return [];
-  }
-  return news.map(article => ({
-    id: article.id || Math.random().toString(36).substring(7),
+  if (!news || !Array.isArray(news)) return [];
+
+  return news.map((article, idx) => ({
+    id: `${slot}-${idx}-${Date.now()}`,  // UNIQUE across slots (audit v3 fix)
     title: article.headline || article.title || '',
-    summary: article.summary || article.description || '',
-    content: article.summary || article.description || '',
+    summary: article.description || article.summary || article.headline || '',  // NOT hardcoded (audit v3 fix)
+    content: article.description || article.summary || '',
     url: article.url || article.link || '',
-    publishedAt: article.publishedAt ? new Date(article.publishedAt).toISOString() : new Date().toISOString(),
+    publishedAt: typeof article.publishedAt === 'number'
+      ? article.publishedAt
+      : (article.publishedAt ? Date.parse(article.publishedAt) : Date.now()),  // Must be NUMBER (audit v3 fix)
     source: article.source || 'Unknown',
-    sourceGroup: 'digital'
+    sourceGroup: (article.source || 'unknown').toLowerCase().replace(/[^a-z]/g, '_'),
   }));
 }
 ```
 
 ---
 
+## Benchmark Validation (NEW)
+
+After implementing the above, wire the benchmark test:
+
+1. Add to `src/adapters/insightFetcher.js` a benchmark slot fetcher:
+```javascript
+import { buildInsightBenchmarkArticles } from '../benchmarks/insightBenchmark.js';
+
+export const benchmarkSlotFetcher = async (slot) => {
+  const all = buildInsightBenchmarkArticles();
+  const NOW = Date.now();
+  const H = 3600000;
+  return all.filter(a => {
+    const age = NOW - a.publishedAt;
+    switch(slot) {
+      case 'now': return age < 4*H;
+      case 'minus4h': return age >= 4*H && age < 12*H;
+      case 'minus12h': return age >= 12*H && age < 24*H;
+      case 'minus24h': return age >= 24*H;
+      default: return true;
+    }
+  });
+};
+```
+
+2. In dev mode, test via browser console:
+```javascript
+import { runInsightBenchmark } from './benchmarks/runInsightBenchmark.js';
+// Expected: 5-9 clusters, ≥90% purity, ≥90% dedup recall, ≥85% noise filtered
+```
+
+---
+
 ## Deliverable
-- `src/adapters/embeddingsAdapter.js` — entire file replaced with TF-IDF implementation
-- `src/adapters/newsFetcher.js` — `fetchStoriesForSlot` updated with slot-specific queries
+- `src/adapters/embeddingsAdapter.js` — fixed-vocabulary TF-IDF (always 200 dims)
+- `src/adapters/newsFetcher.js` — slot queries + ID fix + summary fix + timestamp fix
+- `src/adapters/insightFetcher.js` — benchmark slot fetcher added (append, don't replace)
 
 ---
 
 ## QC Checklist
 
 - [ ] Navigate to Insight tab (`/insight`)
-- [ ] Loading spinner appears ("Running AI pipeline…")
-- [ ] After 10–30 seconds, clusters appear (list of ranked cards)
-- [ ] **Key test:** Two articles about "India budget" and "India economy" should cluster together
-- [ ] **Key test:** An article about "cricket match" should NOT cluster with "India budget"
-- [ ] Clusters show a meaningful headline (not blank or undefined)
-- [ ] The signal stats strip shows numbers > 0 for Ranked, Rising, Stories
-- [ ] No console errors: `Cannot read property ... of undefined` or `NaN`
-- [ ] If no clusters found, the empty state shows: "No Insights Available" (not a crash)
+- [ ] Clusters appear after 10–30 seconds (NOT "No Insights Available")
+- [ ] At least 2+ clusters with different topics
+- [ ] Two articles about same topic (e.g., "India budget") cluster together
+- [ ] Articles about different topics (e.g., "cricket" vs "RBI") do NOT cluster
+- [ ] Clusters show meaningful headlines (not blank/undefined)
+- [ ] Signal stats show numbers > 0 for Ranked, Stories
+- [ ] No console errors: `Cannot read property`, `a.length !== b.length`
+- [ ] **Benchmark test:** Run `benchmarkSlotFetcher` → expect 5-9 clusters from 49 articles
 
 ---
 
 ## Do NOT change
-- `src/adapters/insightFetcher.js`
 - `src/adapters/nlpAdapter.js`
 - Any files in `src/insight/src/`
 - `src/pages/InsightPage.jsx` — that is Agent 06's job

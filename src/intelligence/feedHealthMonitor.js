@@ -21,8 +21,12 @@ function loadStore() {
 }
 
 function saveStore(store) {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); }
-    catch {} // Fail silently (storage quota exceeded, private browsing, etc.)
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+    } catch {
+        // Fail silently (storage quota exceeded, private browsing, etc.)
+        return;
+    }
 }
 
 /**

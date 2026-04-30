@@ -16,6 +16,15 @@ if (typeof window !== 'undefined') {
 
 registerSW();
 
+// Initialize Price Alert Web Worker
+if (window.Worker) {
+    const worker = new Worker(new URL(import.meta.env.BASE_URL + 'priceAlertWorker.js', import.meta.url));
+    worker.postMessage({ action: 'start', symbols: ['NIFTY', 'SENSEX'], _thresholds: {} });
+    worker.onmessage = (e) => {
+        console.log('[Main] Worker message:', e.data);
+    };
+}
+
 try {
   const rootElement = document.getElementById('root');
   if (!rootElement) throw new Error("Root element not found");

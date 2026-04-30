@@ -1,4 +1,5 @@
 /* eslint-disable */
+import { proxyManager } from "./proxyManager.js";
 import { getSettings } from '../utils/storage.js';
 import { getRuntimeCapabilities } from "../runtime/runtimeCapabilities.js";
 
@@ -179,27 +180,119 @@ export async function fetchMutualFunds() {
 }
 
 export async function fetchIPOData() {
-    if (isStaticHostRuntime()) { return { upcoming: [], live: [], recent: [], fetchedAt: Date.now(), source: 'static-host-disabled' }; }
-    const targetUrl = 'https://ipowatch.in/upcoming-ipo-calendar-ipo-list/';
-    try {
-        const html = await fetchThroughProxies(targetUrl, 'text');
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const tables = doc.querySelectorAll('table');
-        let table = null;
-        for (const t of tables) { const text = t.textContent.toLowerCase(); if ((text.includes('ipo') && text.includes('price')) || text.includes('ipo name')) { table = t; break; } }
-        if (!table) throw new Error('No IPO table found');
-        const rows = Array.from(table.querySelectorAll('tr')); const ipos = [];
-        for (let i = 1; i < rows.length; i++) {
-            const cols = rows[i].querySelectorAll('td'); if (cols.length < 3) continue;
-            const name = cols[0]?.textContent?.trim() || 'Unknown'; let statusRaw = cols[1]?.textContent?.trim() || 'Upcoming'; let dateRaw = cols[2]?.textContent?.trim() || 'TBA';
-            let status = 'upcoming'; const lowerStatus = statusRaw.toLowerCase(); if (lowerStatus.includes('live') || lowerStatus.includes('open')) status = 'live'; else if (lowerStatus.includes('close')) status = 'recent';
-            const isSME = name.includes('SME') || table.textContent.includes('SME'); ipos.push({ name, openDate: dateRaw, closeDate: '', status, isSME, issueSize: '-' });
-        }
-        return { upcoming: ipos.filter(i => i.status === 'upcoming').slice(0, 5), live: ipos.filter(i => i.status === 'live'), recent: ipos.filter(i => i.status === 'recent').slice(0, 5), fetchedAt: Date.now() };
-    } catch (err) {
-        return { upcoming: [], live: [], recent: [], fetchedAt: Date.now(), error: err.message };
-    }
+  // Try static snapshot first
+  const snapshot = await fetchStaticSnapshot();
+  if (snapshot?.ipo?.upcoming?.length || snapshot?.ipo?.live?.length) {
+    return snapshot.ipo;
+  }
+
+  // Fallback: Google News RSS for IPO headlines
+  // NOTE: Use proxyManager.fetchViaProxy (XML path), NOT fetchThroughProxies (JSON path)
+  try {
+    const rssUrl  = 'https://news.google.com/rss/search?q=India+IPO+GMP+subscription+2025&hl=en-IN&gl=IN&ceid=IN:en';
+    const rssResult = await proxyManager.fetchViaProxy(rssUrl);
+    const items   = (rssResult?.items || []).slice(0, 10);
+    // rssResult.items is already parsed by proxyManager.fetchViaProxy — no XML re-parse needed
+
+    const parseGMP = (title = '') => {
+      // Extract GMP pattern: e.g. "GMP ₹45" or "GMP +45"
+      const m = title.match(/GMP[:\s]+[₹+]?([\d.]+)/i);
+      return m ? `₹${m[1]}` : null;
+    };
+
+    const parseSub = (title = '') => {
+      // Extract subscription: e.g. "subscribed 12.5x" or "12.5 times"
+      const m = title.match(/([\d.]+)\s*[xX×]|([\d.]+)\s*times/i);
+      return m ? `${m[1] || m[2]}x subscribed` : null;
+    };
+
+    const upcoming = items
+      .filter(i => /open|upcoming|launch/i.test(i.title || ''))
+      .map(i => ({
+        name         : (i.title || '').trim(),
+        gmp          : parseGMP(i.title),
+        subscription : parseSub(i.title),
+        date         : i.pubDate || '',
+        url          : i.link || '',
+      }));
+
+    const live = items
+      .filter(i => /live|close|allotment/i.test(i.title || ''))
+      .map(i => ({
+        name         : (i.title || '').trim(),
+        gmp          : parseGMP(i.title),
+        subscription : parseSub(i.title),
+        date         : i.pubDate || '',
+        url          : i.link || '',
+      }));
+
+    return { upcoming, live, recent: [] };
+  } catch {
+    return { upcoming: [], live: [], recent: [] };
+  }
+}
+
+/**
+ * fetchNFOData — New Fund Offers from Google News RSS.
+ * Returns array of { name, fundHouse, openDate, closeDate, category, url }
+ * NOTE: Uses proxyManager.fetchViaProxy (XML path), NOT fetchThroughProxies (JSON path)
+ */
+export async function fetchNFOData() {
+  const snapshot = await fetchStaticSnapshot();
+  if (snapshot?.nfo?.length) return snapshot.nfo;
+
+  try {
+    const rssUrl = 'https://news.google.com/rss/search?q=NFO+new+fund+offer+mutual+fund+India+2025&hl=en-IN&gl=IN&ceid=IN:en';
+    const rssResult = await proxyManager.fetchViaProxy(rssUrl);
+    const items  = (rssResult?.items || []).slice(0, 8);
+    return items.map(i => ({
+      name      : (i.title || '').trim(),
+      fundHouse : null,   // enrichable from title parsing if needed
+      openDate  : i.pubDate || '',
+      closeDate : null,
+      category  : /equity/i.test(i.title || '') ? 'Equity' : 'Debt',
+      url       : i.link || '',
+    }));
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * fetchStockCategories — 52-week highs/lows for major indices.
+ * Returns { highs: [...], lows: [...] }
+ */
+export async function fetchStockCategories() {
+  const snapshot = await fetchStaticSnapshot();
+  if (snapshot?.stockCategories) return snapshot.stockCategories;
+
+  // Fetch 52-week data for top indices as a proxy for market themes
+  const SYMBOLS = [
+    { symbol: '%5ENSEI',  name: 'NIFTY 50' },
+    { symbol: '%5EBSESN', name: 'SENSEX' },
+    { symbol: '%5ENSEBANK', name: 'BANK NIFTY' },
+  ];
+  const results = await Promise.allSettled(
+    SYMBOLS.map(async ({ symbol, name }) => {
+      const data  = await fetchYahooData(symbol, { range: '1y', interval: '1mo' });
+      const meta  = data?.chart?.result?.[0]?.meta;
+      if (!meta) return null;
+      return {
+        name,
+        high52w : meta.fiftyTwoWeekHigh?.toFixed(2) || null,
+        low52w  : meta.fiftyTwoWeekLow?.toFixed(2)  || null,
+        current : meta.regularMarketPrice?.toFixed(2) || null,
+        nearHigh: meta.regularMarketPrice >= meta.fiftyTwoWeekHigh * 0.97,
+        nearLow : meta.regularMarketPrice <= meta.fiftyTwoWeekLow  * 1.03,
+      };
+    })
+  );
+  const valid = results.filter(r => r.status === 'fulfilled' && r.value).map(r => r.value);
+  return {
+    highs: valid.filter(v => v.nearHigh),
+    lows : valid.filter(v => v.nearLow),
+    all  : valid,
+  };
 }
 
 const SCREENER_URL = 'https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved/screener/new?scrIds=day_gainers&count=5';
@@ -228,13 +321,60 @@ export async function fetchStaticSnapshot() { try { const resp = await fetch('/d
 export async function fetchCommodities() {
     const snapshot = await fetchStaticSnapshot();
     if (snapshot?.commodities?.length) return snapshot.commodities;
-    return [];
+
+    // Fallback: fetch from Yahoo Finance via CORS proxy
+    const COMMODITY_SYMBOLS = [
+        { symbol: 'GC=F',  name: 'Gold',      unit: '$/oz' },
+        { symbol: 'SI=F',  name: 'Silver',     unit: '$/oz' },
+        { symbol: 'CL=F',  name: 'Crude Oil',  unit: '$/bbl' },
+    ];
+    const results = await Promise.allSettled(
+        COMMODITY_SYMBOLS.map(async (c) => {
+            const data = await fetchYahooData(c.symbol, { range: '5d', interval: '1d' });
+            const price = extractYahooPrice(data);
+            if (!price) return null;
+            return {
+                name: c.name,
+                unit: c.unit,
+                value: `$${price.price.toFixed(2)}`,
+                changePercent: price.changePercent,
+                direction: price.change >= 0 ? 'up' : 'down',
+                source: 'yahoo'
+            };
+        })
+    );
+    return results
+        .filter(r => r.status === 'fulfilled' && r.value)
+        .map(r => r.value);
 }
 
 export async function fetchCurrencyRates() {
     const snapshot = await fetchStaticSnapshot();
     if (snapshot?.currencies?.length) return snapshot.currencies;
-    return [];
+
+    // Fallback: fetch INR pairs from Yahoo Finance via CORS proxy
+    const FX_SYMBOLS = [
+        { symbol: 'USDINR=X', name: 'USD/INR' },
+        { symbol: 'EURINR=X', name: 'EUR/INR' },
+        { symbol: 'GBPINR=X', name: 'GBP/INR' },
+    ];
+    const results = await Promise.allSettled(
+        FX_SYMBOLS.map(async (fx) => {
+            const data = await fetchYahooData(fx.symbol, { range: '5d', interval: '1d' });
+            const price = extractYahooPrice(data);
+            if (!price) return null;
+            return {
+                name: fx.name,
+                value: `₹${price.price.toFixed(2)}`,
+                changePercent: price.changePercent,
+                direction: price.change >= 0 ? 'up' : 'down',
+                source: 'yahoo'
+            };
+        })
+    );
+    return results
+        .filter(r => r.status === 'fulfilled' && r.value)
+        .map(r => r.value);
 }
 
 export async function fetchFIIDII() {
@@ -265,13 +405,15 @@ export async function fetchAllMarketData() {
 
         // 2. Try live Yahoo via CORS proxies (NEW — audit v3 fix)
         try {
-            const [indices, mutualFunds, commodities, currencies] = await Promise.allSettled([
-                fetchIndices(), fetchMutualFunds(), fetchCommodities(), fetchCurrencyRates()
+            const [indices, mutualFunds, commodities, currencies, ipo, nfo, stockCategories] = await Promise.allSettled([
+                fetchIndices(), fetchMutualFunds(), fetchCommodities(), fetchCurrencyRates(), fetchIPOData(), fetchNFOData(), fetchStockCategories()
             ]);
             const result = {
                 indices: indices.status === 'fulfilled' ? indices.value : [],
                 mutualFunds: mutualFunds.status === 'fulfilled' ? mutualFunds.value : [],
-                ipo: { upcoming: [], live: [], recent: [] },
+                ipo: ipo.status === 'fulfilled' ? ipo.value : { upcoming: [], live: [], recent: [] },
+                nfo: nfo.status === 'fulfilled' ? nfo.value : [],
+                stockCategories: stockCategories.status === 'fulfilled' ? stockCategories.value : { highs: [], lows: [], all: [] },
                 movers: { gainers: [], losers: [] },
                 sectorals: [],
                 commodities: commodities.status === 'fulfilled' ? commodities.value : [],
@@ -287,6 +429,7 @@ export async function fetchAllMarketData() {
             };
             if (result.indices.length > 0) {
                 try { localStorage.setItem(CACHE_KEY, JSON.stringify(result)); } catch {}
+                console.log('[Agent03] fetchAllMarketData resolved');
                 return result;
             }
         } catch {}
@@ -298,11 +441,11 @@ export async function fetchAllMarketData() {
         }
 
         // 4. Absolute last resort — empty
-        return { indices: [], mutualFunds: [], ipo: { upcoming: [], live: [], recent: [] }, movers: { gainers: [], losers: [] }, sectorals: [], commodities: [], currencies: [], fiidii: { fii: {}, dii: {}, date: '' }, fetchedAt: Date.now(), generatedAt: new Date().toISOString(), sourceHealth: {}, errors: { indices: 'All proxies failed on static host' } };
+        return { indices: [], mutualFunds: [], ipo: { upcoming: [], live: [], recent: [] }, nfo: [], stockCategories: { highs: [], lows: [], all: [] }, movers: { gainers: [], losers: [] }, sectorals: [], commodities: [], currencies: [], fiidii: { fii: {}, dii: {}, date: '' }, fetchedAt: Date.now(), generatedAt: new Date().toISOString(), sourceHealth: {}, errors: { indices: 'All proxies failed on static host' } };
     }
 
-    const [indices, mutualFunds, ipoData, movers, sectorals, commodities, currencies, fiidii] = await Promise.allSettled([fetchIndices(), fetchMutualFunds(), fetchIPOData(), fetchTopMovers(), fetchSectoralIndices(), fetchCommodities(), fetchCurrencyRates(), fetchFIIDII()]);
-    const result = { indices: indices.status === 'fulfilled' ? indices.value : [], mutualFunds: mutualFunds.status === 'fulfilled' ? mutualFunds.value : [], ipo: ipoData.status === 'fulfilled' ? ipoData.value : { upcoming: [], live: [], recent: [] }, movers: movers.status === 'fulfilled' ? movers.value : { gainers: [], losers: [] }, sectorals: sectorals.status === 'fulfilled' ? sectorals.value : [], commodities: commodities.status === 'fulfilled' ? commodities.value : [], currencies: currencies.status === 'fulfilled' ? currencies.value : [], fiidii: fiidii.status === 'fulfilled' ? fiidii.value : { fii: {}, dii: {}, date: '' }, fetchedAt: Date.now(), generatedAt: new Date().toISOString(), sourceHealth: { indices: indices.status === 'fulfilled' ? 'live' : 'failed', mutualFunds: mutualFunds.status === 'fulfilled' ? 'live' : 'failed', ipo: ipoData.status === 'fulfilled' ? 'live' : 'failed', movers: movers.status === 'fulfilled' ? 'live' : 'failed', sectorals: sectorals.status === 'fulfilled' ? 'live' : 'failed', commodities: commodities.status === 'fulfilled' ? 'live' : 'failed', currencies: currencies.status === 'fulfilled' ? 'live' : 'failed', fiidii: fiidii.status === 'fulfilled' ? 'live' : 'failed' }, errors: { indices: indices.status === 'rejected' ? indices.reason?.message : null } };
+    const [indices, mutualFunds, ipoData, nfoData, stockCatData, movers, sectorals, commodities, currencies, fiidii] = await Promise.allSettled([fetchIndices(), fetchMutualFunds(), fetchIPOData(), fetchNFOData(), fetchStockCategories(), fetchTopMovers(), fetchSectoralIndices(), fetchCommodities(), fetchCurrencyRates(), fetchFIIDII()]);
+    const result = { indices: indices.status === 'fulfilled' ? indices.value : [], mutualFunds: mutualFunds.status === 'fulfilled' ? mutualFunds.value : [], ipo: ipoData.status === 'fulfilled' ? ipoData.value : { upcoming: [], live: [], recent: [] }, nfo: nfoData.status === 'fulfilled' ? nfoData.value : [], stockCategories: stockCatData.status === 'fulfilled' ? stockCatData.value : { highs: [], lows: [], all: [] }, movers: movers.status === 'fulfilled' ? movers.value : { gainers: [], losers: [] }, sectorals: sectorals.status === 'fulfilled' ? sectorals.value : [], commodities: commodities.status === 'fulfilled' ? commodities.value : [], currencies: currencies.status === 'fulfilled' ? currencies.value : [], fiidii: fiidii.status === 'fulfilled' ? fiidii.value : { fii: {}, dii: {}, date: '' }, fetchedAt: Date.now(), generatedAt: new Date().toISOString(), sourceHealth: { indices: indices.status === 'fulfilled' ? 'live' : 'failed', mutualFunds: mutualFunds.status === 'fulfilled' ? 'live' : 'failed', ipo: ipoData.status === 'fulfilled' ? 'live' : 'failed', movers: movers.status === 'fulfilled' ? 'live' : 'failed', sectorals: sectorals.status === 'fulfilled' ? 'live' : 'failed', commodities: commodities.status === 'fulfilled' ? 'live' : 'failed', currencies: currencies.status === 'fulfilled' ? 'live' : 'failed', fiidii: fiidii.status === 'fulfilled' ? 'live' : 'failed' }, errors: { indices: indices.status === 'rejected' ? indices.reason?.message : null } };
     if (result.indices.length > 0) {
         try { localStorage.setItem(CACHE_KEY, JSON.stringify(result)); } catch {}
         saveMarketSnapshot(result);
@@ -321,4 +464,4 @@ export async function fetchAllMarketData() {
     return result;
 }
 
-export default { fetchAllMarketData, fetchStaticSnapshot, fetchIndices, fetchMutualFunds, fetchIPOData, fetchTopMovers, fetchSectoralIndices, fetchCommodities, fetchCurrencyRates, fetchFIIDII };
+export default { fetchAllMarketData, fetchStaticSnapshot, fetchIndices, fetchMutualFunds, fetchIPOData, fetchNFOData, fetchStockCategories, fetchTopMovers, fetchSectoralIndices, fetchCommodities, fetchCurrencyRates, fetchFIIDII };

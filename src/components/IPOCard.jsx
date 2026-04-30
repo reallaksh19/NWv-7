@@ -59,6 +59,8 @@ function IPOCard({ ipoData }) {
                                 <div className="ipo-item__name">
                                     {ipo.name}
                                     {ipo.isSME && <span style={{fontSize:'0.6rem', marginLeft:'6px', background:'#333', padding:'2px 4px', borderRadius:'4px'}}>SME</span>}
+                                    {ipo.gmp && <span className="ipo-badge ipo-gmp">{ipo.gmp} GMP</span>}
+                                    {ipo.subscription && <span className="ipo-badge ipo-sub">{ipo.subscription}</span>}
                                 </div>
                                 <div className={`ipo-item__status ipo-item__status--${ipo.status || activeTab}`}>
                                     {ipo.status || activeTab}

@@ -1,44 +1,73 @@
 /**
- * Local ONNX Embeddings using @xenova/transformers
- * Runs entirely on the client-side (browser or Node.js)
- * Downloads a ~20MB quantized MiniLM model and runs it locally.
+ * Fixed-vocabulary TF-IDF embeddings — works on static GitHub Pages.
+ * Uses a hardcoded 200-term vocabulary so vectors are ALWAYS 200 dimensions
+ * regardless of input corpus. This is critical for cross-slot clustering.
  */
 
-import { pipeline, env } from '@xenova/transformers';
+const STOP_WORDS = new Set([
+  'a','an','and','are','as','at','be','been','but','by','for','from',
+  'has','have','he','her','his','how','i','in','is','it','its','not',
+  'of','on','or','she','so','than','that','the','their','they','this',
+  'to','up','was','we','were','what','when','which','who','will','with'
+]);
 
-// Setup environment for browser/static compatibility
-// When running in a real browser, this will cache the model in IndexedDB.
-env.allowLocalModels = false; // We pull from HF hub instead of local file system
+// Fixed vocabulary — 200 curated news terms. Every vector is exactly 200 dimensions.
+const FIXED_VOCAB = [
+  'government','minister','prime','president','parliament','court','supreme',
+  'election','vote','party','opposition','congress','bjp','modi','rahul',
+  'economy','gdp','inflation','fiscal','deficit','budget','tax','reform',
+  'market','stock','shares','sensex','nifty','trading','rally','crash',
+  'bank','rbi','rate','repo','interest','loan','emi','credit','deposit',
+  'rupee','dollar','euro','currency','forex','exchange','reserve',
+  'oil','crude','petrol','diesel','gas','energy','power','coal','solar',
+  'gold','silver','commodity','metal','price','export','import','trade',
+  'company','profit','revenue','quarterly','results','earnings','growth',
+  'startup','funding','valuation','ipo','listing','investor','venture',
+  'technology','ai','artificial','intelligence','digital','software','data',
+  'cyber','security','privacy','hack','breach','cloud','computing',
+  'india','china','pakistan','usa','russia','ukraine','israel','gaza',
+  'chennai','mumbai','delhi','kolkata','bengaluru','hyderabad',
+  'muscat','oman','dubai','saudi','gulf','middle','east',
+  'cricket','ipl','football','sports','match','final','tournament',
+  'player','team','captain','coach','win','victory','defeat','score',
+  'army','military','defence','border','tension','ceasefire','attack',
+  'terror','security','police','arrest','investigation','crime',
+  'covid','vaccine','health','hospital','disease','medicine','doctor',
+  'education','university','school','student','exam','result',
+  'climate','flood','cyclone','earthquake','disaster','rain','storm',
+  'imd','warning','alert','rescue','relief','evacuation','shelter',
+  'infrastructure','road','highway','metro','railway','airport','bridge',
+  'housing','real','estate','property','construction','smart','city',
+  'film','movie','actor','director','release','box','office','ott',
+  'netflix','disney','bollywood','hollywood','tamil','telugu',
+  'festival','celebration','holiday','pongal','diwali','eid',
+  'supreme','verdict','law','bill','act','regulation','policy',
+  'un','nato','summit','bilateral','treaty','sanctions','diplomacy',
+  'women','child','rights','protest','rally','demonstration',
+  'agriculture','farmer','crop','msp','monsoon','irrigation',
+  'space','isro','nasa','satellite','launch','mission','orbit',
+  'dead','killed','casualties','injured','victims','accident'
+];
 
-let extractorPromise = null;
-
-async function getExtractor() {
-  if (!extractorPromise) {
-    // feature-extraction pipeline outputs embeddings
-    extractorPromise = pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
-  }
-  return extractorPromise;
+function tokenize(text) {
+  return String(text || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter(t => t.length > 2 && !STOP_WORDS.has(t));
 }
 
 export async function getEmbeddings(texts) {
   if (!texts || texts.length === 0) return [];
 
-  const extractor = await getExtractor();
+  return texts.map(text => {
+    const tokens = tokenize(text);
+    // Sublinear TF: dampens high-frequency terms (audit v3 fix)
+    const freq = {};
+    tokens.forEach(t => { freq[t] = (freq[t] || 0) + 1; });
+    Object.keys(freq).forEach(t => { freq[t] = 1 + Math.log(freq[t]); });
 
-  // Extract embeddings for all texts
-  // pooling: 'mean' averages the token embeddings to a single sentence embedding
-  // normalize: true ensures the vectors are unit-normalized for cosine similarity
-  const output = await extractor(texts, { pooling: 'mean', normalize: true });
-
-  // output is a Tensor. We need to convert it back to an array of arrays.
-  const vectors = [];
-  const dim = output.dims[output.dims.length - 1]; // typically 384
-
-  for (let i = 0; i < texts.length; i++) {
-    // Slice out the i-th embedding
-    const vec = Array.from(output.data.slice(i * dim, (i + 1) * dim));
-    vectors.push(vec);
-  }
-
-  return vectors;
+    // Project onto fixed vocabulary — always exactly 200 dimensions
+    return FIXED_VOCAB.map(term => freq[term] || 0);
+  });
 }

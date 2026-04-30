@@ -12,6 +12,7 @@ export function MarketProvider({ children }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [lastFetch, setLastFetch] = useState(null);
+    const [booted, setBooted] = useState(false);
 
     const loadMarketData = useCallback(async (forceRefresh = false) => {
         // Check cache first
@@ -92,9 +93,12 @@ export function MarketProvider({ children }) {
         }
     }, []);
 
-    useEffect(() => {
-        loadMarketData();
-    }, [loadMarketData]);
+    const ensureBoot = useCallback(() => {
+        if (!booted) {
+            setBooted(true);
+            loadMarketData();
+        }
+    }, [booted, loadMarketData]);
 
     const refreshMarket = useCallback(() => {
         return loadMarketData(true);
@@ -103,10 +107,12 @@ export function MarketProvider({ children }) {
     return (
         <MarketContext.Provider value={{
             marketData,
-            loading,
+            loading: booted ? loading : true,
             error,
             lastFetch,
-            refreshMarket
+            refreshMarket,
+            ensureBoot,
+            booted
         }}>
             {children}
         </MarketContext.Provider>

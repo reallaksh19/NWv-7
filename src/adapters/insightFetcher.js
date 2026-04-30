@@ -36,20 +36,21 @@ export async function slotFetcher(slot) {
 
 export { runInsightPipeline, applyIncrementalUpdate, DEFAULT_CONFIG };
 
+// ── Benchmark slot fetcher (dev mode only) ────────────────────────────────
 import { buildInsightBenchmarkArticles } from '../benchmarks/insightBenchmark.js';
 
 export const benchmarkSlotFetcher = async (slot) => {
   const all = buildInsightBenchmarkArticles();
   const NOW = Date.now();
-  const H = 3600000;
+  const H   = 3_600_000;
   return all.filter(a => {
     const age = NOW - a.publishedAt;
-    switch(slot) {
-      case 'now': return age < 4*H;
-      case 'minus4h': return age >= 4*H && age < 12*H;
-      case 'minus12h': return age >= 12*H && age < 24*H;
-      case 'minus24h': return age >= 24*H;
-      default: return true;
+    switch (slot) {
+      case 'now'      : return age < 4 * H;
+      case 'minus4h'  : return age >= 4 * H  && age < 12 * H;
+      case 'minus12h' : return age >= 12 * H && age < 24 * H;
+      case 'minus24h' : return age >= 24 * H;
+      default         : return true;
     }
   });
 };

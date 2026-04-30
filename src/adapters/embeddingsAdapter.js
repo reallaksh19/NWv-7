@@ -1,7 +1,12 @@
 /**
  * Fixed-vocabulary TF-IDF embeddings — works on static GitHub Pages.
- * Uses a hardcoded 200-term vocabulary so vectors are ALWAYS 200 dimensions
- * regardless of input corpus. This is critical for cross-slot clustering.
+ *
+ * CRITICAL: Uses a hardcoded 200-term vocabulary so every vector is ALWAYS
+ * exactly 200 dimensions regardless of input corpus. Dimension consistency
+ * is mandatory for cosineSimilarity() which checks a.length !== b.length.
+ *
+ * Previous implementation produced [0,0,...,0,text.length/1000, charCode/255]
+ * giving cosine similarity ≈ 0.99 for ALL pairs → dedup removed everything.
  */
 
 const STOP_WORDS = new Set([
@@ -11,7 +16,7 @@ const STOP_WORDS = new Set([
   'to','up','was','we','were','what','when','which','who','will','with'
 ]);
 
-// Fixed vocabulary — 200 curated news terms. Every vector is exactly 200 dimensions.
+// Hardcoded 200-term vocabulary — curated for Indian/global news domain
 const FIXED_VOCAB = [
   'government','minister','prime','president','parliament','court','supreme',
   'election','vote','party','opposition','congress','bjp','modi','rahul',
@@ -62,7 +67,7 @@ export async function getEmbeddings(texts) {
 
   return texts.map(text => {
     const tokens = tokenize(text);
-    // Sublinear TF: dampens high-frequency terms (audit v3 fix)
+    // Sublinear TF: dampens high-frequency terms
     const freq = {};
     tokens.forEach(t => { freq[t] = (freq[t] || 0) + 1; });
     Object.keys(freq).forEach(t => { freq[t] = 1 + Math.log(freq[t]); });

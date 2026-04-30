@@ -49,11 +49,46 @@ function parseXML(xmlString) {
 
 const PROXIES = [
     {
+        name: 'allorigins',
+        format: (feedUrl, raw = false) =>
+            raw
+                ? `https://api.allorigins.win/raw?url=${encodeURIComponent(feedUrl)}`
+                : `https://api.allorigins.win/get?url=${encodeURIComponent(feedUrl)}`,
+        parse: async (response, raw = false) => {
+            if (raw) {
+                const text = await response.text();
+                if (!text) throw new Error('Empty response from allorigins');
+                return parseXML(text);
+            }
+            const data = await response.json();
+            if (!data?.contents) throw new Error('allorigins: no contents');
+            return parseXML(data.contents);
+        }
+    },
+    {
+        name: 'corsproxy',
+        format: (feedUrl) => `https://corsproxy.io/?${encodeURIComponent(feedUrl)}`,
+        parse: async (response) => {
+            const text = await response.text();
+            if (!text) throw new Error('Empty response from corsproxy');
+            return parseXML(text);
+        }
+    },
+    {
         name: 'codetabs',
         format: (feedUrl) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(feedUrl)}`,
         parse: async (response) => {
             const text = await response.text();
             if (!text) throw new Error('Empty response from codetabs');
+            return parseXML(text);
+        }
+    },
+    {
+        name: 'crossorigin',
+        format: (feedUrl) => `https://crossorigin.me/${feedUrl}`,
+        parse: async (response) => {
+            const text = await response.text();
+            if (!text) throw new Error('Empty response from crossorigin');
             return parseXML(text);
         }
     },
@@ -191,6 +226,77 @@ class ProxyManager {
             lastSuccess: this.lastSuccess.get(proxy.name) || null,
             coolingDown: this.isProxyCoolingDown(proxy.name)
         }));
+    }
+
+    /**
+     * Fetch a JSON endpoint (e.g. Yahoo Finance) via CORS proxy with Circuit Breaker + EMA.
+     * Unlike fetchViaProxy, this returns the raw parsed JSON (not an RSS object).
+     * @param {string} url  The target JSON URL (will be proxy-wrapped)
+     * @returns {Promise<Object>} Parsed JSON response
+     */
+    async fetchJsonViaProxy(url) {
+        // EMA-sorted proxy indices, circuit-open proxies excluded
+        const indices = PROXIES
+            .map((_, i) => i)
+            .filter(i => {
+                const until = this.cooldownUntil.get(PROXIES[i].name) || 0;
+                return until <= Date.now();
+            })
+            .sort((a, b) => {
+                const emaA = this._ema?.get(PROXIES[a].name) || 500;
+                const emaB = this._ema?.get(PROXIES[b].name) || 500;
+                return emaA - emaB;
+            });
+
+        if (!this._ema) this._ema = new Map();
+        if (indices.length === 0) throw new Error('All proxies circuit-open');
+
+        const MAX_RETRIES = 2;
+
+        for (const i of indices) {
+            const proxy = PROXIES[i];
+            const proxyUrl = proxy.format(url, /* raw= */ true);
+
+            for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+                const t0 = Date.now();
+                const controller = new AbortController();
+                const tid = setTimeout(() => controller.abort(), 8000);
+                try {
+                    const res = await fetch(proxyUrl, {
+                        signal: controller.signal,
+                        cache: 'no-store'
+                    });
+                    clearTimeout(tid);
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    const text = await res.text();
+                    const json = JSON.parse(text);
+                    // Record EMA latency on success
+                    const latency = Date.now() - t0;
+                    const alpha = 0.3;
+                    const prev = this._ema.get(proxy.name) || 500;
+                    this._ema.set(proxy.name, alpha * latency + (1 - alpha) * prev);
+                    this.failureCounts.set(proxy.name, 0);
+                    this.cooldownUntil.delete(proxy.name);
+                    return json;
+                } catch (err) {
+                    clearTimeout(tid);
+                    const isTransient = /429|503|rate/i.test(err.message || '');
+                    if (isTransient && attempt < MAX_RETRIES) {
+                        // Exponential backoff: 500ms → 1000ms → 2000ms
+                        await new Promise(r => setTimeout(r, 500 * Math.pow(2, attempt)));
+                        continue;
+                    }
+                    // Increment failure, set cooldown
+                    const failures = (this.failureCounts.get(proxy.name) || 0) + 1;
+                    this.failureCounts.set(proxy.name, failures);
+                    if (failures >= 3) {
+                        this.cooldownUntil.set(proxy.name, Date.now() + 5 * 60_000);
+                    }
+                    break; // try next proxy
+                }
+            }
+        }
+        throw new Error('fetchJsonViaProxy: all proxies failed');
     }
 }
 

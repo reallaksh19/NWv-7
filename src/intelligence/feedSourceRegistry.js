@@ -1,3 +1,5 @@
+import { getFeedWeight } from './feedHealthMonitor.js';
+
 const DEFAULT_FEED_SOURCE_REGISTRY = Object.freeze({
   alerts: {
     Chennai: [
@@ -63,7 +65,6 @@ const DEFAULT_FEED_SOURCE_REGISTRY = Object.freeze({
   },
   festivals: {
     India: [
-      { url: 'https://www.timeanddate.com/holidays/india/feed', sourceType: 'calendar', trust: 'high' },
       { url: 'https://news.google.com/rss/search?q=India+public+holiday+OR+Pongal+OR+Diwali+OR+Republic+Day+2025&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'high' }
     ],
     Oman: [
@@ -180,6 +181,10 @@ export function buildFeedFetchPlan({ categories = [], locations = [], registry =
     if (isStaticHost) {
       sources = sources.filter(s => s.priorityScore >= 2 || s.trust !== 'low').slice(0, 3);
     }
+
+    sources = sources.filter(s => {
+      try { return getFeedWeight(s.url) > 0; } catch { return true; } // fail-open if monitor unavailable
+    });
 
     if (sources.length > 0) {
       plan.push({

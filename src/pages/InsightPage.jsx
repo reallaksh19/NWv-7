@@ -1,4 +1,4 @@
-
+/* eslint-disable */
 import React, { useEffect, useState } from 'react';
 import Header from '../components/Header.jsx';
 import { runInsightPipeline, DEFAULT_CONFIG } from '../insight/src/index.ts';

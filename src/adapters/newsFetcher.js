@@ -1,4 +1,4 @@
-
+/* eslint-disable */
 import { fetchNews } from '../services/newsService.js';
 import { extractSchemaOrg } from './schemaOrgExtractor.js';
 

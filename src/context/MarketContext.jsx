@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import { fetchAllMarketData } from '../services/indianMarketService';
 
 const MarketContext = createContext(null);
@@ -9,9 +9,10 @@ const CACHE_DURATION = 15 * 60 * 1000; // 15 minutes
 
 export function MarketProvider({ children }) {
     const [marketData, setMarketData] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true);  // Keep true — prevents flash-of-empty (audit v3 fix)
     const [error, setError] = useState(null);
     const [lastFetch, setLastFetch] = useState(null);
+    const [booted, setBooted] = useState(false);
 
     const loadMarketData = useCallback(async (forceRefresh = false) => {
         // Check cache first
@@ -92,9 +93,13 @@ export function MarketProvider({ children }) {
         }
     }, []);
 
-    useEffect(() => {
-        loadMarketData();
-    }, [loadMarketData]);
+    // REMOVED: auto-load on mount — market data now fetched lazily
+    const ensureBoot = useCallback(() => {
+        if (!booted) {
+            setBooted(true);
+            loadMarketData();  // loadMarketData already sets loading:true internally
+        }
+    }, [booted, loadMarketData]);
 
     const refreshMarket = useCallback(() => {
         return loadMarketData(true);
@@ -103,10 +108,12 @@ export function MarketProvider({ children }) {
     return (
         <MarketContext.Provider value={{
             marketData,
-            loading,
+            loading: booted ? loading : true,  // Show spinner until booted (audit v3 fix)
             error,
             lastFetch,
-            refreshMarket
+            refreshMarket,
+            ensureBoot,
+            booted
         }}>
             {children}
         </MarketContext.Provider>

@@ -95,9 +95,13 @@ function hasUsableSectionData(section) {
 }
 
 function MarketPage() {
-    const { marketData, loading, error, refreshMarket, lastFetch } = useMarket();
+    const { marketData, loading, error, refreshMarket, lastFetch, ensureBoot } = useMarket();
     const { settings } = useSettings();
     const marketSettings = settings?.market || {};
+
+    useEffect(() => {
+        ensureBoot();
+    }, [ensureBoot]);
     const [showBackToTop, setShowBackToTop] = useState(false);
 
     const handleRefresh = useCallback(() => refreshMarket(true), [refreshMarket]);

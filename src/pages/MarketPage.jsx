@@ -9,6 +9,7 @@ import { useSettings } from '../context/SettingsContext';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import { getMarketSessionState } from '../utils/marketSession';
 import EmptyState from '../components/EmptyState';
+import { computeSentiment } from '../services/indianMarketService';
 
 const PRIMARY_INDEX_NAMES = ['NIFTY 50', 'SENSEX', 'BANK NIFTY', 'MIDCAP 150'];
 const GLOBAL_INDEX_NAMES = ['S&P 500', 'NASDAQ', 'NIKKEI 225', 'HANG SENG', 'FTSE 100'];
@@ -405,6 +406,7 @@ function MarketPage() {
                             <div className="market-macro-list">
                                 {marketData.commodities.map((commodity) => {
                                     const isUp = getFloat(commodity.changePercent) >= 0;
+                                    const { label } = computeSentiment(commodity.name, marketData.headlines || []);
                                     return (
                                         <div key={commodity.name} className={`market-macro-item ${getMarketToneClass(commodity.changePercent)}`}>
                                             <div>
@@ -417,6 +419,7 @@ function MarketPage() {
                                                     {isUp ? '+' : ''}{getFloat(commodity.changePercent).toFixed(2)}%
                                                 </div>
                                             </div>
+                                            <span className={`sentiment-badge sentiment-${label.toLowerCase()}`}>{label}</span>
                                         </div>
                                     );
                                 })}
@@ -439,6 +442,7 @@ function MarketPage() {
                             <div className="market-macro-list">
                                 {marketData.currencies.map((currency) => {
                                     const isUp = getFloat(currency.changePercent) >= 0;
+                                    const { label } = computeSentiment(currency.name, marketData.headlines || []);
                                     return (
                                         <div key={currency.name} className={`market-macro-item ${getMarketToneClass(currency.changePercent)}`}>
                                             <div>
@@ -451,6 +455,7 @@ function MarketPage() {
                                                     {isUp ? '+' : ''}{getFloat(currency.changePercent).toFixed(2)}%
                                                 </div>
                                             </div>
+                                            <span className={`sentiment-badge sentiment-${label.toLowerCase()}`}>{label}</span>
                                         </div>
                                     );
                                 })}

@@ -1,16 +1,10 @@
 /* eslint-disable */
 import { getSettings } from '../utils/storage.js';
 import { getRuntimeCapabilities } from "../runtime/runtimeCapabilities.js";
+import { proxyManager } from './proxyManager.js';
 
 const INDICES = { nifty50: '^NSEI', sensex: '^BSESN', niftyBank: '^NSEBANK', niftyIT: '^CNXIT', niftyMidcap: 'NIFTYMIDCAP150.NS', niftyPharma: '^CNXPHARMA', niftyAuto: '^CNXAUTO', sp500: '^GSPC', nasdaq: '^IXIC', dow: '^DJI', nikkei225: '^N225', hangSeng: '^HSI', ftse100: '^FTSE' };
 const YAHOO_BASE = 'https://query1.finance.yahoo.com/v8/finance/chart/';
-const PROXIES = [
-    (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-    (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-    (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
-    (url) => `https://crossorigin.me/${url}`,
-    (url) => `https://cors-anywhere.herokuapp.com/${url}`
-];
 const CACHE_KEY = 'indian_market_data';
 const CACHE_TTL = 4 * 60 * 60 * 1000;
 const MARKET_SNAPSHOT_API = '/api/market_snapshot';
@@ -32,88 +26,9 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 10000) {
     }
 }
 
-const proxyHealth = new Map();
-const FAILURE_THRESHOLD = 3;
-const COOL_OFF_PERIOD = 5 * 60 * 1000;
-
-function getProxyBaseDomain(proxyGenStr) {
-    try {
-        const match = proxyGenStr.match(/https?:\/\/([^/]+)/);
-        return match ? match[1] : proxyGenStr;
-    } catch {
-        return proxyGenStr;
-    }
-}
-
-async function fetchThroughProxies(url, parser = 'json', timeoutMs = 10000) {
-    // Dynamically prioritize proxies based on tracked health and historical latency
-    const sortedProxies = [...PROXIES].sort((a, b) => {
-        const domainA = getProxyBaseDomain(a.toString());
-        const domainB = getProxyBaseDomain(b.toString());
-        const healthA = proxyHealth.get(domainA) || { failures: 0, latency: 99999 };
-        const healthB = proxyHealth.get(domainB) || { failures: 0, latency: 99999 };
-
-        // Prioritize proxies with fewer failures
-        if (healthA.failures !== healthB.failures) {
-            return healthA.failures - healthB.failures;
-        }
-
-        // Tie-breaker: prioritize proxies with lower historical latency
-        return healthA.latency - healthB.latency;
-    });
-
-    for (const proxyGen of sortedProxies) {
-        const proxyDomain = getProxyBaseDomain(proxyGen.toString());
-        const health = proxyHealth.get(proxyDomain) || { failures: 0, lastFailure: 0, latency: 99999 };
-
-        if (health.failures >= FAILURE_THRESHOLD) {
-            if (Date.now() - health.lastFailure < COOL_OFF_PERIOD) {
-                console.warn(`[MarketService] Skipping proxy ${proxyDomain} due to circuit breaker`);
-                continue;
-            } else {
-                // Reset after cool-off period
-                health.failures = 0;
-                proxyHealth.set(proxyDomain, health);
-            }
-        }
-
-        try {
-            const start = Date.now();
-            let response = await fetchWithTimeout(proxyGen(url), {}, timeoutMs);
-
-            // Exponential backoff retry logic for transient errors (like Rate Limit)
-            let retries = 0;
-            const MAX_RETRIES = 2;
-            while ((response.status === 429 || response.status === 503 || response.status >= 520) && retries < MAX_RETRIES) {
-                retries++;
-                const delay = Math.pow(2, retries) * 500; // 1s, 2s
-                console.warn(`[MarketService] Proxy ${proxyDomain} returned ${response.status}. Retrying in ${delay}ms...`);
-                await new Promise(resolve => setTimeout(resolve, delay));
-                response = await fetchWithTimeout(proxyGen(url), {}, timeoutMs);
-            }
-
-            const latency = Date.now() - start;
-
-            if (!response.ok) {
-                health.failures += 1;
-                health.lastFailure = Date.now();
-                proxyHealth.set(proxyDomain, health);
-                continue;
-            }
-
-            // Success logic: reset failures and calculate EMA for latency
-            health.failures = 0;
-            health.latency = health.latency && health.latency !== 99999 ? (health.latency * 0.8) + (latency * 0.2) : latency;
-            proxyHealth.set(proxyDomain, health);
-            return parser === 'text' ? await response.text() : await response.json();
-        } catch (e) {
-            console.warn(`[MarketService] Proxy ${proxyDomain} failed: ${e.message}`);
-            health.failures += 1;
-            health.lastFailure = Date.now();
-            proxyHealth.set(proxyDomain, health);
-        }
-    }
-    throw new Error(`Failed to fetch ${url}`);
+// Delegates to the shared proxyManager — single source of proxy logic for the app
+async function fetchThroughProxies(url) {
+    return proxyManager.fetchJsonViaProxy(url);
 }
 
 async function fetchYahooData(symbol, { range = '1d', interval = '1d' } = {}) {
@@ -253,7 +168,7 @@ async function saveMarketSnapshot(snapshot) { if (isStaticHostRuntime()) return 
 
 export async function fetchAllMarketData() {
     if (isStaticHostRuntime()) {
-        // 1. Try cache first
+        // 1. Try IndexedDB cache first (Agent 09 will wire this — graceful no-op until then)
         try {
             const cached = localStorage.getItem(CACHE_KEY);
             if (cached) {
@@ -263,42 +178,53 @@ export async function fetchAllMarketData() {
             }
         } catch {}
 
-        // 2. Try live Yahoo via CORS proxies (NEW — audit v3 fix)
+        // 2. Try live Yahoo via CORS proxies (critical — static host is NOT a dead end)
         try {
-            const [indices, mutualFunds, commodities, currencies] = await Promise.allSettled([
-                fetchIndices(), fetchMutualFunds(), fetchCommodities(), fetchCurrencyRates()
-            ]);
+            const [indices, mutualFunds, commodities, currencies, ipo] =
+                await Promise.allSettled([
+                    fetchIndices(),
+                    fetchMutualFunds(),
+                    fetchCommodities(),
+                    fetchCurrencyRates(),
+                    fetchIPOData(),
+                ]);
             const result = {
-                indices: indices.status === 'fulfilled' ? indices.value : [],
-                mutualFunds: mutualFunds.status === 'fulfilled' ? mutualFunds.value : [],
-                ipo: { upcoming: [], live: [], recent: [] },
-                movers: { gainers: [], losers: [] },
-                sectorals: [],
-                commodities: commodities.status === 'fulfilled' ? commodities.value : [],
-                currencies: currencies.status === 'fulfilled' ? currencies.value : [],
-                fiidii: { fii: {}, dii: {}, date: '' },
-                fetchedAt: Date.now(),
-                generatedAt: new Date().toISOString(),
-                sourceHealth: {
-                    indices: indices.status === 'fulfilled' && indices.value.length > 0 ? 'live' : 'failed',
-                    mutualFunds: mutualFunds.status === 'fulfilled' ? 'live' : 'failed',
+                indices      : indices.status      === 'fulfilled' ? indices.value      : [],
+                mutualFunds  : mutualFunds.status  === 'fulfilled' ? mutualFunds.value  : [],
+                commodities  : commodities.status  === 'fulfilled' ? commodities.value  : [],
+                currencies   : currencies.status   === 'fulfilled' ? currencies.value   : [],
+                ipo          : ipo.status           === 'fulfilled' ? ipo.value          : { upcoming: [], live: [], recent: [] },
+                movers       : { gainers: [], losers: [] },
+                sectorals    : [],
+                fiidii       : { fii: {}, dii: {}, date: '' },
+                fetchedAt    : Date.now(),
+                generatedAt  : new Date().toISOString(),
+                sourceHealth : {
+                    indices     : indices.status === 'fulfilled' && indices.value?.length > 0 ? 'live' : 'failed',
+                    commodities : commodities.status === 'fulfilled' ? 'live' : 'failed',
                 },
                 errors: {}
             };
-            if (result.indices.length > 0) {
+            if (result.indices.length > 0 || result.commodities.length > 0) {
                 try { localStorage.setItem(CACHE_KEY, JSON.stringify(result)); } catch {}
                 return result;
             }
         } catch {}
 
-        // 3. Try static snapshot as last resort
+        // 3. Static snapshot fallback
         const snapshot = await fetchStaticSnapshot();
         if (snapshot) {
-            return { ...snapshot, isSnapshot: true, fetchedAt: snapshot.generatedAt ? new Date(snapshot.generatedAt).getTime() : Date.now() };
+            return { ...snapshot, isSnapshot: true,
+                fetchedAt: snapshot.generatedAt ? new Date(snapshot.generatedAt).getTime() : Date.now() };
         }
 
-        // 4. Absolute last resort — empty
-        return { indices: [], mutualFunds: [], ipo: { upcoming: [], live: [], recent: [] }, movers: { gainers: [], losers: [] }, sectorals: [], commodities: [], currencies: [], fiidii: { fii: {}, dii: {}, date: '' }, fetchedAt: Date.now(), generatedAt: new Date().toISOString(), sourceHealth: {}, errors: { indices: 'All proxies failed on static host' } };
+        // 4. Absolute last resort — typed empty shape (never crash the UI)
+        return {
+            indices: [], mutualFunds: [], ipo: { upcoming: [], live: [], recent: [] },
+            movers: { gainers: [], losers: [] }, sectorals: [], commodities: [], currencies: [],
+            fiidii: { fii: {}, dii: {}, date: '' }, fetchedAt: Date.now(),
+            generatedAt: new Date().toISOString(), sourceHealth: {}, errors: { all: 'All sources failed on static host' }
+        };
     }
 
     const [indices, mutualFunds, ipoData, movers, sectorals, commodities, currencies, fiidii] = await Promise.allSettled([fetchIndices(), fetchMutualFunds(), fetchIPOData(), fetchTopMovers(), fetchSectoralIndices(), fetchCommodities(), fetchCurrencyRates(), fetchFIIDII()]);
@@ -319,6 +245,28 @@ export async function fetchAllMarketData() {
     const snapshot = await fetchStaticSnapshot();
     if (snapshot) return { ...snapshot, isSnapshot: true, fetchedAt: snapshot.generatedAt ? new Date(snapshot.generatedAt).getTime() : Date.now() };
     return result;
+}
+
+/**
+ * computeSentiment — keyword-based Bullish/Bearish/Neutral score.
+ * @param {string}   assetName  e.g. 'Gold', 'Crude Oil', 'USD/INR'
+ * @param {string[]} headlines  Recent news headlines to scan
+ * @returns {{ label: 'Bullish'|'Bearish'|'Neutral', score: number }}
+ */
+export function computeSentiment(assetName, headlines = []) {
+    const BULLISH = ['rally', 'surge', 'gain', 'rise', 'jump', 'soar', 'record',
+                     'high', 'positive', 'buy', 'upside', 'boom', 'breakout', 'recover'];
+    const BEARISH = ['fall', 'drop', 'crash', 'decline', 'plunge', 'slump', 'low',
+                     'sell', 'downside', 'bear', 'weak', 'loss', 'correction', 'pressure', 'fear'];
+    const kw = assetName.toLowerCase();
+    let score = 0;
+    for (const h of headlines) {
+        const t = h.toLowerCase();
+        if (!t.includes(kw)) continue;
+        for (const w of BULLISH) if (t.includes(w)) score++;
+        for (const w of BEARISH) if (t.includes(w)) score--;
+    }
+    return { label: score > 0 ? 'Bullish' : score < 0 ? 'Bearish' : 'Neutral', score };
 }
 
 export default { fetchAllMarketData, fetchStaticSnapshot, fetchIndices, fetchMutualFunds, fetchIPOData, fetchTopMovers, fetchSectoralIndices, fetchCommodities, fetchCurrencyRates, fetchFIIDII };

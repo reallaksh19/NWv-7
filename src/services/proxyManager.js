@@ -232,9 +232,10 @@ class ProxyManager {
      * Fetch a JSON endpoint (e.g. Yahoo Finance) via CORS proxy with Circuit Breaker + EMA.
      * Unlike fetchViaProxy, this returns the raw parsed JSON (not an RSS object).
      * @param {string} url  The target JSON URL (will be proxy-wrapped)
+     * @param {number} timeoutMs Optional timeout in milliseconds (default: 8000)
      * @returns {Promise<Object>} Parsed JSON response
      */
-    async fetchJsonViaProxy(url) {
+    async fetchJsonViaProxy(url, timeoutMs = 8000) {
         // EMA-sorted proxy indices, circuit-open proxies excluded
         const indices = PROXIES
             .map((_, i) => i)
@@ -251,16 +252,21 @@ class ProxyManager {
         if (!this._ema) this._ema = new Map();
         if (indices.length === 0) throw new Error('All proxies circuit-open');
 
-        const MAX_RETRIES = 2;
+        const DEFAULT_MAX_RETRIES = 2;
 
         for (const i of indices) {
             const proxy = PROXIES[i];
             const proxyUrl = proxy.format(url, /* raw= */ true);
 
-            for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+            // Dynamic Recovery Probing (Half-Open State):
+            // If failure count is >= 3 (i.e. just recovered from cooldown), allow only 1 attempt (0 retries)
+            const proxyFailures = this.failureCounts.get(proxy.name) || 0;
+            const maxRetries = proxyFailures >= 3 ? 0 : DEFAULT_MAX_RETRIES;
+
+            for (let attempt = 0; attempt <= maxRetries; attempt++) {
                 const t0 = Date.now();
                 const controller = new AbortController();
-                const tid = setTimeout(() => controller.abort(), 8000);
+                const tid = setTimeout(() => controller.abort(), timeoutMs);
                 try {
                     const res = await fetch(proxyUrl, {
                         signal: controller.signal,
@@ -281,7 +287,7 @@ class ProxyManager {
                 } catch (err) {
                     clearTimeout(tid);
                     const isTransient = /429|503|rate/i.test(err.message || '');
-                    if (isTransient && attempt < MAX_RETRIES) {
+                    if (isTransient && attempt < maxRetries) {
                         // Exponential backoff: 500ms → 1000ms → 2000ms
                         await new Promise(r => setTimeout(r, 500 * Math.pow(2, attempt)));
                         continue;

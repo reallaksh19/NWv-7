@@ -31,6 +31,19 @@ async function fetchThroughProxies(url) {
     return proxyManager.fetchJsonViaProxy(url);
 }
 
+function nonBlockingLocalStorageSet(key, valueObj) {
+    // Stringify and store in idle callback to avoid blocking UI thread
+    if (typeof window !== 'undefined' && window.requestIdleCallback) {
+        window.requestIdleCallback(() => {
+            try { localStorage.setItem(key, JSON.stringify(valueObj)); } catch {}
+        });
+    } else {
+        setTimeout(() => {
+            try { localStorage.setItem(key, JSON.stringify(valueObj)); } catch {}
+        }, 0);
+    }
+}
+
 async function fetchYahooData(symbol, { range = '1d', interval = '1d' } = {}) {
     return fetchThroughProxies(`${YAHOO_BASE}${encodeURIComponent(symbol)}?interval=${interval}&range=${range}`, 'json');
 }
@@ -206,7 +219,7 @@ export async function fetchAllMarketData() {
                 errors: {}
             };
             if (result.indices.length > 0 || result.commodities.length > 0) {
-                try { localStorage.setItem(CACHE_KEY, JSON.stringify(result)); } catch {}
+                nonBlockingLocalStorageSet(CACHE_KEY, result);
                 return result;
             }
         } catch {}
@@ -230,7 +243,7 @@ export async function fetchAllMarketData() {
     const [indices, mutualFunds, ipoData, movers, sectorals, commodities, currencies, fiidii] = await Promise.allSettled([fetchIndices(), fetchMutualFunds(), fetchIPOData(), fetchTopMovers(), fetchSectoralIndices(), fetchCommodities(), fetchCurrencyRates(), fetchFIIDII()]);
     const result = { indices: indices.status === 'fulfilled' ? indices.value : [], mutualFunds: mutualFunds.status === 'fulfilled' ? mutualFunds.value : [], ipo: ipoData.status === 'fulfilled' ? ipoData.value : { upcoming: [], live: [], recent: [] }, movers: movers.status === 'fulfilled' ? movers.value : { gainers: [], losers: [] }, sectorals: sectorals.status === 'fulfilled' ? sectorals.value : [], commodities: commodities.status === 'fulfilled' ? commodities.value : [], currencies: currencies.status === 'fulfilled' ? currencies.value : [], fiidii: fiidii.status === 'fulfilled' ? fiidii.value : { fii: {}, dii: {}, date: '' }, fetchedAt: Date.now(), generatedAt: new Date().toISOString(), sourceHealth: { indices: indices.status === 'fulfilled' ? 'live' : 'failed', mutualFunds: mutualFunds.status === 'fulfilled' ? 'live' : 'failed', ipo: ipoData.status === 'fulfilled' ? 'live' : 'failed', movers: movers.status === 'fulfilled' ? 'live' : 'failed', sectorals: sectorals.status === 'fulfilled' ? 'live' : 'failed', commodities: commodities.status === 'fulfilled' ? 'live' : 'failed', currencies: currencies.status === 'fulfilled' ? 'live' : 'failed', fiidii: fiidii.status === 'fulfilled' ? 'live' : 'failed' }, errors: { indices: indices.status === 'rejected' ? indices.reason?.message : null } };
     if (result.indices.length > 0) {
-        try { localStorage.setItem(CACHE_KEY, JSON.stringify(result)); } catch {}
+        nonBlockingLocalStorageSet(CACHE_KEY, result);
         saveMarketSnapshot(result);
         return result;
     }

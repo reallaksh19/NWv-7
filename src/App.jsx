@@ -1,6 +1,47 @@
 /* eslint-disable */
 import React, { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
+
+// ── ErrorBoundary: prevents one page crash from blanking the entire app ──
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, info) {
+    console.error('[ErrorBoundary]', error, info.componentStack);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{
+          padding: '24px 16px', textAlign: 'center',
+          color: '#9CA5B0', fontFamily: 'system-ui, sans-serif'
+        }}>
+          <div style={{ fontSize: '2rem', marginBottom: '8px' }}>⚠️</div>
+          <strong style={{ color: '#D0D7DE' }}>This page encountered an error</strong>
+          <p style={{ fontSize: '0.82rem', marginTop: '8px' }}>
+            {this.state.error?.message || 'Unknown error'}
+          </p>
+          <button
+            onClick={() => this.setState({ hasError: false, error: null })}
+            style={{
+              marginTop: '12px', padding: '6px 16px', borderRadius: '8px',
+              border: '1px solid rgba(48,54,61,0.65)', background: 'rgba(18,23,30,0.6)',
+              color: '#D0D7DE', cursor: 'pointer', fontSize: '0.82rem'
+            }}>
+            Retry
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 import MainPage from './pages/MainPage';
 import UpAheadPage from './pages/UpAheadPage';
 import MyPlannerPage from './pages/MyPlannerPage';
@@ -97,19 +138,19 @@ function App() {
                 <DebugConsole />
                 <div className="app">
                   <Routes>
-                    <Route path="/" element={<MainPage />} />
-                    <Route path="/insight" element={<InsightPage />} />
-                    <Route path="/up-ahead" element={<UpAheadPage />} />
-                    <Route path="/my-planner" element={<MyPlannerPage />} />
-                    <Route path="/more" element={<MorePage />} />
-                    <Route path="/weather" element={<WeatherPage />} />
-                    <Route path="/markets" element={<MarketPage />} />
-                    <Route path="/tech-social" element={<TechSocialPage />} />
-                    <Route path="/newspaper" element={<NewspaperPage />} />
-                    <Route path="/settings" element={<SettingsPage />} />
-                    <Route path="/refresh" element={<RefreshPage />} />
-                    <Route path="/following" element={<FollowingPage />} />
-                    <Route path="/following/:topicId" element={<TopicDetail />} />
+                    <Route path="/" element={<ErrorBoundary><MainPage /></ErrorBoundary>} />
+                    <Route path="/insight" element={<ErrorBoundary><InsightPage /></ErrorBoundary>} />
+                    <Route path="/up-ahead" element={<ErrorBoundary><UpAheadPage /></ErrorBoundary>} />
+                    <Route path="/my-planner" element={<ErrorBoundary><MyPlannerPage /></ErrorBoundary>} />
+                    <Route path="/more" element={<ErrorBoundary><MorePage /></ErrorBoundary>} />
+                    <Route path="/weather" element={<ErrorBoundary><WeatherPage /></ErrorBoundary>} />
+                    <Route path="/markets" element={<ErrorBoundary><MarketPage /></ErrorBoundary>} />
+                    <Route path="/tech-social" element={<ErrorBoundary><TechSocialPage /></ErrorBoundary>} />
+                    <Route path="/newspaper" element={<ErrorBoundary><NewspaperPage /></ErrorBoundary>} />
+                    <Route path="/settings" element={<ErrorBoundary><SettingsPage /></ErrorBoundary>} />
+                    <Route path="/refresh" element={<ErrorBoundary><RefreshPage /></ErrorBoundary>} />
+                    <Route path="/following" element={<ErrorBoundary><FollowingPage /></ErrorBoundary>} />
+                    <Route path="/following/:topicId" element={<ErrorBoundary><TopicDetail /></ErrorBoundary>} />
                   </Routes>
                   <BottomNav />
                 </div>

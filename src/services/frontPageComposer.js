@@ -10,7 +10,18 @@ export function composeBalancedFeed(articles, limit = 20, maxTopicPercent = 40, 
     // Sort by impact score (highest first)
     // We assume impactScore is present, otherwise we default to 0.
     // If scores are equal or missing, the original order is preserved roughly by the sort stability or nature of data.
-    const sorted = [...articles].sort((a, b) => (b.impactScore || 0) - (a.impactScore || 0));
+    // Quality gate: filter out low-relevance articles before sorting.
+    // Minimum score of 2.5 keeps breaking news while filtering celebrity filler.
+    // Safety: if fewer than 5 qualify, use top-scored from full list to avoid empty feed.
+    const MIN_IMPACT = 2.5;
+    const qualified  = articles.filter(a => (a.impactScore || 0) >= MIN_IMPACT);
+    const pool       = qualified.length >= 5
+        ? qualified
+        : [...articles].sort((a, b) => (b.impactScore || 0) - (a.impactScore || 0)).slice(0, limit * 2);
+
+    // NOTE: Agent 05 will later replace this sort with rankByTemporalScore(pool)
+    // Do NOT add that import here — it is Agent 05's responsibility.
+    const sorted = [...pool].sort((a, b) => (b.impactScore || 0) - (a.impactScore || 0));
 
     for (const article of sorted) {
         if (selected.length >= limit) break;

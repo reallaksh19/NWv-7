@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { fetchAllMarketData } from '../services/indianMarketService';
 import { idbGet, idbSet } from '../utils/idb';
+import PriceAlertWorker from '../workers/priceAlertWorker.js?worker';
 
 const MarketContext = createContext(null);
 /* eslint-disable react-refresh/only-export-components */
@@ -126,7 +127,7 @@ export function MarketProvider({ children }) {
                 'NIFTY 50': { upper: 30000, lower: 10000 }
             };
 
-            const worker = new Worker(new URL('../workers/priceAlertWorker.js', import.meta.url), { type: 'module' });
+            const worker = new PriceAlertWorker();
 
             worker.onmessage = (event) => {
                 const { type, payload } = event.data;

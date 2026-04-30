@@ -35,7 +35,7 @@ function normalizePlanDate(dateStr) {
 }
 
 function UpAheadPage() {
-    const { settings } = useSettings();
+    const { settings, updateSettings } = useSettings();
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isRefreshing, setIsRefreshing] = useState(false);
@@ -392,32 +392,42 @@ function UpAheadPage() {
                 {view === 'festivals' && (
                   <div className="ua-tab-view">
                     <ProgressBar active={loading || isRefreshing} />
-                    <div style={{display:'flex', gap:'8px', flexWrap:'wrap', marginBottom:'12px', alignItems:'center', padding:'8px'}}>
-                      {(settings.upAhead?.locations || ['Chennai','Muscat']).map(loc => (
-                        <span key={loc} className="ua-badge type-festival" style={{cursor:'pointer', display:'inline-flex', alignItems:'center', gap:'4px'}}>
+                    {/* Location pills + controls */}
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px',
+                                  alignItems: 'center', padding: '8px' }}>
+                      {(settings?.upAhead?.locations || ['Chennai', 'Muscat']).map(loc => (
+                        <span key={loc} className="ua-badge type-festival"
+                              style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                           {loc}
-                          <span onClick={() => {
-                            const locs = (settings.upAhead?.locations || []).filter(l => l !== loc);
-                            if (locs.length > 0) {
-                              const UPDATED = { ...settings, upAhead: { ...settings.upAhead, locations: locs } };
-                              // Save via settings context if available
-                              console.log('Would save UPDATED settings:', UPDATED);
-                            }
-                          }} style={{opacity:0.7, cursor:'pointer'}}>✕</span>
+                          <span
+                            title={`Remove ${loc}`}
+                            style={{ opacity: 0.7, cursor: 'pointer', fontSize: '0.75rem' }}
+                            onClick={() => {
+                              const current = settings?.upAhead?.locations || ['Chennai', 'Muscat'];
+                              const next = current.filter(l => l !== loc);
+                              if (next.length > 0 && typeof updateSettings === 'function') {
+                                updateSettings({ ...settings, upAhead: { ...settings.upAhead, locations: next } });
+                              }
+                            }}
+                          >✕</span>
                         </span>
                       ))}
-                      <button className="btn btn--secondary" style={{padding:'4px 12px', fontSize:'0.75rem'}}
+                      <button className="btn btn--secondary"
+                        style={{ padding: '4px 12px', fontSize: '0.75rem' }}
                         onClick={() => {
-                          const loc = prompt('Add location (e.g., Trichy, Dubai):');
-                          if (loc && loc.trim()) {
-                            const current = settings.upAhead?.locations || ['Chennai','Muscat'];
-                            if (!current.includes(loc.trim())) {
-                              current.push(loc.trim());
+                          const loc = window.prompt('Add location (e.g. Trichy, Dubai):');
+                          if (!loc?.trim()) return;
+                          const current = settings?.upAhead?.locations || ['Chennai', 'Muscat'];
+                          if (!current.includes(loc.trim())) {
+                            const next = [...current, loc.trim()];
+                            if (typeof updateSettings === 'function') {
+                              updateSettings({ ...settings, upAhead: { ...settings.upAhead, locations: next } });
                             }
                           }
                         }}>+ Add</button>
-                      <button className="btn btn--primary" style={{padding:'4px 12px', fontSize:'0.75rem'}}
-                        onClick={() => loadData({ forceRefresh: true })}>
+                      <button className="btn btn--primary"
+                        style={{ padding: '4px 12px', fontSize: '0.75rem' }}
+                        onClick={() => typeof loadData === 'function' && loadData({ forceRefresh: true })}>
                         🔄 Fetch Festivals
                       </button>
                     </div>

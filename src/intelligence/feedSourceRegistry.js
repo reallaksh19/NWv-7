@@ -1,3 +1,5 @@
+import { getFeedWeight } from './feedHealthMonitor.js';
+
 const DEFAULT_FEED_SOURCE_REGISTRY = Object.freeze({
   alerts: {
     Chennai: [
@@ -180,6 +182,11 @@ export function buildFeedFetchPlan({ categories = [], locations = [], registry =
     if (isStaticHost) {
       sources = sources.filter(s => s.priorityScore >= 2 || s.trust !== 'low').slice(0, 3);
     }
+
+    // Feed health auto-demotion: skip sources with >50% failure rate
+    sources = sources.filter(s => {
+        try { return getFeedWeight(s.url) > 0; } catch { return true; } // fail-open if monitor unavailable
+    });
 
     if (sources.length > 0) {
       plan.push({

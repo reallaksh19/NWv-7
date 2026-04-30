@@ -1,5 +1,6 @@
 import { proxyManager } from './proxyManager.js';
 import { buildFeedFetchPlan } from '../intelligence/feedSourceRegistry.js';
+import { recordFeedResult } from '../intelligence/feedHealthMonitor.js';
 import { filterUnseenFeedItems, markSeenFeedItems, pruneIngestionLedger } from '../intelligence/ingestionCheckpointLedger.js';
 import { buildCanonicalItems } from '../intelligence/canonicalItemBuilder.js';
 import { deduplicateCanonicalItems } from '../intelligence/deDuplication.js';
@@ -45,11 +46,13 @@ export async function fetchIntelligentUpAheadData(options = {}) {
       try {
         const response = await proxyManager.fetchViaProxy(source.url);
         const unseen = filterUnseenFeedItems(source.url, response?.items || []);
+        recordFeedResult(source.url, unseen.length > 0);
         if (unseen.length > 0) {
           rawCollected.push(...unseen.map(item => normalizeRawFeedItem(item, source)));
           markSeenFeedItems(source.url, unseen);
         }
       } catch (error) {
+        recordFeedResult(source.url, false);
         rawCollected.push({
           title: '', description: '', link: '', pubDate: null, category: source.category, source: source.url, rawSource: source.url,
           decisionTrace: [`fetch_failed:${source.url}`, `error:${error?.message || 'unknown'}`], dropReason: 'fetch_failed'

@@ -21,10 +21,8 @@ export function composeBalancedFeed(articles, limit = 20, maxTopicPercent = 40, 
         ? qualified
         : [...articles].sort((a, b) => (b.impactScore || 0) - (a.impactScore || 0)).slice(0, limit * 2);
 
-    // NOTE: Agent 05 will later replace this sort with rankByTemporalScore(pool)
-    // Do NOT add that import here — it is Agent 05's responsibility.
-    const sorted = [...pool].sort((a, b) => (b.impactScore || 0) - (a.impactScore || 0));
-    const sorted = rankByTemporalScore(articles);
+    // Rank by temporal decay scoring (freshness + impact)
+    const sorted = rankByTemporalScore(pool);
 
     for (const article of sorted) {
         if (selected.length >= limit) break;

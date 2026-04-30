@@ -1,3 +1,5 @@
+import { rankByTemporalScore } from './temporalScorer.js';
+
 /**
  * Composes a balanced front page with diversity constraints
  */
@@ -22,6 +24,7 @@ export function composeBalancedFeed(articles, limit = 20, maxTopicPercent = 40, 
     // NOTE: Agent 05 will later replace this sort with rankByTemporalScore(pool)
     // Do NOT add that import here — it is Agent 05's responsibility.
     const sorted = [...pool].sort((a, b) => (b.impactScore || 0) - (a.impactScore || 0));
+    const sorted = rankByTemporalScore(articles);
 
     for (const article of sorted) {
         if (selected.length >= limit) break;

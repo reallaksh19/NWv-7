@@ -17,6 +17,7 @@ import InsightPage from './pages/InsightPage';
 import BottomNav from './components/BottomNav';
 import ScrollToTop from './components/ScrollToTop';
 import DebugConsole from './components/DebugConsole';
+import ErrorBoundary from './components/ErrorBoundary';
 import { WeatherProvider, useWeather } from './context/WeatherContext';
 import { NewsProvider, useNews } from './context/NewsContext';
 import { MarketProvider } from './context/MarketContext';
@@ -96,21 +97,23 @@ function App() {
                 <GlobalLoader />
                 <DebugConsole />
                 <div className="app">
-                  <Routes>
-                    <Route path="/" element={<MainPage />} />
-                    <Route path="/insight" element={<InsightPage />} />
-                    <Route path="/up-ahead" element={<UpAheadPage />} />
-                    <Route path="/my-planner" element={<MyPlannerPage />} />
-                    <Route path="/more" element={<MorePage />} />
-                    <Route path="/weather" element={<WeatherPage />} />
-                    <Route path="/markets" element={<MarketPage />} />
-                    <Route path="/tech-social" element={<TechSocialPage />} />
-                    <Route path="/newspaper" element={<NewspaperPage />} />
-                    <Route path="/settings" element={<SettingsPage />} />
-                    <Route path="/refresh" element={<RefreshPage />} />
-                    <Route path="/following" element={<FollowingPage />} />
-                    <Route path="/following/:topicId" element={<TopicDetail />} />
-                  </Routes>
+                  <ErrorBoundary>
+                    <Routes>
+                      <Route path="/" element={<MainPage />} />
+                      <Route path="/insight" element={<InsightPage />} />
+                      <Route path="/up-ahead" element={<UpAheadPage />} />
+                      <Route path="/my-planner" element={<MyPlannerPage />} />
+                      <Route path="/more" element={<MorePage />} />
+                      <Route path="/weather" element={<WeatherPage />} />
+                      <Route path="/markets" element={<MarketPage />} />
+                      <Route path="/tech-social" element={<TechSocialPage />} />
+                      <Route path="/newspaper" element={<NewspaperPage />} />
+                      <Route path="/settings" element={<SettingsPage />} />
+                      <Route path="/refresh" element={<RefreshPage />} />
+                      <Route path="/following" element={<FollowingPage />} />
+                      <Route path="/following/:topicId" element={<TopicDetail />} />
+                    </Routes>
+                  </ErrorBoundary>
                   <BottomNav />
                 </div>
                 </HashRouter>

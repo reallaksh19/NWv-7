@@ -20,6 +20,7 @@ function BottomNav() {
                 <NavLink
                     key={item.path}
                     to={item.path}
+                    end={item.path === '/'}
                     className={`bottom-nav__item ${location.pathname === item.path ? 'active' : ''}`}
                     title={item.label}
                 >

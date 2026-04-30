@@ -1,0 +1,7 @@
+# Wave 3D - Agent 07 UI/UX Improvements
+
+1. **Accessibility for Star Ratings:** The current implementation uses an `aria-label="impact rating"` on the container for the star ratings. It would be beneficial to provide a more descriptive text specifically for screen readers, like `aria-label={\`Impact rating: ${stars} out of 5 stars\`}`. Also, rendering an actual `<meter>` element visually hidden or a textual description might be more semantically correct than using unicode stars.
+
+2. **Semantic Timestamp:** The timestamp `getTimeAgo(item.publishedAt) || item.time` currently lives inside a generic `<span>`. Changing it to a semantic `<time dateTime={new Date(item.publishedAt).toISOString()}>` element would improve semantic structuring and provide machine-readable temporal information to assistive technologies.
+
+3. **Interactive Visual Feedback for Info Icon:** The info icon `ⓘ` uses an `alert` dialog. This disrupts the flow of the user experience and is generally inaccessible and dated. Implementing a proper React-based tooltip component (using ARIA `role="tooltip"`) or a modal overlay would vastly improve the interaction model for checking story info and score breakdowns without halting the main browser thread.

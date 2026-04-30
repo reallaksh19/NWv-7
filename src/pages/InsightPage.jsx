@@ -5,7 +5,7 @@ import { runInsightPipeline, DEFAULT_CONFIG } from '../insight/src/index.ts';
 import { slotFetcher } from '../adapters/insightFetcher.js';
 import '../styles/InsightPage.css';
 
-function ICard({ story, index }) {
+function ICard({ story, index, storiesById = new Map() }) {
   const [open, setOpen] = useState(false);
   const pct = Math.min(Math.round((story.finalParentScore || 0) * 100), 100);
   
@@ -42,16 +42,31 @@ function ICard({ story, index }) {
           <div className="exp-block">
             <div className="exp-label"><span className="dot" style={{ background: 'var(--warn, #F0883E)' }} />Child Stories</div>
             <div className="src-list">
-              {story.childStoryIds.length === 0 ? (
-                 <p className="ctxt">No diverse child stories found.</p>
-              ) : (
-                 story.childStoryIds.map((childId, i) => (
-                    <div key={i} className="src-item">
-                      <span className="sname">Child {i+1}</span>
-                      <span className="sdesc">{childId}</span>
-                      <span className="ang diff">Sub-angle</span>
-                    </div>
-                 ))
+              {Array.isArray(story.childStoryIds) && (
+                story.childStoryIds?.length > 0 ? (
+                  story.childStoryIds.map((childId, i) => {
+                    // O(1) Map lookup — storiesById contains ALL processed articles
+                    const child = storiesById.get(childId);
+                    const headline = child?.title || child?.summary || childId; // childId as last-resort fallback (not crash)
+                    const source = child?.source || child?.sourceGroup || 'Unknown';
+                    const url = child?.url || null;
+                    return (
+                      <div key={childId} className="src-item">
+                        <span className="sname" title={source}>{source}</span>
+                        {url
+                          ? <a className="sdesc" href={url} target="_blank" rel="noopener noreferrer"
+                              onClick={e => e.stopPropagation()}>{headline}</a>
+                          : <span className="sdesc">{headline}</span>
+                        }
+                        <span className="ang diff">Angle {i + 1}</span>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="src-item" style={{ opacity: 0.5, fontStyle: 'italic' }}>
+                    <span className="sdesc">No additional angles found for this story</span>
+                  </div>
+                )
               )}
             </div>
           </div>
@@ -63,6 +78,8 @@ function ICard({ story, index }) {
 
 function InsightTab({ result }) {
   const parents = result?.parents || [];
+  // Use pipeline's Map directly — do NOT rebuild. Map contains ALL stories including tier-C fallbacks.
+  const storiesById = result?.storiesById instanceof Map ? result.storiesById : new Map();
 
   return (
     <div className="scroll insight-page">
@@ -103,7 +120,9 @@ function InsightTab({ result }) {
         <h3><span className="glyph">▲</span>Top Ranked</h3>
         <span className="imeta"><b>{parents.length}</b> shown · tap + to expand</span>
       </div>
-      {parents.map((p, i) => <ICard key={p.parentId} story={p} index={i} />)}
+      {parents.map((p, i) => (
+        <ICard key={p.parentId} story={p} index={i} storiesById={storiesById} />
+      ))}
     </div>
   );
 }

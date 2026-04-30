@@ -16,17 +16,23 @@ function BottomNav() {
 
     return (
         <nav className={`bottom-nav ${isWebView ? 'bottom-nav--desktop' : ''}`}>
-            {navItems.map((item) => (
+            {navItems.map((item) => {
+                const isActive = item.path === '/'
+                  ? location.pathname === '/'
+                  : location.pathname.startsWith(item.path);
+
+                return (
                 <NavLink
                     key={item.path}
                     to={item.path}
-                    className={`bottom-nav__item ${location.pathname === item.path ? 'active' : ''}`}
+                    className={() => `bottom-nav__item ${isActive ? 'active' : ''}`}
                     title={item.label}
                 >
                     <span className="bottom-nav__icon">{item.icon}</span>
                     <span className="bottom-nav__label">{item.label}</span>
                 </NavLink>
-            ))}
+                );
+            })}
         </nav>
     );
 }

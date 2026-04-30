@@ -1,7 +1,5 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import { fetchAllMarketData } from '../services/indianMarketService';
-import { idbGet, idbSet } from '../utils/idb';
-import PriceAlertWorker from '../workers/priceAlertWorker.js?worker';
 
 const MarketContext = createContext(null);
 /* eslint-disable react-refresh/only-export-components */
@@ -20,16 +18,9 @@ export function MarketProvider({ children }) {
         // Check cache first
         if (!forceRefresh) {
             try {
-                let parsed = await idbGet(CACHE_KEY);
-                if (!parsed) {
-                    const cached = localStorage.getItem(CACHE_KEY);
-                    if (cached) {
-                        parsed = JSON.parse(cached);
-                        idbSet(CACHE_KEY, parsed); // migrate to IDB
-                    }
-                }
-
-                if (parsed) {
+                const cached = localStorage.getItem(CACHE_KEY);
+                if (cached) {
+                    const parsed = JSON.parse(cached);
                     if (Date.now() - parsed.fetchedAt < CACHE_DURATION) {
                         console.log('[MarketContext] Using cached data');
                         setMarketData(parsed);
@@ -52,12 +43,7 @@ export function MarketProvider({ children }) {
             setLastFetch(Date.now());
 
             // Save to cache
-            try {
-                await idbSet(CACHE_KEY, data);
-                localStorage.setItem(CACHE_KEY, JSON.stringify(data));
-            } catch {
-                console.warn('[MarketContext] Failed to save to cache');
-            }
+            localStorage.setItem(CACHE_KEY, JSON.stringify(data));
 
             console.log('[MarketContext] ✅ Market data loaded');
         } catch (err) {
@@ -65,13 +51,9 @@ export function MarketProvider({ children }) {
 
             // Fallback to stale cache (up to 4 hours)
             try {
-                let parsed = await idbGet(CACHE_KEY);
-                if (!parsed) {
-                    const cached = localStorage.getItem(CACHE_KEY);
-                    if (cached) parsed = JSON.parse(cached);
-                }
-
-                if (parsed) {
+                const cached = localStorage.getItem(CACHE_KEY);
+                if (cached) {
+                    const parsed = JSON.parse(cached);
                     const age = Date.now() - parsed.fetchedAt;
 
                     console.log(`[MarketContext] Using stale cache due to fetch error (Age: ${(age/60000).toFixed(0)}m)`);
@@ -118,33 +100,6 @@ export function MarketProvider({ children }) {
             loadMarketData();  // loadMarketData already sets loading:true internally
         }
     }, [booted, loadMarketData]);
-
-    // Web Worker for Price Alerts
-    useEffect(() => {
-        if (marketData && marketData.indices) {
-            // Note: in a real app, thresholds would come from user settings
-            const dummyThresholds = {
-                'NIFTY 50': { upper: 30000, lower: 10000 }
-            };
-
-            const worker = new PriceAlertWorker();
-
-            worker.onmessage = (event) => {
-                const { type, payload } = event.data;
-                if (type === 'ALERTS_GENERATED' && payload.length > 0) {
-                    console.log('[MarketContext] 🚨 Price Alerts:', payload);
-                    // Could dispatch to a toast notification system here
-                }
-            };
-
-            worker.postMessage({
-                type: 'CHECK_PRICES',
-                payload: { marketData, thresholds: dummyThresholds }
-            });
-
-            return () => worker.terminate();
-        }
-    }, [marketData]);
 
     const refreshMarket = useCallback(() => {
         return loadMarketData(true);

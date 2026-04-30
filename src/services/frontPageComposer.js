@@ -1,3 +1,5 @@
+import { rankByTemporalScore } from './temporalScorer.js';
+
 /**
  * Composes a balanced front page with diversity constraints
  */
@@ -10,7 +12,7 @@ export function composeBalancedFeed(articles, limit = 20, maxTopicPercent = 40, 
     // Sort by impact score (highest first)
     // We assume impactScore is present, otherwise we default to 0.
     // If scores are equal or missing, the original order is preserved roughly by the sort stability or nature of data.
-    const sorted = [...articles].sort((a, b) => (b.impactScore || 0) - (a.impactScore || 0));
+    const sorted = rankByTemporalScore(articles);
 
     for (const article of sorted) {
         if (selected.length >= limit) break;

@@ -47,5 +47,24 @@ export function extractSchemaOrg(html) {
       }
     } catch { /* malformed JSON — skip silently */ }
   }
+
+  // Fallback to OpenGraph meta tags
+  const ogTitle = doc.querySelector('meta[property="og:title"]')?.getAttribute('content');
+  const ogImage = doc.querySelector('meta[property="og:image"]')?.getAttribute('content');
+  const ogDesc = doc.querySelector('meta[property="og:description"]')?.getAttribute('content');
+  const articlePub = doc.querySelector('meta[property="article:published_time"]')?.getAttribute('content');
+  const articleAuthor = doc.querySelector('meta[property="article:author"]')?.getAttribute('content');
+
+  if (ogTitle || ogImage || ogDesc) {
+    return {
+      headline: ogTitle || null,
+      datePublished: articlePub || null,
+      author: articleAuthor || null,
+      image: ogImage || null,
+      keywords: [],
+      description: ogDesc || null
+    };
+  }
+
   return null;
 }

@@ -70,7 +70,12 @@ export async function getEmbeddings(texts) {
     // Sublinear TF: dampens high-frequency terms
     const freq = {};
     tokens.forEach(t => { freq[t] = (freq[t] || 0) + 1; });
-    Object.keys(freq).forEach(t => { freq[t] = 1 + Math.log(freq[t]); });
+
+    // Normalize based on token count
+    const tokenCount = tokens.length || 1;
+    Object.keys(freq).forEach(t => {
+      freq[t] = (1 + Math.log(freq[t])) / Math.sqrt(tokenCount);
+    });
 
     // Project onto fixed vocabulary — always exactly 200 dimensions
     return FIXED_VOCAB.map(term => freq[term] || 0);

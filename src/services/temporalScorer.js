@@ -16,29 +16,29 @@
  * Tune HALF_LIFE_HOURS to change the decay curve.
  */
 
-const HALF_LIFE_HOURS = 6;
-const LAMBDA = Math.LN2 / HALF_LIFE_HOURS;  // ≈ 0.1155
-
 /**
- * @param {number} baseScore    Raw impact/relevance score (e.g. 0–10)
- * @param {number} publishedAt  Unix timestamp in milliseconds
- * @param {number} [now]        Override for unit testing
- * @returns {number}            Time-decayed score (always >= 0)
+ * @param {number} baseScore       Raw impact/relevance score (e.g. 0–10)
+ * @param {number} publishedAt     Unix timestamp in milliseconds
+ * @param {number} [now]           Override for unit testing
+ * @param {number} [halfLifeHours] Optional override for half life hours (default: 6)
+ * @returns {number}               Time-decayed score (always >= 0)
  */
-export function temporalScore(baseScore, publishedAt, now = Date.now()) {
+export function temporalScore(baseScore, publishedAt, now = Date.now(), halfLifeHours = 6) {
   if (!publishedAt || isNaN(publishedAt)) return baseScore * 0.1; // treat unknown age as stale
+  const lambda = Math.LN2 / halfLifeHours;
   const ageHours = Math.max(0, now - publishedAt) / 3_600_000;
-  return baseScore * Math.exp(-LAMBDA * ageHours);
+  return baseScore * Math.exp(-lambda * ageHours);
 }
 
 /**
  * Re-rank an array of articles by decayed score. Non-destructive.
  * @param {Array<{impactScore?: number, publishedAt: number}>} articles
+ * @param {number} [halfLifeHours] Optional override for half life hours
  * @returns {Array} Sorted highest temporal-score first
  */
-export function rankByTemporalScore(articles) {
+export function rankByTemporalScore(articles, halfLifeHours = 6) {
   return [...articles].sort((a, b) =>
-    temporalScore(b.impactScore || 0, b.publishedAt) -
-    temporalScore(a.impactScore || 0, a.publishedAt)
+    temporalScore(b.impactScore || 0, b.publishedAt, Date.now(), halfLifeHours) -
+    temporalScore(a.impactScore || 0, a.publishedAt, Date.now(), halfLifeHours)
   );
 }

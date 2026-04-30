@@ -9,6 +9,7 @@ import { useSettings } from '../context/SettingsContext';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import { getMarketSessionState } from '../utils/marketSession';
 import EmptyState from '../components/EmptyState';
+import { computeSentiment } from '../services/indianMarketService';
 
 const PRIMARY_INDEX_NAMES = ['NIFTY 50', 'SENSEX', 'BANK NIFTY', 'MIDCAP 150'];
 const GLOBAL_INDEX_NAMES = ['S&P 500', 'NASDAQ', 'NIKKEI 225', 'HANG SENG', 'FTSE 100'];
@@ -405,10 +406,13 @@ function MarketPage() {
                             <div className="market-macro-list">
                                 {marketData.commodities.map((commodity) => {
                                     const isUp = getFloat(commodity.changePercent) >= 0;
+                                    const { label } = computeSentiment(commodity.name, window.cachedHeadlines || []);
                                     return (
                                         <div key={commodity.name} className={`market-macro-item ${getMarketToneClass(commodity.changePercent)}`}>
                                             <div>
-                                                <div className="market-macro-item__name">{commodity.name}</div>
+                                                <div className="market-macro-item__name">
+                                                    {commodity.name} <span className={`sentiment-badge sentiment-${label.toLowerCase()}`}>{label}</span>
+                                                </div>
                                                 <div className="market-macro-item__meta">{commodity.unit}</div>
                                             </div>
                                             <div className="market-macro-item__value">
@@ -439,10 +443,13 @@ function MarketPage() {
                             <div className="market-macro-list">
                                 {marketData.currencies.map((currency) => {
                                     const isUp = getFloat(currency.changePercent) >= 0;
+                                    const { label } = computeSentiment(currency.name, window.cachedHeadlines || []);
                                     return (
                                         <div key={currency.name} className={`market-macro-item ${getMarketToneClass(currency.changePercent)}`}>
                                             <div>
-                                                <div className="market-macro-item__name">{currency.name}</div>
+                                                <div className="market-macro-item__name">
+                                                    {currency.name} <span className={`sentiment-badge sentiment-${label.toLowerCase()}`}>{label}</span>
+                                                </div>
                                                 <div className="market-macro-item__meta">{currency.source || 'live'}</div>
                                             </div>
                                             <div className="market-macro-item__value">

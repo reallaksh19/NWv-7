@@ -1,3 +1,4 @@
+import { getIdbCache, setIdbCache } from './indexedDbCache.js';
 /* eslint-disable */
 import { proxyManager } from "./proxyManager.js";
 import { getSettings } from '../utils/storage.js';
@@ -395,9 +396,8 @@ export async function fetchAllMarketData() {
     if (isStaticHostRuntime()) {
         // 1. Try cache first
         try {
-            const cached = localStorage.getItem(CACHE_KEY);
-            if (cached) {
-                const parsed = JSON.parse(cached);
+            const parsed = await getIdbCache(CACHE_KEY);
+                if (parsed) {
                 const age = Date.now() - (parsed.fetchedAt || 0);
                 if (age < CACHE_TTL) return { ...parsed, isStale: true, staleReason: 'Static host cache' };
             }
@@ -447,14 +447,13 @@ export async function fetchAllMarketData() {
     const [indices, mutualFunds, ipoData, nfoData, stockCatData, movers, sectorals, commodities, currencies, fiidii] = await Promise.allSettled([fetchIndices(), fetchMutualFunds(), fetchIPOData(), fetchNFOData(), fetchStockCategories(), fetchTopMovers(), fetchSectoralIndices(), fetchCommodities(), fetchCurrencyRates(), fetchFIIDII()]);
     const result = { indices: indices.status === 'fulfilled' ? indices.value : [], mutualFunds: mutualFunds.status === 'fulfilled' ? mutualFunds.value : [], ipo: ipoData.status === 'fulfilled' ? ipoData.value : { upcoming: [], live: [], recent: [] }, nfo: nfoData.status === 'fulfilled' ? nfoData.value : [], stockCategories: stockCatData.status === 'fulfilled' ? stockCatData.value : { highs: [], lows: [], all: [] }, movers: movers.status === 'fulfilled' ? movers.value : { gainers: [], losers: [] }, sectorals: sectorals.status === 'fulfilled' ? sectorals.value : [], commodities: commodities.status === 'fulfilled' ? commodities.value : [], currencies: currencies.status === 'fulfilled' ? currencies.value : [], fiidii: fiidii.status === 'fulfilled' ? fiidii.value : { fii: {}, dii: {}, date: '' }, fetchedAt: Date.now(), generatedAt: new Date().toISOString(), sourceHealth: { indices: indices.status === 'fulfilled' ? 'live' : 'failed', mutualFunds: mutualFunds.status === 'fulfilled' ? 'live' : 'failed', ipo: ipoData.status === 'fulfilled' ? 'live' : 'failed', movers: movers.status === 'fulfilled' ? 'live' : 'failed', sectorals: sectorals.status === 'fulfilled' ? 'live' : 'failed', commodities: commodities.status === 'fulfilled' ? 'live' : 'failed', currencies: currencies.status === 'fulfilled' ? 'live' : 'failed', fiidii: fiidii.status === 'fulfilled' ? 'live' : 'failed' }, errors: { indices: indices.status === 'rejected' ? indices.reason?.message : null } };
     if (result.indices.length > 0) {
-        try { localStorage.setItem(CACHE_KEY, JSON.stringify(result)); } catch {}
+        await setIdbCache(CACHE_KEY, result);
         saveMarketSnapshot(result);
         return result;
     }
     try {
-        const cached = localStorage.getItem(CACHE_KEY);
-        if (cached) {
-            const parsed = JSON.parse(cached);
+        const parsed = await getIdbCache(CACHE_KEY);
+                if (parsed) {
             const age = Date.now() - (parsed.fetchedAt || 0);
             if (age < CACHE_TTL) return { ...parsed, isStale: true, staleReason: 'Network/Proxy Failure - Showing cached data' };
         }

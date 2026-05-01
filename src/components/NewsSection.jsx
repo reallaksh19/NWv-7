@@ -119,20 +119,23 @@ function NewsSection({
                             >
                                 <div className="mnc-header">
                                     <span className="mnc-source" title={item.source}>{sourceLabel}</span>
-                                    <div className="mnc-actions">
-                                        <span className="mnc-time">{getTimeAgo(item.publishedAt) || item.time}</span>
-                                        <button
-                                            type="button"
-                                            className="info-icon info-icon--story"
-                                            title="Story info"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleInfoClick(item, hasScoreBreakdown);
-                                            }}
-                                        >
-                                            ⓘ
-                                        </button>
-                                    </div>
+                                    <span className="mnc-stars" aria-label="impact rating">
+                                        {(() => {
+                                            const score = item.impactScore || 0;
+                                            const stars = score >= 18 ? 5 : score >= 12 ? 4 : score >= 7 ? 3 : score >= 3 ? 2 : 1;
+                                            return '★'.repeat(stars) + '☆'.repeat(5 - stars);
+                                        })()}
+                                    </span>
+                                    {item.sourceCount > 1 && (
+                                        <span className="mnc-badge mnc-badge--consensus">#{item.sourceCount} Sources</span>
+                                    )}
+                                    <span className="mnc-time">{getTimeAgo(item.publishedAt) || item.time}</span>
+                                    <button
+                                        type="button"
+                                        className="info-icon info-icon--story"
+                                        title="Story info"
+                                        onClick={(e) => { e.stopPropagation(); handleInfoClick(item, hasScoreBreakdown); }}
+                                    >ⓘ</button>
                                 </div>
 
                                 <h3 className="mnc-headline">

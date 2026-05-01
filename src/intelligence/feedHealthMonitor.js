@@ -17,16 +17,13 @@ const MAX_EVENTS    = 50;                     // cap per URL to prevent localSto
 
 function loadStore() {
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
-    catch (e) {
-        if (e) { return {}; }
-        return {};
-    }
+    catch { return {}; }
 }
 
 function saveStore(store) {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); }
-    catch (e) {
-        if (e) { /* Fail silently */ }
+    catch {
+        // Fail silently (storage quota exceeded, private browsing, etc.)
     }
 }
 

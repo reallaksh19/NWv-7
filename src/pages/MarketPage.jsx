@@ -95,14 +95,10 @@ function hasUsableSectionData(section) {
 }
 
 function MarketPage() {
-    const { marketData, loading, error, refreshMarket, lastFetch, ensureBoot } = useMarket();
+    const { marketData, loading, error, refreshMarket, lastFetch } = useMarket();
     const { settings } = useSettings();
     const marketSettings = settings?.market || {};
     const [showBackToTop, setShowBackToTop] = useState(false);
-
-    useEffect(() => {
-        ensureBoot();
-    }, [ensureBoot]);
 
     const handleRefresh = useCallback(() => refreshMarket(true), [refreshMarket]);
     const { pullDistance } = usePullToRefresh(handleRefresh);

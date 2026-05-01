@@ -153,6 +153,12 @@ function NewsSection({
                                     {item.isBreaking && <span className="mnc-badge mnc-badge--breaking">⚡ Breaking</span>}
                                     {(!item.isBreaking && item.impactScore > trendingThreshold) && <span className="mnc-badge mnc-badge--trending">🔥 Trending</span>}
 
+                                    {item.sourceCount > 1 && (
+                                        <span className="mnc-badge mnc-badge--consensus">
+                                            🔔 {item.sourceCount} sources
+                                        </span>
+                                    )}
+
                                     {item.sentiment && (
                                         <span className={`mnc-badge mnc-badge--sentiment-${item.sentiment.label}`}>
                                             {item.sentiment.label === 'positive' ? 'Positive' :

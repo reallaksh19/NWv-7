@@ -135,7 +135,7 @@ function App() {
                 <ScrollToTop />
                 <GlobalLoader />
                 <DebugConsole />
-                <div className="app">
+                <div className="app app-shell">
                   <Routes>
                     <Route path="/" element={<ErrorBoundary><MainPage /></ErrorBoundary>} />
                     <Route path="/insight" element={<ErrorBoundary><InsightPage /></ErrorBoundary>} />

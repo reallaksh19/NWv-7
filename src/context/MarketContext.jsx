@@ -1,25 +1,34 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { getIdbCache, setIdbCache } from '../services/indexedDbCache.js';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import { fetchAllMarketData } from '../services/indianMarketService';
 
 const MarketContext = createContext(null);
 /* eslint-disable react-refresh/only-export-components */
 
+
 const CACHE_KEY = 'market_cache';
 const CACHE_DURATION = 15 * 60 * 1000; // 15 minutes
 
+
+
 export function MarketProvider({ children }) {
     const [marketData, setMarketData] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true);  // Keep true — prevents flash-of-empty (audit v3 fix)
     const [error, setError] = useState(null);
     const [lastFetch, setLastFetch] = useState(null);
+    const [booted, setBooted] = useState(false);
+
+    // Improvement Suggestions:
+    // 1. Add offline status indicator if navigator.onLine is false.
+    // 2. Show "Fetching fresh data" toast during refreshMarket.
+    // 3. Add exponential backoff retry mechanism for market fetch failure.
 
     const loadMarketData = useCallback(async (forceRefresh = false) => {
         // Check cache first
         if (!forceRefresh) {
             try {
-                const cached = localStorage.getItem(CACHE_KEY);
-                if (cached) {
-                    const parsed = JSON.parse(cached);
+                const parsed = await getIdbCache(CACHE_KEY);
+                if (parsed) {
                     if (Date.now() - parsed.fetchedAt < CACHE_DURATION) {
                         console.log('[MarketContext] Using cached data');
                         setMarketData(parsed);
@@ -42,7 +51,7 @@ export function MarketProvider({ children }) {
             setLastFetch(Date.now());
 
             // Save to cache
-            localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+            await setIdbCache(CACHE_KEY, data);
 
             console.log('[MarketContext] ✅ Market data loaded');
         } catch (err) {
@@ -50,9 +59,8 @@ export function MarketProvider({ children }) {
 
             // Fallback to stale cache (up to 4 hours)
             try {
-                const cached = localStorage.getItem(CACHE_KEY);
-                if (cached) {
-                    const parsed = JSON.parse(cached);
+                const parsed = await getIdbCache(CACHE_KEY);
+                if (parsed) {
                     const age = Date.now() - parsed.fetchedAt;
 
                     console.log(`[MarketContext] Using stale cache due to fetch error (Age: ${(age/60000).toFixed(0)}m)`);
@@ -92,9 +100,13 @@ export function MarketProvider({ children }) {
         }
     }, []);
 
-    useEffect(() => {
-        loadMarketData();
-    }, [loadMarketData]);
+    // REMOVED: auto-load on mount — market data now fetched lazily
+    const ensureBoot = useCallback(() => {
+        if (!booted) {
+            setBooted(true);
+            loadMarketData();  // loadMarketData already sets loading:true internally
+        }
+    }, [booted, loadMarketData]);
 
     const refreshMarket = useCallback(() => {
         return loadMarketData(true);
@@ -103,10 +115,12 @@ export function MarketProvider({ children }) {
     return (
         <MarketContext.Provider value={{
             marketData,
-            loading,
+            loading: booted ? loading : true,  // Show spinner until booted (audit v3 fix)
             error,
             lastFetch,
-            refreshMarket
+            refreshMarket,
+            ensureBoot,
+            booted
         }}>
             {children}
         </MarketContext.Provider>

@@ -14,7 +14,18 @@ if (typeof window !== 'undefined') {
     window.runScoringTests = runScoringTests;
 }
 
-registerSW();
+if (import.meta.env.PROD) {
+    registerSW();
+}
+
+// Initialize Price Alert Web Worker
+if (window.Worker) {
+    const worker = new Worker(new URL('./priceAlertWorker.js', import.meta.url), { type: 'module' });
+    worker.postMessage({ action: 'start', symbols: ['NIFTY', 'SENSEX'], _thresholds: {} });
+    worker.onmessage = (e) => {
+        console.log('[Main] Worker message:', e.data);
+    };
+}
 
 try {
   const rootElement = document.getElementById('root');

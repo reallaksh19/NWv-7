@@ -2,6 +2,8 @@ import { runInsightPipeline, applyIncrementalUpdate, DEFAULT_CONFIG, normalizeSt
 import { fetchStoriesForSlot as fetchRawStoriesForSlot } from './newsFetcher.js';
 import { getEmbeddings } from './embeddingsAdapter.js';
 import { extractEntities, extractVerbs, extractNumbers, extractKeywords } from './nlpAdapter.js';
+import { loadInsightSnapshot, createSnapshotRawFetcher } from './insightSnapshotFetcher.js';
+import { getRuntimeCapabilities } from '../runtime/runtimeCapabilities.js';
 
 export async function slotFetcher(slot) {
   const rawStories = await fetchRawStoriesForSlot(slot);
@@ -36,6 +38,62 @@ export async function slotFetcher(slot) {
 
 export { runInsightPipeline, applyIncrementalUpdate, DEFAULT_CONFIG };
 
+/**
+ * createInsightFetcher — returns the appropriate SlotFetcher depending on runtime.
+ *
+ * On github.io (preferSnapshots = true):
+ *   1. Try fresh snapshot  (file age ≤ 3 h)
+ *   2. Try stale snapshot  (any age — used with warning)
+ *   3. Empty state         (never falls back to live CORS proxies)
+ *
+ * On full-runtime (local / self-hosted):
+ *   Returns the live slotFetcher as before.
+ *
+ * @returns {Promise<{ fetcher: Function, source: string, snapshotTs: number, contentHash: string }>}
+ */
+export async function createInsightFetcher() {
+  const { preferSnapshots } = getRuntimeCapabilities();
+
+  if (preferSnapshots) {
+    const fresh = await loadInsightSnapshot({ allowStale: false });
+    if (fresh) {
+      return {
+        fetcher:     createSnapshotRawFetcher(fresh),
+        source:      'snapshot',
+        snapshotTs:  fresh.fetchedAt,
+        contentHash: fresh.contentHash,
+      };
+    }
+
+    const stale = await loadInsightSnapshot({ allowStale: true });
+    if (stale) {
+      console.warn('[InsightFetcher] Using stale snapshot — fresh snapshot unavailable');
+      return {
+        fetcher:     createSnapshotRawFetcher(stale),
+        source:      'stale-snapshot',
+        snapshotTs:  stale.fetchedAt,
+        contentHash: stale.contentHash,
+      };
+    }
+
+    // No snapshot available — return empty state (never hit live APIs on static host)
+    return {
+      fetcher:     async () => [],
+      source:      'unavailable',
+      snapshotTs:  0,
+      contentHash: '',
+    };
+  }
+
+  // Full-runtime: use live slotFetcher
+  return {
+    fetcher:     slotFetcher,
+    source:      'live',
+    snapshotTs:  Date.now(),
+    contentHash: '',
+  };
+}
+
 import { buildInsightBenchmarkArticles } from '../benchmarks/insightBenchmark.js';
 
 // ── Benchmark slot fetcher (dev mode only) ────────────────────────────────
@@ -49,7 +107,7 @@ export const benchmarkSlotFetcher = async (slot) => {
       case 'now'      : return age < 4 * H;
       case 'minus4h'  : return age >= 4 * H  && age < 12 * H;
       case 'minus12h' : return age >= 12 * H && age < 24 * H;
-      case 'minus24h' : return age >= 24 * H;
+      case 'minus24h' : return age >= 24 * H && age < 36 * H;
       default         : return true;
     }
   });

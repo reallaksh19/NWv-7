@@ -49,6 +49,24 @@ function parseXML(xmlString) {
 
 const PROXIES = [
     {
+        name: 'allorigins',
+        format: (feedUrl) => `https://api.allorigins.win/raw?url=${encodeURIComponent(feedUrl)}`,
+        parse: async (response) => {
+            const text = await response.text();
+            if (!text) throw new Error('Empty response from allorigins');
+            return parseXML(text);
+        }
+    },
+    {
+        name: 'corsproxy',
+        format: (feedUrl) => `https://corsproxy.io/?${encodeURIComponent(feedUrl)}`,
+        parse: async (response) => {
+            const text = await response.text();
+            if (!text) throw new Error('Empty response from corsproxy');
+            return parseXML(text);
+        }
+    },
+    {
         name: 'codetabs',
         format: (feedUrl) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(feedUrl)}`,
         parse: async (response) => {

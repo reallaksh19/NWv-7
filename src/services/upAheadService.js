@@ -4,7 +4,7 @@ import { fetchIntelligentUpAheadData } from './intelligentUpAheadFetcher.js';
 
 export const CACHE_KEY = 'upAhead_cache';
 
-const CACHE_MAX_AGE_MS = 3 * 24 * 60 * 60 * 1000;
+const CACHE_MAX_AGE_MS = 6 * 60 * 60 * 1000; // 6h — aligned to 5×/day pre-fetch cadence
 
 function normalizeDateKey(value) {
   if (!value) return null;

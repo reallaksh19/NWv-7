@@ -4,6 +4,7 @@
  */
 
 const BASE_URL = 'https://newsdata.io/api/1/news';
+import { proxyManager } from './proxyManager.js';
 
 // Mapping from Settings Keys (or general identifiers) to Google News Source Strings
 const SOURCE_MAPPINGS = {
@@ -92,13 +93,7 @@ export async function fetchNews(query, keys = {}) {
 async function fetchRSSNews(query, settings = null) {
     try {
         const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-IN&gl=IN&ceid=IN:en`;
-        const proxyUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
-
-        const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error('RSS Proxy failed');
-
-        const data = await response.json();
-        if (data.status !== 'ok') throw new Error('RSS Parse failed');
+        const data = await proxyManager.fetchViaProxy(rssUrl);
 
         let items = (data.items || []).map((item, idx) => {
             // Extract source from title if author is missing/generic
@@ -151,14 +146,7 @@ async function fetchRSSNews(query, settings = null) {
 async function fetchDDGNews(query) {
     try {
         const rssUrl = `https://www.bing.com/news/search?q=${encodeURIComponent(query)}&format=rss`;
-        const proxyUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
-
-        const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error('DDG/Bing RSS Proxy failed');
-
-        const data = await response.json();
-        // rss2json returns status: 'error' if it fails to parse
-        if (data.status === 'error') throw new Error('DDG Parse failed');
+        const data = await proxyManager.fetchViaProxy(rssUrl);
 
         return (data.items || []).map((item, idx) => ({
             id: `ddg-${idx}`,

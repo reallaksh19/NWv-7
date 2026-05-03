@@ -5,6 +5,10 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [ main, master ]
+    paths-ignore:
+      - 'public/newsdata/**'
+      - 'public/data/**'
+      - 'scripts/.last_content_hash'
   workflow_dispatch:
 
 permissions:

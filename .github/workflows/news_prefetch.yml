@@ -1,0 +1,55 @@
+name: News Prefetch
+
+# Runs hourly during IST 7am–7:30pm (UTC 1:30–14:00), plus 3 overnight runs.
+# All times are IST (UTC+5:30). Cron uses UTC.
+#
+# IST 7:30am  = UTC 02:00
+# IST 8:30am  = UTC 03:00
+# ...
+# IST 7:30pm  = UTC 14:00
+# IST 10:30pm = UTC 17:00
+# IST 1:30am  = UTC 20:00
+# IST 4:30am  = UTC 23:00
+
+on:
+  schedule:
+    - cron: '30 1-13 * * *'    # every hour IST ~7:30am–7:30pm (UTC 1:30–13:30)
+    - cron: '0 17,20,23 * * *' # IST ~10:30pm, 1:30am, 4:30am
+  workflow_dispatch:            # allow manual trigger
+
+jobs:
+  prefetch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Fetch Insight stories
+        run: python scripts/fetch_insight_stories.py
+
+      - name: Fetch Sections stories
+        run: python scripts/fetch_sections_stories.py
+
+      - name: Commit data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/newsdata/
+          if git diff --staged --quiet; then
+            echo "No changes — skipping commit"
+            exit 0
+          fi
+          git commit -m "data: news prefetch $(date -u +'%Y-%m-%dT%H:%MZ')"
+          git push

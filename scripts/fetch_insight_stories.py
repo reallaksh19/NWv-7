@@ -32,8 +32,8 @@ SLOTS = ['now', 'minus4h', 'minus12h', 'minus24h']
 SLOT_TTL_HOURS = {
     'now':      1,
     'minus4h':  2,
-    'minus12h': 6,
-    'minus24h': 12,
+    'minus12h': 3,  # was 6 — tighter re-fetch keeps older slots fresher
+    'minus24h': 4,  # was 12 — prevents 12h stale content in 24–36h bucket
 }
 
 INSIGHT_RETAIN_HOURS    = 36

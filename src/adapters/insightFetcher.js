@@ -73,6 +73,8 @@ export async function createInsightFetcher() {
         source:      'stale-snapshot',
         snapshotTs:  stale.fetchedAt,
         contentHash: stale.contentHash,
+        // Relax quality gates so stale stories still form clusters
+        pipelineConfigOverrides: { MIN_CHILD_COUNT: 1, WEAK_TREE_TOLERANCE: true },
       };
     }
 

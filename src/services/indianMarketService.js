@@ -14,7 +14,7 @@ const PROXIES = [
     (url) => `https://cors-anywhere.herokuapp.com/${url}`
 ];
 const CACHE_KEY = 'indian_market_data';
-const CACHE_TTL = 4 * 60 * 60 * 1000;
+const CACHE_TTL = 30 * 60 * 1000; // 30 min — matches market_refresh.yml workflow cadence
 const MARKET_SNAPSHOT_API = '/api/market_snapshot';
 
 function isStaticHostRuntime() { return getRuntimeCapabilities().isStaticHost; }
@@ -315,7 +315,22 @@ async function fetchTopMoversFallback() {
     const valid = quotes.filter((item) => item.status === 'fulfilled' && item.value).map((item) => item.value);
     return { gainers: valid.filter((item) => item.direction === 'up').sort((a, b) => Number(b.changePercent) - Number(a.changePercent)).slice(0, 5), losers: valid.filter((item) => item.direction === 'down').sort((a, b) => Number(a.changePercent) - Number(b.changePercent)).slice(0, 5), source: 'yahoo-quote' };
 }
-export async function fetchTopMovers() { const [gainers, losers] = await Promise.all([fetchScreenerData(SCREENER_URL), fetchScreenerData(SCREENER_URL_LOSERS)]); if (gainers.length || losers.length) return { gainers: gainers.slice(0, 5), losers: losers.slice(0, 5), source: 'yahoo-screener' }; return fetchTopMoversFallback(); }
+export async function fetchTopMovers() {
+    const [gainers, losers] = await Promise.all([fetchScreenerData(SCREENER_URL), fetchScreenerData(SCREENER_URL_LOSERS)]);
+    if (gainers.length || losers.length) return { gainers: gainers.slice(0, 5), losers: losers.slice(0, 5), source: 'yahoo-screener' };
+    const fallback = await fetchTopMoversFallback();
+    if (fallback.gainers.length || fallback.losers.length) return fallback;
+    // Last resort: read pre-fetched snapshot movers
+    const snapshot = await fetchStaticSnapshot();
+    if (snapshot?.movers?.gainers?.length || snapshot?.movers?.losers?.length) {
+        return {
+            gainers: (snapshot.movers.gainers || []).slice(0, 5),
+            losers:  (snapshot.movers.losers  || []).slice(0, 5),
+            source:  'snapshot',
+        };
+    }
+    return { gainers: [], losers: [], source: 'empty' };
+}
 export async function fetchSectoralIndices() { const sectorals = [{ key: 'niftyBank', name: 'Bank Nifty', symbol: INDICES.niftyBank }, { key: 'niftyIT', name: 'Nifty IT', symbol: INDICES.niftyIT }, { key: 'niftyPharma', name: 'Nifty Pharma', symbol: INDICES.niftyPharma }, { key: 'niftyAuto', name: 'Nifty Auto', symbol: INDICES.niftyAuto }]; const results = await Promise.allSettled(sectorals.map(async (sector) => { const data = await fetchYahooData(sector.symbol, { range: '5d', interval: '1d' }); const priceData = extractYahooPrice(data); if (!priceData) throw new Error('No data'); return { name: sector.name, value: priceData.price.toFixed(2), change: priceData.change.toFixed(2), changePercent: priceData.changePercent, timestamp: priceData.timestamp }; })); return results.filter(r => r.status === 'fulfilled').map(r => r.value); }
 export async function fetchStaticSnapshot() { try { const resp = await fetch('/data/market_snapshot.json'); if (resp.ok) return await resp.json(); } catch {} return null; }
 
@@ -403,10 +418,10 @@ export async function fetchAllMarketData() {
             }
         } catch {}
 
-        // 2. Try live Yahoo via CORS proxies (NEW — audit v3 fix)
+        // 2. Try live Yahoo via CORS proxies
         try {
-            const [indices, mutualFunds, commodities, currencies, ipo, nfo, stockCategories] = await Promise.allSettled([
-                fetchIndices(), fetchMutualFunds(), fetchCommodities(), fetchCurrencyRates(), fetchIPOData(), fetchNFOData(), fetchStockCategories()
+            const [indices, mutualFunds, commodities, currencies, ipo, nfo, stockCategories, movers] = await Promise.allSettled([
+                fetchIndices(), fetchMutualFunds(), fetchCommodities(), fetchCurrencyRates(), fetchIPOData(), fetchNFOData(), fetchStockCategories(), fetchTopMovers()
             ]);
             const result = {
                 indices: indices.status === 'fulfilled' ? indices.value : [],
@@ -414,7 +429,7 @@ export async function fetchAllMarketData() {
                 ipo: ipo.status === 'fulfilled' ? ipo.value : { upcoming: [], live: [], recent: [] },
                 nfo: nfo.status === 'fulfilled' ? nfo.value : [],
                 stockCategories: stockCategories.status === 'fulfilled' ? stockCategories.value : { highs: [], lows: [], all: [] },
-                movers: { gainers: [], losers: [] },
+                movers: movers.status === 'fulfilled' ? movers.value : { gainers: [], losers: [] },
                 sectorals: [],
                 commodities: commodities.status === 'fulfilled' ? commodities.value : [],
                 currencies: currencies.status === 'fulfilled' ? currencies.value : [],
@@ -424,11 +439,12 @@ export async function fetchAllMarketData() {
                 sourceHealth: {
                     indices: indices.status === 'fulfilled' && indices.value.length > 0 ? 'live' : 'failed',
                     mutualFunds: mutualFunds.status === 'fulfilled' ? 'live' : 'failed',
+                    movers: movers.status === 'fulfilled' ? 'live' : 'failed',
                 },
                 errors: {}
             };
             if (result.indices.length > 0) {
-                try { localStorage.setItem(CACHE_KEY, JSON.stringify(result)); } catch {}
+                await setIdbCache(CACHE_KEY, result);
                 console.log('[Agent03] fetchAllMarketData resolved');
                 return result;
             }

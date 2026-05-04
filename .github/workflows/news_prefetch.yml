@@ -42,6 +42,17 @@ jobs:
       - name: Fetch Sections stories
         run: python scripts/fetch_sections_stories.py
 
+      - name: Bump fetchedAt sentinel
+        run: |
+          python -c "
+          import json, time, os
+          p = 'public/newsdata/insight_latest.json'
+          if os.path.exists(p):
+              d = json.load(open(p))
+              d['fetchedAt'] = int(time.time() * 1000)
+              json.dump(d, open(p, 'w'), indent=2, ensure_ascii=False)
+          "
+
       - name: Commit data
         run: |
           git config user.name "github-actions[bot]"

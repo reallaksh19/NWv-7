@@ -38,11 +38,16 @@ function WeatherPage() {
 
     // Lift active city state up
     const [activeCity, setActiveCity] = useState(() => {
-        return localStorage.getItem('dw_active_city') || 'chennai';
+        // Migrate legacy key on first read so existing user selection is preserved
+        const legacy = localStorage.getItem('dw_active_city');
+        if (legacy && !localStorage.getItem('weather_active_city')) {
+            localStorage.setItem('weather_active_city', legacy);
+        }
+        return localStorage.getItem('weather_active_city') || 'chennai';
     });
 
     useEffect(() => {
-        localStorage.setItem('dw_active_city', activeCity);
+        localStorage.setItem('weather_active_city', activeCity);
     }, [activeCity]);
 
     const handleRefresh = useCallback(async () => {

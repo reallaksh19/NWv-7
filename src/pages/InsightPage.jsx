@@ -219,9 +219,12 @@ export default function InsightPage() {
       if (!fetcherRef.current) {
         fetcherRef.current = await createInsightFetcher();
       }
-      const { fetcher, source: src } = fetcherRef.current;
+      const { fetcher, source: src, pipelineConfigOverrides } = fetcherRef.current;
 
-      const r = await runInsightPipeline(fetcher, DEFAULT_CONFIG);
+      const config = pipelineConfigOverrides
+        ? { ...DEFAULT_CONFIG, ...pipelineConfigOverrides }
+        : DEFAULT_CONFIG;
+      const r = await runInsightPipeline(fetcher, config);
       if (!isMounted.current) return;
 
       if (background && result?.parents?.length) {
@@ -317,10 +320,14 @@ export default function InsightPage() {
     );
   }
 
+  const staleLabel = source === 'stale-snapshot' && fetcherRef.current?.snapshotTs
+    ? `Cached · ${Math.round((Date.now() - Number(fetcherRef.current.snapshotTs)) / 3_600_000)}h old`
+    : null;
+
   if (!result?.parents?.length) {
     return (
       <div className="page-container insight-page">
-        <Header title="Insight" stateLabel="Up to date" stateType="live" />
+        <Header title="Insight" stateLabel={staleLabel || 'Up to date'} stateType={staleLabel ? 'stale' : 'live'} />
         <div className="modern-container">
           <EmptyState
             icon="🧠"
@@ -334,7 +341,7 @@ export default function InsightPage() {
 
   return (
     <div className="page-container">
-      <Header title="Insight" stateLabel="Live" stateType="live" />
+      <Header title="Insight" stateLabel={staleLabel || 'Live'} stateType={staleLabel ? 'stale' : 'live'} />
       {pendingResult && (
         <FreshBanner onAccept={acceptPending} onDismiss={dismissPending} />
       )}

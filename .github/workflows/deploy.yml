@@ -5,9 +5,10 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [ main, master ]
+    # Data snapshots under public/data and public/newsdata are bundled into the
+    # Vite dist artifact. Do not ignore them here; otherwise refresh workflows
+    # update main but the live GitHub Pages site continues serving stale JSON.
     paths-ignore:
-      - 'public/newsdata/**'
-      - 'public/data/**'
       - 'scripts/.last_content_hash'
   workflow_dispatch:
 

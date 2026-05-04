@@ -75,7 +75,15 @@ function normalizePlanData(planData) {
     return Object.fromEntries(Object.entries(planData).filter(([, items]) => Array.isArray(items)).map(([date, items]) => [date, deduplicatePlanItems(items.map(item => normalizePlanItem(item, date)).filter(Boolean))]).filter(([, items]) => items.length > 0));
 }
 function readLocalPlan() { try { const data = localStorage.getItem(PLANNER_KEY); return normalizePlanData(data ? JSON.parse(data) : {}); } catch (e) { console.error('Failed to read planner storage', e); return {}; } }
-function writeLocalPlan(planData) { localStorage.setItem(PLANNER_KEY, JSON.stringify(normalizePlanData(planData))); }
+function pruneStaleEntries(planData, maxAgeMs) {
+    const cutoff = new Date(Date.now() - maxAgeMs).toISOString().slice(0, 10);
+    return Object.fromEntries(Object.entries(planData).filter(([date]) => date >= cutoff));
+}
+function writeLocalPlan(planData) {
+    const normalized = normalizePlanData(planData);
+    const pruned = pruneStaleEntries(normalized, 30 * 24 * 60 * 60 * 1000); // drop entries >30 days old
+    localStorage.setItem(PLANNER_KEY, JSON.stringify(pruned));
+}
 function readLocalBlacklist() { try { return normalizeBlacklistData(JSON.parse(localStorage.getItem(BLACKLIST_KEY) || '[]')); } catch (e) { console.error('Failed to read blacklist storage', e); return []; } }
 function writeLocalBlacklist(list) { localStorage.setItem(BLACKLIST_KEY, JSON.stringify(normalizeBlacklistData(list))); }
 function pruneBlacklistedFromPlan(planData, blacklist) { const normalizedPlan = normalizePlanData(planData); const blacklistSet = blacklist instanceof Set ? blacklist : new Set(normalizeBlacklistData(blacklist)); return Object.fromEntries(Object.entries(normalizedPlan).map(([date, items]) => [date, items.filter(item => !blacklistSet.has(getItemKey(item)))]).filter(([, items]) => items.length > 0)); }

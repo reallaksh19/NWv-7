@@ -14,7 +14,7 @@
  */
 
 const H = 3_600_000;
-const FRESH_MAX_AGE_MS = 3 * H; // snapshot file age, not story age
+const FRESH_MAX_AGE_MS = 8 * H; // snapshot file age — covers IST night gap between hourly runs
 
 const SNAPSHOT_URL = (() => {
   const base = (import.meta.env.BASE_URL ?? '/').replace(/\/$/, '');
@@ -60,5 +60,16 @@ export function createSnapshotRawFetcher(snapshot) {
     minus24h: (s) => { const a = Date.now() - Number(s.publishedAt || 0); return a >= 24 * H && a < 36 * H; },
   };
 
-  return async (slot) => pool.filter(filters[slot] ?? (() => false));
+  return async (slot) => {
+    const filtered = pool.filter(filters[slot] ?? (() => false));
+    // If the `now` bucket is empty (snapshot is a few hours old), fall back to
+    // the freshest minus4h stories so the pipeline always has something to cluster.
+    if (slot === 'now' && filtered.length === 0) {
+      return pool
+        .filter(filters.minus4h)
+        .sort((a, b) => Number(b.publishedAt) - Number(a.publishedAt))
+        .slice(0, 12);
+    }
+    return filtered;
+  };
 }

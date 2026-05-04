@@ -12,6 +12,8 @@ function BottomNav() {
         { path: '/up-ahead', label: 'Up Ahead', icon: '🗓️' },
         { path: '/my-planner', label: 'Planner', icon: '📌' },
         { path: '/markets', label: 'Market', icon: '📈' },
+        { path: '/weather', label: 'Weather', icon: '☁️' },
+        { path: '/settings', label: 'Settings', icon: '⚙️' },
     ];
 
     return (

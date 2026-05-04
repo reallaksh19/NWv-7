@@ -794,12 +794,19 @@ body {
   -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid var(--glass-border);
   display: flex;
-  justify-content: space-around;
+  justify-content: flex-start;
   align-items: center;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
   z-index: 1000;
   padding-bottom: env(safe-area-inset-bottom, 0px);
   will-change: transform;
   transform: translateZ(0);
+}
+
+.bottom-nav::-webkit-scrollbar {
+  display: none;
 }
 
 .bottom-nav__item {
@@ -809,7 +816,8 @@ body {
   justify-content: center;
   text-decoration: none;
   color: var(--text-muted);
-  width: 100%;
+  min-width: 64px;
+  flex-shrink: 0;
   height: 100%;
   transition: all var(--transition-base);
 }

@@ -32,9 +32,15 @@ function startOfDay(ts) {
  * @returns {object[]}
  */
 export function filterVisiblePlannerItems(items, now = Date.now()) {
+  const MAX_PUB_AGE_MS = 24 * DAY;
   return (items ?? []).filter((item) => {
     if (item.expiryAt && Number(item.expiryAt) < now) return false;
     if (item.plannerEligible === false) return false;
+    // Exclude news-derived alerts older than 24 h — prevents stale articles surfacing
+    if (item.pubDate) {
+      const age = now - new Date(item.pubDate).getTime();
+      if (age > MAX_PUB_AGE_MS) return false;
+    }
     return true;
   });
 }

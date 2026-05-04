@@ -288,8 +288,39 @@ export function isActualOfferText(text, upAheadSettings = null) {
   return matches >= (rules.minimumMatches || 1);
 }
 
+function transformPythonItemsToDisplay(items = []) {
+  const ranked = items
+    .filter(it => it && it.plannerEligible !== false)
+    .map(it => ({
+      canonicalId:       it.id,
+      rawSourceId:       it.id,
+      title:             it.title,
+      summary:           it.summary,
+      link:              it.url,
+      category:          it.category,
+      publishDate:       it.publishedAt  ? new Date(it.publishedAt).toISOString()  : null,
+      eventDate:         it.eventStartAt ? new Date(it.eventStartAt).toISOString() : null,
+      eventDateKey:      it.eventStartAt
+        ? new Date(it.eventStartAt).toISOString().slice(0, 10)
+        : (it.publishedAt ? new Date(it.publishedAt).toISOString().slice(0, 10) : null),
+      dateConfidence:    it.dateConfidence   || 'unknown',
+      locationCanonical: it.city || it.region || null,
+      sourceDomain:      it.source,
+      upAheadEligible:   Boolean(it.plannerEligible),
+      plannerEligible:   Boolean(it.plannerEligible),
+      decisionTrace:     [],
+    }));
+  return buildLegacyDisplayFromRanked(ranked, { auditSummary: null, dropReport: [] });
+}
+
 export function sanitizeUpAheadData(data) {
   if (!data || typeof data !== 'object') return null;
+
+  // Python prefetch schema: {schemaVersion, fetchedAt, contentHash, items:[]}
+  if (Array.isArray(data.items) && !data.timeline && !data.sections) {
+    return sanitizeUpAheadData(transformPythonItemsToDisplay(data.items));
+  }
+
   const timeline = Array.isArray(data.timeline)
     ? data.timeline
         .filter(Boolean)

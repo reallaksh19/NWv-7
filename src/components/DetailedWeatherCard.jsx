@@ -121,9 +121,11 @@ export default function DetailedWeatherCard({ weatherData, activeCity, setActive
                     })}
                 </div>
 
-                {/* Footer */}
+                {/* Footer: model sources */}
                 <div className="dw-footer">
-                   Forecast based on {cityData.models?.count} models ({cityData.models?.names}).
+                    {cityData.models?.count
+                        ? `Forecast based on ${cityData.models.count} model${cityData.models.count !== 1 ? 's' : ''}: ${cityData.models.names}`
+                        : 'Forecast based on ECMWF · GFS · DWD-ICON'}
                 </div>
             </div>
         </div>

@@ -67,68 +67,64 @@ const QuickWeather = () => {
     const activeCityData = weatherData[activeCity] || weatherData[visibleCities[0]];
     const activeCityName = weatherData[activeCity]?.current ? activeCity : visibleCities[0];
     const severeWarning = getSevereWarning(activeCityData);
-
-    const twelveHourForecast = [];
-    if (activeCityData?.hourly24) {
-        for (let i = 0; i < 12; i += 2) {
-            if (activeCityData.hourly24[i]) {
-                twelveHourForecast.push(activeCityData.hourly24[i]);
-            }
-        }
-    }
-
     const textForecast = getNaturalTextForecast(activeCityData, cityLabels[activeCityName] || activeCityData?.name || 'Selected city');
+
+    // Pick Now, +2h, +6h slots for each city
+    const getCitySlots = (city) => {
+        const h24 = weatherData[city]?.hourly24 || [];
+        return [0, 2, 6].map(i => h24[i]).filter(Boolean);
+    };
 
     return (
         <section className={`quick-weather-card ${bgClass}`}>
-            <div className="qw-cities-grid">
+            {/* Per-city rows: name + current + Now/+2h/+6h */}
+            <div className="qw-cities-list">
                 {visibleCities.map(city => {
                     const d = weatherData[city];
                     const c = d.current;
                     const isActive = city === activeCityName;
+                    const slots = getCitySlots(city);
                     return (
                         <div
                             key={city}
-                            className={`qw-city-square ${isActive ? 'qw-city-square--active' : ''}`}
+                            className={`qw-city-row ${isActive ? 'qw-city-row--active' : ''}`}
                             onClick={() => setActiveCity(city)}
                         >
-                            <div className="qw-square-header">
-                                <span className="qw-square-name">{cityLabels[city] || d.name || city}</span>
+                            {/* Left: city name + current */}
+                            <div className="qw-city-row__left">
+                                <span className="qw-city-row__name">{cityLabels[city] || d.name || city}</span>
+                                <div className="qw-city-row__current">
+                                    {c.iconId ? <WeatherIcon id={c.iconId} size={28} /> : <span style={{fontSize:'1.4rem'}}>{c.icon}</span>}
+                                    <span className="qw-city-row__temp">{c.temp}°</span>
+                                </div>
                             </div>
-                            <div className="qw-square-icon">
-                                {c.iconId ? <WeatherIcon id={c.iconId} size={40} /> : <span style={{fontSize:'2rem'}}>{c.icon}</span>}
+                            {/* Right: Now, +2h, +6h slots */}
+                            <div className="qw-city-row__slots">
+                                {slots.length > 0 ? slots.map((slot, i) => (
+                                    <div key={i} className="qw-city-slot">
+                                        <span className="qw-city-slot__label">{slot.label}</span>
+                                        <div className="qw-city-slot__icon">
+                                            {slot.iconId ? <WeatherIcon id={slot.iconId} size={22} /> : slot.icon}
+                                        </div>
+                                        <span className="qw-city-slot__temp">{slot.temp}°</span>
+                                        <span className="qw-city-slot__pop">
+                                            {slot.prob > 20 ? <span className="qw-pop-high">💧{slot.prob}%</span> : <span className="qw-pop-low">--</span>}
+                                        </span>
+                                    </div>
+                                )) : (
+                                    <span style={{fontSize:'0.75rem', opacity:0.5, alignSelf:'center'}}>No forecast</span>
+                                )}
                             </div>
-                            <div className="qw-square-temp">{c.temp}°</div>
                         </div>
                     );
                 })}
             </div>
 
+            {/* AI text forecast for active city */}
             <div className="qw-highlight-text-container">
                 <span className="qw-highlight-icon">🤖</span>
                 <span className="qw-highlight-text">{textForecast}</span>
             </div>
-
-            {twelveHourForecast.length > 0 && (
-                <div className="qw-forecast-ribbon">
-                    {twelveHourForecast.map((slot, i) => (
-                        <div key={i} className="qw-ribbon-item">
-                            <div className="qw-ribbon-time">{slot.label}</div>
-                            <div className="qw-ribbon-icon">
-                                {slot.iconId ? <WeatherIcon id={slot.iconId} size={32} /> : slot.icon}
-                            </div>
-                            <div className="qw-ribbon-temp">{slot.temp}°</div>
-                            <div className="qw-ribbon-pop">
-                                {slot.prob > 20 ? (
-                                    <span className="qw-pop-high">💧{slot.prob}%</span>
-                                ) : (
-                                    <span className="qw-pop-low">--</span>
-                                )}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
 
             {severeWarning && (
                 <div className="qw-severe-banner">

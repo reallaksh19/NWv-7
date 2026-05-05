@@ -182,28 +182,44 @@ function processMultiModelData(modelData, locationName) {
     const conditionMap = { 0: 'Clear', 1: 'Mainly Clear', 2: 'Partly Cloudy', 3: 'Overcast', 45: 'Fog', 48: 'Fog', 51: 'Light Drizzle', 61: 'Light Rain', 63: 'Rain', 65: 'Heavy Rain', 80: 'Rain Showers', 95: 'Thunderstorm' };
     const getCondition = (code) => conditionMap[code] || 'Unknown';
 
+    // Shared hourly model data — built once, reused by segment metrics and hourly24
+    const allModelHourlyData = [];
+    if (modelData.ecmwf?.hourly) allModelHourlyData.push(modelData.ecmwf.hourly);
+    if (modelData.gfs?.hourly) allModelHourlyData.push(modelData.gfs.hourly);
+    if (modelData.icon?.hourly) allModelHourlyData.push(modelData.icon.hourly);
+
+    const getHourConsensus = (hourIdx) => {
+        const pts = allModelHourlyData.map(h => ({
+            temperature_2m: h.temperature_2m?.[hourIdx],
+            apparent_temperature: h.apparent_temperature?.[hourIdx],
+            precipitation: h.precipitation?.[hourIdx],
+            precipitation_probability: h.precipitation_probability?.[hourIdx],
+            weather_code: h.weather_code?.[hourIdx],
+            relative_humidity_2m: h.relative_humidity_2m?.[hourIdx],
+            wind_speed_10m: h.wind_speed_10m?.[hourIdx],
+            uv_index: h.uv_index?.[hourIdx],
+            cloud_cover: h.cloud_cover?.[hourIdx]
+        })).filter(d => d.temperature_2m != null);
+        if (pts.length === 0) return null;
+        return pts;
+    };
+
+    const formatHourLabel = (h) => {
+        const hour = h % 24;
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        return `${hour % 12 || 12} ${ampm}`;
+    };
+
     const getSegmentMetrics = (startHour, endHour) => {
         const indices = [];
         for (let i = startHour; i <= endHour; i++) indices.push(i);
-        const allModelHourlyData = [];
-        if (modelData.ecmwf?.hourly) allModelHourlyData.push(modelData.ecmwf.hourly);
-        if (modelData.gfs?.hourly) allModelHourlyData.push(modelData.gfs.hourly);
-        if (modelData.icon?.hourly) allModelHourlyData.push(modelData.icon.hourly);
 
         const segmentTemps = []; const segmentApparent = []; const segmentPrecip = []; const segmentPrecipProb = []; const segmentWeatherCodes = []; const segmentHumidity = []; const segmentWindSpeed = []; const segmentUV = []; const segmentCloud = [];
+        const hourlySlots = [];
 
         indices.forEach(hourIdx => {
-            const hourData = allModelHourlyData.map(hourly => ({
-                temperature_2m: hourly.temperature_2m?.[hourIdx],
-                apparent_temperature: hourly.apparent_temperature?.[hourIdx],
-                precipitation: hourly.precipitation?.[hourIdx],
-                precipitation_probability: hourly.precipitation_probability?.[hourIdx],
-                weather_code: hourly.weather_code?.[hourIdx],
-                relative_humidity_2m: hourly.relative_humidity_2m?.[hourIdx],
-                wind_speed_10m: hourly.wind_speed_10m?.[hourIdx],
-                uv_index: hourly.uv_index?.[hourIdx],
-                cloud_cover: hourly.cloud_cover?.[hourIdx]
-            }));
+            const hourData = getHourConsensus(hourIdx);
+            if (!hourData) return;
             const avgTemp = averageTemperature(hourData);
             const avgApparent = averageApparentTemperature(hourData);
             const avgPrecip = averagePrecipitation(hourData);
@@ -219,6 +235,19 @@ function processMultiModelData(modelData, locationName) {
                 if (d.uv_index != null) segmentUV.push(d.uv_index);
                 if (d.cloud_cover != null) segmentCloud.push(d.cloud_cover);
             });
+            // Build per-hour slot for expanded view
+            if (avgTemp !== null) {
+                const avgPrecipMm = parseFloat((hourData.reduce((s, d) => s + (d.precipitation || 0), 0) / hourData.length).toFixed(1));
+                const avgProb = Math.round(hourData.reduce((s, d) => s + (d.precipitation_probability || 0), 0) / hourData.length);
+                hourlySlots.push({
+                    time: formatHourLabel(hourIdx),
+                    temp: avgTemp,
+                    iconId: getIconForHour(weatherCode, hourIdx % 24),
+                    icon: getIcon(weatherCode),
+                    precip: avgPrecipMm,
+                    prob: avgProb
+                });
+            }
         });
 
         const avgTemp = segmentTemps.length ? Math.round(segmentTemps.reduce((a, b) => a + b, 0) / segmentTemps.length) : null;
@@ -239,7 +268,7 @@ function processMultiModelData(modelData, locationName) {
             windSpeed: segmentWindSpeed.length ? Math.round(segmentWindSpeed.reduce((a, b) => a + b, 0) / segmentWindSpeed.length) : null,
             uvIndex: segmentUV.length ? Math.max(...segmentUV) : null,
             cloudCover: segmentCloud.length ? Math.round(segmentCloud.reduce((a, b) => a + b, 0) / segmentCloud.length) : null,
-            hourly: []
+            hourly: hourlySlots
         };
     };
 
@@ -264,6 +293,33 @@ function processMultiModelData(modelData, locationName) {
     const maxUV = dailyUVMax.length ? Math.round(dailyUVMax.reduce((a, b) => a + b, 0) / dailyUVMax.length) : null;
     const successfulModels = getSuccessfulModels(modelData);
 
+    // Build hourly24 (24 slots from current hour) and next8Hours
+    const currentHourOfDay = new Date().getHours();
+    const hourly24 = [];
+    const next8Hours = [];
+    for (let i = 0; i < 24; i++) {
+        const hourIdx = currentHourOfDay + i;
+        const hourData = getHourConsensus(hourIdx);
+        if (!hourData) continue;
+        const avgTemp = averageTemperature(hourData);
+        if (avgTemp === null) continue;
+        const weatherCode = getMostCommonWeatherCode(hourData);
+        const avgPrecip = parseFloat((hourData.reduce((s, d) => s + (d.precipitation || 0), 0) / hourData.length).toFixed(1));
+        const avgProb = Math.round(hourData.reduce((s, d) => s + (d.precipitation_probability || 0), 0) / hourData.length);
+        const labelHour = hourIdx % 24;
+        const slot = {
+            label: i === 0 ? 'Now' : formatHourLabel(labelHour),
+            temp: avgTemp,
+            iconId: getIconForHour(weatherCode, labelHour),
+            icon: getIcon(weatherCode),
+            prob: avgProb,
+            precip: avgPrecip,
+            condition: getCondition(weatherCode)
+        };
+        hourly24.push(slot);
+        if (i < 8) next8Hours.push(slot);
+    }
+
     return {
         name: locationName.charAt(0).toUpperCase() + locationName.slice(1),
         icon: locationName === 'muscat' ? '📍' : '🏛️',
@@ -285,8 +341,8 @@ function processMultiModelData(modelData, locationName) {
         noon: today.noon,
         evening: today.evening,
         tomorrow,
-        hourly24: [],
-        next8Hours: [],
+        hourly24,
+        next8Hours,
         summary: parseFloat(totalPrecip) > 0 ? `Today's max rain probability: ${maxPrecipProb}%. Total precip: ${totalPrecip}mm. UV Index: ${maxUV || 'N/A'}.` : `Condition stable. UV Index: ${maxUV || 'N/A'}.`
     };
 }

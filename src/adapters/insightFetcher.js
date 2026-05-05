@@ -5,14 +5,25 @@ import { extractEntities, extractVerbs, extractNumbers, extractKeywords } from '
 import { loadInsightSnapshot, createSnapshotRawFetcher } from './insightSnapshotFetcher.js';
 import { getRuntimeCapabilities } from '../runtime/runtimeCapabilities.js';
 
-export async function slotFetcher(slot) {
-  const rawStories = await fetchRawStoriesForSlot(slot);
-  if (!rawStories.length) return [];
+async function normalizeRawStories(rawStories, slot, cfg = DEFAULT_CONFIG) {
+  if (!Array.isArray(rawStories) || rawStories.length === 0) return [];
 
-  const texts = rawStories.map((story) => `${story.title || ''} ${story.summary || ''}`.trim());
+  const validRawStories = rawStories
+    .map((story) => ({
+      ...story,
+      publishedAt: Number(story?.publishedAt || 0),
+      sourceGroup: story?.sourceGroup || story?.source || 'unknown',
+      summary: story?.summary || story?.description || '',
+      url: story?.url || story?.link || '',
+    }))
+    .filter((story) => story.title && story.url && Number.isFinite(story.publishedAt) && story.publishedAt > 0);
+
+  if (validRawStories.length === 0) return [];
+
+  const texts = validRawStories.map((story) => `${story.title || ''} ${story.summary || ''}`.trim());
   const embeddings = await getEmbeddings(texts);
 
-  const enriched = await Promise.all(rawStories.map(async (raw, index) => {
+  const enriched = await Promise.all(validRawStories.map(async (raw, index) => {
     const text = texts[index];
     const [entities, keywords, verbs, numbers] = await Promise.all([
       extractEntities(text),
@@ -24,7 +35,7 @@ export async function slotFetcher(slot) {
     return normalizeStory(
       raw,
       slot,
-      DEFAULT_CONFIG,
+      cfg,
       embeddings[index],
       entities,
       keywords,
@@ -36,13 +47,23 @@ export async function slotFetcher(slot) {
   return enriched.filter(Boolean);
 }
 
+export async function slotFetcher(slot) {
+  const rawStories = await fetchRawStoriesForSlot(slot);
+  return normalizeRawStories(rawStories, slot, DEFAULT_CONFIG);
+}
+
+function createNormalizedSnapshotFetcher(snapshot, cfg = DEFAULT_CONFIG) {
+  const rawFetcher = createSnapshotRawFetcher(snapshot);
+  return async (slot) => normalizeRawStories(await rawFetcher(slot), slot, cfg);
+}
+
 export { runInsightPipeline, applyIncrementalUpdate, DEFAULT_CONFIG };
 
 /**
  * createInsightFetcher — returns the appropriate SlotFetcher depending on runtime.
  *
  * On github.io (preferSnapshots = true):
- *   1. Try fresh snapshot  (file age ≤ 3 h)
+ *   1. Try fresh snapshot  (file age ≤ 8 h)
  *   2. Try stale snapshot  (any age — used with warning)
  *   3. Empty state         (never falls back to live CORS proxies)
  *
@@ -58,7 +79,7 @@ export async function createInsightFetcher() {
     const fresh = await loadInsightSnapshot({ allowStale: false });
     if (fresh) {
       return {
-        fetcher:     createSnapshotRawFetcher(fresh),
+        fetcher:     createNormalizedSnapshotFetcher(fresh, DEFAULT_CONFIG),
         source:      'snapshot',
         snapshotTs:  fresh.fetchedAt,
         contentHash: fresh.contentHash,
@@ -68,13 +89,22 @@ export async function createInsightFetcher() {
     const stale = await loadInsightSnapshot({ allowStale: true });
     if (stale) {
       console.warn('[InsightFetcher] Using stale snapshot — fresh snapshot unavailable');
+      const staleConfig = {
+        ...DEFAULT_CONFIG,
+        WEAK_TREE_CHILD_MIN: 1,
+        MIN_SOURCES_PER_TREE: 1,
+        TIER_D_EXCLUDE: false,
+      };
       return {
-        fetcher:     createSnapshotRawFetcher(stale),
+        fetcher:     createNormalizedSnapshotFetcher(stale, staleConfig),
         source:      'stale-snapshot',
         snapshotTs:  stale.fetchedAt,
         contentHash: stale.contentHash,
-        // Relax quality gates so stale stories still form clusters
-        pipelineConfigOverrides: { MIN_CHILD_COUNT: 1, WEAK_TREE_TOLERANCE: true },
+        pipelineConfigOverrides: {
+          WEAK_TREE_CHILD_MIN: 1,
+          MIN_SOURCES_PER_TREE: 1,
+          TIER_D_EXCLUDE: false,
+        },
       };
     }
 

@@ -130,8 +130,8 @@ export async function fetchWeather(locationKey) {
         const snapshot = await fetchWeatherSnapshot(key);
         if (snapshot) return { ...snapshot, sourceMode: 'snapshot' };
 
-        // Built-in cities can still fetch directly from Open-Meteo on static hosts.
-        // Custom/geocoded cities are blocked in static mode because geocoding is disabled there.
+        // Known built-in cities can still fetch directly from Open-Meteo on static hosts.
+        // Only custom/geocoded cities are blocked in static mode because geocoding is disabled there.
         if (!LOCATIONS[key]) return null;
     }
 

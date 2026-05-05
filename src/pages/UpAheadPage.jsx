@@ -34,6 +34,14 @@ function normalizePlanDate(dateStr) {
     return dateStr;
 }
 
+function hasVisibleUpAheadContent(data) {
+    if (!data) return false;
+    if (Array.isArray(data.timeline) && data.timeline.some(day => (day?.items || []).length > 0)) return true;
+    if (data.sections && Object.values(data.sections).some(items => Array.isArray(items) && items.length > 0)) return true;
+    if (Array.isArray(data.weekly_plan) && data.weekly_plan.some(day => (day?.items || []).length > 0)) return true;
+    return false;
+}
+
 function UpAheadPage() {
     const { settings, updateSettings } = useSettings();
     const [data, setData] = useState(null);
@@ -237,7 +245,7 @@ function UpAheadPage() {
         );
     }
 
-    if (!data || !data.timeline || data.timeline.length === 0) {
+    if (!hasVisibleUpAheadContent(data)) {
          return (
             <div className="page-container">
                 <Header title="Up Ahead" icon="🗓️" loadingPhase={loadingPhase} />
@@ -321,7 +329,7 @@ function UpAheadPage() {
                     <span className="ua-alert-icon">{alertIcon}</span>
                     <div className="ua-alert-content">
                         <h4>{alertTitle}</h4>
-                        <p>{highPriorityAlert.text}</p>
+                        <p>{highPriorityAlert.text || highPriorityAlert.description || highPriorityAlert.title || 'Alert details unavailable.'}</p>
                     </div>
                 </div>
             )}
@@ -392,12 +400,9 @@ function UpAheadPage() {
                 {view === 'festivals' && (
                   <div className="ua-tab-view">
                     <ProgressBar active={loading || isRefreshing} />
-                    {/* Location pills + controls */}
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px',
-                                  alignItems: 'center', padding: '8px' }}>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px', alignItems: 'center', padding: '8px' }}>
                       {(settings?.upAhead?.locations || ['Chennai', 'Muscat']).map(loc => (
-                        <span key={loc} className="ua-badge type-festival"
-                              style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <span key={loc} className="ua-badge type-festival" style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                           {loc}
                           <span
                             title={`Remove ${loc}`}
@@ -437,7 +442,7 @@ function UpAheadPage() {
 
                 {view === 'feed' && (
                     <div className="ua-timeline">
-                        {data.timeline.map((day) => (
+                        {(data.timeline || []).map((day) => (
                             <div key={day.date} className="ua-day-section timeline-track">
                                 <div className="ua-day-header">
                                     <div className="ua-day-label">{day.dayLabel}</div>

@@ -4,6 +4,7 @@ const CACHE_KEY = 'indian_market_stable_data';
 const CACHE_TTL = 30 * 60 * 1000;
 const STALE_CACHE_MAX_AGE = 24 * 60 * 60 * 1000;
 const SNAPSHOT_FRESH_MS = 6 * 60 * 60 * 1000;
+const STALE_SNAPSHOT_MAX_AGE = 24 * 60 * 60 * 1000;
 const YAHOO_CHART_BASES = [
   'https://query1.finance.yahoo.com/v8/finance/chart/',
   'https://query2.finance.yahoo.com/v8/finance/chart/',
@@ -102,17 +103,30 @@ function isUsableMarketPayload(data) {
   );
 }
 
+function getPayloadTimestamp(data) {
+  const candidates = [
+    Number(data?.fetchedAt || 0),
+    Date.parse(data?.generatedAt || ''),
+    Date.parse(data?.generated_at || ''),
+  ].filter((ts) => Number.isFinite(ts) && ts > 0 && ts <= Date.now() + 5 * 60 * 1000);
+  return candidates.length ? Math.max(...candidates) : 0;
+}
+
 function getPayloadAgeMs(data) {
-  const ts = Number(data?.fetchedAt || 0) || Date.parse(data?.generatedAt || data?.generated_at || '');
-  return Number.isFinite(ts) && ts > 0 ? Date.now() - ts : Number.POSITIVE_INFINITY;
+  const ts = getPayloadTimestamp(data);
+  return ts > 0 ? Date.now() - ts : Number.POSITIVE_INFINITY;
 }
 
 function isFreshPayload(data, ttlMs) {
   return isUsableMarketPayload(data) && getPayloadAgeMs(data) <= ttlMs;
 }
 
+function isCacheableAsFresh(data) {
+  return isUsableMarketPayload(data) && ['live', 'cache', 'snapshot'].includes(String(data?.sourceMode || '')) && getPayloadAgeMs(data) <= CACHE_TTL;
+}
+
 function withMeta(data, sourceMode, extra = {}) {
-  const fetchedAt = Number(data?.fetchedAt || 0) || Date.parse(data?.generatedAt || data?.generated_at || '') || Date.now();
+  const timestamp = getPayloadTimestamp(data) || (sourceMode === 'seed' ? Date.now() : Date.now());
   return {
     ...MARKET_SEED,
     ...data,
@@ -121,8 +135,8 @@ function withMeta(data, sourceMode, extra = {}) {
     sectorals: Array.isArray(data?.sectorals) && data.sectorals.length ? data.sectorals : MARKET_SEED.sectorals,
     commodities: Array.isArray(data?.commodities) && data.commodities.length ? data.commodities : MARKET_SEED.commodities,
     currencies: Array.isArray(data?.currencies) && data.currencies.length ? data.currencies : MARKET_SEED.currencies,
-    fetchedAt,
-    generatedAt: data?.generatedAt || data?.generated_at || new Date(fetchedAt).toISOString(),
+    fetchedAt: timestamp,
+    generatedAt: data?.generatedAt || data?.generated_at || new Date(timestamp).toISOString(),
     sourceMode,
     sourceHealth: { ...MARKET_SEED.sourceHealth, ...(data?.sourceHealth || {}), ...(extra.sourceHealth || {}) },
     errors: { ...(data?.errors || {}), ...(extra.errors || {}) },
@@ -260,6 +274,7 @@ async function readMarketCache({ allowStale = false } = {}) {
   try {
     const cached = await getIdbCache(CACHE_KEY);
     if (!isUsableMarketPayload(cached)) return null;
+    if (String(cached.sourceMode || '').includes('seed')) return null;
     const age = getPayloadAgeMs(cached);
     if (!allowStale && age > CACHE_TTL) return null;
     if (allowStale && age > STALE_CACHE_MAX_AGE) return null;
@@ -418,7 +433,7 @@ export async function fetchAllMarketData() {
     });
   }
 
-  if (isUsableMarketPayload(snapshot)) {
+  if (isUsableMarketPayload(snapshot) && getPayloadAgeMs(snapshot) <= STALE_SNAPSHOT_MAX_AGE) {
     return withMeta(snapshot, 'stale-snapshot', {
       sourceHealth: { indices: 'stale-snapshot-after-live-failure' },
       errors: { feed: 'Live feeds failed; showing stale snapshot.' },
@@ -426,8 +441,8 @@ export async function fetchAllMarketData() {
   }
 
   const seed = withMeta(MARKET_SEED, 'seed', {
-    errors: { indices: 'Live feed, snapshot, and cache unavailable; showing bundled seed.' },
+    sourceHealth: { indices: 'seed-after-live-and-snapshot-failure' },
+    errors: { indices: 'Live feed unavailable and snapshot is too stale; showing bundled reference seed.' },
   });
-  try { await setIdbCache(CACHE_KEY, seed); } catch {}
   return seed;
 }

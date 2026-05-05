@@ -1,10 +1,13 @@
 import { getIdbCache, setIdbCache } from './indexedDbCache.js';
 
-const CACHE_KEY = 'indian_market_stable_data';
+const CACHE_KEY = 'indian_market_stable_data_v3';
+const LEGACY_CACHE_KEYS = ['indian_market_stable_data', 'indian_market_stable_data_v2'];
+const SCHEMA_VERSION = 'market-trust-v3';
 const CACHE_TTL = 30 * 60 * 1000;
 const STALE_CACHE_MAX_AGE = 24 * 60 * 60 * 1000;
 const SNAPSHOT_FRESH_MS = 6 * 60 * 60 * 1000;
 const STALE_SNAPSHOT_MAX_AGE = 24 * 60 * 60 * 1000;
+const MAX_ALLOWED_PAYLOAD_AGE_MS = 24 * 60 * 60 * 1000;
 const YAHOO_CHART_BASES = [
   'https://query1.finance.yahoo.com/v8/finance/chart/',
   'https://query2.finance.yahoo.com/v8/finance/chart/',
@@ -40,6 +43,7 @@ const TOP_STOCKS = [
 ];
 
 export const MARKET_SEED = {
+  schemaVersion: SCHEMA_VERSION,
   indices: [
     { name: 'NIFTY 50', symbol: '^NSEI', value: '22,340.55', change: '124.30', changePercent: '0.56', direction: 'up', currency: '₹', sourceMode: 'seed' },
     { name: 'SENSEX', symbol: '^BSESN', value: '73,745.35', change: '350.20', changePercent: '0.48', direction: 'up', currency: '₹', sourceMode: 'seed' },
@@ -78,14 +82,16 @@ export const MARKET_SEED = {
   stockCategories: { highs: [], lows: [], all: [] },
   fiidii: { fii: {}, dii: {}, date: '' },
   sourceHealth: {
-    indices: 'seed',
-    movers: 'seed',
-    sectorals: 'seed',
-    commodities: 'seed',
-    currencies: 'seed',
-    mutualFunds: 'empty',
-    ipo: 'empty',
-    fiidii: 'empty',
+    sections: {
+      indices: { status: 'seed', winner: 'bundled-seed', freshnessMs: 0, providersTried: [] },
+      movers: { status: 'seed', winner: 'bundled-seed', freshnessMs: 0, providersTried: [] },
+      sectorals: { status: 'seed', winner: 'bundled-seed', freshnessMs: 0, providersTried: [] },
+      commodities: { status: 'seed', winner: 'bundled-seed', freshnessMs: 0, providersTried: [] },
+      currencies: { status: 'seed', winner: 'bundled-seed', freshnessMs: 0, providersTried: [] },
+      mutualFunds: { status: 'empty', winner: null, freshnessMs: null, providersTried: [] },
+      ipo: { status: 'empty', winner: null, freshnessMs: null, providersTried: [] },
+      fiidii: { status: 'empty', winner: null, freshnessMs: null, providersTried: [] },
+    },
   },
   errors: {},
 };
@@ -117,19 +123,49 @@ function getPayloadAgeMs(data) {
   return ts > 0 ? Date.now() - ts : Number.POSITIVE_INFINITY;
 }
 
-function isFreshPayload(data, ttlMs) {
-  return isUsableMarketPayload(data) && getPayloadAgeMs(data) <= ttlMs;
+function hasKnownSchema(data) {
+  return data?.schemaVersion === SCHEMA_VERSION || data?.schemaVersion === '2.0.0' || Boolean(data?.sourceHealth);
 }
 
-function isCacheableAsFresh(data) {
-  return isUsableMarketPayload(data) && ['live', 'cache', 'snapshot'].includes(String(data?.sourceMode || '')) && getPayloadAgeMs(data) <= CACHE_TTL;
+function isFreshPayload(data, ttlMs) {
+  return isUsableMarketPayload(data) && hasKnownSchema(data) && getPayloadAgeMs(data) <= ttlMs;
+}
+
+function sourceStatusFromMode(sourceMode) {
+  if (sourceMode === 'live') return 'live';
+  if (sourceMode === 'snapshot') return 'snapshot';
+  if (sourceMode === 'stale-cache') return 'stale-cache';
+  if (sourceMode === 'stale-snapshot') return 'stale-snapshot';
+  if (sourceMode === 'seed') return 'seed';
+  return sourceMode || 'unknown';
+}
+
+function normalizeSourceHealth(input, sourceMode, fetchedAt) {
+  const age = fetchedAt ? Math.max(0, Date.now() - fetchedAt) : null;
+  const status = sourceStatusFromMode(sourceMode);
+  if (input?.sections && typeof input.sections === 'object') return input;
+
+  const raw = input && typeof input === 'object' ? input : {};
+  const sections = {};
+  const sectionNames = ['indices', 'movers', 'sectorals', 'commodities', 'currencies', 'mutualFunds', 'ipo', 'fiidii'];
+  for (const section of sectionNames) {
+    const rawStatus = raw[section] || raw[section.toLowerCase()] || status;
+    sections[section] = {
+      status: rawStatus,
+      winner: raw.provider || raw.indices || rawStatus || status,
+      freshnessMs: age,
+      providersTried: [],
+    };
+  }
+  return { sections };
 }
 
 function withMeta(data, sourceMode, extra = {}) {
-  const timestamp = getPayloadTimestamp(data) || (sourceMode === 'seed' ? Date.now() : Date.now());
-  return {
+  const timestamp = getPayloadTimestamp(data) || Date.now();
+  const normalized = {
     ...MARKET_SEED,
     ...data,
+    schemaVersion: SCHEMA_VERSION,
     indices: Array.isArray(data?.indices) && data.indices.length ? data.indices : MARKET_SEED.indices,
     movers: data?.movers || MARKET_SEED.movers,
     sectorals: Array.isArray(data?.sectorals) && data.sectorals.length ? data.sectorals : MARKET_SEED.sectorals,
@@ -138,9 +174,20 @@ function withMeta(data, sourceMode, extra = {}) {
     fetchedAt: timestamp,
     generatedAt: data?.generatedAt || data?.generated_at || new Date(timestamp).toISOString(),
     sourceMode,
-    sourceHealth: { ...MARKET_SEED.sourceHealth, ...(data?.sourceHealth || {}), ...(extra.sourceHealth || {}) },
     errors: { ...(data?.errors || {}), ...(extra.errors || {}) },
   };
+  normalized.sourceHealth = normalizeSourceHealth(
+    { ...(data?.sourceHealth || {}), ...(extra.sourceHealth || {}) },
+    sourceMode,
+    timestamp,
+  );
+  normalized.trust = {
+    schemaVersion: SCHEMA_VERSION,
+    ageMs: getPayloadAgeMs(normalized),
+    stale: getPayloadAgeMs(normalized) > CACHE_TTL,
+    expired: getPayloadAgeMs(normalized) > MAX_ALLOWED_PAYLOAD_AGE_MS,
+  };
+  return normalized;
 }
 
 async function fetchWithTimeout(url, timeoutMs = 8000) {
@@ -275,6 +322,7 @@ async function readMarketCache({ allowStale = false } = {}) {
     const cached = await getIdbCache(CACHE_KEY);
     if (!isUsableMarketPayload(cached)) return null;
     if (String(cached.sourceMode || '').includes('seed')) return null;
+    if (!hasKnownSchema(cached)) return null;
     const age = getPayloadAgeMs(cached);
     if (!allowStale && age > CACHE_TTL) return null;
     if (allowStale && age > STALE_CACHE_MAX_AGE) return null;
@@ -381,6 +429,7 @@ async function fetchLiveMarketBundle() {
   ]);
 
   const live = {
+    schemaVersion: SCHEMA_VERSION,
     indices: indices.status === 'fulfilled' ? indices.value : [],
     movers: movers.status === 'fulfilled' ? movers.value : MARKET_SEED.movers,
     sectorals: sectorals.status === 'fulfilled' ? sectorals.value : [],
@@ -389,21 +438,29 @@ async function fetchLiveMarketBundle() {
     fetchedAt: Date.now(),
     generatedAt: new Date().toISOString(),
     sourceHealth: {
-      indices: indices.status === 'fulfilled' && indices.value.length ? 'live-query1-query2-parallel' : 'failed',
-      movers: movers.status === 'fulfilled' ? 'live-query1-query2-parallel' : 'seed',
-      sectorals: sectorals.status === 'fulfilled' && sectorals.value.length ? 'live-query1-query2-parallel' : 'seed',
-      commodities: commodities.status === 'fulfilled' ? 'live-query1-query2-parallel' : 'seed',
-      currencies: currencies.status === 'fulfilled' ? 'live-query1-query2-parallel' : 'seed',
+      sections: {
+        indices: { status: indices.status === 'fulfilled' && indices.value.length ? 'live' : 'failed', winner: 'yahoo-query1-query2', freshnessMs: 0, providersTried: ['yahoo-chart-query1', 'yahoo-chart-query2', 'yahoo-quote-query1', 'yahoo-quote-query2'] },
+        movers: { status: movers.status === 'fulfilled' ? 'live' : 'seed', winner: 'yahoo-watchlist', freshnessMs: 0, providersTried: ['yahoo-query1-query2'] },
+        sectorals: { status: sectorals.status === 'fulfilled' && sectorals.value.length ? 'live' : 'seed', winner: 'yahoo-sectorals', freshnessMs: 0, providersTried: ['yahoo-query1-query2'] },
+        commodities: { status: commodities.status === 'fulfilled' ? 'live' : 'seed', winner: 'yahoo-futures', freshnessMs: 0, providersTried: ['yahoo-query1-query2'] },
+        currencies: { status: currencies.status === 'fulfilled' ? 'live' : 'seed', winner: 'yahoo-fx', freshnessMs: 0, providersTried: ['yahoo-query1-query2'] },
+        mutualFunds: { status: 'empty', winner: null, freshnessMs: null, providersTried: [] },
+        ipo: { status: 'empty', winner: null, freshnessMs: null, providersTried: [] },
+        fiidii: { status: 'empty', winner: null, freshnessMs: null, providersTried: [] },
+      },
     },
-    providerPlan: ['cache', 'yahoo-chart-query1', 'yahoo-chart-query2', 'yahoo-quote-query1', 'yahoo-quote-query2', 'proxy-parallel', 'snapshot', 'stale-cache', 'seed'],
+    providerPlan: ['cache-v3', 'yahoo-chart-query1', 'yahoo-chart-query2', 'yahoo-quote-query1', 'yahoo-quote-query2', 'proxy-parallel', 'snapshot', 'stale-cache', 'seed'],
   };
 
   return isUsableMarketPayload(live) ? live : null;
 }
 
 export async function fetchAllMarketData() {
+  // Legacy key list is intentionally not read. It documents old poisoned keys so future clean-up can remove them.
+  void LEGACY_CACHE_KEYS;
+
   const freshCache = await readMarketCache({ allowStale: false });
-  if (freshCache) return withMeta(freshCache, 'cache', { sourceHealth: { cache: 'fresh' } });
+  if (freshCache) return withMeta(freshCache, 'cache', { sourceHealth: { cache: 'fresh-v3' } });
 
   const [liveResult, snapshotResult, staleCacheResult] = await Promise.allSettled([
     fetchLiveMarketBundle(),
@@ -429,20 +486,20 @@ export async function fetchAllMarketData() {
   if (isUsableMarketPayload(staleCache)) {
     return withMeta(staleCache, 'stale-cache', {
       sourceHealth: { cache: 'stale-after-live-failure' },
-      errors: { feed: 'Live feeds failed; showing stale cache.' },
+      errors: { feed: 'Live feeds failed; showing stale cache under 24h only.' },
     });
   }
 
-  if (isUsableMarketPayload(snapshot) && getPayloadAgeMs(snapshot) <= STALE_SNAPSHOT_MAX_AGE) {
+  if (isUsableMarketPayload(snapshot) && hasKnownSchema(snapshot) && getPayloadAgeMs(snapshot) <= STALE_SNAPSHOT_MAX_AGE) {
     return withMeta(snapshot, 'stale-snapshot', {
       sourceHealth: { indices: 'stale-snapshot-after-live-failure' },
-      errors: { feed: 'Live feeds failed; showing stale snapshot.' },
+      errors: { feed: 'Live feeds failed; showing stale snapshot under 24h only.' },
     });
   }
 
   const seed = withMeta(MARKET_SEED, 'seed', {
     sourceHealth: { indices: 'seed-after-live-and-snapshot-failure' },
-    errors: { indices: 'Live feed unavailable and snapshot is too stale; showing bundled reference seed.' },
+    errors: { indices: 'Live feed unavailable and snapshot/cache are missing or expired; showing bundled reference seed.' },
   });
   return seed;
 }

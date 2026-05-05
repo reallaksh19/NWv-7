@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useWeather } from '../context/WeatherContext';
 import { useSettings } from '../context/SettingsContext';
 import WeatherIcon from './WeatherIcons';
@@ -19,6 +19,23 @@ const QuickWeather = () => {
         }
     });
 
+    const cities = useMemo(
+        () => (settings.weather?.cities || ['chennai', 'trichy', 'muscat']).map(c => String(c).toLowerCase()),
+        [settings.weather?.cities]
+    );
+
+    const visibleCities = useMemo(
+        () => cities.filter(city => weatherData?.[city]?.current),
+        [cities, weatherData]
+    );
+
+    const cityLabels = useMemo(() => ({
+        chennai: 'Chennai',
+        trichy: 'Trichy',
+        muscat: 'Muscat',
+        ...(cities[2] ? { [cities[2]]: cities[2].charAt(0).toUpperCase() + cities[2].slice(1) } : {})
+    }), [cities]);
+
     useEffect(() => {
         ensureBoot?.();
     }, [ensureBoot]);
@@ -31,24 +48,14 @@ const QuickWeather = () => {
         }
     }, [activeCity]);
 
-    if (!booted || loading) return <div className="quick-weather-card qw-bg-day"><div style={{ textAlign: 'center', padding: '20px 0' }}>Loading weather...</div></div>;
-    if (error || !weatherData || Object.values(weatherData).every(city => !city?.current)) return <div className="quick-weather-card qw-bg-night"><div style={{ textAlign: 'center', padding: '20px 0' }}>Weather unavailable</div></div>;
-
-    const cities = (settings.weather?.cities || ['chennai', 'trichy', 'muscat']).map(c => c.toLowerCase());
-    const visibleCities = cities.filter(city => weatherData?.[city]?.current);
-
-    const cityLabels = {
-        chennai: 'Chennai',
-        trichy: 'Trichy',
-        muscat: 'Muscat',
-        [cities[2]]: cities[2].charAt(0).toUpperCase() + cities[2].slice(1)
-    };
-
     useEffect(() => {
         if (visibleCities.length > 0 && !weatherData?.[activeCity]?.current) {
             setActiveCity(visibleCities[0]);
         }
     }, [activeCity, visibleCities, weatherData]);
+
+    if (!booted || loading) return <div className="quick-weather-card qw-bg-day"><div style={{ textAlign: 'center', padding: '20px 0' }}>Loading weather...</div></div>;
+    if (error || !weatherData || Object.values(weatherData).every(city => !city?.current)) return <div className="quick-weather-card qw-bg-night"><div style={{ textAlign: 'center', padding: '20px 0' }}>Weather unavailable</div></div>;
 
     const hour = new Date().getHours();
     let bgClass = 'qw-bg-day';
@@ -58,7 +65,7 @@ const QuickWeather = () => {
     else bgClass = 'qw-bg-night';
 
     const activeCityData = weatherData[activeCity] || weatherData[visibleCities[0]];
-    const activeCityName = activeCityData ? activeCity : visibleCities[0];
+    const activeCityName = weatherData[activeCity]?.current ? activeCity : visibleCities[0];
     const severeWarning = getSevereWarning(activeCityData);
 
     const twelveHourForecast = [];

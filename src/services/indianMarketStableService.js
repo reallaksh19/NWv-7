@@ -1,9 +1,11 @@
 import { getIdbCache, setIdbCache } from './indexedDbCache.js';
-import { getRuntimeCapabilities } from '../runtime/runtimeCapabilities.js';
 
 const CACHE_KEY = 'indian_market_stable_data';
 const CACHE_TTL = 30 * 60 * 1000;
-const YAHOO_BASE = 'https://query1.finance.yahoo.com/v8/finance/chart/';
+const STALE_CACHE_MAX_AGE = 24 * 60 * 60 * 1000;
+const SNAPSHOT_FRESH_MS = 6 * 60 * 60 * 1000;
+const YAHOO_CHART_BASE = 'https://query1.finance.yahoo.com/v8/finance/chart/';
+const YAHOO_QUOTE_BASE = 'https://query1.finance.yahoo.com/v7/finance/quote';
 
 const PROXIES = [
   (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
@@ -94,8 +96,17 @@ function isUsableMarketPayload(data) {
   );
 }
 
+function getPayloadAgeMs(data) {
+  const ts = Number(data?.fetchedAt || 0) || Date.parse(data?.generatedAt || data?.generated_at || '');
+  return Number.isFinite(ts) && ts > 0 ? Date.now() - ts : Number.POSITIVE_INFINITY;
+}
+
+function isFreshPayload(data, ttlMs) {
+  return isUsableMarketPayload(data) && getPayloadAgeMs(data) <= ttlMs;
+}
+
 function withMeta(data, sourceMode, extra = {}) {
-  const fetchedAt = Number(data?.fetchedAt || 0) || Date.now();
+  const fetchedAt = Number(data?.fetchedAt || 0) || Date.parse(data?.generatedAt || data?.generated_at || '') || Date.now();
   return {
     ...MARKET_SEED,
     ...data,
@@ -116,8 +127,7 @@ async function fetchWithTimeout(url, timeoutMs = 8000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const response = await fetch(url, { signal: controller.signal, cache: 'no-cache' });
-    return response;
+    return await fetch(url, { signal: controller.signal, cache: 'no-cache' });
   } finally {
     clearTimeout(timer);
   }
@@ -125,19 +135,16 @@ async function fetchWithTimeout(url, timeoutMs = 8000) {
 
 async function fetchJsonDirectOrProxy(url, timeoutMs = 8000) {
   const candidates = [url, ...PROXIES.map((proxy) => proxy(url))];
-  for (const candidate of candidates) {
-    try {
-      const response = await fetchWithTimeout(candidate, timeoutMs);
-      if (!response.ok) continue;
-      return await response.json();
-    } catch {
-      // try next source
-    }
-  }
-  return null;
+  const attempts = await Promise.allSettled(candidates.map(async (candidate) => {
+    const response = await fetchWithTimeout(candidate, timeoutMs);
+    if (!response.ok) throw new Error(`${response.status} ${candidate}`);
+    return response.json();
+  }));
+  const winner = attempts.find((attempt) => attempt.status === 'fulfilled' && attempt.value);
+  return winner?.value || null;
 }
 
-function parseYahoo(data) {
+function parseYahooChart(data) {
   const result = data?.chart?.result?.[0];
   const meta = result?.meta;
   if (!meta || !Number.isFinite(Number(meta.regularMarketPrice))) return null;
@@ -157,15 +164,47 @@ function parseYahoo(data) {
       low: Number(quote.low?.[i] ?? close),
     };
   }).filter(Boolean);
-  return { price, change, changePercent, timestamp: (meta.regularMarketTime || Date.now() / 1000) * 1000, series };
+  return { price, change, changePercent, timestamp: (meta.regularMarketTime || Date.now() / 1000) * 1000, series, provider: 'yahoo-chart' };
 }
 
-async function fetchYahooQuote(symbol, opts = {}) {
+function parseYahooQuote(item) {
+  if (!item || !Number.isFinite(Number(item.regularMarketPrice))) return null;
+  const price = Number(item.regularMarketPrice);
+  const change = Number(item.regularMarketChange ?? 0);
+  const changePercent = Number(item.regularMarketChangePercent ?? 0);
+  return {
+    price,
+    change,
+    changePercent,
+    timestamp: (item.regularMarketTime || Date.now() / 1000) * 1000,
+    series: [],
+    provider: 'yahoo-quote',
+  };
+}
+
+async function fetchYahooChartQuote(symbol, opts = {}) {
   const range = opts.range || '5d';
   const interval = opts.interval || '1d';
-  const url = `${YAHOO_BASE}${encodeURIComponent(symbol)}?interval=${interval}&range=${range}`;
+  const url = `${YAHOO_CHART_BASE}${encodeURIComponent(symbol)}?interval=${interval}&range=${range}`;
   const data = await fetchJsonDirectOrProxy(url, 8000);
-  return data ? parseYahoo(data) : null;
+  return data ? parseYahooChart(data) : null;
+}
+
+async function fetchYahooQuoteApi(symbol) {
+  const url = `${YAHOO_QUOTE_BASE}?symbols=${encodeURIComponent(symbol)}&fields=regularMarketPrice,regularMarketChange,regularMarketChangePercent,regularMarketTime`;
+  const data = await fetchJsonDirectOrProxy(url, 8000);
+  const item = data?.quoteResponse?.result?.[0];
+  return parseYahooQuote(item);
+}
+
+async function fetchBestYahooQuote(symbol, opts = {}) {
+  const [chart, quote] = await Promise.allSettled([
+    fetchYahooChartQuote(symbol, opts),
+    fetchYahooQuoteApi(symbol),
+  ]);
+  const chartValue = chart.status === 'fulfilled' ? chart.value : null;
+  const quoteValue = quote.status === 'fulfilled' ? quote.value : null;
+  return chartValue || quoteValue || null;
 }
 
 function formatIndex({ name, symbol }, priceData) {
@@ -184,6 +223,7 @@ function formatIndex({ name, symbol }, priceData) {
     dayOpen: series[0]?.open ?? priceData.price,
     dayHigh: series.length ? Math.max(...series.map((p) => p.high || p.close)) : priceData.price,
     dayLow: series.length ? Math.min(...series.map((p) => p.low || p.close)) : priceData.price,
+    sourceProvider: priceData.provider,
   };
 }
 
@@ -198,9 +238,22 @@ export async function fetchStaticSnapshot() {
   }
 }
 
+async function readMarketCache({ allowStale = false } = {}) {
+  try {
+    const cached = await getIdbCache(CACHE_KEY);
+    if (!isUsableMarketPayload(cached)) return null;
+    const age = getPayloadAgeMs(cached);
+    if (!allowStale && age > CACHE_TTL) return null;
+    if (allowStale && age > STALE_CACHE_MAX_AGE) return null;
+    return cached;
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchIndices() {
   const results = await Promise.allSettled(CORE_INDICES.map(async (index) => {
-    const quote = await fetchYahooQuote(index.symbol, { range: '5d', interval: '1d' });
+    const quote = await fetchBestYahooQuote(index.symbol, { range: '5d', interval: '1d' });
     return quote ? formatIndex(index, quote) : null;
   }));
   return results.filter((r) => r.status === 'fulfilled' && r.value).map((r) => r.value);
@@ -212,7 +265,7 @@ export async function fetchSectoralIndices() {
 }
 
 async function fetchStockQuote(symbol) {
-  const quote = await fetchYahooQuote(symbol, { range: '5d', interval: '1d' });
+  const quote = await fetchBestYahooQuote(symbol, { range: '5d', interval: '1d' });
   if (!quote) return null;
   return {
     symbol: symbol.replace('.NS', '').replace('.BO', ''),
@@ -221,6 +274,7 @@ async function fetchStockQuote(symbol) {
     changePercent: quote.changePercent.toFixed(2),
     direction: quote.change >= 0 ? 'up' : 'down',
     timestamp: quote.timestamp,
+    sourceProvider: quote.provider,
   };
 }
 
@@ -231,7 +285,7 @@ export async function fetchTopMovers() {
   return {
     gainers: valid.filter((q) => Number(q.changePercent) > 0).sort((a, b) => Number(b.changePercent) - Number(a.changePercent)).slice(0, 5),
     losers: valid.filter((q) => Number(q.changePercent) < 0).sort((a, b) => Number(a.changePercent) - Number(b.changePercent)).slice(0, 5),
-    source: 'yahoo-watchlist',
+    source: 'yahoo-parallel-watchlist',
   };
 }
 
@@ -242,7 +296,7 @@ export async function fetchCommodities() {
     { symbol: 'CL=F', name: 'Crude Oil', unit: '$/bbl' },
   ];
   const results = await Promise.allSettled(symbols.map(async (item) => {
-    const quote = await fetchYahooQuote(item.symbol, { range: '5d', interval: '1d' });
+    const quote = await fetchBestYahooQuote(item.symbol, { range: '5d', interval: '1d' });
     if (!quote) return null;
     return {
       name: item.name,
@@ -250,7 +304,7 @@ export async function fetchCommodities() {
       value: `$${quote.price.toFixed(2)}`,
       changePercent: quote.changePercent.toFixed(2),
       direction: quote.change >= 0 ? 'up' : 'down',
-      source: 'yahoo',
+      source: quote.provider,
     };
   }));
   const valid = results.filter((r) => r.status === 'fulfilled' && r.value).map((r) => r.value);
@@ -264,14 +318,14 @@ export async function fetchCurrencyRates() {
     { symbol: 'GBPINR=X', name: 'GBP/INR' },
   ];
   const results = await Promise.allSettled(symbols.map(async (item) => {
-    const quote = await fetchYahooQuote(item.symbol, { range: '5d', interval: '1d' });
+    const quote = await fetchBestYahooQuote(item.symbol, { range: '5d', interval: '1d' });
     if (!quote) return null;
     return {
       name: item.name,
       value: `₹${quote.price.toFixed(2)}`,
       changePercent: quote.changePercent.toFixed(2),
       direction: quote.change >= 0 ? 'up' : 'down',
-      source: 'yahoo',
+      source: quote.provider,
     };
   }));
   const valid = results.filter((r) => r.status === 'fulfilled' && r.value).map((r) => r.value);
@@ -284,23 +338,7 @@ export async function fetchNFOData() { return []; }
 export async function fetchStockCategories() { return MARKET_SEED.stockCategories; }
 export async function fetchFIIDII() { return MARKET_SEED.fiidii; }
 
-export async function fetchAllMarketData() {
-  try {
-    const cached = await getIdbCache(CACHE_KEY);
-    if (cached && isUsableMarketPayload(cached) && Date.now() - (cached.fetchedAt || 0) < CACHE_TTL) {
-      return withMeta(cached, 'cache');
-    }
-  } catch {
-    // continue
-  }
-
-  const snapshot = await fetchStaticSnapshot();
-  if (snapshot) {
-    const normalized = withMeta(snapshot, 'snapshot', { sourceHealth: { indices: 'snapshot' } });
-    try { await setIdbCache(CACHE_KEY, normalized); } catch {}
-    return normalized;
-  }
-
+async function fetchLiveMarketBundle() {
   const [indices, movers, sectorals, commodities, currencies] = await Promise.allSettled([
     fetchIndices(),
     fetchTopMovers(),
@@ -318,18 +356,60 @@ export async function fetchAllMarketData() {
     fetchedAt: Date.now(),
     generatedAt: new Date().toISOString(),
     sourceHealth: {
-      indices: indices.status === 'fulfilled' && indices.value.length ? 'live' : 'failed',
-      movers: movers.status === 'fulfilled' ? 'live' : 'seed',
-      sectorals: sectorals.status === 'fulfilled' && sectorals.value.length ? 'live' : 'seed',
-      commodities: commodities.status === 'fulfilled' ? 'live' : 'seed',
-      currencies: currencies.status === 'fulfilled' ? 'live' : 'seed',
+      indices: indices.status === 'fulfilled' && indices.value.length ? 'live-parallel' : 'failed',
+      movers: movers.status === 'fulfilled' ? 'live-parallel' : 'seed',
+      sectorals: sectorals.status === 'fulfilled' && sectorals.value.length ? 'live-parallel' : 'seed',
+      commodities: commodities.status === 'fulfilled' ? 'live-parallel' : 'seed',
+      currencies: currencies.status === 'fulfilled' ? 'live-parallel' : 'seed',
     },
+    providerPlan: ['cache', 'yahoo-chart', 'yahoo-quote', 'proxy-parallel', 'snapshot', 'stale-cache', 'seed'],
   };
 
-  const normalized = withMeta(isUsableMarketPayload(live) ? live : MARKET_SEED, isUsableMarketPayload(live) ? 'live' : 'seed', {
-    errors: isUsableMarketPayload(live) ? {} : { indices: 'Live feed and snapshot unavailable; showing bundled seed.' },
-  });
+  return isUsableMarketPayload(live) ? live : null;
+}
 
-  try { await setIdbCache(CACHE_KEY, normalized); } catch {}
-  return normalized;
+export async function fetchAllMarketData() {
+  const freshCache = await readMarketCache({ allowStale: false });
+  if (freshCache) return withMeta(freshCache, 'cache', { sourceHealth: { cache: 'fresh' } });
+
+  const [liveResult, snapshotResult, staleCacheResult] = await Promise.allSettled([
+    fetchLiveMarketBundle(),
+    fetchStaticSnapshot(),
+    readMarketCache({ allowStale: true }),
+  ]);
+
+  const live = liveResult.status === 'fulfilled' ? liveResult.value : null;
+  if (isUsableMarketPayload(live)) {
+    const normalized = withMeta(live, 'live', { sourceHealth: { provider: 'parallel-live-first' } });
+    try { await setIdbCache(CACHE_KEY, normalized); } catch {}
+    return normalized;
+  }
+
+  const snapshot = snapshotResult.status === 'fulfilled' ? snapshotResult.value : null;
+  if (isFreshPayload(snapshot, SNAPSHOT_FRESH_MS)) {
+    const normalized = withMeta(snapshot, 'snapshot', { sourceHealth: { indices: 'fresh-snapshot' } });
+    try { await setIdbCache(CACHE_KEY, normalized); } catch {}
+    return normalized;
+  }
+
+  const staleCache = staleCacheResult.status === 'fulfilled' ? staleCacheResult.value : null;
+  if (isUsableMarketPayload(staleCache)) {
+    return withMeta(staleCache, 'stale-cache', {
+      sourceHealth: { cache: 'stale-after-live-failure' },
+      errors: { feed: 'Live feeds failed; showing stale cache.' },
+    });
+  }
+
+  if (isUsableMarketPayload(snapshot)) {
+    return withMeta(snapshot, 'stale-snapshot', {
+      sourceHealth: { indices: 'stale-snapshot-after-live-failure' },
+      errors: { feed: 'Live feeds failed; showing stale snapshot.' },
+    });
+  }
+
+  const seed = withMeta(MARKET_SEED, 'seed', {
+    errors: { indices: 'Live feed, snapshot, and cache unavailable; showing bundled seed.' },
+  });
+  try { await setIdbCache(CACHE_KEY, seed); } catch {}
+  return seed;
 }

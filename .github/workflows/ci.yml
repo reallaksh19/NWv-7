@@ -13,6 +13,14 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Block rejected patch artifacts
+      run: |
+        if find . \( -name "*.rej" -o -name "*.orig" \) -print -quit | grep -q .; then
+          echo "Rejected patch or backup artifacts were found. Apply or delete them before merging."
+          find . \( -name "*.rej" -o -name "*.orig" \) -print
+          exit 1
+        fi
+
     - name: Use Node.js
       uses: actions/setup-node@v4
       with:

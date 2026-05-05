@@ -4,8 +4,14 @@ const CACHE_KEY = 'indian_market_stable_data';
 const CACHE_TTL = 30 * 60 * 1000;
 const STALE_CACHE_MAX_AGE = 24 * 60 * 60 * 1000;
 const SNAPSHOT_FRESH_MS = 6 * 60 * 60 * 1000;
-const YAHOO_CHART_BASE = 'https://query1.finance.yahoo.com/v8/finance/chart/';
-const YAHOO_QUOTE_BASE = 'https://query1.finance.yahoo.com/v7/finance/quote';
+const YAHOO_CHART_BASES = [
+  'https://query1.finance.yahoo.com/v8/finance/chart/',
+  'https://query2.finance.yahoo.com/v8/finance/chart/',
+];
+const YAHOO_QUOTE_BASES = [
+  'https://query1.finance.yahoo.com/v7/finance/quote',
+  'https://query2.finance.yahoo.com/v7/finance/quote',
+];
 
 const PROXIES = [
   (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
@@ -138,13 +144,14 @@ async function fetchJsonDirectOrProxy(url, timeoutMs = 8000) {
   const attempts = await Promise.allSettled(candidates.map(async (candidate) => {
     const response = await fetchWithTimeout(candidate, timeoutMs);
     if (!response.ok) throw new Error(`${response.status} ${candidate}`);
-    return response.json();
+    return { data: await response.json(), transport: candidate === url ? 'direct' : 'proxy' };
   }));
-  const winner = attempts.find((attempt) => attempt.status === 'fulfilled' && attempt.value);
+  const winner = attempts.find((attempt) => attempt.status === 'fulfilled' && attempt.value?.data);
   return winner?.value || null;
 }
 
-function parseYahooChart(data) {
+function parseYahooChart(payload, provider = 'yahoo-chart') {
+  const data = payload?.data || payload;
   const result = data?.chart?.result?.[0];
   const meta = result?.meta;
   if (!meta || !Number.isFinite(Number(meta.regularMarketPrice))) return null;
@@ -164,10 +171,11 @@ function parseYahooChart(data) {
       low: Number(quote.low?.[i] ?? close),
     };
   }).filter(Boolean);
-  return { price, change, changePercent, timestamp: (meta.regularMarketTime || Date.now() / 1000) * 1000, series, provider: 'yahoo-chart' };
+  return { price, change, changePercent, timestamp: (meta.regularMarketTime || Date.now() / 1000) * 1000, series, provider: `${provider}-${payload?.transport || 'direct'}` };
 }
 
-function parseYahooQuote(item) {
+function parseYahooQuote(payload, provider = 'yahoo-quote') {
+  const item = payload?.data?.quoteResponse?.result?.[0] || payload?.quoteResponse?.result?.[0] || payload;
   if (!item || !Number.isFinite(Number(item.regularMarketPrice))) return null;
   const price = Number(item.regularMarketPrice);
   const change = Number(item.regularMarketChange ?? 0);
@@ -178,23 +186,33 @@ function parseYahooQuote(item) {
     changePercent,
     timestamp: (item.regularMarketTime || Date.now() / 1000) * 1000,
     series: [],
-    provider: 'yahoo-quote',
+    provider: `${provider}-${payload?.transport || 'direct'}`,
   };
+}
+
+function providerLabelFromBase(base, type) {
+  const mirror = base.includes('query2') ? 'query2' : 'query1';
+  return `yahoo-${type}-${mirror}`;
 }
 
 async function fetchYahooChartQuote(symbol, opts = {}) {
   const range = opts.range || '5d';
   const interval = opts.interval || '1d';
-  const url = `${YAHOO_CHART_BASE}${encodeURIComponent(symbol)}?interval=${interval}&range=${range}`;
-  const data = await fetchJsonDirectOrProxy(url, 8000);
-  return data ? parseYahooChart(data) : null;
+  const attempts = await Promise.allSettled(YAHOO_CHART_BASES.map(async (base) => {
+    const url = `${base}${encodeURIComponent(symbol)}?interval=${interval}&range=${range}`;
+    const payload = await fetchJsonDirectOrProxy(url, 8000);
+    return payload ? parseYahooChart(payload, providerLabelFromBase(base, 'chart')) : null;
+  }));
+  return attempts.find((attempt) => attempt.status === 'fulfilled' && attempt.value)?.value || null;
 }
 
 async function fetchYahooQuoteApi(symbol) {
-  const url = `${YAHOO_QUOTE_BASE}?symbols=${encodeURIComponent(symbol)}&fields=regularMarketPrice,regularMarketChange,regularMarketChangePercent,regularMarketTime`;
-  const data = await fetchJsonDirectOrProxy(url, 8000);
-  const item = data?.quoteResponse?.result?.[0];
-  return parseYahooQuote(item);
+  const attempts = await Promise.allSettled(YAHOO_QUOTE_BASES.map(async (base) => {
+    const url = `${base}?symbols=${encodeURIComponent(symbol)}&fields=regularMarketPrice,regularMarketChange,regularMarketChangePercent,regularMarketTime`;
+    const payload = await fetchJsonDirectOrProxy(url, 8000);
+    return payload ? parseYahooQuote(payload, providerLabelFromBase(base, 'quote')) : null;
+  }));
+  return attempts.find((attempt) => attempt.status === 'fulfilled' && attempt.value)?.value || null;
 }
 
 async function fetchBestYahooQuote(symbol, opts = {}) {
@@ -285,7 +303,7 @@ export async function fetchTopMovers() {
   return {
     gainers: valid.filter((q) => Number(q.changePercent) > 0).sort((a, b) => Number(b.changePercent) - Number(a.changePercent)).slice(0, 5),
     losers: valid.filter((q) => Number(q.changePercent) < 0).sort((a, b) => Number(a.changePercent) - Number(b.changePercent)).slice(0, 5),
-    source: 'yahoo-parallel-watchlist',
+    source: 'yahoo-query1-query2-parallel-watchlist',
   };
 }
 
@@ -356,13 +374,13 @@ async function fetchLiveMarketBundle() {
     fetchedAt: Date.now(),
     generatedAt: new Date().toISOString(),
     sourceHealth: {
-      indices: indices.status === 'fulfilled' && indices.value.length ? 'live-parallel' : 'failed',
-      movers: movers.status === 'fulfilled' ? 'live-parallel' : 'seed',
-      sectorals: sectorals.status === 'fulfilled' && sectorals.value.length ? 'live-parallel' : 'seed',
-      commodities: commodities.status === 'fulfilled' ? 'live-parallel' : 'seed',
-      currencies: currencies.status === 'fulfilled' ? 'live-parallel' : 'seed',
+      indices: indices.status === 'fulfilled' && indices.value.length ? 'live-query1-query2-parallel' : 'failed',
+      movers: movers.status === 'fulfilled' ? 'live-query1-query2-parallel' : 'seed',
+      sectorals: sectorals.status === 'fulfilled' && sectorals.value.length ? 'live-query1-query2-parallel' : 'seed',
+      commodities: commodities.status === 'fulfilled' ? 'live-query1-query2-parallel' : 'seed',
+      currencies: currencies.status === 'fulfilled' ? 'live-query1-query2-parallel' : 'seed',
     },
-    providerPlan: ['cache', 'yahoo-chart', 'yahoo-quote', 'proxy-parallel', 'snapshot', 'stale-cache', 'seed'],
+    providerPlan: ['cache', 'yahoo-chart-query1', 'yahoo-chart-query2', 'yahoo-quote-query1', 'yahoo-quote-query2', 'proxy-parallel', 'snapshot', 'stale-cache', 'seed'],
   };
 
   return isUsableMarketPayload(live) ? live : null;
@@ -380,7 +398,7 @@ export async function fetchAllMarketData() {
 
   const live = liveResult.status === 'fulfilled' ? liveResult.value : null;
   if (isUsableMarketPayload(live)) {
-    const normalized = withMeta(live, 'live', { sourceHealth: { provider: 'parallel-live-first' } });
+    const normalized = withMeta(live, 'live', { sourceHealth: { provider: 'parallel-live-query1-query2-first' } });
     try { await setIdbCache(CACHE_KEY, normalized); } catch {}
     return normalized;
   }

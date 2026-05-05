@@ -2351,3 +2351,110 @@ body { background-color: #0A0D11; }
   color: #fca5a5;
 }
 .qw-severe-text { font-size: 0.85rem; font-weight: 600; }
+
+/* Per-city forecast rows (QuickWeather) */
+.qw-cities-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.qw-city-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.qw-city-row:hover {
+  background: rgba(255,255,255,0.09);
+}
+
+.qw-city-row--active {
+  background: linear-gradient(135deg, rgba(0,212,170,0.18), rgba(0,212,170,0.05));
+  border-color: var(--accent-primary);
+}
+
+.qw-city-row__left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 72px;
+}
+
+.qw-city-row__name {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.qw-city-row--active .qw-city-row__name { color: var(--accent-primary); }
+
+.qw-city-row__current {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.qw-city-row__temp {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.qw-city-row__slots {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.qw-city-row__slots::-webkit-scrollbar { display: none; }
+
+.qw-city-slot {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 52px;
+  background: rgba(255,255,255,0.04);
+  border-radius: var(--radius-sm);
+  padding: 6px 4px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.qw-city-slot__label {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.qw-city-slot__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+}
+
+.qw-city-slot__temp {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.qw-city-slot__pop {
+  font-size: 0.62rem;
+  min-height: 14px;
+  display: flex;
+  align-items: center;
+}

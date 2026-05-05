@@ -1,7 +1,7 @@
 /* eslint-disable */
 /**
  * Multi-Model Weather Service
- * Static-host safe: prefer cached weather on GitHub Pages instead of hammering live APIs
+ * Static-host safe: prefer cached/snapshot weather, then live Open-Meteo for known cities.
  */
 import {
     calculateRainfallConsensus,
@@ -34,12 +34,17 @@ const WEATHER_CACHE_TTL_MS = 4 * 60 * 60 * 1000;
 
 function isStaticHostRuntime() { return getRuntimeCapabilities().isStaticHost; }
 
+function publicDataUrl(path) {
+    const base = (import.meta.env.BASE_URL || './').replace(/\/?$/, '/');
+    return `${base}${String(path).replace(/^\//, '')}`;
+}
+
 async function fetchWeatherSnapshot(locationKey) {
   try {
-    const resp = await fetch('/data/weather_snapshot.json');
+    const resp = await fetch(publicDataUrl('data/weather_snapshot.json'), { cache: 'no-cache' });
     if (!resp.ok) return null;
     const snapshot = await resp.json();
-    return snapshot?.[locationKey] || null;
+    return snapshot?.[String(locationKey || '').toLowerCase()] || null;
   } catch {
     return null;
   }
@@ -67,7 +72,7 @@ function writeCachedWeather(locationKey, payload) {
 }
 
 async function resolveLocation(cityName) {
-    const key = cityName.toLowerCase();
+    const key = String(cityName || '').toLowerCase();
     if (LOCATIONS[key]) return LOCATIONS[key];
     try {
         const cache = JSON.parse(localStorage.getItem('weather_geo_cache') || '{}');
@@ -114,26 +119,29 @@ async function fetchSingleModel(modelName, lat, lon) {
 
 export async function fetchWeather(locationKey) {
     const _t0 = Date.now();
-    const cacheFresh = readCachedWeather(locationKey, false);
+    const key = String(locationKey || '').toLowerCase();
+    const cacheFresh = readCachedWeather(key, false);
     if (cacheFresh) return { ...cacheFresh, sourceMode: 'cache' };
 
     if (isStaticHostRuntime()) {
-        const cached = readCachedWeather(locationKey, true);
+        const cached = readCachedWeather(key, true);
         if (cached) return { ...cached, sourceMode: 'cache' };
 
-        const snapshot = await fetchWeatherSnapshot(locationKey);
+        const snapshot = await fetchWeatherSnapshot(key);
         if (snapshot) return { ...snapshot, sourceMode: 'snapshot' };
 
-        return null;
+        // Known built-in cities can still fetch directly from Open-Meteo on static hosts.
+        // Only custom/geocoded cities are blocked in static mode because geocoding is disabled there.
+        if (!LOCATIONS[key]) return null;
     }
 
     let lat, lon;
     try {
-        const coords = await resolveLocation(locationKey);
+        const coords = await resolveLocation(key);
         lat = coords.lat;
         lon = coords.lon;
     } catch (e) {
-        const cached = readCachedWeather(locationKey, true);
+        const cached = readCachedWeather(key, true);
         if (cached) return cached;
         throw new Error(`Unknown location: ${locationKey}`);
     }
@@ -153,16 +161,16 @@ export async function fetchWeather(locationKey) {
         const successfulModels = getSuccessfulModels(modelData);
         if (successfulModels.length === 0) throw new Error('All weather models failed to fetch data');
 
-        const processed = processMultiModelData(modelData, locationKey);
-        writeCachedWeather(locationKey, processed);
-        logStore.success('weather', `${locationKey}: ${successfulModels.length}/${enabledModelNames.length} models OK`, { durationMs: Date.now() - _t0 });
+        const processed = processMultiModelData(modelData, key);
+        writeCachedWeather(key, processed);
+        logStore.success('weather', `${key}: ${successfulModels.length}/${enabledModelNames.length} models OK`, { durationMs: Date.now() - _t0 });
         return processed;
     } catch (error) {
-        const cached = readCachedWeather(locationKey, true);
+        const cached = readCachedWeather(key, true);
         if (cached) {
             return { ...cached, isStale: true };
         }
-        logStore.error('weather', `${locationKey}: ${error.message}`, { durationMs: Date.now() - _t0 });
+        logStore.error('weather', `${key}: ${error.message}`, { durationMs: Date.now() - _t0 });
         throw error;
     }
 }

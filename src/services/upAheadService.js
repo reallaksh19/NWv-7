@@ -32,6 +32,10 @@ function uniqByKey(items = []) {
   return output;
 }
 
+function hasItems(items = []) {
+  return Array.isArray(items) && items.some(Boolean);
+}
+
 function getItemType(category) {
   const value = String(category || '').toLowerCase();
   const map = {
@@ -59,12 +63,21 @@ function categorySectionKey(category) {
   const value = String(category || '').toLowerCase();
   const map = {
     movie: 'movies',
+    movies: 'movies',
     event: 'events',
+    events: 'events',
     festival: 'festivals',
+    festivals: 'festivals',
     alert: 'alerts',
+    alerts: 'alerts',
+    civic: 'civic',
+    sports: 'sports',
+    shopping: 'shopping',
     weather_alert: 'weather_alerts',
+    weather_alerts: 'weather_alerts',
     offer: 'shopping',
-    airline_offer: 'airlines'
+    airline_offer: 'airlines',
+    airlines: 'airlines'
   };
   return map[value] || value || 'events';
 }
@@ -190,12 +203,13 @@ function buildLegacyDisplayFromRanked(items = [], meta = {}) {
   const timelineMap = new Map();
 
   for (const item of items || []) {
+    if (!item) continue;
     const sectionKey = categorySectionKey(item.category);
-    const eventDateKey = item.eventDateKey || normalizeDateKey(item.publishDate) || normalizeDateKey(new Date());
+    const eventDateKey = item.eventDateKey || normalizeDateKey(item.eventDate) || null;
     const displayItem = {
-      id: item.canonicalId || item.rawSourceId || item.link,
-      hiddenKey: item.canonicalId || item.rawSourceId || item.link,
-      canonicalId: item.canonicalId || item.rawSourceId || item.link,
+      id: item.canonicalId || item.rawSourceId || item.link || item.title,
+      hiddenKey: item.canonicalId || item.rawSourceId || item.link || item.title,
+      canonicalId: item.canonicalId || item.rawSourceId || item.link || item.title,
       title: item.title,
       link: item.link,
       description: item.description || item.summary || '',
@@ -206,10 +220,12 @@ function buildLegacyDisplayFromRanked(items = [], meta = {}) {
       source: item.sourceDomain || item.source || sectionKey,
       locationCanonical: item.locationCanonical || null,
       dateConfidence: item.dateConfidence || 'none',
-      decisionTrace: item.decisionTrace || []
+      decisionTrace: item.decisionTrace || [],
+      plannerEligible: Boolean(item.plannerEligible && eventDateKey),
+      displayEligible: item.displayEligible !== false
     };
 
-    if (sections[sectionKey]) {
+    if (displayItem.displayEligible && sections[sectionKey]) {
       sections[sectionKey].push(displayItem);
     }
 
@@ -233,7 +249,8 @@ function buildLegacyDisplayFromRanked(items = [], meta = {}) {
         category: sectionKey,
         icon: null,
         locationCanonical: item.locationCanonical || null,
-        dateConfidence: item.dateConfidence || 'none'
+        dateConfidence: item.dateConfidence || 'none',
+        plannerEligible: displayItem.plannerEligible
       });
     }
   }
@@ -290,26 +307,35 @@ export function isActualOfferText(text, upAheadSettings = null) {
 
 function transformPythonItemsToDisplay(items = []) {
   const ranked = items
-    .filter(it => it && it.plannerEligible !== false)
-    .map(it => ({
-      canonicalId:       it.id,
-      rawSourceId:       it.id,
-      title:             it.title,
-      summary:           it.summary,
-      link:              it.url,
-      category:          it.category,
-      publishDate:       it.publishedAt  ? new Date(it.publishedAt).toISOString()  : null,
-      eventDate:         it.eventStartAt ? new Date(it.eventStartAt).toISOString() : null,
-      eventDateKey:      it.eventStartAt
-        ? new Date(it.eventStartAt).toISOString().slice(0, 10)
-        : (it.publishedAt ? new Date(it.publishedAt).toISOString().slice(0, 10) : null),
-      dateConfidence:    it.dateConfidence   || 'unknown',
-      locationCanonical: it.city || it.region || null,
-      sourceDomain:      it.source,
-      upAheadEligible:   Boolean(it.plannerEligible),
-      plannerEligible:   Boolean(it.plannerEligible),
-      decisionTrace:     [],
-    }));
+    .filter(Boolean)
+    .map(it => {
+      const eventTs = it.eventStartAt || it.eventEndAt || it.expiryAt || null;
+      const eventDate = eventTs ? new Date(eventTs) : null;
+      const hasEventDate = eventDate && !Number.isNaN(eventDate.getTime());
+      const eventDateIso = hasEventDate ? eventDate.toISOString() : null;
+      const eventDateKey = hasEventDate ? eventDateIso.slice(0, 10) : null;
+      const category = categorySectionKey(it.category);
+      return {
+        canonicalId:       it.id || it.url || it.title,
+        rawSourceId:       it.id || it.url || it.title,
+        title:             it.title,
+        summary:           it.summary,
+        description:       it.summary,
+        link:              it.url,
+        category,
+        publishDate:       it.publishedAt ? new Date(it.publishedAt).toISOString() : null,
+        eventDate:         eventDateIso,
+        eventDateKey,
+        dateConfidence:    it.dateConfidence || (eventDateKey ? 'exact' : 'none'),
+        locationCanonical: it.city || it.region || null,
+        sourceDomain:      it.source,
+        source:            it.source,
+        displayEligible:   it.displayEligible !== false,
+        upAheadEligible:   Boolean(eventDateKey),
+        plannerEligible:   Boolean(it.plannerEligible && eventDateKey),
+        decisionTrace:     it.decisionTrace || [],
+      };
+    });
   return buildLegacyDisplayFromRanked(ranked, { auditSummary: null, dropReport: [] });
 }
 
@@ -331,7 +357,9 @@ export function sanitizeUpAheadData(data) {
     ? Object.fromEntries(Object.entries(data.sections).map(([key, items]) => [key, uniqByKey(items || [])]))
     : {};
   const weekly_plan = Array.isArray(data.weekly_plan) ? data.weekly_plan : generateWeeklyPlan(timeline);
-  if (timeline.length === 0 && Object.values(sections).every(items => (items || []).length === 0) && weekly_plan.length === 0) {
+  const hasSectionItems = Object.values(sections).some(items => hasItems(items));
+  const hasWeeklyItems = weekly_plan.some(day => hasItems(day.items));
+  if (timeline.length === 0 && !hasSectionItems && !hasWeeklyItems) {
     return null;
   }
   return { ...data, timeline, sections, weekly_plan };
@@ -373,7 +401,7 @@ export async function fetchStaticUpAheadData() {
   try {
     const baseUrl = import.meta.env.BASE_URL;
     const cleanBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
-    const response = await fetch(`${cleanBase}data/up_ahead.json`);
+    const response = await fetch(`${cleanBase}data/up_ahead.json`, { cache: 'no-cache' });
     if (!response.ok) return null;
     const parsed = await response.json();
     return sanitizeUpAheadData(parsed);

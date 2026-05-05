@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useMarket } from '../context/MarketContext';
 import { useSettings } from '../context/SettingsContext';
 import { getMarketSessionState } from '../utils/marketSession';
@@ -10,10 +10,14 @@ import './QuickMarket.css';
  * Designed to look like the QuickWeather widget.
  */
 const QuickMarket = () => {
-    const { marketData, loading } = useMarket();
+    const { marketData, loading, error, ensureBoot, booted } = useMarket();
     const { settings } = useSettings();
 
-    if (loading && (!marketData || !marketData.indices)) {
+    useEffect(() => {
+        ensureBoot?.();
+    }, [ensureBoot]);
+
+    if (!booted || (loading && (!marketData || !marketData.indices))) {
         return (
             <div className="quick-market">
                 <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.8rem' }}>Loading Markets...</div>
@@ -21,16 +25,32 @@ const QuickMarket = () => {
         );
     }
 
-    if (!marketData || !marketData.indices || marketData.indices.length === 0) {
-        return null;
+    if (error && (!marketData || !marketData.indices || marketData.indices.length === 0)) {
+        return (
+            <div className="quick-market">
+                <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.8rem' }}>Market unavailable</div>
+            </div>
+        );
     }
 
-    // Extract Nifty 50 and Sensex
-    // Fallback to first two indices if specific ones aren't found
+    if (!marketData || !marketData.indices || marketData.indices.length === 0) {
+        return (
+            <div className="quick-market">
+                <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.8rem' }}>Market unavailable</div>
+            </div>
+        );
+    }
+
     const nifty = marketData.indices.find(i => i.name.toUpperCase().includes('NIFTY') && i.name.includes('50')) || marketData.indices[0];
     const sensex = marketData.indices.find(i => i.name.toUpperCase().includes('SENSEX')) || marketData.indices[1];
 
-    if (!nifty || !sensex) return null;
+    if (!nifty || !sensex) {
+        return (
+            <div className="quick-market">
+                <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.8rem' }}>Market unavailable</div>
+            </div>
+        );
+    }
 
     const session = getMarketSessionState({
         lastUpdated: marketData?.fetchedAt,
@@ -40,7 +60,6 @@ const QuickMarket = () => {
     const statusText = session.label;
     const statusClass = session.tone === 'success' ? 'qm-status--open' : 'qm-status--closed';
 
-    // Trend Analysis
     const niftyChange = parseFloat(nifty.change);
     const sensexChange = parseFloat(sensex.change);
 

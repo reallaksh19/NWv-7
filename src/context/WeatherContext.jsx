@@ -10,13 +10,17 @@ function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function hasUsableWeatherCity(cityData) {
+    return Boolean(cityData && cityData.current && Number.isFinite(Number(cityData.current.temp)));
+}
+
 export function WeatherProvider({ children, lazy = false }) {
     const { settingsVersion } = useSettings();
     const prevVersion = useRef(settingsVersion);
 
     const [booted, setBooted] = useState(!lazy);
     const [weatherData, setWeatherData] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(!lazy);
     const [error, setError] = useState(null);
     const [lastFetch, setLastFetch] = useState(0);
 
@@ -53,10 +57,15 @@ export function WeatherProvider({ children, lazy = false }) {
             let successCount = 0;
 
             for (let i = 0; i < cities.length; i += 1) {
-                const city = cities[i];
+                const city = String(cities[i] || '').toLowerCase();
                 try {
-                    data[city] = await fetchWeather(city);
-                    successCount += 1;
+                    const cityData = await fetchWeather(city);
+                    if (hasUsableWeatherCity(cityData)) {
+                        data[city] = cityData;
+                        successCount += 1;
+                    } else {
+                        data[city] = weatherData?.[city] || null;
+                    }
                 } catch (cityError) {
                     console.warn(`[WeatherContext] ${city} failed:`, cityError?.message || cityError);
                     data[city] = weatherData?.[city] || null;
@@ -73,8 +82,9 @@ export function WeatherProvider({ children, lazy = false }) {
                 return;
             }
 
-            setWeatherData(data);
-            setLastFetch(Date.now());
+            const nextData = successCount > 0 ? data : null;
+            setWeatherData(nextData);
+            setLastFetch(successCount > 0 ? Date.now() : lastFetch);
             setError(successCount === 0 ? new Error('All weather fetches failed') : null);
         } catch (err) {
             console.error('Weather Context Error:', err);
@@ -101,7 +111,7 @@ export function WeatherProvider({ children, lazy = false }) {
     }, [booted, settingsVersion, loadWeather]);
 
     return (
-        <WeatherContext.Provider value={{ weatherData, loading, error, refreshWeather: loadWeather, ensureBoot }}>
+        <WeatherContext.Provider value={{ weatherData, loading, error, refreshWeather: loadWeather, ensureBoot, booted }}>
             {children}
         </WeatherContext.Provider>
     );

@@ -1,6 +1,6 @@
 import { getIdbCache, setIdbCache } from '../services/indexedDbCache.js';
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { fetchAllMarketData } from '../services/indianMarketService';
+import { fetchAllMarketData, MARKET_SEED } from '../services/indianMarketStableService';
 
 const MarketContext = createContext(null);
 /* eslint-disable react-refresh/only-export-components */
@@ -28,7 +28,7 @@ function hasUsableMarketData(data) {
 
 export function MarketProvider({ children }) {
     const [marketData, setMarketData] = useState(null);
-    const [loading, setLoading] = useState(true);  // Keep true — prevents flash-of-empty (audit v3 fix)
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [lastFetch, setLastFetch] = useState(null);
     const [booted, setBooted] = useState(false);
@@ -60,8 +60,11 @@ export function MarketProvider({ children }) {
                 throw new Error('Market data unavailable: live, cache, and static snapshot returned no displayable rows.');
             }
             setMarketData(data);
-            setLastFetch(Date.now());
+            setLastFetch(data.fetchedAt || Date.now());
             await setIdbCache(CACHE_KEY, data);
+            if (data.sourceMode === 'seed') {
+                setError('Live market feed unavailable. Showing bundled Indian market seed.');
+            }
             console.log('[MarketContext] ✅ Market data loaded');
         } catch (err) {
             console.error('[MarketContext] ❌ Failed to load market data:', err);
@@ -73,12 +76,7 @@ export function MarketProvider({ children }) {
                     console.log(`[MarketContext] Using stale cache due to fetch error (Age: ${(age/60000).toFixed(0)}m)`);
                     setMarketData(parsed);
                     setLastFetch(parsed.fetchedAt);
-
-                    if (age > 4 * 60 * 60 * 1000) {
-                        setError('Network error. Data is expired (>4h).');
-                    } else {
-                        setError('Network error. Showing cached data.');
-                    }
+                    setError(age > 4 * 60 * 60 * 1000 ? 'Network error. Data is expired (>4h).' : 'Network error. Showing cached data.');
                 } else {
                     try {
                         const resp = await fetch(publicDataUrl('data/market_snapshot.json'), { cache: 'no-cache' });
@@ -96,10 +94,17 @@ export function MarketProvider({ children }) {
                     } catch (staticErr) {
                         console.warn('Static fallback failed', staticErr);
                     }
-                    setError(err.message);
+
+                    const seed = { ...MARKET_SEED, fetchedAt: Date.now(), generatedAt: new Date().toISOString(), sourceMode: 'seed' };
+                    setMarketData(seed);
+                    setLastFetch(seed.fetchedAt);
+                    setError('Live market feed and snapshot unavailable. Showing bundled Indian market seed.');
                 }
             } catch {
-                setError(err.message);
+                const seed = { ...MARKET_SEED, fetchedAt: Date.now(), generatedAt: new Date().toISOString(), sourceMode: 'seed' };
+                setMarketData(seed);
+                setLastFetch(seed.fetchedAt);
+                setError('Live market feed and snapshot unavailable. Showing bundled Indian market seed.');
             }
         } finally {
             setLoading(false);

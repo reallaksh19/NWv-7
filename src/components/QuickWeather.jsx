@@ -5,8 +5,8 @@ import WeatherIcon from './WeatherIcons';
 
 /**
  * Quick Weather Widget — Redesigned (Mobile & PC)
- * Shows 3 cities side-by-side (squares), highlighted city text forecast,
- * and a 12-hour comprehensive forecast ribbon below.
+ * Shows configured cities side-by-side, highlighted city text forecast,
+ * and a 12-hour comprehensive forecast ribbon when hourly data is available.
  */
 const QuickWeather = () => {
     const { weatherData, loading, error, ensureBoot, booted } = useWeather();

@@ -50,8 +50,12 @@ function Header({ title, showBack = false, backTo = '/', actions, pills, activeP
                         </button>
                     )}
                     {runtime.isStaticHost && (
-                        <span className="runtime-badge" style={{ fontSize: '0.8rem', background: '#333', color: '#fff', padding: '2px 6px', borderRadius: '4px', whiteSpace: 'nowrap' }} title="Static Host Mode: snapshot/cache-first behavior is active.">
-                            📦 Static Host
+                        <span
+                            className="runtime-badge runtime-badge--icon-only"
+                            title="Static-host mode: snapshot/cache-first behavior is active."
+                            aria-label="Static-host mode"
+                        >
+                            📦
                         </span>
                     )}
                     <h1 className="header__title">

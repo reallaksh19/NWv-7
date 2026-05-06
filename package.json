@@ -10,7 +10,7 @@
     "build": "vite build",
     "benchmark": "node scripts/run_upahead_benchmarks.js",
     "test:upahead-smoke": "node scripts/test_upahead_classification_smoke.mjs",
-    "test:market-snapshot": "cross-env MARKET_SNAPSHOT_MAX_AGE_HOURS=720 node scripts/test_market_snapshot_integrity.mjs",
+    "test:market-snapshot": "node scripts/test_market_snapshot_integrity.mjs",
     "lint": "eslint .",
     "preview": "vite preview --open",
     "predeploy": "npm run build",

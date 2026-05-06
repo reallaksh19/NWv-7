@@ -6,7 +6,7 @@ import WeatherIcon from './WeatherIcons';
 /**
  * Quick Weather Widget — Redesigned (Mobile & PC)
  * Shows configured cities side-by-side, highlighted city text forecast,
- * and a 12-hour comprehensive forecast ribbon when hourly data is available.
+ * and compact near-term forecast chips when hourly data is available.
  */
 const QuickWeather = () => {
     const { weatherData, loading, error, ensureBoot, booted } = useWeather();
@@ -69,15 +69,23 @@ const QuickWeather = () => {
     const severeWarning = getSevereWarning(activeCityData);
     const textForecast = getNaturalTextForecast(activeCityData, cityLabels[activeCityName] || activeCityData?.name || 'Selected city');
 
-    // Pick Now, +2h, +6h slots for each city
     const getCitySlots = (city) => {
-        const h24 = weatherData[city]?.hourly24 || [];
-        return [0, 2, 6].map(i => h24[i]).filter(Boolean);
+        const cityData = weatherData[city];
+        const h24 = Array.isArray(cityData?.hourly24) ? cityData.hourly24 : [];
+        const next8 = Array.isArray(cityData?.next8Hours) ? cityData.next8Hours : [];
+        const source = h24.length ? h24 : next8;
+        const slots = [source[0], source[2], source[6]].filter(Boolean);
+        if (slots.length > 0) return slots;
+
+        return [
+            segmentToSlot(cityData?.morning, 'Morning'),
+            segmentToSlot(cityData?.noon, 'Afternoon'),
+            segmentToSlot(cityData?.evening, 'Evening')
+        ].filter(Boolean);
     };
 
     return (
         <section className={`quick-weather-card ${bgClass}`}>
-            {/* Per-city rows: name + current + Now/+2h/+6h */}
             <div className="qw-cities-list">
                 {visibleCities.map(city => {
                     const d = weatherData[city];
@@ -90,7 +98,6 @@ const QuickWeather = () => {
                             className={`qw-city-row ${isActive ? 'qw-city-row--active' : ''}`}
                             onClick={() => setActiveCity(city)}
                         >
-                            {/* Left: city name + current */}
                             <div className="qw-city-row__left">
                                 <span className="qw-city-row__name">{cityLabels[city] || d.name || city}</span>
                                 <div className="qw-city-row__current">
@@ -98,21 +105,26 @@ const QuickWeather = () => {
                                     <span className="qw-city-row__temp">{c.temp}°</span>
                                 </div>
                             </div>
-                            {/* Right: Now, +2h, +6h slots */}
                             <div className="qw-city-row__slots">
                                 {slots.length > 0 ? slots.map((slot, i) => (
                                     <div key={i} className="qw-city-slot">
-                                        <span className="qw-city-slot__label">{slot.label}</span>
+                                        <span className="qw-city-slot__label">{slot.label || slot.time}</span>
                                         <div className="qw-city-slot__icon">
                                             {slot.iconId ? <WeatherIcon id={slot.iconId} size={22} /> : slot.icon}
                                         </div>
-                                        <span className="qw-city-slot__temp">{slot.temp}°</span>
+                                        <span className="qw-city-slot__temp">{slot.temp ?? '-'}°</span>
                                         <span className="qw-city-slot__pop">
-                                            {slot.prob > 20 ? <span className="qw-pop-high">💧{slot.prob}%</span> : <span className="qw-pop-low">--</span>}
+                                            {(slot.prob || 0) > 20 ? <span className="qw-pop-high">💧{slot.prob}%</span> : <span className="qw-pop-low">--</span>}
                                         </span>
                                     </div>
                                 )) : (
-                                    <span style={{fontSize:'0.75rem', opacity:0.5, alignSelf:'center'}}>No forecast</span>
+                                    <div className="qw-city-slot qw-city-slot--current-only">
+                                        <span className="qw-city-slot__label">Current</span>
+                                        <div className="qw-city-slot__icon">
+                                            {c.iconId ? <WeatherIcon id={c.iconId} size={22} /> : c.icon}
+                                        </div>
+                                        <span className="qw-city-slot__temp">{c.temp ?? '-'}°</span>
+                                    </div>
                                 )}
                             </div>
                         </div>
@@ -120,7 +132,6 @@ const QuickWeather = () => {
                 })}
             </div>
 
-            {/* AI text forecast for active city */}
             <div className="qw-highlight-text-container">
                 <span className="qw-highlight-icon">🤖</span>
                 <span className="qw-highlight-text">{textForecast}</span>
@@ -136,15 +147,31 @@ const QuickWeather = () => {
     );
 };
 
+function segmentToSlot(segment, label) {
+    if (!segment || segment.temp == null) return null;
+    const prob = segment.rainProb?.avg ?? segment.prob ?? 0;
+    const precip = Number.parseFloat(segment.rainMm === '-' ? 0 : segment.rainMm) || 0;
+    return {
+        label,
+        temp: segment.temp,
+        iconId: segment.iconId,
+        icon: segment.icon,
+        prob,
+        precip,
+        condition: segment.condition
+    };
+}
+
 function getNaturalTextForecast(cityData, cityName) {
-    if (!cityData?.hourly24 || cityData.hourly24.length === 0) {
+    const hourly = cityData?.hourly24?.length ? cityData.hourly24 : cityData?.next8Hours || [];
+    if (!hourly || hourly.length === 0) {
         const condition = cityData?.current?.condition;
         const temp = cityData?.current?.temp;
         if (condition && temp != null) return `${cityName}: ${condition}, ${temp}°C currently.`;
-        return `Forecast for ${cityName} is unavailable right now.`;
+        return `Current weather for ${cityName} is available; hourly forecast is updating.`;
     }
 
-    const slots = cityData.hourly24.slice(0, 8);
+    const slots = hourly.slice(0, 8);
     const rainSlots = slots.filter(s => s.precip > 0.5 || s.prob > 40);
     const temps = slots.map(s => s.temp).filter(t => t != null);
     const maxTemp = temps.length ? Math.max(...temps) : null;
@@ -152,7 +179,7 @@ function getNaturalTextForecast(cityData, cityName) {
     const current = cityData.current;
 
     if (rainSlots.length >= 3) return `Expect rainy spells throughout the next 8 hours.`;
-    if (rainSlots.length > 0) return `Expecting showers around ${rainSlots[0].label}.`;
+    if (rainSlots.length > 0) return `Expecting showers around ${rainSlots[0].label || rainSlots[0].time}.`;
 
     const cloudySlots = slots.filter(s => s.condition && s.condition.toLowerCase().includes('cloud'));
     if (cloudySlots.length >= 6) return `Mostly cloudy skies for the next 8 hours.`;
@@ -164,9 +191,9 @@ function getNaturalTextForecast(cityData, cityName) {
 }
 
 function getSevereWarning(cityData) {
-    if (!cityData?.hourly24) return null;
+    const slots = cityData?.hourly24?.length ? cityData.hourly24 : cityData?.next8Hours;
+    if (!slots || slots.length === 0) return null;
 
-    const slots = cityData.hourly24;
     const heavyRainSlots = slots.filter(s => s.precip >= 10);
     const stormSlots = slots.filter(s => s.prob >= 80);
     const temps = slots.map(s => s.temp).filter(t => t != null);

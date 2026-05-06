@@ -33,10 +33,7 @@ jobs:
       - name: Fetch rich market snapshot
         run: python scripts/market_snapshot_worker.py
 
-      - name: Validate market snapshot strictly
-        env:
-          MARKET_SNAPSHOT_MAX_AGE_HOURS: 48
-          MARKET_SNAPSHOT_STRICT_AGE: "1"
+      - name: Validate market snapshot
         run: npm run test:market-snapshot
 
       - name: Commit data

@@ -30,11 +30,8 @@ function assertNumericLike(value, label) {
 }
 
 assert(snapshot && typeof snapshot === 'object', 'snapshot must be an object');
-
-assert(
-  snapshot.schemaVersion || snapshot.generatedAt || snapshot.generated_at,
-  'snapshot must contain schemaVersion or generatedAt'
-);
+assert(snapshot.schemaVersion, 'schemaVersion missing');
+assert(snapshot.generatedAt || snapshot.generated_at || snapshot.fetchedAt, 'generatedAt/generated_at/fetchedAt missing');
 
 assert(Array.isArray(snapshot.indices), 'indices must be an array');
 assert(snapshot.indices.length >= 3, 'indices must contain at least 3 entries');
@@ -51,38 +48,40 @@ for (const [i, item] of snapshot.indices.entries()) {
   assertNumericLike(item.value, `indices[${i}].value`);
 }
 
-const ts = parseTs(snapshot.generatedAt || snapshot.generated_at || snapshot.fetchedAt);
-assert(ts, 'generatedAt/generated_at/fetchedAt timestamp missing or invalid');
+const ts = parseTs(snapshot.fetchedAt || snapshot.generatedAt || snapshot.generated_at);
+assert(ts, 'freshness timestamp invalid');
 
 const ageHours = (Date.now() - ts) / 36e5;
-
-// In CI, scheduled workflows may run after market hours/weekends.
-// Therefore this test allows a configurable max but blocks absurd 900h stale artifacts.
 assert(
   ageHours <= MAX_AGE_HOURS_FOR_SNAPSHOT,
   `snapshot too stale: ${ageHours.toFixed(1)}h old; max allowed ${MAX_AGE_HOURS_FOR_SNAPSHOT}h`
 );
 
+assert(snapshot.sourceHealth && typeof snapshot.sourceHealth === 'object', 'sourceHealth missing');
+
 const sections = {
+  globalIndices: snapshot.globalIndices?.length || 0,
   gainers: snapshot.movers?.gainers?.length || 0,
   losers: snapshot.movers?.losers?.length || 0,
   sectorals: snapshot.sectorals?.length || 0,
   commodities: snapshot.commodities?.length || 0,
   currencies: snapshot.currencies?.length || 0,
-  mutualFunds: snapshot.mutualFunds?.length || 0
+  mutualFunds: snapshot.mutualFunds?.length || 0,
 };
 
-// For Phase 1, warn only. Phase 2 worker must turn these into hard gates.
 const warnings = [];
+
+if (sections.globalIndices === 0) warnings.push('globalIndices section empty');
 if (sections.commodities === 0) warnings.push('commodities section empty');
 if (sections.currencies === 0) warnings.push('currencies section empty');
 if (sections.sectorals === 0) warnings.push('sectorals section empty');
-
-assert(snapshot.sourceHealth && typeof snapshot.sourceHealth === 'object', 'sourceHealth missing');
+if (sections.mutualFunds === 0) warnings.push('mutualFunds section empty');
 
 console.log(JSON.stringify({
   status: 'PASS',
+  schemaVersion: snapshot.schemaVersion,
   generatedAt: snapshot.generatedAt || snapshot.generated_at,
+  fetchedAt: snapshot.fetchedAt || null,
   ageHours: Number(ageHours.toFixed(2)),
   indices: snapshot.indices.length,
   sections,

@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useMediaQuery } from '../hooks/useMediaQuery';
+import './DesktopLayoutFix.css';
 
 const CORE_NAV_ITEMS = [
     { path: '/', label: 'Main', icon: '🏠' },

@@ -1,7 +1,8 @@
 /* eslint-disable */
 /**
  * Multi-Model Weather Service
- * Static-host safe: prefer cached/snapshot weather, then live Open-Meteo for known cities.
+ * Static-host safe: prefer fresh complete cache, then live Open-Meteo for built-in cities,
+ * then snapshot/stale cache as fallback.
  */
 import {
     calculateRainfallConsensus,
@@ -29,10 +30,22 @@ const LOCATIONS = {
     muscat: { lat: 23.5859, lon: 58.4059 }
 };
 
-const WEATHER_CACHE_PREFIX = 'weather_cache_';
+const WEATHER_CACHE_PREFIX = 'weather_cache_v2_';
+const LEGACY_WEATHER_CACHE_PREFIX = 'weather_cache_';
 const WEATHER_CACHE_TTL_MS = 4 * 60 * 60 * 1000;
 
 function isStaticHostRuntime() { return getRuntimeCapabilities().isStaticHost; }
+
+function hasHourlyForecast(payload) {
+    return Boolean(
+        payload &&
+        ((Array.isArray(payload.hourly24) && payload.hourly24.length > 0) ||
+         (Array.isArray(payload.next8Hours) && payload.next8Hours.length > 0) ||
+         (Array.isArray(payload.morning?.hourly) && payload.morning.hourly.length > 0) ||
+         (Array.isArray(payload.noon?.hourly) && payload.noon.hourly.length > 0) ||
+         (Array.isArray(payload.evening?.hourly) && payload.evening.hourly.length > 0))
+    );
+}
 
 function publicDataUrl(path) {
     const base = (import.meta.env.BASE_URL || './').replace(/\/?$/, '/');
@@ -52,9 +65,12 @@ async function fetchWeatherSnapshot(locationKey) {
 
 function readCachedWeather(locationKey, allowStale = true) {
     try {
-        const raw = localStorage.getItem(`${WEATHER_CACHE_PREFIX}${locationKey}`);
-        if (!raw) return null;
-        const parsed = JSON.parse(raw);
+        const read = (prefix) => {
+            const raw = localStorage.getItem(`${prefix}${locationKey}`);
+            return raw ? JSON.parse(raw) : null;
+        };
+        const parsed = read(WEATHER_CACHE_PREFIX) || read(LEGACY_WEATHER_CACHE_PREFIX);
+        if (!parsed) return null;
         const age = Date.now() - (parsed?.fetchedAt || 0);
         if (!allowStale && age > WEATHER_CACHE_TTL_MS) return null;
         return parsed;
@@ -121,18 +137,21 @@ export async function fetchWeather(locationKey) {
     const _t0 = Date.now();
     const key = String(locationKey || '').toLowerCase();
     const cacheFresh = readCachedWeather(key, false);
-    if (cacheFresh) return { ...cacheFresh, sourceMode: 'cache' };
 
-    if (isStaticHostRuntime()) {
+    // Fresh, complete cache is OK. Fresh legacy/static cache without hourly data should not
+    // block a live refresh for built-in cities, because it causes home QuickWeather to show
+    // "No forecast" permanently.
+    if (cacheFresh && hasHourlyForecast(cacheFresh)) return { ...cacheFresh, sourceMode: 'cache' };
+    if (cacheFresh && !LOCATIONS[key]) return { ...cacheFresh, sourceMode: 'cache' };
+
+    if (isStaticHostRuntime() && !LOCATIONS[key]) {
         const cached = readCachedWeather(key, true);
         if (cached) return { ...cached, sourceMode: 'cache' };
 
         const snapshot = await fetchWeatherSnapshot(key);
         if (snapshot) return { ...snapshot, sourceMode: 'snapshot' };
 
-        // Known built-in cities can still fetch directly from Open-Meteo on static hosts.
-        // Only custom/geocoded cities are blocked in static mode because geocoding is disabled there.
-        if (!LOCATIONS[key]) return null;
+        return null;
     }
 
     let lat, lon;
@@ -167,6 +186,15 @@ export async function fetchWeather(locationKey) {
         return processed;
     } catch (error) {
         const cached = readCachedWeather(key, true);
+        if (cached && hasHourlyForecast(cached)) {
+            return { ...cached, isStale: true };
+        }
+
+        const snapshot = await fetchWeatherSnapshot(key);
+        if (snapshot) {
+            return { ...snapshot, sourceMode: 'snapshot', isStale: true };
+        }
+
         if (cached) {
             return { ...cached, isStale: true };
         }
@@ -182,7 +210,6 @@ function processMultiModelData(modelData, locationName) {
     const conditionMap = { 0: 'Clear', 1: 'Mainly Clear', 2: 'Partly Cloudy', 3: 'Overcast', 45: 'Fog', 48: 'Fog', 51: 'Light Drizzle', 61: 'Light Rain', 63: 'Rain', 65: 'Heavy Rain', 80: 'Rain Showers', 95: 'Thunderstorm' };
     const getCondition = (code) => conditionMap[code] || 'Unknown';
 
-    // Shared hourly model data — built once, reused by segment metrics and hourly24
     const allModelHourlyData = [];
     if (modelData.ecmwf?.hourly) allModelHourlyData.push(modelData.ecmwf.hourly);
     if (modelData.gfs?.hourly) allModelHourlyData.push(modelData.gfs.hourly);
@@ -235,17 +262,18 @@ function processMultiModelData(modelData, locationName) {
                 if (d.uv_index != null) segmentUV.push(d.uv_index);
                 if (d.cloud_cover != null) segmentCloud.push(d.cloud_cover);
             });
-            // Build per-hour slot for expanded view
             if (avgTemp !== null) {
                 const avgPrecipMm = parseFloat((hourData.reduce((s, d) => s + (d.precipitation || 0), 0) / hourData.length).toFixed(1));
                 const avgProb = Math.round(hourData.reduce((s, d) => s + (d.precipitation_probability || 0), 0) / hourData.length);
                 hourlySlots.push({
                     time: formatHourLabel(hourIdx),
+                    label: formatHourLabel(hourIdx),
                     temp: avgTemp,
                     iconId: getIconForHour(weatherCode, hourIdx % 24),
                     icon: getIcon(weatherCode),
                     precip: avgPrecipMm,
-                    prob: avgProb
+                    prob: avgProb,
+                    condition: getCondition(weatherCode)
                 });
             }
         });
@@ -293,7 +321,6 @@ function processMultiModelData(modelData, locationName) {
     const maxUV = dailyUVMax.length ? Math.round(dailyUVMax.reduce((a, b) => a + b, 0) / dailyUVMax.length) : null;
     const successfulModels = getSuccessfulModels(modelData);
 
-    // Build hourly24 (24 slots from current hour) and next8Hours
     const currentHourOfDay = new Date().getHours();
     const hourly24 = [];
     const next8Hours = [];
@@ -309,6 +336,7 @@ function processMultiModelData(modelData, locationName) {
         const labelHour = hourIdx % 24;
         const slot = {
             label: i === 0 ? 'Now' : formatHourLabel(labelHour),
+            time: i === 0 ? 'Now' : formatHourLabel(labelHour),
             temp: avgTemp,
             iconId: getIconForHour(weatherCode, labelHour),
             icon: getIcon(weatherCode),

@@ -3,6 +3,9 @@ import { useState, useEffect, useSyncExternalStore } from 'react';
 const DEV_MOBILE_VIEW_KEY = 'dailyEventAI_dev_mobile_view';
 const DEV_MOBILE_VIEW_EVENT = 'daily-event-ai:dev-mobile-view-change';
 
+const TABLET_MIN_WIDTH = 720;
+const DESKTOP_MIN_WIDTH = 900;
+
 function isDevMode() {
     return import.meta.env.DEV;
 }
@@ -52,45 +55,89 @@ export function toggleDevMobileViewOverride() {
     return setDevMobileViewOverride(!getDevMobileViewSnapshot());
 }
 
+function getViewportWidth() {
+    if (typeof window === 'undefined') return 0;
+
+    const candidates = [
+        window.innerWidth,
+        document?.documentElement?.clientWidth,
+        window.visualViewport?.width,
+    ]
+        .map((value) => Number(value))
+        .filter((value) => Number.isFinite(value) && value > 0);
+
+    return candidates.length ? Math.max(...candidates) : 0;
+}
+
+function hasFinePointer() {
+    if (typeof window === 'undefined' || !window.matchMedia) return false;
+    return window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+}
+
+function getResponsiveState(isDevMobileView = false) {
+    const width = getViewportWidth();
+    const screenWidth = typeof window !== 'undefined' ? Number(window.screen?.width || 0) : 0;
+    const desktopByWidth = width >= DESKTOP_MIN_WIDTH;
+    const desktopByDevice = width >= TABLET_MIN_WIDTH && screenWidth >= DESKTOP_MIN_WIDTH && hasFinePointer();
+    const desktop = !isDevMobileView && (desktopByWidth || desktopByDevice);
+    const tablet = !isDevMobileView && !desktop && width >= TABLET_MIN_WIDTH;
+
+    return {
+        isDesktop: desktop,
+        isTablet: tablet,
+        isWebView: desktop,
+        screenWidth: width,
+        isDevMobileView,
+    };
+}
+
+function applyLayoutClasses(state) {
+    if (typeof document === 'undefined') return;
+    const root = document.documentElement;
+    root.classList.toggle('layout-desktop', Boolean(state.isDesktop));
+    root.classList.toggle('layout-tablet', Boolean(state.isTablet));
+    root.classList.toggle('layout-mobile', !state.isDesktop && !state.isTablet);
+    root.dataset.viewportWidth = String(Math.round(state.screenWidth || 0));
+}
+
 /**
- * Custom hook for responsive design
- * Returns breakpoint information
+ * Custom hook for responsive design.
+ *
+ * Desktop detection intentionally uses a 900px breakpoint plus fine-pointer/device-width fallback.
+ * This prevents normal desktop browser windows/zoom levels from being treated as phone UI.
  */
 export function useMediaQuery() {
-    // Initialize with safe defaults for SSR/initial render
-    const [isDesktop, setIsDesktop] = useState(false);
-    const [isTablet, setIsTablet] = useState(false);
-    const [isWebView, setIsWebView] = useState(false);
-    const [screenWidth, setScreenWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 0);
     const isDevMobileView = useSyncExternalStore(
         subscribeDevMobileView,
         getDevMobileViewSnapshot,
         getDevMobileViewSnapshot
     );
 
+    const [state, setState] = useState(() => getResponsiveState(isDevMobileView));
+
     useEffect(() => {
-        // Function to update state based on window width
         const handleResize = () => {
-            const width = window.innerWidth;
-            setScreenWidth(width);
-            const desktop = width >= 1024 && !isDevMobileView;
-            const tablet = width >= 768 && width < 1024 && !isDevMobileView;
+            const next = getResponsiveState(isDevMobileView);
+            setState(next);
+            applyLayoutClasses(next);
 
-            setIsDesktop(desktop);
-            setIsTablet(tablet);
-            // We define "WebView" or "Desktop View" as effectively the same for this layout 
-            // context - meaning a large screen that supports the sidebar layout.
-            setIsWebView(desktop);
-
-            console.log(`[Layout] Width: ${width}px, Mode: ${desktop ? 'desktop' : tablet ? 'tablet' : 'mobile'}`);
+            if (import.meta.env.DEV) {
+                console.log(`[Layout] Width: ${Math.round(next.screenWidth)}px, Mode: ${next.isDesktop ? 'desktop' : next.isTablet ? 'tablet' : 'mobile'}`);
+            }
         };
 
-        // Set initial values
         handleResize();
 
         window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
+        window.visualViewport?.addEventListener?.('resize', handleResize);
+        window.addEventListener('orientationchange', handleResize);
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            window.visualViewport?.removeEventListener?.('resize', handleResize);
+            window.removeEventListener('orientationchange', handleResize);
+        };
     }, [isDevMobileView]);
 
-    return { isDesktop, isTablet, isWebView, screenWidth, isDevMobileView };
+    return state;
 }

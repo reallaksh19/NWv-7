@@ -7,18 +7,28 @@ function BottomNav() {
     const location = useLocation();
 
     const navItems = [
-        { path: '/', label: 'Main', icon: '🏠' },
-        { path: '/insight', label: 'Insight', icon: '📊' },
-        { path: '/up-ahead', label: 'Up Ahead', icon: '🗓️' },
-        { path: '/my-planner', label: 'Planner', icon: '📌' },
-        { path: '/markets', label: 'Market', icon: '📈' },
-        { path: '/weather', label: 'Weather', icon: '☁️' },
-        { path: '/settings', label: 'Settings', icon: '⚙️' },
+        { path: '/', label: 'Main', icon: '🏠', group: 'primary' },
+        { path: '/insight', label: 'Insight', icon: '📊', group: 'primary' },
+        { path: '/up-ahead', label: 'Up Ahead', icon: '🗓️', group: 'primary' },
+        { path: '/my-planner', label: 'Planner', icon: '📌', group: 'primary' },
+        { path: '/markets', label: 'Market', icon: '📈', group: 'primary' },
+        { path: '/weather', label: 'Weather', icon: '☁️', group: 'primary' },
+        { path: '/newspaper', label: 'Newspaper', icon: '📰', group: 'desktop' },
+        { path: '/tech-social', label: 'Buzz', icon: '🎭', group: 'desktop' },
+        { path: '/following', label: 'Following', icon: '⭐', group: 'desktop' },
+        { path: '/refresh', label: 'Refresh', icon: '🔄', group: 'desktop' },
+        { path: '/settings', label: 'Settings', icon: '⚙️', group: 'primary' },
+        { path: '/more', label: 'More', icon: '⋯', group: 'mobile' },
     ];
 
+    const visibleItems = navItems.filter(item => {
+        if (isWebView) return item.group !== 'mobile';
+        return item.group !== 'desktop';
+    });
+
     return (
-        <nav className={`bottom-nav ${isWebView ? 'bottom-nav--desktop' : ''}`}>
-            {navItems.map((item) => {
+        <nav className={`bottom-nav ${isWebView ? 'bottom-nav--desktop' : ''}`} aria-label="Primary navigation">
+            {visibleItems.map((item) => {
                 const isActive = item.path === '/'
                   ? location.pathname === '/'
                   : location.pathname.startsWith(item.path);
@@ -30,7 +40,7 @@ function BottomNav() {
                         className={`bottom-nav__item ${isActive ? 'active' : ''}`}
                         title={item.label}
                     >
-                        <span className="bottom-nav__icon">{item.icon}</span>
+                        <span className="bottom-nav__icon" aria-hidden="true">{item.icon}</span>
                         <span className="bottom-nav__label">{item.label}</span>
                     </NavLink>
                 );

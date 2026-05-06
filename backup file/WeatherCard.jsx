@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { getWeatherTimeBlocks } from '../utils/timeSegment';
-import { getRainStatus, getRainStyle } from '../utils/weatherUtils';
 import WeatherIcon from './WeatherIcons';
 import RainModal from './RainModal';
 import { RainIntensityIcon, HumidityIcon } from './AppIcons';

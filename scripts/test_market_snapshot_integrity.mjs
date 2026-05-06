@@ -1,8 +1,8 @@
+// scripts/test_market_snapshot_integrity.mjs
 import fs from 'fs';
 
 const SNAPSHOT_PATH = 'public/data/market_snapshot.json';
 const MAX_AGE_HOURS_FOR_SNAPSHOT = Number(process.env.MARKET_SNAPSHOT_MAX_AGE_HOURS || 48);
-const STRICT_AGE = process.env.MARKET_SNAPSHOT_STRICT_AGE === '1';
 
 const snapshot = JSON.parse(fs.readFileSync(SNAPSHOT_PATH, 'utf8'));
 
@@ -30,7 +30,11 @@ function assertNumericLike(value, label) {
 }
 
 assert(snapshot && typeof snapshot === 'object', 'snapshot must be an object');
-assert(snapshot.generatedAt || snapshot.generated_at || snapshot.fetchedAt, 'generatedAt/generated_at/fetchedAt missing');
+
+assert(
+  snapshot.schemaVersion || snapshot.generatedAt || snapshot.generated_at,
+  'snapshot must contain schemaVersion or generatedAt'
+);
 
 assert(Array.isArray(snapshot.indices), 'indices must be an array');
 assert(snapshot.indices.length >= 3, 'indices must contain at least 3 entries');
@@ -47,45 +51,39 @@ for (const [i, item] of snapshot.indices.entries()) {
   assertNumericLike(item.value, `indices[${i}].value`);
 }
 
-const ts = parseTs(snapshot.fetchedAt || snapshot.generatedAt || snapshot.generated_at);
-assert(ts, 'freshness timestamp invalid');
+const ts = parseTs(snapshot.generatedAt || snapshot.generated_at || snapshot.fetchedAt);
+assert(ts, 'generatedAt/generated_at/fetchedAt timestamp missing or invalid');
 
 const ageHours = (Date.now() - ts) / 36e5;
-const ageWarning = ageHours > MAX_AGE_HOURS_FOR_SNAPSHOT
-  ? `snapshot too stale: ${ageHours.toFixed(1)}h old; max allowed ${MAX_AGE_HOURS_FOR_SNAPSHOT}h`
-  : null;
 
-if (ageWarning && STRICT_AGE) {
-  throw new Error(ageWarning);
-}
-
-assert(snapshot.sourceHealth && typeof snapshot.sourceHealth === 'object', 'sourceHealth missing');
+// In CI, scheduled workflows may run after market hours/weekends.
+// Therefore this test allows a configurable max but blocks absurd 900h stale artifacts.
+assert(
+  ageHours <= MAX_AGE_HOURS_FOR_SNAPSHOT,
+  `snapshot too stale: ${ageHours.toFixed(1)}h old; max allowed ${MAX_AGE_HOURS_FOR_SNAPSHOT}h`
+);
 
 const sections = {
-  globalIndices: snapshot.globalIndices?.length || 0,
   gainers: snapshot.movers?.gainers?.length || 0,
   losers: snapshot.movers?.losers?.length || 0,
   sectorals: snapshot.sectorals?.length || 0,
   commodities: snapshot.commodities?.length || 0,
   currencies: snapshot.currencies?.length || 0,
-  mutualFunds: snapshot.mutualFunds?.length || 0,
+  mutualFunds: snapshot.mutualFunds?.length || 0
 };
 
+// For Phase 1, warn only. Phase 2 worker must turn these into hard gates.
 const warnings = [];
-if (ageWarning) warnings.push(ageWarning);
-if (sections.globalIndices === 0) warnings.push('globalIndices section empty');
 if (sections.commodities === 0) warnings.push('commodities section empty');
 if (sections.currencies === 0) warnings.push('currencies section empty');
 if (sections.sectorals === 0) warnings.push('sectorals section empty');
-if (sections.mutualFunds === 0) warnings.push('mutualFunds section empty');
+
+assert(snapshot.sourceHealth && typeof snapshot.sourceHealth === 'object', 'sourceHealth missing');
 
 console.log(JSON.stringify({
   status: 'PASS',
-  schemaVersion: snapshot.schemaVersion || null,
   generatedAt: snapshot.generatedAt || snapshot.generated_at,
-  fetchedAt: snapshot.fetchedAt || null,
   ageHours: Number(ageHours.toFixed(2)),
-  strictAge: STRICT_AGE,
   indices: snapshot.indices.length,
   sections,
   warnings

@@ -1,12 +1,19 @@
 import { getIdbCache, setIdbCache } from '../services/indexedDbCache.js';
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { fetchAllMarketData, MARKET_SEED } from '../services/indianMarketStableService';
+import {
+    MARKET_CONTEXT_CACHE_KEY,
+    MARKET_CACHE_SCHEMA_VERSION,
+    MARKET_FRESH_CACHE_TTL_MS,
+    shouldRejectMarketPayload,
+    markMarketPayload
+} from '../services/marketTrust';
 
 const MarketContext = createContext(null);
 /* eslint-disable react-refresh/only-export-components */
 
-const CACHE_KEY = 'market_cache';
-const CACHE_DURATION = 15 * 60 * 1000; // 15 minutes
+const CACHE_KEY = MARKET_CONTEXT_CACHE_KEY;
+const CACHE_DURATION = MARKET_FRESH_CACHE_TTL_MS;
 
 function publicDataUrl(path) {
     const base = (import.meta.env.BASE_URL || './').replace(/\/?$/, '/');
@@ -14,16 +21,11 @@ function publicDataUrl(path) {
 }
 
 function hasUsableMarketData(data) {
-    return Boolean(
-        data &&
-        (
-            (Array.isArray(data.indices) && data.indices.length > 0) ||
-            (Array.isArray(data?.movers?.gainers) && data.movers.gainers.length > 0) ||
-            (Array.isArray(data?.movers?.losers) && data.movers.losers.length > 0) ||
-            (Array.isArray(data.commodities) && data.commodities.length > 0) ||
-            (Array.isArray(data.currencies) && data.currencies.length > 0)
-        )
-    );
+    const rejection = shouldRejectMarketPayload(data, {
+        allowSeed: true
+    });
+
+    return !rejection.reject;
 }
 
 export function MarketProvider({ children }) {
@@ -37,7 +39,11 @@ export function MarketProvider({ children }) {
         if (!forceRefresh) {
             try {
                 const parsed = await getIdbCache(CACHE_KEY);
-                if (parsed && hasUsableMarketData(parsed)) {
+                if (
+                    parsed &&
+                    parsed.schemaVersion === MARKET_CACHE_SCHEMA_VERSION &&
+                    hasUsableMarketData(parsed)
+                ) {
                     if (Date.now() - parsed.fetchedAt < CACHE_DURATION) {
                         console.log('[MarketContext] Using cached data');
                         setMarketData(parsed);
@@ -59,10 +65,37 @@ export function MarketProvider({ children }) {
             if (!hasUsableMarketData(data)) {
                 throw new Error('Market data unavailable: live, cache, and static snapshot returned no displayable rows.');
             }
-            setMarketData(data);
-            setLastFetch(data.fetchedAt || Date.now());
-            await setIdbCache(CACHE_KEY, data);
-            if (data.sourceMode === 'seed') {
+
+            const normalized = markMarketPayload(
+                data,
+                data.sourceMode || 'live',
+                {
+                    sourceHealth: data.sourceHealth || {
+                        market: {
+                            status: data.sourceMode || 'live',
+                            provider: data.sourceMode || 'live',
+                            mode: data.sourceMode || 'live'
+                        }
+                    }
+                }
+            );
+
+            const reject = shouldRejectMarketPayload(normalized, {
+                allowSeed: true
+            });
+
+            if (reject.reject) {
+                throw new Error(reject.reason);
+            }
+
+            setMarketData(normalized);
+            setLastFetch(normalized.fetchedAt || Date.now());
+
+            if (normalized.sourceMode !== 'seed') {
+                await setIdbCache(CACHE_KEY, normalized);
+            }
+
+            if (normalized.sourceMode === 'seed') {
                 setError('Live market feed unavailable. Showing bundled Indian market seed.');
             }
             console.log('[MarketContext] ✅ Market data loaded');
@@ -71,7 +104,11 @@ export function MarketProvider({ children }) {
 
             try {
                 const parsed = await getIdbCache(CACHE_KEY);
-                if (parsed && hasUsableMarketData(parsed)) {
+                if (
+                    parsed &&
+                    parsed.schemaVersion === MARKET_CACHE_SCHEMA_VERSION &&
+                    hasUsableMarketData(parsed)
+                ) {
                     const age = Date.now() - parsed.fetchedAt;
                     console.log(`[MarketContext] Using stale cache due to fetch error (Age: ${(age/60000).toFixed(0)}m)`);
                     setMarketData(parsed);
@@ -82,12 +119,21 @@ export function MarketProvider({ children }) {
                         const resp = await fetch(publicDataUrl('data/market_snapshot.json'), { cache: 'no-cache' });
                         if (resp.ok) {
                             const snapshot = await resp.json();
-                            if (hasUsableMarketData(snapshot)) {
+                            const normalizedSnapshot = markMarketPayload(snapshot, 'snapshot', {
+                                sourceHealth: {
+                                    snapshot: {
+                                        status: 'snapshot',
+                                        provider: 'market_snapshot.json',
+                                        mode: 'snapshot'
+                                    }
+                                }
+                            });
+
+                            if (hasUsableMarketData(normalizedSnapshot)) {
                                 console.log('[MarketContext] Using static snapshot fallback');
-                                setMarketData(snapshot);
-                                const generated = snapshot.generatedAt || snapshot.generated_at;
-                                setLastFetch(generated ? new Date(generated).getTime() : Date.now());
-                                setError('Using offline snapshot (Live data failed)');
+                                setMarketData(normalizedSnapshot);
+                                setLastFetch(normalizedSnapshot.fetchedAt || Date.now());
+                                setError('Using offline snapshot. Live data failed.');
                                 return;
                             }
                         }

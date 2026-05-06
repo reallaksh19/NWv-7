@@ -1,9 +1,22 @@
 import { getIdbCache, setIdbCache } from './indexedDbCache.js';
+import {
+  MARKET_CACHE_SCHEMA_VERSION,
+  MARKET_SERVICE_CACHE_KEY,
+  MARKET_SERVICE_CACHE_TTL_MS,
+  MARKET_STALE_CACHE_MAX_AGE_MS,
+  MARKET_SNAPSHOT_FRESH_MS,
+  MARKET_EXPIRED_DISPLAY_MAX_AGE_MS,
+  getMarketPayloadAgeMs,
+  isMarketPayloadUsable,
+  isMarketPayloadFresh,
+  markMarketPayload,
+  shouldRejectMarketPayload
+} from './marketTrust.js';
 
-const CACHE_KEY = 'indian_market_stable_data';
-const CACHE_TTL = 30 * 60 * 1000;
-const STALE_CACHE_MAX_AGE = 24 * 60 * 60 * 1000;
-const SNAPSHOT_FRESH_MS = 6 * 60 * 60 * 1000;
+const CACHE_KEY = MARKET_SERVICE_CACHE_KEY;
+const CACHE_TTL = MARKET_SERVICE_CACHE_TTL_MS;
+const STALE_CACHE_MAX_AGE = MARKET_STALE_CACHE_MAX_AGE_MS;
+const SNAPSHOT_FRESH_MS = MARKET_SNAPSHOT_FRESH_MS;
 const STALE_SNAPSHOT_MAX_AGE = 24 * 60 * 60 * 1000;
 const YAHOO_CHART_BASES = [
   'https://query1.finance.yahoo.com/v8/finance/chart/',
@@ -96,11 +109,7 @@ function publicDataUrl(path) {
 }
 
 function isUsableMarketPayload(data) {
-  return Boolean(
-    data &&
-    Array.isArray(data.indices) &&
-    data.indices.some((item) => item?.name && item?.value)
-  );
+  return isMarketPayloadUsable(data);
 }
 
 function getPayloadTimestamp(data) {
@@ -113,16 +122,11 @@ function getPayloadTimestamp(data) {
 }
 
 function getPayloadAgeMs(data) {
-  const ts = getPayloadTimestamp(data);
-  return ts > 0 ? Date.now() - ts : Number.POSITIVE_INFINITY;
+  return getMarketPayloadAgeMs(data);
 }
 
 function isFreshPayload(data, ttlMs) {
-  return isUsableMarketPayload(data) && getPayloadAgeMs(data) <= ttlMs;
-}
-
-function isCacheableAsFresh(data) {
-  return isUsableMarketPayload(data) && ['live', 'cache', 'snapshot'].includes(String(data?.sourceMode || '')) && getPayloadAgeMs(data) <= CACHE_TTL;
+  return isMarketPayloadFresh(data, ttlMs);
 }
 
 function withMeta(data, sourceMode, extra = {}) {
@@ -135,10 +139,20 @@ function withMeta(data, sourceMode, extra = {}) {
     sectorals: Array.isArray(data?.sectorals) && data.sectorals.length ? data.sectorals : MARKET_SEED.sectorals,
     commodities: Array.isArray(data?.commodities) && data.commodities.length ? data.commodities : MARKET_SEED.commodities,
     currencies: Array.isArray(data?.currencies) && data.currencies.length ? data.currencies : MARKET_SEED.currencies,
+    schemaVersion: MARKET_CACHE_SCHEMA_VERSION,
     fetchedAt: timestamp,
     generatedAt: data?.generatedAt || data?.generated_at || new Date(timestamp).toISOString(),
     sourceMode,
-    sourceHealth: { ...MARKET_SEED.sourceHealth, ...(data?.sourceHealth || {}), ...(extra.sourceHealth || {}) },
+    sourceHealth: markMarketPayload(
+      {
+        sourceHealth: {
+          ...MARKET_SEED.sourceHealth,
+          ...(data?.sourceHealth || {}),
+          ...(extra.sourceHealth || {})
+        }
+      },
+      sourceMode
+    ).sourceHealth,
     errors: { ...(data?.errors || {}), ...(extra.errors || {}) },
   };
 }
@@ -263,8 +277,39 @@ export async function fetchStaticSnapshot() {
   try {
     const resp = await fetch(publicDataUrl('data/market_snapshot.json'), { cache: 'no-cache' });
     if (!resp.ok) return null;
+
     const snapshot = await resp.json();
-    return isUsableMarketPayload(snapshot) ? snapshot : null;
+    if (!isUsableMarketPayload(snapshot)) return null;
+
+    const reject = shouldRejectMarketPayload(
+      {
+        ...snapshot,
+        sourceMode: snapshot.sourceMode || 'snapshot'
+      },
+      {
+        maxAgeMs: MARKET_EXPIRED_DISPLAY_MAX_AGE_MS,
+        allowSeed: false
+      }
+    );
+
+    if (reject.reject) {
+      console.warn('[MarketStableService] Ignoring stale market snapshot:', reject.reason);
+      return null;
+    }
+
+    return markMarketPayload(snapshot, snapshot.sourceMode || 'snapshot', {
+      sourceHealth: {
+        snapshot: {
+          status: isFreshPayload(snapshot, SNAPSHOT_FRESH_MS) ? 'snapshot' : 'stale',
+          provider: 'market_snapshot.json',
+          mode: 'snapshot',
+          freshnessMs: getPayloadAgeMs(snapshot),
+          message: isFreshPayload(snapshot, SNAPSHOT_FRESH_MS)
+            ? 'Fresh static snapshot'
+            : 'Stale static snapshot'
+        }
+      }
+    });
   } catch {
     return null;
   }
@@ -274,10 +319,26 @@ async function readMarketCache({ allowStale = false } = {}) {
   try {
     const cached = await getIdbCache(CACHE_KEY);
     if (!isUsableMarketPayload(cached)) return null;
-    if (String(cached.sourceMode || '').includes('seed')) return null;
+
+    // Reject old cache schema immediately. This prevents old 900h payloads
+    // from surviving after service contract changes.
+    if (cached.schemaVersion !== MARKET_CACHE_SCHEMA_VERSION) {
+      return null;
+    }
+
     const age = getPayloadAgeMs(cached);
     if (!allowStale && age > CACHE_TTL) return null;
     if (allowStale && age > STALE_CACHE_MAX_AGE) return null;
+
+    const reject = shouldRejectMarketPayload(cached, {
+      maxAgeMs: allowStale ? STALE_CACHE_MAX_AGE : CACHE_TTL
+    });
+
+    if (reject.reject) {
+      console.warn('[MarketStableService] Ignoring cached market payload:', reject.reason);
+      return null;
+    }
+
     return cached;
   } catch {
     return null;
@@ -414,14 +475,14 @@ export async function fetchAllMarketData() {
   const live = liveResult.status === 'fulfilled' ? liveResult.value : null;
   if (isUsableMarketPayload(live)) {
     const normalized = withMeta(live, 'live', { sourceHealth: { provider: 'parallel-live-query1-query2-first' } });
-    try { await setIdbCache(CACHE_KEY, normalized); } catch {}
+    try { await setIdbCache(CACHE_KEY, normalized); } catch { /* ignore */ }
     return normalized;
   }
 
   const snapshot = snapshotResult.status === 'fulfilled' ? snapshotResult.value : null;
   if (isFreshPayload(snapshot, SNAPSHOT_FRESH_MS)) {
     const normalized = withMeta(snapshot, 'snapshot', { sourceHealth: { indices: 'fresh-snapshot' } });
-    try { await setIdbCache(CACHE_KEY, normalized); } catch {}
+    try { await setIdbCache(CACHE_KEY, normalized); } catch { /* ignore */ }
     return normalized;
   }
 
@@ -440,9 +501,30 @@ export async function fetchAllMarketData() {
     });
   }
 
-  const seed = withMeta(MARKET_SEED, 'seed', {
-    sourceHealth: { indices: 'seed-after-live-and-snapshot-failure' },
-    errors: { indices: 'Live feed unavailable and snapshot is too stale; showing bundled reference seed.' },
-  });
+  const seed = withMeta(
+    {
+      ...MARKET_SEED,
+      fetchedAt: Date.now(),
+      generatedAt: new Date().toISOString(),
+      schemaVersion: MARKET_CACHE_SCHEMA_VERSION
+    },
+    'seed',
+    {
+      sourceHealth: {
+        seed: {
+          status: 'seed',
+          provider: 'bundled-seed',
+          mode: 'seed',
+          message: 'Live feed, snapshot, and cache unavailable; showing bundled seed.'
+        }
+      },
+      errors: {
+        indices: 'Live feed, snapshot, and cache unavailable; showing bundled seed.'
+      }
+    }
+  );
+
+  // Do not cache seed as a normal market feed.
+  // Seed is display fallback only.
   return seed;
 }

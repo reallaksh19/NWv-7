@@ -2,6 +2,7 @@ import React from 'react';
 import { DataStatePill } from './Header';
 import MarketTicker from './MarketTicker';
 import { getMarketSessionState } from '../utils/marketSession';
+import { summarizeMarketSourceHealth } from '../services/marketTrust';
 
 function formatTime(timestamp) {
     if (!timestamp) return '--';
@@ -23,25 +24,9 @@ const MarketStickyHeader = ({ marketData, indices = [], onRefresh, loading, last
         lastUpdated: lastUpdated || marketData?.fetchedAt,
         tradingHolidays
     });
-    const sourceHealth = marketData?.sourceHealth || {};
-    const sourceSummary = Object.values(sourceHealth).reduce(
-        (acc, value) => {
-            if (value === 'live') acc.live += 1;
-            else if (value === 'failed') acc.failed += 1;
-            else if (value === 'snapshot') acc.snapshot += 1;
-            return acc;
-        },
-        { live: 0, failed: 0, snapshot: 0 }
-    );
-    let modeStr = 'cached';
-    let modeLabel = 'Cached';
-    if (sourceSummary.live > 0) {
-        modeStr = 'live'; modeLabel = 'Live';
-    } else if (sourceSummary.snapshot > 0) {
-        modeStr = 'snapshot'; modeLabel = 'Snapshot';
-    } else if (sourceSummary.failed > 0) {
-        modeStr = 'degraded'; modeLabel = 'Limited';
-    }
+    const sourceSummary = summarizeMarketSourceHealth(marketData || {});
+    const { modeStr, modeLabel } = sourceSummary;
+    const counts = sourceSummary.counts;
 
 
     return (
@@ -63,9 +48,11 @@ const MarketStickyHeader = ({ marketData, indices = [], onRefresh, loading, last
 
                 <div className="market-sticky-header__actions">
                     <div className="market-source-summary">
-                        <span>{sourceSummary.live} live</span>
-                        <span>{sourceSummary.failed} failed</span>
-                        <span>{sourceSummary.snapshot} snapshot</span>
+                        <span>{counts.live || 0} live</span>
+                        <span>{counts.snapshot || 0} snapshot</span>
+                        <span>{counts.stale || 0} stale</span>
+                        <span>{counts.seed || 0} seed</span>
+                        <span>{counts.failed || 0} failed</span>
                     </div>
                     <button
                         onClick={onRefresh}

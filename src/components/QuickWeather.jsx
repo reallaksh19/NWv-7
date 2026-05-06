@@ -48,11 +48,8 @@ const QuickWeather = () => {
         }
     }, [activeCity]);
 
-    useEffect(() => {
-        if (visibleCities.length > 0 && !weatherData?.[activeCity]?.current) {
-            setActiveCity(visibleCities[0]);
-        }
-    }, [activeCity, visibleCities, weatherData]);
+    // Ensure active city is valid on initial render or when cities change
+    const currentActiveCity = (weatherData?.[activeCity]?.current) ? activeCity : visibleCities[0];
 
     if (!booted || loading) return <div className="quick-weather-card qw-bg-day"><div style={{ textAlign: 'center', padding: '20px 0' }}>Loading weather...</div></div>;
     if (error || !weatherData || Object.values(weatherData).every(city => !city?.current)) return <div className="quick-weather-card qw-bg-night"><div style={{ textAlign: 'center', padding: '20px 0' }}>Weather unavailable</div></div>;
@@ -64,8 +61,8 @@ const QuickWeather = () => {
     else if (hour >= 17 && hour < 20) bgClass = 'qw-bg-evening';
     else bgClass = 'qw-bg-night';
 
-    const activeCityData = weatherData[activeCity] || weatherData[visibleCities[0]];
-    const activeCityName = weatherData[activeCity]?.current ? activeCity : visibleCities[0];
+    const activeCityData = weatherData[currentActiveCity] || weatherData[visibleCities[0]];
+    const activeCityName = currentActiveCity;
     const severeWarning = getSevereWarning(activeCityData);
     const textForecast = getNaturalTextForecast(activeCityData, cityLabels[activeCityName] || activeCityData?.name || 'Selected city');
 

@@ -6,6 +6,58 @@
  * These rules key from the React-resolved .bottom-nav--desktop class instead.
  */
 
+/* Shared nav wrapper. Required because BottomNav now renders the same full
+ * 12-tab list for mobile and desktop through .bottom-nav__items.
+ */
+.bottom-nav .bottom-nav__items {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.bottom-nav .bottom-nav__items::-webkit-scrollbar {
+  display: none;
+}
+
+/* Mobile keeps the bottom rail but now includes every primary/secondary tab.
+ * Horizontal scroll is intentional and avoids hiding tabs behind More.
+ */
+.bottom-nav:not(.bottom-nav--desktop) .bottom-nav__items {
+  gap: 0;
+}
+
+.bottom-nav:not(.bottom-nav--desktop) .bottom-nav__item {
+  min-width: 64px;
+}
+
+@media (max-width: 390px) {
+  .bottom-nav:not(.bottom-nav--desktop) .bottom-nav__item {
+    min-width: 60px;
+  }
+}
+
+.runtime-badge--icon-only {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.65rem;
+  height: 1.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-default);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
 .bottom-nav.bottom-nav--desktop {
   position: fixed;
   top: 0;
@@ -62,11 +114,13 @@
 .bottom-nav--desktop .bottom-nav__items {
   flex: 1 1 auto;
   min-width: 0;
+  height: auto;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
   gap: 4px 6px;
+  overflow: visible;
 }
 
 .bottom-nav--desktop .bottom-nav__item {
@@ -132,24 +186,76 @@
   color: var(--text-primary);
 }
 
-/* Apply top-nav spacing whenever React has resolved desktop mode, including
- * widths below the old 1024px CSS breakpoint.
+/* Apply desktop shell spacing/width whenever React has resolved desktop mode,
+ * including widths below the old 1024px CSS breakpoint.
  */
 html[data-layout-mode="desktop"] .page-container {
+  width: 100%;
+  max-width: none;
   padding-top: 58px;
   padding-bottom: 0;
 }
 
-html[data-layout-mode="desktop"] .header {
+html[data-layout-mode="desktop"] .header,
+html[data-layout-mode="desktop"] .timeline-header {
   top: 52px;
 }
 
 html[data-layout-mode="desktop"] .main-content {
-  max-width: min(1280px, calc(100vw - 32px));
+  width: 100%;
+  max-width: min(1440px, calc(100vw - 48px));
+  margin-left: auto;
+  margin-right: auto;
+}
+
+html[data-layout-mode="desktop"] .main-content[style] {
+  max-width: min(1440px, calc(100vw - 48px)) !important;
+}
+
+html[data-layout-mode="desktop"] .main-content.market-page,
+html[data-layout-mode="desktop"] .main-content.market-page--revamp {
+  max-width: min(1480px, calc(100vw - 48px)) !important;
 }
 
 html[data-layout-mode="desktop"] .dashboard-grid {
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+html[data-layout-mode="desktop"] .main-page-grid {
+  display: grid;
+  grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
+  gap: var(--spacing-lg);
+  align-items: start;
+}
+
+html[data-layout-mode="desktop"] .market-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(320px, 0.9fr);
+  gap: 16px;
+  align-items: start;
+}
+
+html[data-layout-mode="desktop"] .market-movers-grid,
+html[data-layout-mode="desktop"] .market-macro-grid,
+html[data-layout-mode="desktop"] .market-bottom-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+html[data-layout-mode="desktop"] .dw-container {
+  max-width: min(1320px, calc(100vw - 64px));
+  margin: 0 auto;
+}
+
+html[data-layout-mode="desktop"] .dw-cards-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+}
+
+html[data-layout-mode="desktop"] .dw-card.expanded {
+  grid-column: span 3;
 }
 
 @media (max-width: 1180px) {
@@ -183,7 +289,25 @@ html[data-layout-mode="desktop"] .dashboard-grid {
     padding-top: 92px;
   }
 
-  html[data-layout-mode="desktop"] .header {
+  html[data-layout-mode="desktop"] .header,
+  html[data-layout-mode="desktop"] .timeline-header {
     top: 88px;
+  }
+
+  html[data-layout-mode="desktop"] .main-content,
+  html[data-layout-mode="desktop"] .main-content[style] {
+    max-width: min(100%, calc(100vw - 24px)) !important;
+  }
+
+  html[data-layout-mode="desktop"] .market-hero-grid,
+  html[data-layout-mode="desktop"] .market-movers-grid,
+  html[data-layout-mode="desktop"] .market-macro-grid,
+  html[data-layout-mode="desktop"] .market-bottom-grid,
+  html[data-layout-mode="desktop"] .dw-cards-list {
+    grid-template-columns: 1fr;
+  }
+
+  html[data-layout-mode="desktop"] .dw-card.expanded {
+    grid-column: span 1;
   }
 }

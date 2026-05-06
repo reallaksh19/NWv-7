@@ -3,7 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import './DesktopLayoutFix.css';
 
-const CORE_NAV_ITEMS = [
+const ALL_NAV_ITEMS = [
     { path: '/', label: 'Main', icon: '🏠' },
     { path: '/insight', label: 'Insight', icon: '📊' },
     { path: '/up-ahead', label: 'Up Ahead', icon: '🗓️' },
@@ -11,9 +11,6 @@ const CORE_NAV_ITEMS = [
     { path: '/markets', label: 'Market', icon: '📈' },
     { path: '/weather', label: 'Weather', icon: '☁️' },
     { path: '/settings', label: 'Settings', icon: '⚙️' },
-];
-
-const DESKTOP_EXTRA_NAV_ITEMS = [
     { path: '/newspaper', label: 'Newspaper', icon: '📰' },
     { path: '/tech-social', label: 'Buzz', icon: '🎭' },
     { path: '/following', label: 'Following', icon: '⭐' },
@@ -24,9 +21,7 @@ const DESKTOP_EXTRA_NAV_ITEMS = [
 function BottomNav() {
     const { isWebView, layoutMode, layoutReason, layoutOverride, setLayoutModeOverride } = useMediaQuery();
     const location = useLocation();
-    const navItems = isWebView
-        ? [...CORE_NAV_ITEMS, ...DESKTOP_EXTRA_NAV_ITEMS]
-        : CORE_NAV_ITEMS;
+    const navItems = ALL_NAV_ITEMS;
 
     const cycleLayoutMode = () => {
         if (layoutOverride === 'desktop') setLayoutModeOverride('mobile');

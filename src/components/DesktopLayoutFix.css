@@ -6,6 +6,43 @@
  * These rules key from the React-resolved .bottom-nav--desktop class instead.
  */
 
+/* Shared nav wrapper. Required because BottomNav now renders the same full
+ * 12-tab list for mobile and desktop through .bottom-nav__items.
+ */
+.bottom-nav .bottom-nav__items {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.bottom-nav .bottom-nav__items::-webkit-scrollbar {
+  display: none;
+}
+
+/* Mobile keeps the bottom rail but now includes every primary/secondary tab.
+ * Horizontal scroll is intentional and avoids hiding tabs behind More.
+ */
+.bottom-nav:not(.bottom-nav--desktop) .bottom-nav__items {
+  gap: 0;
+}
+
+.bottom-nav:not(.bottom-nav--desktop) .bottom-nav__item {
+  min-width: 64px;
+}
+
+@media (max-width: 390px) {
+  .bottom-nav:not(.bottom-nav--desktop) .bottom-nav__item {
+    min-width: 60px;
+  }
+}
+
 .bottom-nav.bottom-nav--desktop {
   position: fixed;
   top: 0;
@@ -62,11 +99,13 @@
 .bottom-nav--desktop .bottom-nav__items {
   flex: 1 1 auto;
   min-width: 0;
+  height: auto;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
   gap: 4px 6px;
+  overflow: visible;
 }
 
 .bottom-nav--desktop .bottom-nav__item {

@@ -24,13 +24,10 @@ export default function DetailedWeatherCard({ weatherData, activeCity, setActive
 
     if (!cityData) return <div className="dw-container">Data unavailable</div>;
 
-    // Time-based Segments Logic
     const hour = new Date().getHours();
     let segments = [];
 
     const getSeg = (day, period, labelOverride = null) => {
-        const dKey = day === 'today' ? cityData : cityData.tomorrow;
-        const pKey = period; // 'morning', 'noon', 'evening'
         const data = day === 'today' ? cityData[period] : cityData.tomorrow?.[period];
 
         let label = labelOverride;
@@ -44,41 +41,23 @@ export default function DetailedWeatherCard({ weatherData, activeCity, setActive
 
         return {
             id: `${day}-${period}`,
-            label: label,
-            data: data
+            label,
+            data
         };
     };
 
-    // Determine 3 contextual cards
     if (hour < 11) {
-        segments = [
-            getSeg('today', 'morning', 'This Morning'),
-            getSeg('today', 'noon'),
-            getSeg('today', 'evening')
-        ];
+        segments = [getSeg('today', 'morning', 'This Morning'), getSeg('today', 'noon'), getSeg('today', 'evening')];
     } else if (hour < 17) {
-        segments = [
-            getSeg('today', 'noon', 'This Afternoon'),
-            getSeg('today', 'evening'),
-            getSeg('tomorrow', 'morning')
-        ];
+        segments = [getSeg('today', 'noon', 'This Afternoon'), getSeg('today', 'evening'), getSeg('tomorrow', 'morning')];
     } else if (hour < 21) {
-        segments = [
-            getSeg('today', 'evening', 'Tonight'),
-            getSeg('tomorrow', 'morning'),
-            getSeg('tomorrow', 'noon')
-        ];
+        segments = [getSeg('today', 'evening', 'Tonight'), getSeg('tomorrow', 'morning'), getSeg('tomorrow', 'noon')];
     } else {
-        segments = [
-            getSeg('tomorrow', 'morning', 'Tomorrow Morning'),
-            getSeg('tomorrow', 'noon'),
-            getSeg('tomorrow', 'evening')
-        ];
+        segments = [getSeg('tomorrow', 'morning', 'Tomorrow Morning'), getSeg('tomorrow', 'noon'), getSeg('tomorrow', 'evening')];
     }
 
     return (
         <div className="dw-container">
-            {/* Sidebar (Vertical Tabs) */}
             <div className="dw-sidebar">
                 {cities.map(city => (
                     <button
@@ -93,9 +72,7 @@ export default function DetailedWeatherCard({ weatherData, activeCity, setActive
                 ))}
             </div>
 
-            {/* Content Area */}
             <div className="dw-content">
-                {/* Header for Selected City */}
                 <div className="dw-header">
                     <div className="dw-header-main">
                         <h2 className="dw-city-title">{cityData.name}</h2>
@@ -106,7 +83,6 @@ export default function DetailedWeatherCard({ weatherData, activeCity, setActive
                     </div>
                 </div>
 
-                {/* 3 Contextual Cards */}
                 <div className="dw-cards-list">
                     {segments.map((seg, idx) => {
                         if (!seg.data) return null;
@@ -121,7 +97,6 @@ export default function DetailedWeatherCard({ weatherData, activeCity, setActive
                     })}
                 </div>
 
-                {/* Footer: model sources */}
                 <div className="dw-footer">
                     {cityData.models?.count
                         ? `Forecast based on ${cityData.models.count} model${cityData.models.count !== 1 ? 's' : ''}: ${cityData.models.names}`
@@ -134,8 +109,9 @@ export default function DetailedWeatherCard({ weatherData, activeCity, setActive
 
 function WeatherSegmentCard({ segment, isExpanded, onToggle }) {
     const { label, data } = segment;
+    const hourly = Array.isArray(data.hourly) ? data.hourly : [];
+    const hasHourly = hourly.length > 0;
 
-    // Rainfall Logic
     const rainMmVal = parseFloat(data.rainMm === '-' ? 0 : data.rainMm);
     const rainProbVal = data.rainProb?.avg || 0;
     const hasSignificantRain = rainMmVal >= 1.0;
@@ -148,25 +124,39 @@ function WeatherSegmentCard({ segment, isExpanded, onToggle }) {
     if (hasAnyRain) {
         if (hasSignificantRain) {
             RainIcon = UmbrellaIcon;
-            rainColor = '#3b82f6'; // Blue
+            rainColor = '#3b82f6';
         } else {
-            RainIcon = CloudIcon; // Or trace icon
-             rainColor = '#94a3b8'; // Greyish
+            RainIcon = CloudIcon;
+            rainColor = '#94a3b8';
         }
 
-        // Format: "4.2mm (65%)"
         rainText = `${rainMmVal > 0 ? rainMmVal.toFixed(1) + 'mm' : 'Trace'} (${rainProbVal}%)`;
     }
 
-    // Condition Text / Description
-    // If API doesn't provide a text summary for the segment, infer one
     const description = getConditionText(data);
 
+    const handleKeyDown = (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            onToggle();
+        }
+    };
+
     return (
-        <div className={`dw-card ${isExpanded ? 'expanded' : ''}`} onClick={onToggle}>
+        <div
+            className={`dw-card ${isExpanded ? 'expanded' : ''}`}
+            role="button"
+            tabIndex={0}
+            aria-expanded={isExpanded}
+            aria-label={`${label}. ${hasHourly ? 'Toggle hourly forecast' : 'Hourly forecast unavailable'}`}
+            onClick={onToggle}
+            onKeyDown={handleKeyDown}
+        >
             <div className="dw-card-header">
                 <span className="dw-period-badge">{label}</span>
-                <span className="dw-expand-hint">{isExpanded ? 'Collapse' : 'Touch for Hourly'}</span>
+                <span className={`dw-expand-hint ${hasHourly ? '' : 'dw-expand-hint--disabled'}`}>
+                    {isExpanded ? 'Collapse' : hasHourly ? 'Touch for Hourly' : 'Hourly unavailable'}
+                </span>
             </div>
 
             <div className="dw-card-main">
@@ -180,7 +170,6 @@ function WeatherSegmentCard({ segment, isExpanded, onToggle }) {
             </div>
 
             <div className="dw-details-grid">
-                {/* Row 1: Rainfall (Umbrella if >1mm) */}
                 <div className="dw-detail-row">
                     <div className="dw-detail-icon">
                         <RainIcon size={20} color={rainColor} />
@@ -190,7 +179,6 @@ function WeatherSegmentCard({ segment, isExpanded, onToggle }) {
                     </div>
                 </div>
 
-                {/* Row 2: Humidity, Wind Speed */}
                 <div className="dw-detail-row">
                     <div className="dw-detail-icon"><HumidityIcon size={20} /></div>
                     <div className="dw-detail-text">
@@ -198,7 +186,6 @@ function WeatherSegmentCard({ segment, isExpanded, onToggle }) {
                     </div>
                 </div>
 
-                {/* Row 3: UV, PM 2.5 */}
                 <div className="dw-detail-row">
                     <div className="dw-detail-icon">☀️</div>
                     <div className="dw-detail-text">
@@ -206,7 +193,6 @@ function WeatherSegmentCard({ segment, isExpanded, onToggle }) {
                     </div>
                 </div>
 
-                {/* Row 4: Descriptive */}
                 <div className="dw-detail-row">
                     <div className="dw-detail-icon">ℹ️</div>
                     <div className="dw-detail-text dw-desc">
@@ -215,11 +201,11 @@ function WeatherSegmentCard({ segment, isExpanded, onToggle }) {
                 </div>
             </div>
 
-            {isExpanded && data.hourly && (
+            {isExpanded && hasHourly && (
                 <div className="dw-hourly-container hide-scrollbar" onClick={(e) => e.stopPropagation()}>
-                    {data.hourly.map((h, i) => (
+                    {hourly.map((h, i) => (
                         <div key={i} className="dw-hourly-slot">
-                            <span className="dw-slot-time">{h.time}</span>
+                            <span className="dw-slot-time">{h.time || h.label}</span>
                             <div className="dw-slot-icon">
                                 {h.iconId ? <WeatherIcon id={h.iconId} size={28} /> : h.icon}
                             </div>
@@ -239,7 +225,6 @@ function WeatherSegmentCard({ segment, isExpanded, onToggle }) {
 }
 
 function getConditionText(data) {
-    // Generate a short description based on metrics
     const parts = [];
     if (data.rainProb?.avg > 40) parts.push("Rain expected.");
     else if (data.cloudCover > 70) parts.push("Cloudy.");

@@ -10,7 +10,6 @@
  * Usage: <WeatherIcon id="day_clear" size={32} />
  */
 import React from 'react';
-import { getWeatherIconId as getIconId } from '../utils/weatherUtils';
 
 const S = 32; // default viewBox size
 
@@ -208,16 +207,4 @@ export default function WeatherIcon({ id, size = 32, className = '' }) {
             {resolved}
         </svg>
     );
-}
-
-// Re-export using the utility implementation
-export function getWeatherIconId(code, hour, temp, wind) {
-    const id = getIconId(code, hour, temp, wind);
-    // Ensure the ID maps to a valid icon in this specific set
-    // (Though the logic is identical, the UI component is the authority on available icons)
-    if (icons[id] || aliasMap[id]) return id;
-
-    // Fallback if the utility returned something we don't have
-    // (Should match utility logic, but safe guard)
-    return `day_cloudy`;
 }

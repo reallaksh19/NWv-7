@@ -1,0 +1,126 @@
+Wave 02 — Digest Adapter + Mock Digest
+======================================
+
+Goal
+----
+Prepare the UI to render a future GitHub Workflow-generated Insight digest.
+
+InsightPage should first try:
+  public/newsdata/insight_digest.json
+
+If missing, invalid, or expired:
+  fall back to the current browser pipeline.
+
+This wave does not implement the workflow worker or ranking.
+
+Scope
+-----
+Allowed:
+  - add digest fetcher adapter;
+  - add digest card/view components;
+  - add mock digest JSON;
+  - add diagnostics/source health mock JSON;
+  - update InsightPage to prefer digest when valid.
+
+Not allowed:
+  - no dedup change;
+  - no ranking change;
+  - no actual workflow data generation;
+  - no removal of browser pipeline fallback.
+
+Files to add
+------------
+src/adapters/insightDigestFetcher.js
+src/components/insight/InsightDigestCard.jsx
+src/components/insight/InsightDigestView.jsx
+src/components/insight/InsightDiagnosticsPanel.jsx
+
+public/newsdata/insight_digest.json
+public/newsdata/insight_diagnostics.json
+public/newsdata/insight_source_health.json
+
+Files to update
+---------------
+src/pages/InsightPage.jsx
+src/styles/InsightPage.css
+
+Digest fetcher behavior
+-----------------------
+fetchInsightDigest({ allowStale: true }) should:
+  1. fetch newsdata/insight_digest.json with no-cache;
+  2. validate schemaVersion === "2.0.0";
+  3. validate generatedAt;
+  4. validate cards array;
+  5. require cards.length > 0;
+  6. compute age;
+  7. accept fresh digest if age <= 3 hours;
+  8. accept displayable stale digest if age <= 48 hours and allowStale;
+  9. fetch diagnostics/sourceHealth optionally;
+  10. return structured result:
+       ok
+       reason
+       digest
+       diagnostics
+       sourceHealth
+       stale
+       ageMs
+       sourceMode
+
+InsightPage behavior
+--------------------
+On mount:
+  1. try fetchInsightDigest();
+  2. if digest ok and cards exist, render InsightDigestView;
+  3. set source to github-workflow or stale-digest;
+  4. do not run browser pipeline;
+  5. if digest unavailable, use existing cache/browser pipeline logic.
+
+Important:
+  Old localStorage pipeline cache must not mask a newer valid digest.
+
+Mock digest minimum
+-------------------
+Create at least:
+  2 top_story_explainer cards
+  1 developing_now card
+  multiple angles per card
+  hiddenDuplicateCount values
+  topStoryAnchorScore
+  diagnostics
+  source health
+
+UI content
+----------
+Digest card should show:
+  rank
+  bucket
+  coverage label
+  Top story match %
+  duplicate hidden count
+  headline
+  summary
+  score bar
+  independent source count
+  angle count
+  Why it matters
+  angle list with source and admittedBecause
+
+Acceptance tests
+----------------
+Manual:
+  [ ] InsightPage renders mock insight_digest.json without workflow.
+  [ ] Existing browser pipeline fallback still works if mock digest is removed.
+  [ ] Stale digest label appears when generatedAt is old.
+  [ ] Diagnostics panel appears only in debug mode.
+  [ ] No ranking/dedup logic changed.
+
+Commands:
+  npm run build
+
+Debug:
+  localStorage.setItem("nwv7_insight_debug", "1");
+  location.reload();
+
+Rollback
+--------
+Remove digest components/adapter and restore InsightPage mount effect.

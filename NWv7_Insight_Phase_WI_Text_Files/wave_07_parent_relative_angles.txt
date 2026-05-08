@@ -1,0 +1,136 @@
+Wave 07 — Parent-relative Angle Classification + Angle Selection
+================================================================
+
+Goal
+----
+Fix the "only one angle" problem.
+
+A child story angle must be classified relative to the parent event, not as an isolated article.
+
+Scope
+-----
+Allowed:
+  - add parent-relative angle classifier;
+  - add angle selector;
+  - add admittedBecause reasons;
+  - add angle benchmark.
+
+Not allowed:
+  - no final ranking;
+  - no digest publishing;
+  - no browser UI behavior change required.
+
+Files to add
+------------
+scripts/insight_worker/angles/__init__.py
+scripts/insight_worker/angles/classify_angle.py
+scripts/insight_worker/angles/select_angles.py
+
+benchmarks/insight/fixtures/wave7_angle_fixture.json
+benchmarks/insight/runWave7AngleBenchmark.mjs
+
+Files to update
+---------------
+package.json
+  add:
+    "benchmark:insight-angles": "node benchmarks/insight/runWave7AngleBenchmark.mjs"
+
+Angle labels
+------------
+base_report
+official_response
+fact_update
+market_reaction
+expert_analysis
+regional_followup
+investigative_detail
+correction
+background_context
+reaction_public
+unknown
+
+Classifier contract
+-------------------
+classify_angle_for_parent(story, parent_event, selected_children) -> (angle, reasons)
+
+Rules
+-----
+correction:
+  correction/clarification/revised/rollback/fact-check signals
+
+official_response:
+  official actor + statement verb
+
+market_reaction:
+  Sensex/Nifty/stocks/rupee/bonds/sector/earnings/IPO signals
+
+fact_update:
+  story adds new numbers/dates not present in parent or selected children
+
+regional_followup:
+  story adds a more specific place/local impact
+
+investigative_detail:
+  probe/investigation/raid/chargesheet/scam/leak/exclusive signals
+
+background_context:
+  explainer/analysis/why/how/what it means signals
+
+reaction_public:
+  protest/residents/social media/public reaction signals
+
+base_report:
+  closest to parent headline/event
+
+unknown:
+  related but no specific angle signal
+
+Angle selection
+---------------
+Aim for:
+  1 base report
+  1 official response
+  1 fact update
+  1 regional/local follow-up
+  1 background/expert context
+  1 market/public reaction where relevant
+
+Limit repeated same-angle stories. Avoid same source repeating same angle.
+
+Angle score signals:
+  relationToParent
+  informationGain
+  angleUniqueness
+  sourceAuthority
+  freshness
+  sourceDiversity
+  summaryQuality
+
+Benchmark fixture must include
+------------------------------
+base
+official
+regional
+fact-update
+background
+market
+
+Acceptance tests
+----------------
+Commands:
+  npm run benchmark:insight-angles
+  npm run build
+
+Pass requirements:
+  [ ] base_report selected.
+  [ ] official_response selected.
+  [ ] fact_update selected.
+  [ ] regional_followup selected.
+  [ ] background_context or expert_analysis selected.
+  [ ] market_reaction selected where relevant.
+  [ ] admittedBecause exists for each angle.
+  [ ] same-angle repetition limited.
+
+Rollback
+--------
+Remove angle package and benchmark. No production impact if not integrated.

@@ -1,0 +1,141 @@
+Wave 09 — Digest Publisher + Browser Switch
+===========================================
+
+Goal
+----
+Publish the final ranked Insight digest as static JSON and make InsightPage render it first.
+
+Current app behavior:
+  InsightPage runs browser-side runInsightPipeline() on page load.
+
+Target behavior:
+  InsightPage fetches public/newsdata/insight_digest.json first.
+  Browser pipeline remains fallback only.
+
+Scope
+-----
+Allowed:
+  - integrate Waves 03-08 into build_insight_digest.py;
+  - publish insight_digest.json;
+  - publish insight_diagnostics.json;
+  - publish top_story_anchors.json;
+  - update insight_refresh workflow;
+  - update InsightPage to prefer digest;
+  - add digest UI components if not already added in Wave 02.
+
+Not allowed:
+  - do not remove browser pipeline fallback;
+  - do not let localStorage cache mask newer digest;
+  - do not silently display stale digest without label.
+
+Files to add
+------------
+scripts/insight_worker/build_insight_digest.py
+scripts/test_insight_digest_integrity.mjs
+
+src/adapters/insightDigestFetcher.js
+src/components/insight/InsightDigestCard.jsx
+src/components/insight/InsightDigestView.jsx
+src/components/insight/InsightDiagnosticsPanel.jsx
+
+Files to update
+---------------
+.github/workflows/insight_refresh.yml
+src/pages/InsightPage.jsx
+src/styles/InsightPage.css
+package.json
+
+package.json:
+  "test:insight-digest": "node scripts/test_insight_digest_integrity.mjs"
+
+Build pipeline
+--------------
+build_insight_digest.py:
+  1. read public/newsdata/insight_latest.json;
+  2. run_dedup(stories);
+  3. build_event_clusters(dedup.stories);
+  4. build_top_story_anchors(dedup.stories);
+  5. attach_anchor_matches(events, storiesById, anchors);
+  6. attach_angles_to_events(events_with_anchors, storiesById);
+  7. select_insight_buckets(events_with_angles);
+  8. convert selected events to digest cards;
+  9. write top_story_anchors.json;
+  10. write insight_digest.json;
+  11. write insight_diagnostics.json.
+
+Card conversion
+---------------
+Each card must contain:
+  eventId
+  bucket
+  headline
+  summary
+  whyItMatters
+  score
+  coverageLabel
+  sourceCount
+  independentSourceCount
+  hiddenDuplicateCount
+  topStoryAnchorId
+  topStoryAnchorScore
+  topStoryAnchorBand
+  snapshotPresence
+  angles
+  selectionReasons
+  scoreBreakdown
+
+Workflow
+--------
+insight_refresh.yml should:
+  1. build rolling snapshot;
+  2. build digest;
+  3. validate digest;
+  4. commit:
+       insight_latest.json
+       insight_history.json
+       insight_source_health.json
+       top_story_anchors.json
+       insight_digest.json
+       insight_diagnostics.json
+
+Browser switch
+--------------
+InsightPage mount:
+  1. fetchInsightDigest({ allowStale: true });
+  2. if ok and cards exist, render InsightDigestView;
+  3. else fallback to existing browser cache/pipeline;
+  4. when accepting browser pending result, clear digestPayload.
+
+Stale rules
+-----------
+Fresh:
+  generatedAt age <= 3h
+
+Displayable stale:
+  age <= 48h and allowStale
+
+Expired:
+  fallback to browser pipeline
+
+Acceptance tests
+----------------
+Commands:
+  python scripts/insight_worker/build_insight_snapshot.py
+  python scripts/insight_worker/build_insight_digest.py
+  npm run test:insight-digest
+  npm run build
+
+Manual:
+  [ ] insight_digest.json is produced.
+  [ ] insight_diagnostics.json is produced.
+  [ ] top_story_anchors.json is produced.
+  [ ] InsightPage renders digest first.
+  [ ] Browser pipeline fallback still works if digest removed.
+  [ ] Stale digest is clearly labelled.
+  [ ] Duplicate hidden count visible.
+  [ ] Multiple angles visible.
+  [ ] Debug diagnostics visible with nwv7_insight_debug.
+
+Rollback
+--------
+Keep generated JSON but revert InsightPage switch to browser pipeline first. Worker can remain if output is not used.

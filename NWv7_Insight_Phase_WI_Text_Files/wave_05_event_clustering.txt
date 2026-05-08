@@ -1,0 +1,114 @@
+Wave 05 — Event Clustering
+==========================
+
+Goal
+----
+Turn deduped stories into same-event parent events.
+
+This wave builds the workflow-side event clustering equivalent. It groups stories about the same event while preserving angle candidates.
+
+Scope
+-----
+Allowed:
+  - add event identity logic;
+  - add same-event similarity;
+  - cluster stories into events;
+  - compute independent source count;
+  - carry duplicate metadata;
+  - compute snapshot presence;
+  - compute preliminary event score;
+  - add event benchmark.
+
+Not allowed:
+  - no final ranking;
+  - no top-story anchor selection;
+  - no angle classification;
+  - no browser UI change.
+
+Files to add
+------------
+scripts/insight_worker/events/__init__.py
+scripts/insight_worker/events/event_identity.py
+scripts/insight_worker/events/event_similarity.py
+scripts/insight_worker/events/cluster_events.py
+scripts/insight_worker/events/event_scoring.py
+
+benchmarks/insight/fixtures/wave5_event_cluster_fixture.json
+benchmarks/insight/runWave5EventClusterBenchmark.mjs
+
+Files to update
+---------------
+package.json
+  add:
+    "benchmark:insight-events": "node benchmarks/insight/runWave5EventClusterBenchmark.mjs"
+
+Event identity
+--------------
+eventId = hash(
+  primary keywords/entities,
+  event verbs,
+  key place,
+  date bucket
+)
+
+The ID should be stable inside a news cycle but avoid merging unrelated stories from different days.
+
+Event similarity signals
+------------------------
+story text similarity
+keyword overlap
+title token overlap
+event verb overlap
+place overlap
+number overlap
+
+Hard guards
+-----------
+Do not merge when:
+  - one story is market-specific and the other is not;
+  - both have numbers but no shared numbers and low keyword overlap;
+  - similarity below threshold.
+
+Event contract
+--------------
+eventId
+canonicalHeadline
+canonicalSummary
+storyIds
+hiddenDuplicateIds
+sourceGroups
+independentSourceCount
+syndicatedCopyCount
+snapshotPresence
+keywords
+eventVerbs
+keyPlaces
+firstSeenAt
+latestSeenAt
+preliminaryEventScore
+matchReasons
+angleCandidateStoryIds
+
+Benchmark fixture must include
+------------------------------
+1. cyclone base/official/regional stories that should cluster together;
+2. market base/sector stories that should cluster together;
+3. unrelated sports story that should remain separate.
+
+Acceptance tests
+----------------
+Commands:
+  npm run benchmark:insight-events
+  npm run build
+
+Pass requirements:
+  [ ] same event from multiple sources becomes one parent event.
+  [ ] unrelated story remains separate.
+  [ ] independentSourceCount >= 2 for multi-source event.
+  [ ] snapshotPresence exists.
+  [ ] preliminaryEventScore exists.
+  [ ] cluster diagnostics exist.
+
+Rollback
+--------
+Remove event package and benchmark. No production behavior changes if not integrated.

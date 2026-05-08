@@ -1,0 +1,149 @@
+Wave 00 — Contract Freeze and Foundation
+========================================
+
+Goal
+----
+Freeze the Insight revamp contracts before parallel coding starts.
+
+This wave must not change runtime behavior. It creates documentation, schemas, and stable agreements so UI, workflow, algorithm, and QA agents can work without blocking each other.
+
+Scope
+-----
+Allowed:
+  - add docs/INSIGHT_REVAMP_CONTRACT.md;
+  - add docs/INSIGHT_WAVE_PLAN.md;
+  - add JSON schemas under public/newsdata/schema/;
+  - add a lightweight schema sanity test.
+
+Not allowed:
+  - no UI behavior change;
+  - no browser pipeline change;
+  - no ranking change;
+  - no dedup threshold change;
+  - no GitHub workflow behavior change;
+  - no generated newsdata refresh.
+
+Files to add
+------------
+docs/INSIGHT_REVAMP_CONTRACT.md
+docs/INSIGHT_WAVE_PLAN.md
+
+public/newsdata/schema/insight_digest.schema.json
+public/newsdata/schema/insight_diagnostics.schema.json
+public/newsdata/schema/top_story_anchors.schema.json
+public/newsdata/schema/insight_source_health.schema.json
+
+scripts/test_insight_contract_schemas.mjs
+
+package.json
+  add:
+    "test:insight-contracts": "node scripts/test_insight_contract_schemas.mjs"
+
+Required contracts
+------------------
+1. insight_digest.json
+
+Minimum shape:
+  schemaVersion: "2.0.0"
+  generatedAt: ISO datetime
+  sourceMode: github-workflow | browser-pipeline | cached | stale | fallback | mock
+  diagnosticsRef: string
+  sourceHealthRef: string
+  cards: array of event cards
+
+Each card represents one event, not one article.
+
+Required card fields:
+  eventId
+  bucket
+  headline
+  summary
+  whyItMatters
+  score
+  coverageLabel
+  sourceCount
+  independentSourceCount
+  hiddenDuplicateCount
+  topStoryAnchorId
+  topStoryAnchorScore
+  snapshotPresence
+  angles
+
+2. top_story_anchors.json
+
+Minimum shape:
+  schemaVersion: "1.0.0"
+  generatedAt
+  sourceMode
+  anchorPolicy
+  anchors[]
+
+anchorPolicy must explicitly state:
+  usesUserVisibleFilteredTopStories: false
+  usesReadSuppression: false
+  usesViewCountSuppression: false
+  usesCustomSortTopStories: false
+
+3. insight_diagnostics.json
+
+Required fields:
+  rawStoryCount
+  normalizedStoryCount
+  dedupedStoryCount
+  exactDuplicateCount
+  sameSourceDuplicateCount
+  syndicatedDuplicateCount
+  clusterCount
+  rankedParentCount
+  selectedParentCount
+  weakParentCount
+  droppedWeakParentCount
+  anchorCount
+  anchorMatchedParentCount
+  sourceDistribution
+  angleDistribution
+  dropReasons
+
+4. insight_source_health.json
+
+Required fields:
+  schemaVersion
+  generatedAt
+  sources[]
+  sections
+
+Each source health row:
+  source
+  url
+  status
+  itemsFetched
+  itemsAccepted
+  itemsDropped
+  latencyMs
+  message
+  dropReasons
+
+Acceptance criteria
+-------------------
+Pass when:
+
+  npm run test:insight-contracts
+
+returns PASS.
+
+Manual checklist:
+  [ ] docs exist.
+  [ ] schema files exist.
+  [ ] schema test exists.
+  [ ] package script exists.
+  [ ] no app runtime files changed except package script.
+  [ ] no generated digest/history files required.
+  [ ] no behavior change.
+
+Agent boundary
+--------------
+Only one agent should own Wave 00 because schemas are high-conflict contract files.
+
+Rollback
+--------
+Safe rollback: remove the added docs/schema/test files and remove the package script. No runtime state is affected.

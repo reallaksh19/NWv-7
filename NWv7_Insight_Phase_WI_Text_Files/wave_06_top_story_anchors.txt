@@ -1,0 +1,119 @@
+Wave 06 — Canonical Top Story Anchors + Anchor Similarity
+=========================================================
+
+Goal
+----
+Create stable editorial/day-level anchors and match clustered events to them.
+
+Anchors must not use user-visible Home filtering. They must represent canonical editorial candidates before local/session personalization.
+
+Scope
+-----
+Allowed:
+  - add anchor generator;
+  - add event-to-anchor similarity;
+  - output top_story_anchors.json later;
+  - add benchmark.
+
+Not allowed:
+  - no user localStorage read/view state;
+  - no customSortTopStories dependency;
+  - no visible Home filtered list dependency;
+  - no final card selection yet.
+
+Files to add
+------------
+scripts/insight_worker/anchors/__init__.py
+scripts/insight_worker/anchors/build_top_story_anchors.py
+scripts/insight_worker/anchors/anchor_similarity.py
+
+benchmarks/insight/fixtures/wave6_anchor_fixture.json
+benchmarks/insight/runWave6AnchorBenchmark.mjs
+
+Files to update
+---------------
+package.json
+  add:
+    "benchmark:insight-anchors": "node benchmarks/insight/runWave6AnchorBenchmark.mjs"
+
+Anchor generator
+----------------
+Inputs:
+  normalized/deduped stories or canonical editorial/front-page candidate set.
+
+Do not use:
+  read-story suppression
+  view-count suppression
+  custom localStorage state
+  fallback Home filler items
+
+Anchor fields
+-------------
+id
+title
+summary
+source
+sourceGroup
+url
+publishedAt
+impactScore
+section
+tier
+entities
+keywords
+eventVerbs
+canonicalText
+
+anchorPolicy:
+  usesUserVisibleFilteredTopStories: false
+  usesReadSuppression: false
+  usesViewCountSuppression: false
+  usesCustomSortTopStories: false
+
+Impact score signals
+--------------------
+section weight
+source tier
+freshness
+factual density
+editorial clarity
+
+Anchor similarity signals
+-------------------------
+title similarity
+token/entity overlap
+URL match
+source overlap
+event verb overlap
+date proximity
+
+Bands
+-----
+score >= 0.78: strong
+0.62 <= score < 0.78: acceptable
+0.45 <= score < 0.62: weak
+< 0.45: no match
+
+Benchmark fixture must include
+------------------------------
+1. cyclone story + cyclone event -> acceptable/strong match;
+2. market story + market event -> acceptable/strong match;
+3. unrelated policy event -> no acceptable match.
+
+Acceptance tests
+----------------
+Commands:
+  npm run benchmark:insight-anchors
+  npm run build
+
+Pass requirements:
+  [ ] anchors generated.
+  [ ] anchorPolicy excludes user-visible filtered Top Stories.
+  [ ] stable anchor IDs.
+  [ ] related events score >= 0.62.
+  [ ] unrelated event does not score >= 0.62.
+  [ ] match reasons recorded.
+
+Rollback
+--------
+Remove anchor package and benchmark. No browser behavior affected if not integrated.

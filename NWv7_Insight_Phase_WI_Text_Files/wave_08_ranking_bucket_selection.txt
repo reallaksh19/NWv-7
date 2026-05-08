@@ -1,0 +1,114 @@
+Wave 08 — Event Ranking + Bucket Selection
+==========================================
+
+Goal
+----
+Choose what finally appears in Insight.
+
+Output buckets:
+  Top Story Explainers
+  Developing Now
+  Slow Burn / Background
+
+This wave ranks event objects but does not publish final digest yet.
+
+Scope
+-----
+Allowed:
+  - score events;
+  - add score breakdown;
+  - select top-story explainers first;
+  - select developing/rising stories second;
+  - select slow-burn background stories;
+  - add ranking benchmark.
+
+Not allowed:
+  - no browser UI switch;
+  - no final digest publishing;
+  - no data commit workflow finalization.
+
+Files to add
+------------
+scripts/insight_worker/ranking/__init__.py
+scripts/insight_worker/ranking/rank_events.py
+scripts/insight_worker/ranking/select_buckets.py
+
+benchmarks/insight/fixtures/wave8_ranking_fixture.json
+benchmarks/insight/runWave8RankingBenchmark.mjs
+
+Files to update
+---------------
+package.json
+  add:
+    "benchmark:insight-ranking": "node benchmarks/insight/runWave8RankingBenchmark.mjs"
+
+Event score formula
+-------------------
+eventScore =
+  0.22 * canonicalTopStoryScore
++ 0.14 * freshness
++ 0.13 * sourceAuthority
++ 0.12 * independentSourceDiversity
++ 0.11 * factualDensity
++ 0.10 * persistence24h
++ 0.08 * risingVelocity
++ 0.06 * localRelevance
++ 0.04 * angleCoverage
+
+Bucket rules
+------------
+Top Story Explainer:
+  topStoryAnchorScore >= 0.62
+
+Developing Now:
+  snapshotPresence.now is true
+  eventScore >= 0.48
+  rising/fresh candidate
+
+Slow Burn:
+  eventScore >= 0.46
+  persistence24h >= 0.60
+
+Selection targets
+-----------------
+Default:
+  topStoryExplainers: 5
+  developingNow: 3
+  slowBurn: 2
+  total: 10
+
+Selection order
+---------------
+1. Select anchor-matched Top Story explainers.
+2. Exclude selected IDs.
+3. Select developing/rising stories.
+4. Exclude selected IDs.
+5. Select slow-burn persistent stories.
+6. Fill remaining slots with best ranked background events.
+
+Benchmark fixture must prove
+----------------------------
+1. Small anchor-matched event beats unrelated high-volume event.
+2. Developing market story selected as developing_now.
+3. Persistent policy story selected as slow_burn.
+4. Bucket labels assigned.
+5. Selection reasons recorded.
+
+Acceptance tests
+----------------
+Commands:
+  npm run benchmark:insight-ranking
+  npm run build
+
+Pass requirements:
+  [ ] eventScore computed.
+  [ ] scoreBreakdown exists.
+  [ ] top_story_explainer selected first.
+  [ ] unrelated high-volume cluster cannot dominate top section.
+  [ ] developing_now selected.
+  [ ] slow_burn selected.
+  [ ] selectedEventCount correct.
+
+Rollback
+--------
+Remove ranking package and benchmark. No browser behavior affected until Wave 09.

@@ -1,0 +1,105 @@
+NWv-7 — Insight Revamp Phase/Wave Work Instruction Index
+========================================================
+
+Purpose
+-------
+This package contains phase-wise text work instructions for the NWv-7 Insight revamp.
+
+Target product definition
+-------------------------
+Insight must become a 24-hour event-angle intelligence desk:
+
+For important stories/events in the last 24 hours:
+  1. collect reports from several sources;
+  2. remove exact duplicates, same-source rewrites, and syndicated copies;
+  3. keep genuinely different angles;
+  4. cluster same-event stories;
+  5. match events to canonical editorial Top Story anchors;
+  6. classify child stories relative to the parent event;
+  7. rank events and angle quality;
+  8. publish a static browser-friendly digest;
+  9. render the digest in the app, with browser pipeline as fallback.
+
+Non-negotiable architecture rules
+---------------------------------
+1. Do not anchor Insight to the user-filtered visible Home Top Stories list.
+2. Use canonical editorial Top Story anchors before read/view/localStorage suppression.
+3. Do not globally relax thresholds to increase card count.
+4. Use mode-specific thresholds for anchored and independent/rising stories.
+5. Do not include every weak tree.
+6. Keep weak trees only if anchor-matched, rising, high-score, or needed to fill minimum page quality.
+7. Do not rely on a score boost alone.
+8. Use two-stage selection: anchored explainers first, independent rising/developing stories second.
+9. Do not keep category-based fake time slots.
+10. Use rolling 24-hour snapshots from the same broad source universe.
+11. Do not classify angles as story-only labels.
+12. Use parent-relative angle classification.
+13. Diagnostics must be machine-readable JSON, not only UI text.
+
+Wave sequence
+-------------
+Wave 00 — Contract Freeze and Foundation
+Wave 01 — Existing UI Truthfulness + Pipeline Diagnostics
+Wave 02 — Digest Adapter + Mock Digest
+Wave 03 — GitHub Workflow Story Collector + Rolling 24h History
+Wave 04 — Dedup Engine
+Wave 05 — Event Clustering
+Wave 06 — Canonical Top Story Anchors + Anchor Similarity
+Wave 07 — Parent-relative Angle Classification + Angle Selection
+Wave 08 — Event Ranking + Bucket Selection
+Wave 09 — Digest Publisher + Browser Switch
+Wave 10 — CI Benchmarks + Regression Gates
+
+Parallel lanes
+--------------
+Lane A — UI / Browser
+Lane B — GitHub Workflow / Data Worker
+Lane C — Insight Algorithm
+Lane D — QA / Benchmarks
+
+Parallel execution map
+----------------------
+After Wave 00:
+
+UI lane:
+  Wave 01A -> Wave 02A -> Wave 09 browser digest mode
+
+Worker lane:
+  Wave 03A -> Wave 03B -> Wave 09 digest publisher
+
+Algorithm lane:
+  Wave 04 -> Wave 05 -> Wave 07 -> Wave 08
+
+Anchor lane:
+  Wave 06A -> Wave 06B
+
+QA lane:
+  Wave 02B -> Wave 10A -> Wave 10B
+
+PR grouping recommendation
+--------------------------
+PR-1: Wave 00 + Wave 01
+PR-2: Wave 02
+PR-3: Wave 03
+PR-4: Wave 04
+PR-5: Wave 05
+PR-6: Wave 06
+PR-7: Wave 07
+PR-8: Wave 08
+PR-9: Wave 09
+PR-10: Wave 10
+
+Overall acceptance
+------------------
+The revamp is complete only when:
+
+  npm run test:insight-contracts
+  npm run benchmark:insight
+  python scripts/insight_worker/build_insight_snapshot.py
+  python scripts/insight_worker/build_insight_digest.py
+  npm run test:insight-history
+  npm run test:insight-digest
+  npm run test:insight-static
+  npm run build
+
+all pass.

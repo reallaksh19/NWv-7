@@ -1,0 +1,152 @@
+Wave 03 — GitHub Workflow Story Collector + Rolling 24h History
+===============================================================
+
+Goal
+----
+Move Insight story collection into a GitHub Action worker and create a real rolling 24-hour story memory.
+
+This fixes the fake time-slot problem where different categories are fetched for different slots.
+
+Correct model:
+  Every run fetches the same broad source universe.
+  Previous current pools age into minus4h, minus12h, minus24h.
+
+Scope
+-----
+Allowed:
+  - add Python insight_worker scaffold;
+  - add source registry;
+  - add feed fetcher;
+  - normalize stories;
+  - maintain rolling history;
+  - write source health;
+  - add GitHub workflow to run worker.
+
+Not allowed:
+  - no final dedup engine integration yet;
+  - no event clustering;
+  - no anchor matching;
+  - no angle selection;
+  - no final digest publishing;
+  - no browser behavior change required.
+
+Files to add
+------------
+scripts/insight_worker/__init__.py
+scripts/insight_worker/io_utils.py
+scripts/insight_worker/source_registry.py
+scripts/insight_worker/normalize_story.py
+scripts/insight_worker/source_health.py
+scripts/insight_worker/fetch_sources.py
+scripts/insight_worker/rolling_history.py
+scripts/insight_worker/build_insight_snapshot.py
+
+.github/workflows/insight_refresh.yml
+
+scripts/test_insight_history_integrity.mjs
+
+Files to update
+---------------
+package.json
+  add:
+    "test:insight-history": "node scripts/test_insight_history_integrity.mjs"
+
+Output files
+------------
+public/newsdata/insight_latest.json
+public/newsdata/insight_history.json
+public/newsdata/insight_source_health.json
+
+Source registry rule
+--------------------
+Every run must fetch the same broad source universe, for example:
+  national/general
+  business/markets
+  world/context
+  local Chennai
+  local Trichy
+  Oman/Muscat
+  Google News supplements
+
+Do not create:
+  now = national
+  minus12h = world
+  minus24h = markets
+
+Rolling history behavior
+------------------------
+build_insight_snapshot.py:
+  1. fetch all enabled sources;
+  2. normalize entries;
+  3. read existing insight_history.json;
+  4. insert current run as now;
+  5. age older runs into minus4h/minus12h/minus24h;
+  6. prune history older than 36 hours;
+  7. write insight_history.json;
+  8. write insight_latest.json;
+  9. write insight_source_health.json.
+
+Normalized story fields
+-----------------------
+id
+title
+summary
+url
+canonicalUrl
+source
+sourceGroup
+section
+region
+tier
+publishedAt
+fetchedAt
+keywords
+numbers
+canonicalText
+raw.feedUrl
+snapshotPresence
+fetchedForSlots
+
+Source health fields
+--------------------
+source
+url
+status
+itemsFetched
+itemsAccepted
+itemsDropped
+latencyMs
+message
+dropReasons
+
+Workflow
+--------
+.github/workflows/insight_refresh.yml:
+  schedule every 30 minutes
+  workflow_dispatch
+  checkout
+  setup python
+  pip install -r requirements.txt
+  run python scripts/insight_worker/build_insight_snapshot.py
+  commit insight_latest, insight_history, insight_source_health if changed
+
+Acceptance tests
+----------------
+Commands:
+  python scripts/insight_worker/build_insight_snapshot.py
+  npm run test:insight-history
+  npm run build
+
+Manual:
+  [ ] insight_latest.json exists.
+  [ ] insight_history.json exists.
+  [ ] insight_source_health.json exists.
+  [ ] latest.stories is array.
+  [ ] history.slots has now/minus4h/minus12h/minus24h arrays.
+  [ ] sourceHealth.sources is array.
+  [ ] story absence from minus12h is due to time history, not category selection.
+  [ ] existing browser pipeline can still read insight_latest.json.
+
+Rollback
+--------
+Disable insight_refresh workflow and remove scripts/insight_worker files. Existing app fallback remains unaffected if insight_latest exists.

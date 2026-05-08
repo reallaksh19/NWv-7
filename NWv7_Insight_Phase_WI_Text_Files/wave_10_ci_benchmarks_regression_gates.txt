@@ -1,0 +1,149 @@
+Wave 10 — CI Benchmarks + Regression Gates
+==========================================
+
+Goal
+----
+Lock all previous waves with automated tests and prevent regression.
+
+This wave creates a test net around:
+  contracts
+  rolling history
+  dedup
+  event clustering
+  anchors
+  angles
+  ranking
+  digest integrity
+  static output
+
+Scope
+-----
+Allowed:
+  - add all-in-one Insight benchmark runner;
+  - add contract schema tests;
+  - add static output tests;
+  - add PR workflow;
+  - strengthen insight_refresh workflow gates.
+
+Not allowed:
+  - no product logic change;
+  - no threshold tuning hidden inside tests.
+
+Files to add
+------------
+scripts/test_insight_contract_schemas.mjs
+scripts/test_insight_all.mjs
+scripts/test_insight_ci_static.mjs
+
+benchmarks/insight/runInsightBenchmarks.mjs
+
+.github/workflows/insight_ci.yml
+
+Files to update
+---------------
+package.json
+.github/workflows/insight_refresh.yml
+
+package scripts
+---------------
+Add:
+  "test:insight-contracts": "node scripts/test_insight_contract_schemas.mjs"
+  "test:insight-history": "node scripts/test_insight_history_integrity.mjs"
+  "test:insight-digest": "node scripts/test_insight_digest_integrity.mjs"
+  "test:insight-static": "node scripts/test_insight_ci_static.mjs"
+
+  "benchmark:insight-dedup": "node benchmarks/insight/runWave4DedupBenchmark.mjs"
+  "benchmark:insight-events": "node benchmarks/insight/runWave5EventClusterBenchmark.mjs"
+  "benchmark:insight-anchors": "node benchmarks/insight/runWave6AnchorBenchmark.mjs"
+  "benchmark:insight-angles": "node benchmarks/insight/runWave7AngleBenchmark.mjs"
+  "benchmark:insight-ranking": "node benchmarks/insight/runWave8RankingBenchmark.mjs"
+  "benchmark:insight": "node benchmarks/insight/runInsightBenchmarks.mjs"
+  "test:insight": "node scripts/test_insight_all.mjs"
+
+Benchmark runner
+----------------
+benchmarks/insight/runInsightBenchmarks.mjs runs:
+  Wave 4 Dedup
+  Wave 5 Event Clustering
+  Wave 6 Anchors
+  Wave 7 Angles
+  Wave 8 Ranking
+
+test_insight_all.mjs runs:
+  contract schemas
+  rolling history integrity (optional if data not yet generated)
+  insight benchmarks
+  digest integrity (optional if data not yet generated)
+
+test_insight_ci_static.mjs requires actual generated files:
+  insight_digest.json
+  insight_diagnostics.json
+  top_story_anchors.json
+  insight_latest.json
+  insight_history.json
+  insight_source_health.json
+
+PR workflow
+-----------
+.github/workflows/insight_ci.yml should run on PRs touching:
+  src/pages/InsightPage.jsx
+  src/components/insight/**
+  src/adapters/insightDigestFetcher.js
+  src/insight/**
+  scripts/insight_worker/**
+  scripts/test_insight_*.mjs
+  benchmarks/insight/**
+  public/newsdata/schema/**
+  package.json
+  .github/workflows/insight_ci.yml
+  .github/workflows/insight_refresh.yml
+
+CI steps:
+  checkout
+  setup Node
+  setup Python
+  npm ci
+  pip install -r requirements.txt
+  npm run test:insight-contracts
+  npm run benchmark:insight
+  npm run build
+
+Refresh workflow gates
+----------------------
+After building snapshot and digest:
+  npm run test:insight-contracts
+  npm run test:insight-history
+  npm run test:insight-digest
+  npm run test:insight-static
+  npm run benchmark:insight
+
+Only commit JSON if all tests pass.
+
+Acceptance tests
+----------------
+Local full run:
+  npm run test:insight-contracts
+  npm run benchmark:insight
+  python scripts/insight_worker/build_insight_snapshot.py
+  python scripts/insight_worker/build_insight_digest.py
+  npm run test:insight-history
+  npm run test:insight-digest
+  npm run test:insight-static
+  npm run build
+
+Pass requirements:
+  [ ] contracts valid.
+  [ ] dedup benchmark passes.
+  [ ] event clustering benchmark passes.
+  [ ] anchor benchmark passes.
+  [ ] angle benchmark passes.
+  [ ] ranking benchmark passes.
+  [ ] digest integrity passes.
+  [ ] static output test passes.
+  [ ] build passes.
+  [ ] PRs touching Insight run CI.
+  [ ] refresh workflow validates before commit.
+
+Rollback
+--------
+Disable insight_ci.yml first if blocking unrelated PRs. Keep benchmark scripts because they are non-runtime.

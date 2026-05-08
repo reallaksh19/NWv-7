@@ -1,0 +1,142 @@
+Wave 01 — Existing UI Truthfulness + Pipeline Diagnostics
+========================================================
+
+Goal
+----
+Make current Insight output truthful and measurable before changing any ranking logic.
+
+Main defects being addressed
+----------------------------
+1. Source labels are derived from ID fragments, not real source names.
+2. Child stories are displayed as "Angle 1 / Angle 2" instead of actual angle labels.
+3. Weak/thin coverage is hidden or unclear.
+4. The browser pipeline has limited machine-readable diagnostics.
+5. There is no quick way to explain why only a few Insight cards appear.
+
+Scope
+-----
+Allowed:
+  - update InsightPage UI labels;
+  - add debug-only diagnostics panel;
+  - add InsightDiagnostics type;
+  - return diagnostics from runInsightPipeline();
+  - count weak-tree and drop reasons.
+
+Not allowed:
+  - do not change ranking formula;
+  - do not change source feed selection;
+  - do not change dedup behavior;
+  - do not change top parent selection behavior except counting decisions;
+  - do not change browser fallback strategy.
+
+Files
+-----
+src/pages/InsightPage.jsx
+src/styles/InsightPage.css or src/styles/InsightPage.css equivalent
+src/insight/src/types/index.ts
+src/insight/src/pipeline/pipeline.ts
+
+UI tasks
+--------
+1. Add helper: formatAngle(angle, fallbackIndex)
+   Map:
+     base_report -> Base report
+     official_response -> Official response
+     market_reaction -> Market reaction
+     fact_update -> Fact update
+     expert_analysis -> Expert analysis
+     regional_followup -> Regional follow-up
+     correction -> Correction
+     background_context -> Background
+     reaction_public -> Public reaction
+     investigative_detail -> Investigative detail
+     unknown -> Related angle
+
+2. Add helper: getClusterSources(story, storiesById)
+   Use:
+     storiesById.get(id)?.source
+     storiesById.get(id)?.sourceGroup
+   Do not use:
+     id.split("-")[0]
+
+3. Add helper: getHiddenDuplicateCount(story)
+   Use:
+     story.hiddenDuplicateIds.length
+     story.hiddenDuplicateCount
+
+4. Replace child badge:
+     Angle {i + 1}
+   with:
+     formatAngle(child?.angle, i)
+
+5. Add chips:
+     Rising
+     story count
+     source count
+     duplicates hidden
+     Thin coverage
+     Top story match when topStoryAnchorScore >= 0.62
+
+6. Add debug-only diagnostics panel.
+   Enabled by:
+     localStorage.setItem("nwv7_insight_debug", "1")
+   or:
+     ?debugInsight=1
+
+Pipeline tasks
+--------------
+1. Add InsightDiagnostics interface:
+   rawStoryCount
+   normalizedStoryCount
+   dedupedStoryCount
+   exactDuplicateCount
+   sameSourceDuplicateCount
+   syndicatedDuplicateCount
+   clusterCount
+   rankedParentCount
+   selectedParentCount
+   weakParentCount
+   droppedWeakParentCount
+   anchorCount
+   anchorMatchedParentCount
+   sourceDistribution
+   angleDistribution
+   dropReasons
+
+2. Add diagnostics to InsightRunResult.
+
+3. In runInsightPipeline():
+   - initialize diagnostics at start;
+   - after mergeSlotStories: set rawStoryCount, normalizedStoryCount, sourceDistribution;
+   - after removeHardDuplicates: set dedupedStoryCount, exactDuplicateCount, dropReasons;
+   - after clusterIntoParentEvents: set clusterCount;
+   - after scoreAndRankParents: set rankedParentCount;
+   - after selectTopParentsWithWeakTreeCheck: set selectedParentCount, angleDistribution.
+
+4. In selectTopParentsWithWeakTreeCheck():
+   - count weakParentCount;
+   - count droppedWeakParentCount;
+   - add dropReasons.weak_tree_filtered.
+   - keep current behavior unchanged.
+
+Acceptance tests
+----------------
+Manual:
+  [ ] Insight renders with existing browser pipeline.
+  [ ] Source chips show real source names.
+  [ ] No source ID fragments are visible.
+  [ ] Child angle labels use real angle values where available.
+  [ ] Thin coverage badge appears for weakTree.
+  [ ] Debug diagnostics panel appears when enabled.
+  [ ] Ranking order is unchanged.
+
+Commands:
+  npm run build
+
+Debug:
+  localStorage.setItem("nwv7_insight_debug", "1");
+  location.reload();
+
+Rollback
+--------
+Revert Wave 01 files only. Since ranking behavior is unchanged, rollback is low risk.

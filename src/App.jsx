@@ -64,6 +64,7 @@ import { SettingsProvider } from './context/SettingsContext';
 import { SegmentProvider } from './context/SegmentContext';
 import { TopicProvider } from './context/TopicContext';
 import './index.css';
+import './styles/desktopRevamp.css';
 
 /**
  * Global Progress Bar

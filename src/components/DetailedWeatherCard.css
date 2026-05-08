@@ -152,6 +152,11 @@
     overflow: hidden;
 }
 
+.dw-card:focus-visible {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+}
+
 .dw-card:hover {
     border-color: var(--accent-primary);
     transform: translateY(-2px);
@@ -188,6 +193,10 @@
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
+}
+
+.dw-expand-hint--disabled {
+    opacity: 0.55;
 }
 
 /* Main Section (Icon + Temp) */

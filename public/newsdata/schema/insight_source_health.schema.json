@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["schemaVersion", "generatedAt", "sources", "sections"],
+  "properties": {
+    "schemaVersion": { "type": "string" },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "source", "url", "status", "itemsFetched", "itemsAccepted",
+          "itemsDropped", "latencyMs", "message", "dropReasons"
+        ],
+        "properties": {
+          "source": { "type": "string" },
+          "url": { "type": "string" },
+          "status": { "type": "string" },
+          "itemsFetched": { "type": "integer" },
+          "itemsAccepted": { "type": "integer" },
+          "itemsDropped": { "type": "integer" },
+          "latencyMs": { "type": "integer" },
+          "message": { "type": "string" },
+          "dropReasons": { "type": "object" }
+        }
+      }
+    },
+    "sections": { "type": "object" }
+  }
+}

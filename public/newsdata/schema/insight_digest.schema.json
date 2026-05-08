@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["schemaVersion", "generatedAt", "sourceMode", "cards"],
+  "properties": {
+    "schemaVersion": { "type": "string", "const": "2.0.0" },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "sourceMode": {
+      "type": "string",
+      "enum": ["github-workflow", "browser-pipeline", "cached", "stale", "fallback", "mock"]
+    },
+    "diagnosticsRef": { "type": "string" },
+    "sourceHealthRef": { "type": "string" },
+    "cards": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "eventId", "bucket", "headline", "summary", "whyItMatters", "score",
+          "coverageLabel", "sourceCount", "independentSourceCount",
+          "hiddenDuplicateCount", "topStoryAnchorId", "topStoryAnchorScore",
+          "snapshotPresence", "angles"
+        ],
+        "properties": {
+          "eventId": { "type": "string" },
+          "bucket": { "type": "string" },
+          "headline": { "type": "string" },
+          "summary": { "type": "string" },
+          "whyItMatters": { "type": "string" },
+          "score": { "type": "number" },
+          "coverageLabel": { "type": "string" },
+          "sourceCount": { "type": "integer" },
+          "independentSourceCount": { "type": "integer" },
+          "hiddenDuplicateCount": { "type": "integer" },
+          "topStoryAnchorId": { "type": ["string", "null"] },
+          "topStoryAnchorScore": { "type": "number" },
+          "snapshotPresence": { "type": "object" },
+          "angles": { "type": "array" }
+        }
+      }
+    }
+  }
+}

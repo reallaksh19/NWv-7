@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": [
+    "rawStoryCount", "normalizedStoryCount", "dedupedStoryCount",
+    "exactDuplicateCount", "sameSourceDuplicateCount", "syndicatedDuplicateCount",
+    "clusterCount", "rankedParentCount", "selectedParentCount",
+    "weakParentCount", "droppedWeakParentCount", "anchorCount",
+    "anchorMatchedParentCount", "sourceDistribution", "angleDistribution",
+    "dropReasons"
+  ],
+  "properties": {
+    "rawStoryCount": { "type": "integer" },
+    "normalizedStoryCount": { "type": "integer" },
+    "dedupedStoryCount": { "type": "integer" },
+    "exactDuplicateCount": { "type": "integer" },
+    "sameSourceDuplicateCount": { "type": "integer" },
+    "syndicatedDuplicateCount": { "type": "integer" },
+    "clusterCount": { "type": "integer" },
+    "rankedParentCount": { "type": "integer" },
+    "selectedParentCount": { "type": "integer" },
+    "weakParentCount": { "type": "integer" },
+    "droppedWeakParentCount": { "type": "integer" },
+    "anchorCount": { "type": "integer" },
+    "anchorMatchedParentCount": { "type": "integer" },
+    "sourceDistribution": { "type": "object" },
+    "angleDistribution": { "type": "object" },
+    "dropReasons": { "type": "object" }
+  }
+}

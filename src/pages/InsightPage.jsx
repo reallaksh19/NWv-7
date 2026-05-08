@@ -3,6 +3,8 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import Header from '../components/Header.jsx';
 import { runInsightPipeline, DEFAULT_CONFIG } from '../insight/src/index.ts';
 import { createInsightFetcher } from '../adapters/insightFetcher.js';
+import { fetchInsightDigest } from '../adapters/insightDigestFetcher.js';
+import InsightDigestView from '../components/insight/InsightDigestView.jsx';
 import '../styles/InsightPage.css';
 
 // ── Cache config ──────────────────────────────────────────────────────────────
@@ -40,6 +42,38 @@ function writeCache(data) {
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
+function formatAngle(angle, fallbackIndex) {
+  const map = {
+    base_report: 'Base report',
+    official_response: 'Official response',
+    market_reaction: 'Market reaction',
+    fact_update: 'Fact update',
+    expert_analysis: 'Expert analysis',
+    regional_followup: 'Regional follow-up',
+    correction: 'Correction',
+    background_context: 'Background',
+    reaction_public: 'Public reaction',
+    investigative_detail: 'Investigative detail',
+    unknown: 'Related angle'
+  };
+  return map[angle] || `Angle ${fallbackIndex + 1}`;
+}
+
+function getClusterSources(story, storiesById) {
+  const srcNames = story.clusterStoryIds.map(id => {
+    const s = storiesById.get(id);
+    return s?.source || s?.sourceGroup || 'Unknown';
+  });
+  return [...new Set(srcNames)].slice(0, 3);
+}
+
+function getHiddenDuplicateCount(story) {
+  if (typeof story.hiddenDuplicateCount === 'number') {
+    return story.hiddenDuplicateCount;
+  }
+  return Array.isArray(story.hiddenDuplicateIds) ? story.hiddenDuplicateIds.length : 0;
+}
+
 function ICard({ story, index, storiesById = new Map() }) {
   const [open, setOpen] = useState(false);
   const pct = Math.min(Math.round((story.finalParentScore || 0) * 100), 100);
@@ -47,7 +81,8 @@ function ICard({ story, index, storiesById = new Map() }) {
   const isBreaking = story.isRising || false;
   const srcCount   = story.clusterStoryIds?.length || 1;
   const timeAgo    = 'Live';
-  const sources    = [...new Set(story.clusterStoryIds.map(id => id.split('-')[0] || 'Unknown'))].slice(0, 3);
+  const sources    = getClusterSources(story, storiesById);
+  const hiddenCount = getHiddenDuplicateCount(story);
 
   return (
     <div className={`icard ${open ? 'open' : ''}`} data-top="true">
@@ -59,7 +94,10 @@ function ICard({ story, index, storiesById = new Map() }) {
             <span className="itime">{timeAgo}</span>
             {isBreaking && <span className="itag breaking">🔥 Rising</span>}
             {srcCount > 1 && <span className="itag multi">{srcCount} stories</span>}
-            {story.weakTree && <span className="itag" style={{ background: '#78350f', color: '#fde68a' }}>⚠ Thin</span>}
+            {sources.length > 1 && <span className="itag multi">{sources.length} sources</span>}
+            {hiddenCount > 0 && <span className="itag" style={{ background: 'rgba(255,255,255,0.1)', color: '#D0D7DE' }}>{hiddenCount} dupes hidden</span>}
+            {story.topStoryAnchorScore >= 0.62 && <span className="itag multi" style={{ background: 'rgba(88,166,255,0.15)', color: '#58A6FF' }}>Top story match</span>}
+            {story.weakTree && <span className="itag" style={{ background: '#78350f', color: '#fde68a' }}>⚠ Thin coverage</span>}
           </div>
           <h3>{story.canonicalHeadline}</h3>
           <div className="iimpact">
@@ -94,7 +132,7 @@ function ICard({ story, index, storiesById = new Map() }) {
                                onClick={e => e.stopPropagation()}>{headline}</a>
                           : <span className="sdesc">{headline}</span>
                         }
-                        <span className="ang diff">Angle {i + 1}</span>
+                        <span className="ang diff">{formatAngle(child?.angle, i)}</span>
                       </div>
                     );
                   })
@@ -160,6 +198,14 @@ function InsightTab({ result, source }) {
       {parents.map((p, i) => (
         <ICard key={p.parentId} story={p} index={i} storiesById={storiesById} />
       ))}
+      {localStorage.getItem('nwv7_insight_debug') === '1' && result?.diagnostics && (
+        <div className="insight-diagnostics" style={{ marginTop: '30px', padding: '15px', background: 'rgba(0,0,0,0.5)', border: '1px solid #333', borderRadius: '8px', fontSize: '0.75rem', fontFamily: 'monospace' }}>
+          <h4 style={{ margin: '0 0 10px 0', color: '#00D4AA' }}>Debug Diagnostics</h4>
+          <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all', color: '#D0D7DE' }}>
+            {JSON.stringify(result.diagnostics, null, 2)}
+          </pre>
+        </div>
+      )}
     </div>
   );
 }
@@ -203,6 +249,7 @@ function FreshBanner({ onAccept, onDismiss }) {
 
 export default function InsightPage() {
   const [result, setResult]           = useState(null);
+  const [digestData, setDigestData]   = useState(null);   // populated if digest is valid
   const [pendingResult, setPending]   = useState(null);   // background refresh result
   const [loading, setLoading]         = useState(true);
   const [source, setSource]           = useState('live');
@@ -255,17 +302,31 @@ export default function InsightPage() {
   useEffect(() => {
     isMounted.current = true;
 
-    const cached = readCache();
-    if (cached?.data?.parents?.length) {
-      setResult(cached.data);
-      setSource('cached');
-      setLoading(false);
-      // Re-run in background to get fresher data
-      runPipeline(true);
-    } else {
-      // No cache — full foreground run
-      runPipeline(false);
+    async function init() {
+      const digestRes = await fetchInsightDigest({ allowStale: true });
+      if (digestRes.ok && digestRes.digest?.cards?.length > 0 && isMounted.current) {
+        setDigestData(digestRes);
+        setSource(digestRes.stale ? 'stale-digest' : 'github-workflow');
+        setLoading(false);
+        return;
+      }
+
+      if (!isMounted.current) return;
+
+      const cached = readCache();
+      if (cached?.data?.parents?.length) {
+        setResult(cached.data);
+        setSource('cached');
+        setLoading(false);
+        // Re-run in background to get fresher data
+        runPipeline(true);
+      } else {
+        // No cache — full foreground run
+        runPipeline(false);
+      }
     }
+
+    init();
 
     return () => { isMounted.current = false; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -302,6 +363,7 @@ export default function InsightPage() {
       setResult(pendingResult.result);
       setSource(pendingResult.source);
       writeCache(pendingResult.result);
+      setDigestData(null); // Fallback pipeline takes over
     }
     setPending(null);
   }, [pendingResult]);
@@ -320,9 +382,25 @@ export default function InsightPage() {
     );
   }
 
-  const staleLabel = source === 'stale-snapshot' && fetcherRef.current?.snapshotTs
+  const staleLabel = (source === 'stale-snapshot' && fetcherRef.current?.snapshotTs)
     ? `Cached · ${Math.round((Date.now() - Number(fetcherRef.current.snapshotTs)) / 3_600_000)}h old`
-    : null;
+    : source === 'stale-digest' ? `Cached · ${Math.round((digestData?.ageMs || 0) / 3_600_000)}h old` : null;
+
+  if (digestData) {
+    return (
+      <div className="page-container">
+        <Header title="Insight" stateLabel={staleLabel || 'Live'} stateType={staleLabel ? 'stale' : 'live'} />
+        <div className="modern-container">
+          <InsightDigestView
+            digest={digestData.digest}
+            diagnostics={digestData.diagnostics}
+            stale={digestData.stale}
+            ageMs={digestData.ageMs}
+          />
+        </div>
+      </div>
+    );
+  }
 
   if (!result?.parents?.length) {
     return (

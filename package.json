@@ -14,7 +14,18 @@
     "lint": "eslint .",
     "preview": "vite preview --open",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
+    "test:insight-history": "node scripts/test_insight_history_integrity.mjs",
+    "test:insight-digest": "node scripts/test_insight_digest_integrity.mjs",
+    "benchmark:insight-dedup": "node benchmarks/insight/runWave4DedupBenchmark.mjs",
+    "benchmark:insight-events": "node benchmarks/insight/runWave5EventClusterBenchmark.mjs",
+    "benchmark:insight-anchors": "node benchmarks/insight/runWave6AnchorBenchmark.mjs",
+    "benchmark:insight-angles": "node benchmarks/insight/runWave7AngleBenchmark.mjs",
+    "benchmark:insight-ranking": "node benchmarks/insight/runWave8RankingBenchmark.mjs",
+    "benchmark:insight": "node benchmarks/insight/runInsightBenchmarks.mjs",
+    "test:insight": "node scripts/test_insight_all.mjs",
+    "test:insight-static": "node scripts/test_insight_ci_static.mjs",
+    "test:insight-contracts": "node scripts/test_insight_contract_schemas.mjs"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

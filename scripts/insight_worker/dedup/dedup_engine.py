@@ -5,6 +5,7 @@ from .syndicated_duplicate import find_syndicated
 def run_dedup(stories):
     diagnostics = {
         "rawStoryCount": len(stories),
+        "normalizedStoryCount": len(stories), # Assuming 1:1 for now
         "exactDuplicateCount": 0,
         "sameSourceDuplicateCount": 0,
         "syndicatedDuplicateCount": 0,

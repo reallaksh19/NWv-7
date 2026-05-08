@@ -1,0 +1,32 @@
+name: Insight CI
+on:
+  pull_request:
+    paths:
+      - 'src/pages/InsightPage.jsx'
+      - 'src/components/insight/**'
+      - 'src/adapters/insightDigestFetcher.js'
+      - 'src/insight/**'
+      - 'scripts/insight_worker/**'
+      - 'scripts/test_insight_*.mjs'
+      - 'benchmarks/insight/**'
+      - 'public/newsdata/schema/**'
+      - 'package.json'
+      - '.github/workflows/insight_ci.yml'
+      - '.github/workflows/insight_refresh.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - run: npm ci
+      - run: pip install -r requirements.txt || true
+      - run: npm run test:insight-contracts
+      - run: npm run benchmark:insight
+      - run: npm run build

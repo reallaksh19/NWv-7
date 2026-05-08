@@ -1,0 +1,45 @@
+name: Insight Refresh
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt || true
+
+      - name: Build Insight Snapshot
+        run: python scripts/insight_worker/build_insight_snapshot.py
+
+      - name: Build Insight Digest
+        run: python scripts/insight_worker/build_insight_digest.py
+
+      - name: Run Integrity Checks
+        run: |
+          npm run test:insight-contracts
+          npm run test:insight-history
+          npm run test:insight-digest
+          npm run test:insight-static
+          npm run benchmark:insight
+
+      - name: Commit files
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add public/newsdata/insight_latest.json
+          git add public/newsdata/insight_history.json
+          git add public/newsdata/insight_source_health.json
+          git add public/newsdata/insight_digest.json
+          git add public/newsdata/insight_diagnostics.json
+          git add public/newsdata/top_story_anchors.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: refresh insight snapshot and digest" && git push)

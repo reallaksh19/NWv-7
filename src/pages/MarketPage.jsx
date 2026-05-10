@@ -4,6 +4,7 @@ import MutualFundCard from '../components/MutualFundCard';
 import IPOCard from '../components/IPOCard';
 import SectionNavigator from '../components/SectionNavigator';
 import MarketSparkline from '../components/MarketSparkline';
+import MarketTrustPanel from '../components/market/MarketTrustPanel';
 import { useMarket } from '../context/MarketContext';
 import { useSettings } from '../context/SettingsContext';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
@@ -212,12 +213,22 @@ function MarketPage() {
             />
 
             <main className="main-content market-page market-page--revamp" style={{ padding: '16px', marginTop: 0 }}>
-                {error && (
+                {error && typeof error === 'string' && (
                     <div className="market-inline-banner">
                         <div className="market-inline-banner__title">Degraded feed detected</div>
                         <div className="market-inline-banner__body">{error}</div>
                     </div>
                 )}
+
+                <MarketTrustPanel
+                    marketData={marketData}
+                    sourceHealth={sourceHealth}
+                    sessionState={sessionState}
+                    error={error}
+                    lastFetch={lastFetch}
+                    loading={loading}
+                    onRefresh={handleRefresh}
+                />
 
                 {marketSettings.showIndices !== false && displayedPrimaryIndices.length > 0 && (
                     <section className="market-hero-grid">
@@ -552,14 +563,17 @@ function MarketPage() {
                         </div>
 
                         <div className="market-health-list market-health-list--bottom">
-                            {Object.entries(sourceHealth).length > 0 ? Object.entries(sourceHealth).map(([section, status]) => (
+                            {Object.entries(sourceHealth).length > 0 ? Object.entries(sourceHealth).map(([section, statusObj]) => {
+                                const statusStr = typeof statusObj === 'object' && statusObj !== null ? statusObj.status : statusObj;
+                                return (
                                 <div key={section} className="market-health-row">
                                     <span className="market-health-row__label">{section.replace(/([A-Z])/g, ' $1').replace(/^./, (c) => c.toUpperCase())}</span>
-                                    <span className={`market-status-pill market-status-pill--${status === 'live' ? 'success' : status === 'snapshot' ? 'warning' : status === 'failed' ? 'danger' : 'muted'}`}>
-                                        {status}
+                                    <span className={`market-status-pill market-status-pill--${statusStr === 'live' ? 'success' : statusStr === 'snapshot' ? 'warning' : statusStr === 'failed' ? 'danger' : 'muted'}`}>
+                                        {statusStr}
                                     </span>
                                 </div>
-                            )) : (
+                                );
+                            }) : (
                                 <div className="market-empty-state" style={{textAlign: 'center', padding: '20px', color: 'var(--text-muted)'}}>Source health unavailable.</div>
                             )}
                         </div>

@@ -55,7 +55,9 @@ function WeatherPage() {
 
     useEffect(() => {
         if (cities.length > 0 && !cities.includes(activeCity)) {
-            setActiveCity(cities[0]);
+            setTimeout(() => {
+                setActiveCity(cities[0]);
+            }, 0);
         }
     }, [activeCity, cities]);
 

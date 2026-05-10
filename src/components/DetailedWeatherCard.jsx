@@ -9,13 +9,26 @@ export default function DetailedWeatherCard({ weatherData, activeCity, setActive
     const { settings } = useSettings();
     const cities = (settings.weather?.cities || ['chennai', 'trichy', 'muscat']).map(c => c.toLowerCase());
 
-    const cityLabels = {
+    const cityLabels = cities.reduce((acc, city) => {
+        acc[city] = city
+            .split(/\s+/)
+            .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+            .join(' ');
+        return acc;
+    }, {
         chennai: 'Chennai',
         trichy: 'Trichy',
-        muscat: 'Muscat',
-        [cities[2]]: cities[2].charAt(0).toUpperCase() + cities[2].slice(1)
-    };
-    const cityIcons = { chennai: '🏛️', trichy: '🏯', muscat: '📍', [cities[2]]: '📍' };
+        muscat: 'Muscat'
+    });
+
+    const cityIcons = cities.reduce((acc, city) => {
+        acc[city] = acc[city] || '📍';
+        return acc;
+    }, {
+        chennai: '🏛️',
+        trichy: '🏯',
+        muscat: '📍'
+    });
 
     const [expandedCard, setExpandedCard] = useState(null);
 
@@ -155,7 +168,7 @@ function WeatherSegmentCard({ segment, isExpanded, onToggle }) {
             <div className="dw-card-header">
                 <span className="dw-period-badge">{label}</span>
                 <span className={`dw-expand-hint ${hasHourly ? '' : 'dw-expand-hint--disabled'}`}>
-                    {isExpanded ? 'Collapse' : hasHourly ? 'Touch for Hourly' : 'Hourly unavailable'}
+                    {isExpanded ? 'Collapse hourly' : hasHourly ? 'View hourly' : 'Hourly unavailable'}
                 </span>
             </div>
 

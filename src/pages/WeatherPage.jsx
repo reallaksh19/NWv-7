@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import WeatherStickyHeader from '../components/WeatherStickyHeader';
 import DetailedWeatherCard from '../components/DetailedWeatherCard';
+import WeatherTrustPanel from '../components/weather/WeatherTrustPanel';
 import { useWeather } from '../context/WeatherContext';
 import { useSettings } from '../context/SettingsContext';
 import { useMediaQuery } from '../hooks/useMediaQuery';
@@ -34,7 +35,9 @@ function WeatherPage() {
 
     // Use real data, if loading show spinner or skeletal
     const displayData = weatherData;
-    const cities = (settings.weather?.cities || ['chennai', 'trichy', 'muscat']).map(c => c.toLowerCase());
+    const cities = (settings?.weather?.cities || ['chennai', 'trichy', 'muscat'])
+        .map(c => String(c || '').trim().toLowerCase())
+        .filter(Boolean);
 
     // Lift active city state up
     const [activeCity, setActiveCity] = useState(() => {
@@ -49,6 +52,14 @@ function WeatherPage() {
     useEffect(() => {
         localStorage.setItem('weather_active_city', activeCity);
     }, [activeCity]);
+
+    useEffect(() => {
+        if (cities.length > 0 && !cities.includes(activeCity)) {
+            setTimeout(() => {
+                setActiveCity(cities[0]);
+            }, 0);
+        }
+    }, [activeCity, cities]);
 
     const handleRefresh = useCallback(async () => {
         return refreshWeather(true);
@@ -101,6 +112,15 @@ function WeatherPage() {
                         <div className="topline__text">Failed to update weather. Showing cached data.</div>
                     </div>
                 )}
+
+                <WeatherTrustPanel
+                    weatherData={displayData}
+                    cities={cities}
+                    activeCity={activeCity}
+                    error={error}
+                    loading={loading}
+                    onRefresh={handleRefresh}
+                />
 
                 {/* Only render WeatherCard if data is available */}
                 {displayData ? (

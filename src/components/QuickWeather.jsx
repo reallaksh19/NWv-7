@@ -5,10 +5,20 @@ import WeatherIcon from './WeatherIcons';
 
 const DEFAULT_CITIES = ['chennai', 'trichy', 'muscat'];
 
+function normalizeCity(value) {
+    return String(value || '')
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, ' ');
+}
+
 function titleCase(value) {
     const text = String(value || '').trim();
     if (!text) return 'Unknown';
-    return text.charAt(0).toUpperCase() + text.slice(1);
+    return text
+        .split(/\s+/)
+        .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(' ');
 }
 
 function asNumber(value) {
@@ -154,32 +164,34 @@ function getSevereWarning(cityData) {
 
 function getBackgroundClass() {
     const hour = new Date().getHours();
-
     if (hour >= 6 && hour < 11) return 'qw-bg-morning';
     if (hour >= 11 && hour < 17) return 'qw-bg-day';
     if (hour >= 17 && hour < 20) return 'qw-bg-evening';
-
     return 'qw-bg-night';
 }
 
-const QuickWeather = () => {
-    const { weatherData, loading, error, ensureBoot, booted } = useWeather();
-    const { settings } = useSettings();
+function getConfiguredCities(settings) {
+    const raw = settings?.weather?.cities || DEFAULT_CITIES;
+    const cleaned = raw.map(normalizeCity).filter(Boolean);
+    return [...new Set(cleaned)].length ? [...new Set(cleaned)] : DEFAULT_CITIES;
+}
 
-    const cities = useMemo(
-        () => (settings?.weather?.cities || DEFAULT_CITIES)
-            .map(c => String(c || '').trim().toLowerCase())
-            .filter(Boolean),
-        [settings?.weather?.cities]
-    );
+const QuickWeather = () => {
+    const { weatherData, loading, error, ensureBoot, booted, refreshWeather } = useWeather();
+    const { settings, updateSettings } = useSettings();
+
+    const cities = useMemo(() => getConfiguredCities(settings), [settings]);
 
     const [activeCity, setActiveCity] = useState(() => {
         try {
-            return localStorage.getItem('weather_active_city') || 'chennai';
+            return normalizeCity(localStorage.getItem('weather_active_city')) || 'chennai';
         } catch {
             return 'chennai';
         }
     });
+
+    const [newCity, setNewCity] = useState('');
+    const [cityEditMessage, setCityEditMessage] = useState('');
 
     const cityRows = useMemo(() => {
         return cities.map(city => {
@@ -206,7 +218,7 @@ const QuickWeather = () => {
 
     useEffect(() => {
         if (cities.length > 0 && !cities.includes(activeCity)) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
+            // eslint-disable-next-line react-hooks/exhaustive-deps
             setActiveCity(cities[0]);
         }
     }, [activeCity, cities]);
@@ -218,6 +230,60 @@ const QuickWeather = () => {
             // Ignore storage errors.
         }
     }, [activeCity]);
+
+    function saveCities(nextCities, nextActiveCity = activeCity) {
+        const uniqueCities = [...new Set(nextCities.map(normalizeCity).filter(Boolean))];
+
+        if (uniqueCities.length === 0) {
+            setCityEditMessage('At least one city must remain.');
+            return;
+        }
+
+        const nextSettings = {
+            ...settings,
+            weather: {
+                ...(settings?.weather || {}),
+                cities: uniqueCities
+            }
+        };
+
+        updateSettings(nextSettings);
+        setActiveCity(nextActiveCity);
+        setCityEditMessage('');
+        refreshWeather?.(true);
+    }
+
+    function handleAddCity(event) {
+        event.preventDefault();
+
+        const city = normalizeCity(newCity);
+
+        if (!city) {
+            setCityEditMessage('Enter a city name.');
+            return;
+        }
+
+        if (cities.includes(city)) {
+            setCityEditMessage(`${titleCase(city)} is already added.`);
+            return;
+        }
+
+        const nextCities = [...cities, city];
+        setNewCity('');
+        saveCities(nextCities, city);
+    }
+
+    function handleRemoveCity(cityToRemove) {
+        const nextCities = cities.filter(city => city !== cityToRemove);
+
+        if (nextCities.length === 0) {
+            setCityEditMessage('At least one city must remain.');
+            return;
+        }
+
+        const nextActive = activeCity === cityToRemove ? nextCities[0] : activeCity;
+        saveCities(nextCities, nextActive);
+    }
 
     if (!booted || loading) {
         return (
@@ -231,48 +297,85 @@ const QuickWeather = () => {
 
     const usableRows = cityRows.filter(row => row.usable);
 
-    if (!weatherData || cityRows.length === 0 || usableRows.length === 0) {
-        return (
-            <section className="quick-weather-card qw-bg-night">
-                <div className="qw-cities-list">
-                    {cityRows.map(row => (
-                        <div key={row.city} className="qw-city-row qw-city-row--missing">
-                            <div className="qw-city-row__left">
-                                <span className="qw-city-row__name">{row.label}</span>
-                                <div className="qw-city-row__current">
-                                    <span className="qw-city-row__temp">--</span>
-                                </div>
-                            </div>
-
-                            <div className="qw-city-row__slots">
-                                <div className="qw-city-slot qw-city-slot--current-only">
-                                    <span className="qw-city-slot__label">No forecast</span>
-                                    <div className="qw-city-slot__icon">--</div>
-                                    <span className="qw-city-slot__temp">--</span>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                <div className="qw-highlight-text-container">
-                    <span className="qw-highlight-icon">⚠️</span>
-                    <span className="qw-highlight-text">
-                        {error ? 'Weather feed failed. Try refresh from Weather tab.' : 'Weather forecast is not available yet.'}
-                    </span>
-                </div>
-            </section>
-        );
-    }
-
     const bgClass = getBackgroundClass();
-    const activeRow = cityRows.find(row => row.city === activeCity && row.usable) || usableRows[0];
+    const activeRow = cityRows.find(row => row.city === activeCity && row.usable) ||
+        usableRows[0] ||
+        cityRows.find(row => row.city === activeCity) ||
+        cityRows[0];
+
     const activeCityData = activeRow?.cityData;
     const severeWarning = getSevereWarning(activeCityData);
-    const textForecast = getNaturalTextForecast(activeCityData, activeRow?.label || 'Selected city');
+    const textForecast = activeRow
+        ? getNaturalTextForecast(activeCityData, activeRow.label)
+        : 'Weather forecast is not available yet.';
 
     return (
         <section className={`quick-weather-card ${bgClass}`}>
+            <div
+                className="qw-config-bar"
+                style={{
+                    display: 'flex',
+                    gap: '8px',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: '10px',
+                    flexWrap: 'wrap'
+                }}
+            >
+                <strong style={{ fontSize: '0.9rem' }}>Quick Weather</strong>
+
+                <form
+                    onSubmit={handleAddCity}
+                    style={{ display: 'flex', gap: '6px', alignItems: 'center' }}
+                >
+                    <input
+                        value={newCity}
+                        onChange={(event) => setNewCity(event.target.value)}
+                        placeholder="Add city"
+                        aria-label="Add weather city"
+                        style={{
+                            width: '110px',
+                            minHeight: '30px',
+                            borderRadius: '999px',
+                            border: '1px solid rgba(255,255,255,0.28)',
+                            background: 'rgba(0,0,0,0.16)',
+                            color: 'inherit',
+                            padding: '0 10px'
+                        }}
+                    />
+                    <button
+                        type="submit"
+                        aria-label="Add city to quick weather"
+                        style={{
+                            minHeight: '30px',
+                            borderRadius: '999px',
+                            border: '1px solid rgba(255,255,255,0.28)',
+                            background: 'rgba(255,255,255,0.14)',
+                            color: 'inherit',
+                            padding: '0 10px',
+                            cursor: 'pointer',
+                            fontWeight: 800
+                        }}
+                    >
+                        Add
+                    </button>
+                </form>
+            </div>
+
+            {cityEditMessage && (
+                <div
+                    style={{
+                        marginBottom: '10px',
+                        padding: '8px 10px',
+                        borderRadius: '12px',
+                        background: 'rgba(0,0,0,0.18)',
+                        fontSize: '0.78rem'
+                    }}
+                >
+                    {cityEditMessage}
+                </div>
+            )}
+
             <div className="qw-cities-list">
                 {cityRows.map(row => {
                     const c = row.currentSlot || row.firstSlot;
@@ -283,9 +386,44 @@ const QuickWeather = () => {
                             key={row.city}
                             className={`qw-city-row ${isActive ? 'qw-city-row--active' : ''} ${!row.usable ? 'qw-city-row--missing' : ''}`}
                             onClick={() => setActiveCity(row.city)}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(event) => {
+                                if (event.key === 'Enter' || event.key === ' ') setActiveCity(row.city);
+                            }}
                         >
                             <div className="qw-city-row__left">
-                                <span className="qw-city-row__name">{row.label}</span>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        justifyContent: 'space-between'
+                                    }}
+                                >
+                                    <span className="qw-city-row__name">{row.label}</span>
+                                    <button
+                                        type="button"
+                                        aria-label={`Remove ${row.label} from quick weather`}
+                                        title={`Remove ${row.label}`}
+                                        onClick={(event) => {
+                                            event.stopPropagation();
+                                            handleRemoveCity(row.city);
+                                        }}
+                                        style={{
+                                            width: '24px',
+                                            height: '24px',
+                                            borderRadius: '999px',
+                                            border: '1px solid rgba(255,255,255,0.25)',
+                                            background: 'rgba(0,0,0,0.20)',
+                                            color: 'inherit',
+                                            cursor: 'pointer',
+                                            lineHeight: 1
+                                        }}
+                                    >
+                                        ×
+                                    </button>
+                                </div>
 
                                 <div className="qw-city-row__current">
                                     {c?.iconId
@@ -350,7 +488,11 @@ const QuickWeather = () => {
 
             <div className="qw-highlight-text-container">
                 <span className="qw-highlight-icon">🤖</span>
-                <span className="qw-highlight-text">{textForecast}</span>
+                <span className="qw-highlight-text">
+                    {error && usableRows.length === 0
+                        ? 'Weather feed failed. Try refresh from Weather tab.'
+                        : textForecast}
+                </span>
             </div>
 
             {severeWarning && (

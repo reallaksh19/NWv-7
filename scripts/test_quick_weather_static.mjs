@@ -13,6 +13,8 @@ const quickWeather = read('src/components/QuickWeather.jsx');
 
 for (const token of [
   'DEFAULT_CITIES',
+  'normalizeCity',
+  'getConfiguredCities',
   'getCitySlots',
   'segmentToSlot',
   'currentToSlot',
@@ -22,7 +24,12 @@ for (const token of [
   'No forecast',
   '!cities.includes(activeCity)',
   'tomorrow?.morning',
-  'weatherData?.[city]'
+  'weatherData?.[city]',
+  'updateSettings(nextSettings)',
+  'handleAddCity',
+  'handleRemoveCity',
+  'Remove ${row.label}',
+  'Add city'
 ]) {
   assert(quickWeather.includes(token), `QuickWeather missing required token: ${token}`);
 }
@@ -37,16 +44,23 @@ assert(
   'QuickWeather must use configured weather cities'
 );
 
+assert(
+  quickWeather.includes('weather: {') && quickWeather.includes('cities: uniqueCities'),
+  'QuickWeather must save weather.cities to settings'
+);
+
 console.log(JSON.stringify({
   status: 'PASS',
-  checked: 'QuickWeather static slice',
+  checked: 'QuickWeather configurable slice',
   guarantees: [
     'configured cities are rendered',
-    'current-only weather does not become false No forecast',
-    'hourly24 / next8Hours / day-segment / tomorrow fallback supported',
+    'cities can be added',
+    'cities can be removed with cross button',
+    'at least one city remains',
+    'current/hourly/day/tomorrow fallback supported',
     'invalid saved active city is corrected',
     'per-city missing forecast state is explicit'
   ]
 }, null, 2));
 
-console.log('PASS: QuickWeather static slice');
+console.log('PASS: QuickWeather configurable slice');

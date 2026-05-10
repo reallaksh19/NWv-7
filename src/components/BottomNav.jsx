@@ -17,6 +17,11 @@ const ALL_NAV_ITEMS = [
   { path: '/more', label: 'More', icon: '⋯' }
 ];
 
+function isActivePath(pathname, itemPath) {
+  if (itemPath === '/') return pathname === '/';
+  return pathname === itemPath || pathname.startsWith(`${itemPath}/`);
+}
+
 function BottomNav() {
   const {
     isWebView,
@@ -28,6 +33,11 @@ function BottomNav() {
 
   const location = useLocation();
 
+  // Critical fix:
+  // layoutMode is the resolved truth. isWebView alone is not enough because
+  // the user can force desktop mode while viewport detection still reports mobile.
+  const isDesktopNav = isWebView || layoutMode === 'desktop';
+
   const cycleLayoutMode = () => {
     if (layoutOverride === 'desktop') setLayoutModeOverride('auto');
     else setLayoutModeOverride('desktop');
@@ -35,23 +45,23 @@ function BottomNav() {
 
   return (
     <nav
-      className={`bottom-nav ${isWebView ? 'bottom-nav--desktop' : 'bottom-nav--mobile'}`}
+      className={`bottom-nav ${isDesktopNav ? 'bottom-nav--desktop' : 'bottom-nav--mobile'}`}
       data-layout-mode={layoutMode}
       data-layout-reason={layoutReason}
-      aria-label={isWebView ? 'Desktop navigation' : 'Mobile navigation'}
+      data-layout-override={layoutOverride || 'auto'}
+      data-nav-item-count={ALL_NAV_ITEMS.length}
+      aria-label={isDesktopNav ? 'Desktop navigation' : 'Mobile navigation'}
     >
-      {isWebView && (
+      {isDesktopNav && (
         <div className="bottom-nav__brand" title={`Layout: ${layoutMode} (${layoutReason})`}>
           <span className="bottom-nav__brand-mark">NW</span>
           <span className="bottom-nav__brand-text">News Desk</span>
         </div>
       )}
 
-      <div className="bottom-nav__items">
+      <div className="bottom-nav__items" role="list">
         {ALL_NAV_ITEMS.map((item) => {
-          const isActive = item.path === '/'
-            ? location.pathname === '/'
-            : location.pathname.startsWith(item.path);
+          const isActive = isActivePath(location.pathname, item.path);
 
           return (
             <NavLink
@@ -59,8 +69,10 @@ function BottomNav() {
               to={item.path}
               className={`bottom-nav__item ${isActive ? 'active' : ''}`}
               title={item.label}
+              aria-label={item.label}
+              role="listitem"
             >
-              <span className="bottom-nav__icon">{item.icon}</span>
+              <span className="bottom-nav__icon" aria-hidden="true">{item.icon}</span>
               <span className="bottom-nav__label">{item.label}</span>
             </NavLink>
           );
@@ -72,6 +84,7 @@ function BottomNav() {
         className="bottom-nav__layout-toggle"
         onClick={cycleLayoutMode}
         title={`Layout: ${layoutMode}. Click to ${layoutOverride === 'desktop' ? 'return to Auto' : 'force Desktop'}.`}
+        aria-label={layoutOverride === 'desktop' ? 'Return layout to auto mode' : 'Force desktop layout'}
       >
         {layoutOverride === 'desktop' ? 'Auto' : 'Desktop'}
       </button>

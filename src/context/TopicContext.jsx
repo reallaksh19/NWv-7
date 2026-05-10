@@ -12,33 +12,64 @@ import { sendNotification } from '../utils/notifications.js';
 
 const TopicContext = createContext();
 
+function canonicalTopicText(value) {
+    return String(value || '')
+        .trim()
+        .toLowerCase()
+        .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+        .replace(/\s+/g, ' ');
+}
+
+function getTopicKey(topic) {
+    return canonicalTopicText(topic?.query || topic?.name);
+}
+
+function isDuplicateTopic(existingTopics, topic) {
+    const nextKey = getTopicKey(topic);
+    if (!nextKey) return false;
+
+    return existingTopics.some(existing => getTopicKey(existing) === nextKey);
+}
+
+function normalizeTopic(topic) {
+    const name = String(topic?.name || topic?.query || '').trim();
+    const query = String(topic?.query || topic?.name || '').trim();
+
+    return {
+        ...topic,
+        name,
+        query,
+        icon: topic?.icon || '📰',
+        options: {
+            country: 'IN',
+            lang: 'en',
+            timeRange: '30d',
+            ...(topic?.options || {})
+        }
+    };
+}
+
 export function TopicProvider({ children }) {
     const [followedTopics, setFollowedTopics] = useState([]);
-    const [topicNews, setTopicNews] = useState({}); // { topicId: [articles] }
+    const [topicNews, setTopicNews] = useState({});
     const [loading, setLoading] = useState(false);
     const [suggestions, setSuggestions] = useState([]);
+    const [topicMessage, setTopicMessage] = useState('');
 
-    // Load topics from settings on mount
     useEffect(() => {
         const settings = getSettings();
         setFollowedTopics(settings.followedTopics || []);
-
-        // Initial suggestion generation
         refreshSuggestions();
     }, []);
 
-    // Polling Effect (every 15 minutes)
     useEffect(() => {
         if (followedTopics.length === 0) return;
 
-        // Initial fetch logic is handled when followedTopics changes or on mount?
-        // If we put refreshTopics in a useEffect dependent on followedTopics, it runs on mount (initially empty) then when populated.
-
-        refreshTopics(false); // Initial load without notification
+        refreshTopics(false);
 
         const interval = setInterval(() => {
             console.log('[TopicContext] Auto-refreshing topics...');
-            refreshTopics(true); // notify on updates
+            refreshTopics(true);
         }, 15 * 60 * 1000);
 
         return () => clearInterval(interval);
@@ -48,13 +79,11 @@ export function TopicProvider({ children }) {
     const refreshTopics = async (shouldNotify = false) => {
         if (followedTopics.length === 0) return;
 
-        // Don't set global loading true for background refreshes (shouldNotify=true)
         if (!shouldNotify) setLoading(true);
 
         try {
             const newsByTopic = await fetchAllTopicsNews(followedTopics);
 
-            // Notification Logic
             if (shouldNotify) {
                 checkForUpdates(newsByTopic);
             }
@@ -62,6 +91,7 @@ export function TopicProvider({ children }) {
             setTopicNews(newsByTopic);
         } catch (error) {
             console.error('[TopicContext] Failed to refresh topics:', error);
+            setTopicMessage('Topic refresh failed. Showing the last available results.');
         } finally {
             if (!shouldNotify) setLoading(false);
         }
@@ -73,8 +103,8 @@ export function TopicProvider({ children }) {
 
         Object.entries(newNews).forEach(([topicId, articles]) => {
             const oldArticles = topicNews[topicId] || [];
+
             if (articles.length > 0 && oldArticles.length > 0) {
-                // Simple check: if top article ID is different
                 if (articles[0].id !== oldArticles[0].id) {
                     newCount++;
                     const topic = followedTopics.find(t => t.id === topicId);
@@ -96,12 +126,33 @@ export function TopicProvider({ children }) {
     };
 
     const addTopic = (topic) => {
-        addFollowedTopic(topic);
-        const settings = getSettings();
-        setFollowedTopics(settings.followedTopics || []);
+        const normalizedTopic = normalizeTopic(topic);
 
-        // Trigger fetch (small delay to let state settle if needed, but here it's sync-ish)
+        if (!normalizedTopic.name || !normalizedTopic.query) {
+            setTopicMessage('Enter a valid topic name.');
+            return { ok: false, reason: 'invalid-topic' };
+        }
+
+        const settings = getSettings();
+        const existingTopics = settings.followedTopics || [];
+
+        if (isDuplicateTopic(existingTopics, normalizedTopic)) {
+            setTopicMessage(`Already following "${normalizedTopic.name}".`);
+            setFollowedTopics(existingTopics);
+            return { ok: false, reason: 'duplicate-topic' };
+        }
+
+        addFollowedTopic(normalizedTopic);
+
+        const nextSettings = getSettings();
+        const nextTopics = nextSettings.followedTopics || [];
+
+        setFollowedTopics(nextTopics);
+        setTopicMessage(`Now following "${normalizedTopic.name}".`);
+
         setTimeout(() => refreshTopics(false), 50);
+
+        return { ok: true };
     };
 
     const removeTopic = (topicId) => {
@@ -111,11 +162,11 @@ export function TopicProvider({ children }) {
         const newTopicNews = { ...topicNews };
         delete newTopicNews[topicId];
         setTopicNews(newTopicNews);
+        setTopicMessage('');
     };
 
     const addToHistory = (article) => {
         addReadArticle(article);
-        // Regenerate suggestions
         refreshSuggestions();
     };
 
@@ -124,15 +175,21 @@ export function TopicProvider({ children }) {
         setSuggestions(sugs);
     };
 
+    const clearTopicMessage = () => {
+        setTopicMessage('');
+    };
+
     const value = {
         followedTopics,
         topicNews,
         loading,
         suggestions,
+        topicMessage,
         addTopic,
         removeTopic,
         refreshTopics,
-        addToHistory
+        addToHistory,
+        clearTopicMessage
     };
 
     return (

@@ -65,6 +65,7 @@ import { SegmentProvider } from './context/SegmentContext';
 import { TopicProvider } from './context/TopicContext';
 import './index.css';
 import './styles/desktopRevamp.css';
+import './styles/desktopPolish.css';
 
 /**
  * Global Progress Bar

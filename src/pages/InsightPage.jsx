@@ -63,6 +63,151 @@ function getInsightSourceLabel(source) {
   return 'Live';
 }
 
+const INSIGHT_SNAPSHOT_SLOTS = ['now', 'minus4h', 'minus12h', 'minus24h'];
+
+function getStoryFromMap(storiesById, storyId) {
+  return storiesById instanceof Map ? storiesById.get(storyId) : null;
+}
+
+function getStorySourceKey(story) {
+  return story?.sourceGroup || story?.source || 'Unknown';
+}
+
+function getStoryAngleLabel(story) {
+  return story?.angle || 'unknown';
+}
+
+function getParentSnapshotMatches(parent, clusterStories) {
+  const presence = parent?.snapshotPresence || {};
+
+  return INSIGHT_SNAPSHOT_SLOTS.filter(slot => {
+    if (presence[slot]) return true;
+    return clusterStories.some(story => story?.capturedAtSnapshot === slot);
+  });
+}
+
+function getParentAuditReason({
+  childCount,
+  angleCount,
+  sourceGroupCount,
+  snapshotCount,
+  hiddenDuplicateCount,
+  weakTree
+}) {
+  const reasons = [];
+
+  if (childCount < DEFAULT_CONFIG.WEAK_TREE_CHILD_MIN) {
+    reasons.push(`Child count ${childCount} is below weak-tree minimum ${DEFAULT_CONFIG.WEAK_TREE_CHILD_MIN}.`);
+  }
+
+  if (sourceGroupCount < DEFAULT_CONFIG.MIN_SOURCES_PER_TREE) {
+    reasons.push(`Source diversity ${sourceGroupCount} is below minimum ${DEFAULT_CONFIG.MIN_SOURCES_PER_TREE}.`);
+  }
+
+  if (angleCount < 2) {
+    reasons.push('Only one distinct angle is visible from selected child stories.');
+  }
+
+  if (snapshotCount < 2) {
+    reasons.push('Story is not strongly represented across multiple snapshot windows.');
+  }
+
+  if (hiddenDuplicateCount > 0) {
+    reasons.push(`${hiddenDuplicateCount} duplicate/near-duplicate item(s) were hidden.`);
+  }
+
+  if (weakTree) {
+    reasons.push('Pipeline marked this cluster as a weak tree.');
+  }
+
+  if (reasons.length === 0) {
+    reasons.push('No obvious audit blocker detected from the current output contract.');
+  }
+
+  return reasons;
+}
+
+function getInsightAuditRows(result) {
+  const parents = safeArray(result?.parents);
+  const storiesById = normalizeStoriesById(result?.storiesById);
+
+  return parents.map((parent, index) => {
+    const clusterStoryIds = safeArray(parent.clusterStoryIds);
+    const childStoryIds = safeArray(parent.childStoryIds);
+    const hiddenDuplicateIds = safeArray(parent.hiddenDuplicateIds);
+
+    const clusterStories = clusterStoryIds
+      .map(id => getStoryFromMap(storiesById, id))
+      .filter(Boolean);
+
+    const childStories = childStoryIds
+      .map(id => getStoryFromMap(storiesById, id))
+      .filter(Boolean);
+
+    const sourceGroups = [...new Set(
+      clusterStories.map(getStorySourceKey).filter(Boolean)
+    )];
+
+    const childSourceGroups = [...new Set(
+      childStories.map(getStorySourceKey).filter(Boolean)
+    )];
+
+    const angleLabels = [...new Set(
+      childStories.map(getStoryAngleLabel).filter(Boolean)
+    )];
+
+    const snapshotMatches = getParentSnapshotMatches(parent, clusterStories);
+
+    const hiddenDuplicateCount = hiddenDuplicateIds.length ||
+      Number(parent.debug?.hiddenCount || 0);
+
+    const childCount = childStoryIds.length;
+    const angleCount = angleLabels.length;
+    const sourceGroupCount = sourceGroups.length;
+    const snapshotCount = snapshotMatches.length;
+
+    return {
+      parentId: parent.parentId,
+      rank: index + 1,
+      headline: parent.canonicalHeadline || `Cluster ${index + 1}`,
+      childCount,
+      clusterCount: clusterStoryIds.length,
+      hiddenDuplicateCount,
+      angleLabels,
+      sourceGroups,
+      childSourceGroups,
+      snapshotMatches,
+      weakTree: Boolean(parent.weakTree),
+      reasons: getParentAuditReason({
+        childCount,
+        angleCount,
+        sourceGroupCount,
+        snapshotCount,
+        hiddenDuplicateCount,
+        weakTree: Boolean(parent.weakTree)
+      })
+    };
+  });
+}
+
+function getInsightAuditSummary(auditRows) {
+  const total = auditRows.length;
+  const singleAngle = auditRows.filter(row => row.angleLabels.length < 2).length;
+  const weakTrees = auditRows.filter(row => row.weakTree).length;
+  const lowSourceDiversity = auditRows.filter(row => row.sourceGroups.length < DEFAULT_CONFIG.MIN_SOURCES_PER_TREE).length;
+  const lowSnapshotCoverage = auditRows.filter(row => row.snapshotMatches.length < 2).length;
+  const hiddenDuplicates = auditRows.reduce((sum, row) => sum + row.hiddenDuplicateCount, 0);
+
+  return {
+    total,
+    singleAngle,
+    weakTrees,
+    lowSourceDiversity,
+    lowSnapshotCoverage,
+    hiddenDuplicates
+  };
+}
+
 function getInsightDiagnostics(result, source) {
   const parents = safeArray(result?.parents);
   const storiesById = normalizeStoriesById(result?.storiesById);
@@ -296,12 +441,109 @@ function InsightDiagnosticsPanel({ diagnostics }) {
   );
 }
 
+function InsightAuditPanel({ auditRows }) {
+  const summary = getInsightAuditSummary(auditRows);
+
+  return (
+    <section className="insight-audit" data-insight-audit-contract="source-angle-snapshot">
+      <div className="insight-audit__header">
+        <div>
+          <div className="insight-audit__eyebrow">Source audit</div>
+          <h2>Why angles may be thin</h2>
+          <p>
+            This panel audits the current Insight output only. It does not change ranking, dedup, source selection, or tree building.
+          </p>
+        </div>
+      </div>
+
+      <div className="insight-audit__summary-grid">
+        <div className="insight-audit__summary-tile">
+          <span>Clusters</span>
+          <strong>{summary.total}</strong>
+        </div>
+        <div className="insight-audit__summary-tile">
+          <span>Single-angle</span>
+          <strong>{summary.singleAngle}</strong>
+        </div>
+        <div className="insight-audit__summary-tile">
+          <span>Weak trees</span>
+          <strong>{summary.weakTrees}</strong>
+        </div>
+        <div className="insight-audit__summary-tile">
+          <span>Low source div.</span>
+          <strong>{summary.lowSourceDiversity}</strong>
+        </div>
+        <div className="insight-audit__summary-tile">
+          <span>Low snapshots</span>
+          <strong>{summary.lowSnapshotCoverage}</strong>
+        </div>
+        <div className="insight-audit__summary-tile">
+          <span>Hidden dupes</span>
+          <strong>{summary.hiddenDuplicates}</strong>
+        </div>
+      </div>
+
+      <details className="insight-audit__details">
+        <summary>Cluster-level audit</summary>
+
+        <div className="insight-audit__rows">
+          {auditRows.map(row => (
+            <article
+              key={row.parentId}
+              className={`insight-audit__row ${row.weakTree ? 'insight-audit__row--weak' : ''}`}
+              data-angle-count={row.angleLabels.length}
+              data-source-group-count={row.sourceGroups.length}
+              data-snapshot-count={row.snapshotMatches.length}
+            >
+              <div className="insight-audit__row-head">
+                <span className="insight-audit__rank">{String(row.rank).padStart(2, '0')}</span>
+                <strong>{row.headline}</strong>
+              </div>
+
+              <div className="insight-audit__badges">
+                <span>{row.childCount} children</span>
+                <span>{row.clusterCount} cluster stories</span>
+                <span>{row.angleLabels.length} angle(s)</span>
+                <span>{row.sourceGroups.length} source group(s)</span>
+                <span>{row.snapshotMatches.length}/4 snapshots</span>
+                <span>{row.hiddenDuplicateCount} hidden dupes</span>
+              </div>
+
+              <div className="insight-audit__chips">
+                <div>
+                  <span>Angles</span>
+                  <strong>{row.angleLabels.join(', ') || 'none'}</strong>
+                </div>
+                <div>
+                  <span>Snapshots</span>
+                  <strong>{row.snapshotMatches.join(', ') || 'none'}</strong>
+                </div>
+                <div>
+                  <span>Sources</span>
+                  <strong>{row.sourceGroups.slice(0, 6).join(', ') || 'none'}</strong>
+                </div>
+              </div>
+
+              <ul className="insight-audit__reasons">
+                {row.reasons.map((reason, index) => (
+                  <li key={`${row.parentId}-${index}`}>{reason}</li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </div>
+      </details>
+    </section>
+  );
+}
+
 function InsightTab({ result, source }) {
   const parents = result?.parents || [];
   const storiesById = normalizeStoriesById(result?.storiesById);
   const diagnostics = getInsightDiagnostics(result, source);
   const sourceLabel = diagnostics.sourceLabel;
   const ringDash = (diagnostics.signalScore / 100) * 251.2;
+  const auditRows = getInsightAuditRows(result);
 
   return (
     <div className="scroll insight-page">
@@ -346,6 +588,7 @@ function InsightTab({ result, source }) {
       </div>
 
       <InsightDiagnosticsPanel diagnostics={diagnostics} />
+      <InsightAuditPanel auditRows={auditRows} />
 
       <div className="sstrip">
         <div className="sig" data-t="info"><div className="snum">{parents.length}</div><div className="slb">Ranked</div></div>

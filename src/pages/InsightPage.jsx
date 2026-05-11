@@ -77,6 +77,94 @@ function getStoryAngleLabel(story) {
   return story?.angle || 'unknown';
 }
 
+const ANGLE_DISPLAY_LABELS = {
+  base_report: 'Base report',
+  official_response: 'Official response',
+  market_reaction: 'Market reaction',
+  fact_update: 'Fact update',
+  expert_analysis: 'Expert analysis',
+  regional_followup: 'Regional follow-up',
+  correction: 'Correction',
+  background_context: 'Background context',
+  reaction_public: 'Public reaction',
+  investigative_detail: 'Investigative detail',
+  unknown: 'Unknown angle'
+};
+
+const SNAPSHOT_DISPLAY_LABELS = {
+  now: 'Now',
+  minus4h: '−4h',
+  minus12h: '−12h',
+  minus24h: '−24h'
+};
+
+function toSafeCssToken(value) {
+  return String(value || 'unknown')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'unknown';
+}
+
+function formatAngleLabel(angle) {
+  const key = String(angle || 'unknown').trim();
+  return ANGLE_DISPLAY_LABELS[key] ||
+    key
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, char => char.toUpperCase());
+}
+
+function getStorySnapshotLabel(story) {
+  const snapshot = story?.capturedAtSnapshot || 'unknown';
+  return SNAPSHOT_DISPLAY_LABELS[snapshot] || 'Snapshot unknown';
+}
+
+function getStoryTimeLabel(story) {
+  const publishedAt = Number(story?.publishedAt || 0);
+
+  if (!Number.isFinite(publishedAt) || publishedAt <= 0) {
+    return 'time unknown';
+  }
+
+  const ageMs = Math.max(0, Date.now() - publishedAt);
+  const mins = Math.round(ageMs / 60000);
+
+  if (mins < 60) return `${mins}m ago`;
+
+  const hours = Math.round(ageMs / 36e5);
+  if (hours < 48) return `${hours}h ago`;
+
+  return `${Math.round(hours / 24)}d ago`;
+}
+
+function getStorySourceLabel(story) {
+  return story?.source || story?.sourceGroup || 'Unknown source';
+}
+
+function getChildStoryDisplay(childId, child, index) {
+  const angleRaw = getStoryAngleLabel(child);
+  const angleLabel = formatAngleLabel(angleRaw);
+  const snapshotLabel = getStorySnapshotLabel(child);
+  const publishedLabel = getStoryTimeLabel(child);
+  const sourceLabel = getStorySourceLabel(child);
+
+  return {
+    id: childId,
+    index,
+    title: child?.title || child?.summary || childId,
+    sourceLabel,
+    sourceTitle: child?.sourceGroup
+      ? `${child?.source || 'Unknown source'} · ${child.sourceGroup}`
+      : sourceLabel,
+    url: child?.url || null,
+    angleRaw,
+    angleLabel,
+    angleKey: toSafeCssToken(angleRaw),
+    snapshotLabel,
+    publishedLabel
+  };
+}
+
 function getParentSnapshotMatches(parent, clusterStories) {
   const presence = parent?.snapshotPresence || {};
 
@@ -346,19 +434,44 @@ function ICard({ story, index, storiesById = new Map() }) {
             <div className="src-list">
               {childStoryIds.length > 0 ? (
                 childStoryIds.map((childId, i) => {
-                  const child    = storiesById.get(childId);
-                  const headline = child?.title || child?.summary || childId;
-                  const source   = child?.source || child?.sourceGroup || 'Unknown';
-                  const url      = child?.url || null;
+                  const child = storiesById.get(childId);
+                  const display = getChildStoryDisplay(childId, child, i);
+
                   return (
-                    <div key={childId} className="src-item">
-                      <span className="sname" title={source}>{source}</span>
-                      {url
-                        ? <a className="sdesc" href={url} target="_blank" rel="noopener noreferrer"
-                             onClick={e => e.stopPropagation()}>{headline}</a>
-                        : <span className="sdesc">{headline}</span>
+                    <div key={childId} className="src-item src-item--angle-aware">
+                      <span className="sname" title={display.sourceTitle}>
+                        {display.sourceLabel}
+                      </span>
+
+                      {display.url
+                        ? (
+                          <a
+                            className="sdesc"
+                            href={display.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={e => e.stopPropagation()}
+                          >
+                            {display.title}
+                          </a>
+                        )
+                        : <span className="sdesc">{display.title}</span>
                       }
-                      <span className="ang diff">Angle {i + 1}</span>
+
+                      <span
+                        className={`ang angle-chip angle-chip--${display.angleKey}`}
+                        title={display.angleRaw}
+                      >
+                        {display.angleLabel}
+                      </span>
+
+                      <span className="stime" title="Captured snapshot">
+                        {display.snapshotLabel}
+                      </span>
+
+                      <span className="stime" title="Published time">
+                        {display.publishedLabel}
+                      </span>
                     </div>
                   );
                 })

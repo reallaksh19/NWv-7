@@ -40,14 +40,134 @@ function writeCache(data) {
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
+function safeArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+
+function normalizeStoriesById(storiesById) {
+  if (storiesById instanceof Map) return storiesById;
+  if (storiesById && typeof storiesById === 'object') {
+    return new Map(Object.entries(storiesById));
+  }
+  return new Map();
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function getInsightSourceLabel(source) {
+  if (source === 'stale-snapshot') return 'Stale snapshot';
+  if (source === 'snapshot') return 'Snapshot';
+  if (source === 'cached') return 'Cached';
+  return 'Live';
+}
+
+function getInsightDiagnostics(result, source) {
+  const parents = safeArray(result?.parents);
+  const storiesById = normalizeStoriesById(result?.storiesById);
+
+  const rankedCount = parents.length;
+  const totalChildLinks = parents.reduce((sum, parent) => {
+    return sum + safeArray(parent.childStoryIds || parent.clusterStoryIds).length;
+  }, 0);
+
+  const totalClusterLinks = parents.reduce((sum, parent) => {
+    return sum + safeArray(parent.clusterStoryIds).length;
+  }, 0);
+
+  const storyCount = storiesById.size || totalClusterLinks;
+  const risingCount = parents.filter(parent => parent.isRising).length;
+  const thinCount = parents.filter(parent => parent.weakTree).length;
+  const multiAngleCount = parents.filter(parent => {
+    const childCount = safeArray(parent.childStoryIds || parent.clusterStoryIds).length;
+    return childCount >= 2;
+  }).length;
+
+  const lowAngleCount = parents.filter(parent => {
+    const childCount = safeArray(parent.childStoryIds || parent.clusterStoryIds).length;
+    return childCount < 2;
+  }).length;
+
+  const avgAngles = rankedCount > 0 ? totalChildLinks / rankedCount : 0;
+  const avgScore = rankedCount > 0
+    ? parents.reduce((sum, parent) => sum + Number(parent.finalParentScore || 0), 0) / rankedCount
+    : 0;
+
+  const sourceLabel = getInsightSourceLabel(source);
+  const isStale = source === 'stale-snapshot' || source === 'cached';
+
+  const signalScore = clamp(Math.round(
+    (avgScore * 55) +
+    Math.min(25, avgAngles * 7) +
+    Math.min(12, multiAngleCount * 2) +
+    Math.min(8, risingCount * 2) -
+    Math.min(20, thinCount * 5) -
+    Math.min(12, lowAngleCount * 2)
+  ), 0, 100);
+
+  let grade = 'F';
+  let tone = 'danger';
+  let title = 'No insight signal';
+
+  if (signalScore >= 80) {
+    grade = 'A';
+    tone = 'good';
+    title = 'Strong insight signal';
+  } else if (signalScore >= 65) {
+    grade = 'B';
+    tone = 'info';
+    title = 'Useful insight signal';
+  } else if (signalScore >= 45) {
+    grade = 'C';
+    tone = 'warn';
+    title = 'Thin but usable signal';
+  } else if (signalScore > 0) {
+    grade = 'D';
+    tone = 'danger';
+    title = 'Weak insight signal';
+  }
+
+  const warnings = [];
+
+  if (rankedCount === 0) warnings.push('No ranked clusters available.');
+  if (lowAngleCount > 0) warnings.push(`${lowAngleCount} cluster(s) have only one detected angle.`);
+  if (thinCount > 0) warnings.push(`${thinCount} cluster(s) are marked thin.`);
+  if (isStale) warnings.push(`Source is ${sourceLabel.toLowerCase()}.`);
+
+  if (warnings.length === 0) {
+    warnings.push('No major diagnostic warnings.');
+  }
+
+  return {
+    grade,
+    tone,
+    title,
+    signalScore,
+    sourceLabel,
+    rankedCount,
+    storyCount,
+    risingCount,
+    thinCount,
+    multiAngleCount,
+    lowAngleCount,
+    avgAngles,
+    avgScore,
+    coverageLabel: `${multiAngleCount}/${rankedCount || 0}`,
+    warnings
+  };
+}
+
 function ICard({ story, index, storiesById = new Map() }) {
   const [open, setOpen] = useState(false);
   const pct = Math.min(Math.round((story.finalParentScore || 0) * 100), 100);
 
+  const clusterStoryIds = safeArray(story.clusterStoryIds);
+  const childStoryIds = safeArray(story.childStoryIds);
   const isBreaking = story.isRising || false;
-  const srcCount   = story.clusterStoryIds?.length || 1;
-  const timeAgo    = 'Live';
-  const sources    = [...new Set(story.clusterStoryIds.map(id => id.split('-')[0] || 'Unknown'))].slice(0, 3);
+  const srcCount = clusterStoryIds.length || childStoryIds.length || 1;
+  const timeAgo = 'Live';
+  const sources = [...new Set(clusterStoryIds.map(id => String(id).split('-')[0] || 'Unknown'))].slice(0, 3);
 
   return (
     <div className={`icard ${open ? 'open' : ''}`} data-top="true">
@@ -79,30 +199,28 @@ function ICard({ story, index, storiesById = new Map() }) {
           <div className="exp-block">
             <div className="exp-label"><span className="dot" style={{ background: 'var(--warn, #F0883E)' }} />Child Stories</div>
             <div className="src-list">
-              {Array.isArray(story.childStoryIds) && (
-                story.childStoryIds.length > 0 ? (
-                  story.childStoryIds.map((childId, i) => {
-                    const child    = storiesById.get(childId);
-                    const headline = child?.title || child?.summary || childId;
-                    const source   = child?.source || child?.sourceGroup || 'Unknown';
-                    const url      = child?.url || null;
-                    return (
-                      <div key={childId} className="src-item">
-                        <span className="sname" title={source}>{source}</span>
-                        {url
-                          ? <a className="sdesc" href={url} target="_blank" rel="noopener noreferrer"
-                               onClick={e => e.stopPropagation()}>{headline}</a>
-                          : <span className="sdesc">{headline}</span>
-                        }
-                        <span className="ang diff">Angle {i + 1}</span>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div className="src-item" style={{ opacity: 0.5, fontStyle: 'italic' }}>
-                    <span className="sdesc">No additional angles found for this story</span>
-                  </div>
-                )
+              {childStoryIds.length > 0 ? (
+                childStoryIds.map((childId, i) => {
+                  const child    = storiesById.get(childId);
+                  const headline = child?.title || child?.summary || childId;
+                  const source   = child?.source || child?.sourceGroup || 'Unknown';
+                  const url      = child?.url || null;
+                  return (
+                    <div key={childId} className="src-item">
+                      <span className="sname" title={source}>{source}</span>
+                      {url
+                        ? <a className="sdesc" href={url} target="_blank" rel="noopener noreferrer"
+                             onClick={e => e.stopPropagation()}>{headline}</a>
+                        : <span className="sdesc">{headline}</span>
+                      }
+                      <span className="ang diff">Angle {i + 1}</span>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="src-item" style={{ opacity: 0.5, fontStyle: 'italic' }}>
+                  <span className="sdesc">No additional angles found for this story</span>
+                </div>
               )}
             </div>
           </div>
@@ -112,10 +230,78 @@ function ICard({ story, index, storiesById = new Map() }) {
   );
 }
 
+function InsightDiagnosticsPanel({ diagnostics }) {
+  return (
+    <section
+      className={`insight-diagnostics insight-diagnostics--${diagnostics.tone}`}
+      data-insight-quality-grade={diagnostics.grade}
+    >
+      <div className="insight-diagnostics__summary">
+        <div className="insight-diagnostics__grade">
+          <span>Grade</span>
+          <strong>{diagnostics.grade}</strong>
+        </div>
+
+        <div className="insight-diagnostics__body">
+          <div className="insight-diagnostics__eyebrow">Insight quality</div>
+          <h2>{diagnostics.title}</h2>
+          <p>
+            Signal score {diagnostics.signalScore}/100 · {diagnostics.rankedCount} ranked clusters · {diagnostics.storyCount} source stories.
+          </p>
+
+          <div className="insight-diagnostics__meta">
+            <span>{diagnostics.sourceLabel}</span>
+            <span>{diagnostics.coverageLabel} multi-angle clusters</span>
+            <span>{diagnostics.avgAngles.toFixed(1)} avg angles</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="insight-diagnostics__grid" aria-label="Insight diagnostics">
+        <div className="insight-diagnostics__tile">
+          <span>Ranked</span>
+          <strong>{diagnostics.rankedCount}</strong>
+        </div>
+        <div className="insight-diagnostics__tile">
+          <span>Stories</span>
+          <strong>{diagnostics.storyCount}</strong>
+        </div>
+        <div className="insight-diagnostics__tile">
+          <span>Rising</span>
+          <strong>{diagnostics.risingCount}</strong>
+        </div>
+        <div className="insight-diagnostics__tile">
+          <span>Multi-angle</span>
+          <strong>{diagnostics.multiAngleCount}</strong>
+        </div>
+        <div className="insight-diagnostics__tile">
+          <span>Single-angle</span>
+          <strong>{diagnostics.lowAngleCount}</strong>
+        </div>
+        <div className="insight-diagnostics__tile">
+          <span>Thin</span>
+          <strong>{diagnostics.thinCount}</strong>
+        </div>
+      </div>
+
+      <details className="insight-diagnostics__warnings">
+        <summary>Diagnostic notes</summary>
+        <ul>
+          {diagnostics.warnings.map((warning, index) => (
+            <li key={`${warning}-${index}`}>{warning}</li>
+          ))}
+        </ul>
+      </details>
+    </section>
+  );
+}
+
 function InsightTab({ result, source }) {
-  const parents     = result?.parents || [];
-  const storiesById = result?.storiesById instanceof Map ? result.storiesById : new Map();
-  const sourceLabel = source === 'stale-snapshot' ? 'Cached' : source === 'snapshot' ? 'Live' : 'Live';
+  const parents = result?.parents || [];
+  const storiesById = normalizeStoriesById(result?.storiesById);
+  const diagnostics = getInsightDiagnostics(result, source);
+  const sourceLabel = diagnostics.sourceLabel;
+  const ringDash = (diagnostics.signalScore / 100) * 251.2;
 
   return (
     <div className="scroll insight-page">
@@ -128,35 +314,52 @@ function InsightTab({ result, source }) {
               </linearGradient>
             </defs>
             <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="9" />
-            <circle cx="50" cy="50" r="40" fill="none" stroke="url(#rg)" strokeWidth="9"
-              strokeLinecap="round" strokeDasharray={`${0.86 * 251.2} 251.2`} />
+            <circle
+              cx="50"
+              cy="50"
+              r="40"
+              fill="none"
+              stroke="url(#rg)"
+              strokeWidth="9"
+              strokeLinecap="round"
+              strokeDasharray={`${ringDash} 251.2`}
+            />
           </svg>
           <div className="ircenter">
-            <div className="irscore">86</div>
+            <div className="irscore">{diagnostics.signalScore}</div>
             <div className="irslbl">Signal</div>
           </div>
         </div>
+
         <div className="ins-body">
           <div className="eyebrow"><span className="bip" />{sourceLabel} feed</div>
-          <p>Day leans <em>positive</em> — <em>{parents.filter(p => p.isRising).length} breaking</em> threads active</p>
+          <p>
+            {diagnostics.title} — <em>{diagnostics.risingCount} rising</em> threads,
+            {' '}<em>{diagnostics.multiAngleCount}</em> multi-angle clusters.
+          </p>
           <div className="ins-meta">
-            <span>Just updated</span><span>·</span>
+            <span>{sourceLabel}</span><span>·</span>
             <span><b>{parents.length}</b> clusters</span><span>·</span>
-            <span>next in <b>05:00</b></span>
+            <span><b>{diagnostics.storyCount}</b> source stories</span>
           </div>
         </div>
       </div>
+
+      <InsightDiagnosticsPanel diagnostics={diagnostics} />
+
       <div className="sstrip">
         <div className="sig" data-t="info"><div className="snum">{parents.length}</div><div className="slb">Ranked</div></div>
-        <div className="sig" data-t="warn"><div className="snum">{parents.filter(p => p.isRising).length}</div><div className="slb">Rising</div></div>
-        <div className="sig" data-t="good"><div className="snum">{parents.reduce((acc, p) => acc + p.clusterStoryIds.length, 0)}</div><div className="slb">Stories</div></div>
-        <div className="sig" data-t="teal"><div className="snum">9<span style={{ color: 'var(--muted)', fontSize: '.75rem' }}>/9</span></div><div className="slb">Sections</div></div>
-        <div className="sig" data-t="mute"><div className="snum">{sourceLabel}</div><div className="slb">Fresh</div></div>
+        <div className="sig" data-t="warn"><div className="snum">{diagnostics.risingCount}</div><div className="slb">Rising</div></div>
+        <div className="sig" data-t="good"><div className="snum">{diagnostics.storyCount}</div><div className="slb">Stories</div></div>
+        <div className="sig" data-t="teal"><div className="snum">{diagnostics.coverageLabel}</div><div className="slb">Angles</div></div>
+        <div className="sig" data-t="mute"><div className="snum">{sourceLabel}</div><div className="slb">Source</div></div>
       </div>
+
       <div className="isec">
         <h3><span className="glyph">▲</span>Top Ranked</h3>
         <span className="imeta"><b>{parents.length}</b> shown · tap + to expand</span>
       </div>
+
       {parents.map((p, i) => (
         <ICard key={p.parentId} story={p} index={i} storiesById={storiesById} />
       ))}

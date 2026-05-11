@@ -296,6 +296,173 @@ function getInsightAuditSummary(auditRows) {
   };
 }
 
+function asFiniteNumber(value, fallback = 0) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function formatScore(value) {
+  return asFiniteNumber(value).toFixed(2);
+}
+
+function formatPercent(value) {
+  return `${Math.round(asFiniteNumber(value) * 100)}%`;
+}
+
+function countBy(items, mapper) {
+  const counts = new Map();
+
+  for (const item of items) {
+    const key = mapper(item) || 'unknown';
+    counts.set(key, (counts.get(key) || 0) + 1);
+  }
+
+  return [...counts.entries()]
+    .map(([key, count]) => ({ key, count }))
+    .sort((a, b) => b.count - a.count || String(a.key).localeCompare(String(b.key)));
+}
+
+function getScoreBreakdownEntries(parent) {
+  const breakdown = parent?.debug?.scoreBreakdown || {};
+
+  return Object.entries(breakdown)
+    .filter(([key]) => key !== 'finalParentScore')
+    .map(([key, value]) => ({
+      key,
+      value: asFiniteNumber(value),
+      label: key
+        .replace(/Score$/i, '')
+        .replace(/([A-Z])/g, ' $1')
+        .replace(/^./, char => char.toUpperCase())
+    }))
+    .sort((a, b) => b.value - a.value);
+}
+
+function getDuplicatePressureTone(hiddenDuplicateCount, clusterCount) {
+  if (!clusterCount) return 'unknown';
+
+  const ratio = hiddenDuplicateCount / Math.max(1, clusterCount);
+
+  if (ratio >= 0.6) return 'high';
+  if (ratio >= 0.3) return 'medium';
+  return 'low';
+}
+
+function getRankingDiagnosticNotes(row) {
+  const notes = [];
+
+  if (row.scoreBreakdown.length === 0) {
+    notes.push('Score breakdown is unavailable on this cluster.');
+  } else {
+    const top = row.scoreBreakdown.slice(0, 3).map(item => `${item.label} ${formatScore(item.value)}`).join(', ');
+    notes.push(`Top ranking drivers: ${top}.`);
+  }
+
+  if (row.duplicatePressureTone === 'high') {
+    notes.push(`High duplicate pressure: ${row.hiddenDuplicateCount} hidden duplicate(s) from ${row.clusterCount} cluster stories.`);
+  } else if (row.duplicatePressureTone === 'medium') {
+    notes.push(`Moderate duplicate pressure: ${row.hiddenDuplicateCount} hidden duplicate(s).`);
+  }
+
+  if (row.topSourceShare >= 0.67 && row.clusterCount >= 3) {
+    notes.push(`Source concentration is high: ${row.topSource?.key || 'unknown'} contributes ${formatPercent(row.topSourceShare)} of cluster stories.`);
+  }
+
+  if (row.sourceGroupCount < DEFAULT_CONFIG.MIN_SOURCES_PER_TREE) {
+    notes.push(`Source diversity is below configured minimum ${DEFAULT_CONFIG.MIN_SOURCES_PER_TREE}.`);
+  }
+
+  if (row.topAngleShare >= 0.75 && row.childCount >= 3) {
+    notes.push(`Angle concentration is high: ${formatAngleLabel(row.topAngle?.key)} contributes ${formatPercent(row.topAngleShare)} of child stories.`);
+  }
+
+  if (row.weakTree) {
+    notes.push('Weak-tree flag is active, so this cluster may be under-supported.');
+  }
+
+  if (row.replacements.length > 0) {
+    notes.push(`${row.replacements.length} replacement event(s) recorded in tree debug.`);
+  }
+
+  if (notes.length === 0) {
+    notes.push('No major duplicate/ranking pressure detected from current output.');
+  }
+
+  return notes;
+}
+
+function getInsightRankingDiagnosticRows(result) {
+  const parents = safeArray(result?.parents);
+  const storiesById = normalizeStoriesById(result?.storiesById);
+
+  return parents.map((parent, index) => {
+    const clusterStoryIds = safeArray(parent.clusterStoryIds);
+    const childStoryIds = safeArray(parent.childStoryIds);
+    const hiddenDuplicateIds = safeArray(parent.hiddenDuplicateIds);
+
+    const clusterStories = clusterStoryIds
+      .map(id => getStoryFromMap(storiesById, id))
+      .filter(Boolean);
+
+    const childStories = childStoryIds
+      .map(id => getStoryFromMap(storiesById, id))
+      .filter(Boolean);
+
+    const sourceCounts = countBy(clusterStories, getStorySourceKey);
+    const angleCounts = countBy(childStories, getStoryAngleLabel);
+
+    const topSource = sourceCounts[0] || null;
+    const topAngle = angleCounts[0] || null;
+
+    const hiddenDuplicateCount = hiddenDuplicateIds.length ||
+      Number(parent.debug?.hiddenCount || 0);
+
+    const clusterCount = clusterStoryIds.length;
+    const childCount = childStoryIds.length;
+
+    const topSourceShare = topSource ? topSource.count / Math.max(1, clusterStories.length || clusterCount) : 0;
+    const topAngleShare = topAngle ? topAngle.count / Math.max(1, childStories.length || childCount) : 0;
+
+    const row = {
+      parentId: parent.parentId,
+      rank: index + 1,
+      headline: parent.canonicalHeadline || `Cluster ${index + 1}`,
+      finalParentScore: asFiniteNumber(parent.finalParentScore),
+      scoreBreakdown: getScoreBreakdownEntries(parent),
+      hiddenDuplicateCount,
+      duplicatePressureTone: getDuplicatePressureTone(hiddenDuplicateCount, clusterCount),
+      clusterCount,
+      childCount,
+      sourceCounts,
+      angleCounts,
+      topSource,
+      topAngle,
+      topSourceShare,
+      topAngleShare,
+      sourceGroupCount: sourceCounts.length,
+      weakTree: Boolean(parent.weakTree),
+      replacements: safeArray(parent.debug?.replacements)
+    };
+
+    return {
+      ...row,
+      notes: getRankingDiagnosticNotes(row)
+    };
+  });
+}
+
+function getInsightRankingDiagnosticSummary(rows) {
+  return {
+    clusters: rows.length,
+    highDuplicatePressure: rows.filter(row => row.duplicatePressureTone === 'high').length,
+    mediumDuplicatePressure: rows.filter(row => row.duplicatePressureTone === 'medium').length,
+    highSourceConcentration: rows.filter(row => row.topSourceShare >= 0.67 && row.clusterCount >= 3).length,
+    highAngleConcentration: rows.filter(row => row.topAngleShare >= 0.75 && row.childCount >= 3).length,
+    weakTrees: rows.filter(row => row.weakTree).length,
+    replacements: rows.reduce((sum, row) => sum + row.replacements.length, 0)
+  };
+}
+
 function getInsightDiagnostics(result, source) {
   const parents = safeArray(result?.parents);
   const storiesById = normalizeStoriesById(result?.storiesById);
@@ -650,6 +817,133 @@ function InsightAuditPanel({ auditRows }) {
   );
 }
 
+function InsightRankingDiagnosticsPanel({ rows }) {
+  const summary = getInsightRankingDiagnosticSummary(rows);
+
+  return (
+    <section className="insight-ranking-diagnostics" data-insight-ranking-diagnostics="duplicate-ranking">
+      <div className="insight-ranking-diagnostics__header">
+        <div>
+          <div className="insight-ranking-diagnostics__eyebrow">Duplicate & ranking diagnostics</div>
+          <h2>Why this cluster ranked here</h2>
+          <p>
+            This panel reads existing score breakdown, hidden duplicate, source concentration,
+            and angle concentration signals. It does not change ranking or dedup behavior.
+          </p>
+        </div>
+      </div>
+
+      <div className="insight-ranking-diagnostics__summary-grid">
+        <div className="insight-ranking-diagnostics__summary-tile">
+          <span>Clusters</span>
+          <strong>{summary.clusters}</strong>
+        </div>
+        <div className="insight-ranking-diagnostics__summary-tile">
+          <span>High dupes</span>
+          <strong>{summary.highDuplicatePressure}</strong>
+        </div>
+        <div className="insight-ranking-diagnostics__summary-tile">
+          <span>Med dupes</span>
+          <strong>{summary.mediumDuplicatePressure}</strong>
+        </div>
+        <div className="insight-ranking-diagnostics__summary-tile">
+          <span>Source conc.</span>
+          <strong>{summary.highSourceConcentration}</strong>
+        </div>
+        <div className="insight-ranking-diagnostics__summary-tile">
+          <span>Angle conc.</span>
+          <strong>{summary.highAngleConcentration}</strong>
+        </div>
+        <div className="insight-ranking-diagnostics__summary-tile">
+          <span>Replacements</span>
+          <strong>{summary.replacements}</strong>
+        </div>
+      </div>
+
+      <details className="insight-ranking-diagnostics__details">
+        <summary>Cluster ranking details</summary>
+
+        <div className="insight-ranking-diagnostics__rows">
+          {rows.map(row => (
+            <article
+              key={row.parentId}
+              className={`insight-ranking-diagnostics__row insight-ranking-diagnostics__row--dupe-${row.duplicatePressureTone}`}
+              data-duplicate-pressure={row.duplicatePressureTone}
+              data-source-share={row.topSourceShare.toFixed(2)}
+              data-angle-share={row.topAngleShare.toFixed(2)}
+            >
+              <div className="insight-ranking-diagnostics__row-head">
+                <span className="insight-ranking-diagnostics__rank">{String(row.rank).padStart(2, '0')}</span>
+                <div>
+                  <strong>{row.headline}</strong>
+                  <div className="insight-ranking-diagnostics__score">
+                    Final score {formatScore(row.finalParentScore)}
+                  </div>
+                </div>
+              </div>
+
+              <div className="insight-ranking-diagnostics__badges">
+                <span>{row.clusterCount} cluster stories</span>
+                <span>{row.childCount} children</span>
+                <span>{row.hiddenDuplicateCount} hidden dupes</span>
+                <span>{row.sourceGroupCount} source groups</span>
+                <span>{formatPercent(row.topSourceShare)} top source</span>
+                <span>{formatPercent(row.topAngleShare)} top angle</span>
+              </div>
+
+              <div className="insight-ranking-diagnostics__breakdown">
+                {row.scoreBreakdown.slice(0, 8).map(item => (
+                  <div key={`${row.parentId}-${item.key}`} className="insight-ranking-diagnostics__score-row">
+                    <span>{item.label}</span>
+                    <div className="insight-ranking-diagnostics__meter">
+                      <i style={{ width: `${Math.round(item.value * 100)}%` }} />
+                    </div>
+                    <strong>{formatScore(item.value)}</strong>
+                  </div>
+                ))}
+              </div>
+
+              <div className="insight-ranking-diagnostics__chips">
+                <div>
+                  <span>Sources</span>
+                  <strong>
+                    {row.sourceCounts.slice(0, 5).map(item => `${item.key}×${item.count}`).join(', ') || 'none'}
+                  </strong>
+                </div>
+                <div>
+                  <span>Angles</span>
+                  <strong>
+                    {row.angleCounts.slice(0, 5).map(item => `${formatAngleLabel(item.key)}×${item.count}`).join(', ') || 'none'}
+                  </strong>
+                </div>
+              </div>
+
+              {row.replacements.length > 0 && (
+                <div className="insight-ranking-diagnostics__replacement-box">
+                  <span>Replacement debug</span>
+                  <ul>
+                    {row.replacements.slice(0, 3).map((replacement, index) => (
+                      <li key={`${row.parentId}-replacement-${index}`}>
+                        {replacement.replacedId} → {replacement.replacedBy}: {replacement.reason}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <ul className="insight-ranking-diagnostics__notes">
+                {row.notes.map((note, index) => (
+                  <li key={`${row.parentId}-note-${index}`}>{note}</li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </div>
+      </details>
+    </section>
+  );
+}
+
 function InsightTab({ result, source }) {
   const parents = result?.parents || [];
   const storiesById = normalizeStoriesById(result?.storiesById);
@@ -657,6 +951,7 @@ function InsightTab({ result, source }) {
   const sourceLabel = diagnostics.sourceLabel;
   const ringDash = (diagnostics.signalScore / 100) * 251.2;
   const auditRows = getInsightAuditRows(result);
+  const rankingRows = getInsightRankingDiagnosticRows(result);
 
   return (
     <div className="scroll insight-page">
@@ -702,6 +997,7 @@ function InsightTab({ result, source }) {
 
       <InsightDiagnosticsPanel diagnostics={diagnostics} />
       <InsightAuditPanel auditRows={auditRows} />
+      <InsightRankingDiagnosticsPanel rows={rankingRows} />
 
       <div className="sstrip">
         <div className="sig" data-t="info"><div className="snum">{parents.length}</div><div className="slb">Ranked</div></div>

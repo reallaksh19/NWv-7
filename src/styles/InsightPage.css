@@ -570,3 +570,275 @@
     width: fit-content;
   }
 }
+
+/* ==========================================================================
+   Insight duplicate/ranking diagnostics
+   Slice 10
+   ========================================================================== */
+
+.insight-ranking-diagnostics {
+  margin: 0 0 16px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background:
+    radial-gradient(420px 180px at 100% 0%, rgba(88, 166, 255, 0.10), transparent 62%),
+    rgba(15, 23, 42, 0.74);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.16);
+}
+
+.insight-ranking-diagnostics__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.insight-ranking-diagnostics__eyebrow {
+  color: #93c5fd;
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.insight-ranking-diagnostics h2 {
+  margin: 4px 0;
+  color: var(--txt, #FFFFFF);
+  font-size: 1.08rem;
+  line-height: 1.18;
+}
+
+.insight-ranking-diagnostics p {
+  margin: 0;
+  color: var(--muted, #9CA5B0);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.insight-ranking-diagnostics__summary-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 9px;
+  margin-top: 14px;
+}
+
+.insight-ranking-diagnostics__summary-tile {
+  min-height: 58px;
+  padding: 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.insight-ranking-diagnostics__summary-tile span {
+  display: block;
+  color: var(--muted, #9CA5B0);
+  font-size: 0.64rem;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.insight-ranking-diagnostics__summary-tile strong {
+  display: block;
+  margin-top: 5px;
+  color: var(--txt, #FFFFFF);
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.insight-ranking-diagnostics__details {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.insight-ranking-diagnostics__details summary {
+  cursor: pointer;
+  color: #93c5fd;
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.insight-ranking-diagnostics__rows {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.insight-ranking-diagnostics__row {
+  padding: 12px;
+  border-radius: 15px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.insight-ranking-diagnostics__row--dupe-high {
+  border-color: rgba(239, 68, 68, 0.34);
+  background:
+    radial-gradient(300px 120px at 100% 0%, rgba(239, 68, 68, 0.08), transparent 60%),
+    rgba(255, 255, 255, 0.04);
+}
+
+.insight-ranking-diagnostics__row--dupe-medium {
+  border-color: rgba(245, 158, 11, 0.34);
+}
+
+.insight-ranking-diagnostics__row-head {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+}
+
+.insight-ranking-diagnostics__rank {
+  color: rgba(255, 255, 255, 0.35);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-weight: 900;
+}
+
+.insight-ranking-diagnostics__row-head strong {
+  color: var(--txt, #FFFFFF);
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+.insight-ranking-diagnostics__score {
+  margin-top: 3px;
+  color: var(--muted, #9CA5B0);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.7rem;
+}
+
+.insight-ranking-diagnostics__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.insight-ranking-diagnostics__badges span {
+  padding: 3px 7px;
+  border-radius: 999px;
+  color: #cbd5e1;
+  background: rgba(255, 255, 255, 0.055);
+  font-size: 0.68rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.insight-ranking-diagnostics__breakdown {
+  display: grid;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.insight-ranking-diagnostics__score-row {
+  display: grid;
+  grid-template-columns: 148px minmax(0, 1fr) 46px;
+  gap: 8px;
+  align-items: center;
+}
+
+.insight-ranking-diagnostics__score-row span {
+  color: var(--muted, #9CA5B0);
+  font-size: 0.72rem;
+}
+
+.insight-ranking-diagnostics__meter {
+  height: 6px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.insight-ranking-diagnostics__meter i {
+  display: block;
+  height: 100%;
+  max-width: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #58A6FF, #00D4AA);
+}
+
+.insight-ranking-diagnostics__score-row strong {
+  color: #dbeafe;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.72rem;
+  text-align: right;
+}
+
+.insight-ranking-diagnostics__chips {
+  display: grid;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.insight-ranking-diagnostics__chips div {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  gap: 8px;
+  align-items: baseline;
+}
+
+.insight-ranking-diagnostics__chips span,
+.insight-ranking-diagnostics__replacement-box > span {
+  color: var(--muted, #9CA5B0);
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.insight-ranking-diagnostics__chips strong {
+  color: #dbeafe;
+  font-size: 0.78rem;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.insight-ranking-diagnostics__replacement-box {
+  margin-top: 12px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(245, 158, 11, 0.20);
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.insight-ranking-diagnostics__replacement-box ul,
+.insight-ranking-diagnostics__notes {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: #cbd5e1;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+@media (min-width: 1024px) {
+  html[data-layout-mode='desktop'] .insight-ranking-diagnostics__summary-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  html[data-layout-mode='desktop'] .insight-ranking-diagnostics__chips {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .insight-ranking-diagnostics__summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .insight-ranking-diagnostics__score-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .insight-ranking-diagnostics__score-row strong {
+    text-align: left;
+  }
+
+  .insight-ranking-diagnostics__chips div {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+}

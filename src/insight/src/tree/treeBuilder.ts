@@ -27,6 +27,262 @@ const ANGLE_DISPLAY_ORDER: AngleLabel[] = [
   "unknown",
 ];
 
+// ── Diagnostics types ─────────────────────────────────────────────────────────
+
+type ChildRejectionReason =
+  | "LOW_INFORMATION_GAIN"
+  | "MAX_SOURCE_GROUP"
+  | "MAX_ANGLE"
+  | "NOT_ANGLE_VARIANT";
+
+interface RejectedCandidateDiagnostic {
+  id: string;
+  angle: AngleLabel;
+  sourceGroup: string;
+  informationGain: number;
+  childScore: number;
+  relevanceToParent: number;
+  reasons: ChildRejectionReason[];
+}
+
+interface AdmittedChildDiagnostic {
+  id: string;
+  angle: AngleLabel;
+  sourceGroup: string;
+  informationGain: number;
+  childScore: number;
+  admittedBecause: string[];
+}
+
+interface WeakTreeDiagnostics {
+  causes: string[];
+  childCount: number;
+  qualityChildCount: number;
+  sourceGroupCount: number;
+  angleCount: number;
+  weakTreeChildMin: number;
+  minSourcesPerTree: number;
+}
+
+interface ChildSelectionDiagnostics {
+  candidateCount: number;
+  selectedCount: number;
+  hiddenCount: number;
+  iterationCount: number;
+  remainingCandidateCount: number;
+  thresholds: {
+    minChildInfoGain: number;
+    maxPerSourceGroup: number;
+    maxPerAngle: number;
+    maxChildrenPerParent: number;
+    weakTreeChildMin: number;
+    minSourcesPerTree: number;
+  };
+  rejectionCounts: Record<ChildRejectionReason, number>;
+  rejectedCandidates: RejectedCandidateDiagnostic[];
+  admittedChildren: AdmittedChildDiagnostic[];
+  duplicateDowngrades: Array<{
+    selectedId: string;
+    downgradedId: string;
+    similarity: number;
+    penalty: number;
+  }>;
+  weakTreeCauses: string[];
+  weakTreeMetrics: WeakTreeDiagnostics;
+}
+
+// ── Debug helpers ─────────────────────────────────────────────────────────────
+
+function getParentDebug(parent: InsightParent): any {
+  if (!parent.debug) {
+    (parent as any).debug = {};
+  }
+
+  if (!Array.isArray(parent.debug.replacements)) {
+    parent.debug.replacements = [];
+  }
+
+  return parent.debug as any;
+}
+
+function initChildSelectionDiagnostics(
+  parent: InsightParent,
+  cfg: InsightConfig,
+  candidateCount: number
+): ChildSelectionDiagnostics {
+  const diagnostics: ChildSelectionDiagnostics = {
+    candidateCount,
+    selectedCount: 0,
+    hiddenCount: 0,
+    iterationCount: 0,
+    remainingCandidateCount: candidateCount,
+    thresholds: {
+      minChildInfoGain: cfg.MIN_CHILD_INFO_GAIN,
+      maxPerSourceGroup: cfg.MAX_PER_SOURCE_GROUP,
+      maxPerAngle: cfg.MAX_PER_ANGLE,
+      maxChildrenPerParent: cfg.MAX_CHILDREN_PER_PARENT,
+      weakTreeChildMin: cfg.WEAK_TREE_CHILD_MIN,
+      minSourcesPerTree: cfg.MIN_SOURCES_PER_TREE,
+    },
+    rejectionCounts: {
+      LOW_INFORMATION_GAIN: 0,
+      MAX_SOURCE_GROUP: 0,
+      MAX_ANGLE: 0,
+      NOT_ANGLE_VARIANT: 0,
+    },
+    rejectedCandidates: [],
+    admittedChildren: [],
+    duplicateDowngrades: [],
+    weakTreeCauses: [],
+    weakTreeMetrics: {
+      causes: [],
+      childCount: 0,
+      qualityChildCount: 0,
+      sourceGroupCount: 0,
+      angleCount: 0,
+      weakTreeChildMin: cfg.WEAK_TREE_CHILD_MIN,
+      minSourcesPerTree: cfg.MIN_SOURCES_PER_TREE,
+    },
+  };
+
+  getParentDebug(parent).childSelectionDiagnostics = diagnostics;
+  return diagnostics;
+}
+
+function incrementRejectionCount(
+  diagnostics: ChildSelectionDiagnostics,
+  reason: ChildRejectionReason
+): void {
+  diagnostics.rejectionCounts[reason] =
+    (diagnostics.rejectionCounts[reason] || 0) + 1;
+}
+
+function pushLimited<T>(target: T[], item: T, limit = 50): void {
+  if (target.length < limit) target.push(item);
+}
+
+function getCandidateRejectionReasons(
+  candidate: ChildCandidate,
+  selected: InsightStory[],
+  cfg: InsightConfig
+): ChildRejectionReason[] {
+  const reasons: ChildRejectionReason[] = [];
+
+  if (candidate.informationGain < cfg.MIN_CHILD_INFO_GAIN) {
+    reasons.push("LOW_INFORMATION_GAIN");
+  }
+
+  const sourceGroupCount = selected.filter(
+    s => s.sourceGroup === candidate.story.sourceGroup
+  ).length;
+  if (sourceGroupCount >= cfg.MAX_PER_SOURCE_GROUP) {
+    reasons.push("MAX_SOURCE_GROUP");
+  }
+
+  const angleCount = selected.filter(s => s.angle === candidate.angle).length;
+  if (angleCount >= cfg.MAX_PER_ANGLE) {
+    reasons.push("MAX_ANGLE");
+  }
+
+  if (!isAngleVariant(candidate.story, selected)) {
+    reasons.push("NOT_ANGLE_VARIANT");
+  }
+
+  return reasons;
+}
+
+function buildRejectedCandidateDiagnostic(
+  candidate: ChildCandidate,
+  reasons: ChildRejectionReason[]
+): RejectedCandidateDiagnostic {
+  return {
+    id: candidate.story.id,
+    angle: candidate.angle,
+    sourceGroup: candidate.story.sourceGroup,
+    informationGain: round3(candidate.informationGain),
+    childScore: round3(candidate.childScore),
+    relevanceToParent: round3(candidate.relevanceToParent),
+    reasons,
+  };
+}
+
+function recordCandidateRejection(
+  diagnostics: ChildSelectionDiagnostics,
+  candidate: ChildCandidate,
+  reasons: ChildRejectionReason[]
+): void {
+  for (const reason of reasons) {
+    incrementRejectionCount(diagnostics, reason);
+  }
+
+  pushLimited(
+    diagnostics.rejectedCandidates,
+    buildRejectedCandidateDiagnostic(candidate, reasons)
+  );
+}
+
+function recordAdmittedChild(
+  diagnostics: ChildSelectionDiagnostics,
+  candidate: ChildCandidate,
+  admittedBecause: string[]
+): void {
+  pushLimited(diagnostics.admittedChildren, {
+    id: candidate.story.id,
+    angle: candidate.angle,
+    sourceGroup: candidate.story.sourceGroup,
+    informationGain: round3(candidate.informationGain),
+    childScore: round3(candidate.childScore),
+    admittedBecause,
+  });
+}
+
+function round3(value: number): number {
+  return Math.round(value * 1000) / 1000;
+}
+
+function getWeakTreeCause(
+  children: InsightStory[],
+  cfg: InsightConfig
+): WeakTreeDiagnostics {
+  const qualityChildren = children.filter(s => {
+    return s.freshnessScore >= 0.45 && s.sourceAuthority >= 0.45;
+  });
+
+  const sourceGroupCount = new Set(children.map(s => s.sourceGroup)).size;
+  const angleCount = new Set(children.map(s => s.angle ?? "unknown")).size;
+  const causes: string[] = [];
+
+  if (children.length < cfg.WEAK_TREE_CHILD_MIN) {
+    causes.push("INSUFFICIENT_CHILDREN");
+  }
+
+  if (qualityChildren.length < cfg.WEAK_TREE_CHILD_MIN) {
+    causes.push("INSUFFICIENT_QUALITY_CHILDREN");
+  }
+
+  if (sourceGroupCount < cfg.MIN_SOURCES_PER_TREE) {
+    causes.push("INSUFFICIENT_SOURCE_DIVERSITY");
+  }
+
+  if (angleCount < 2) {
+    causes.push("INSUFFICIENT_ANGLE_DIVERSITY");
+  }
+
+  if (causes.length === 0) {
+    causes.push("NO_WEAK_TREE_CAUSE_DETECTED");
+  }
+
+  return {
+    causes,
+    childCount: children.length,
+    qualityChildCount: qualityChildren.length,
+    sourceGroupCount,
+    angleCount,
+    weakTreeChildMin: cfg.WEAK_TREE_CHILD_MIN,
+    minSourcesPerTree: cfg.MIN_SOURCES_PER_TREE,
+  };
+}
+
 // ── Information gain ──────────────────────────────────────────────────────────
 
 /**
@@ -92,12 +348,12 @@ function computeChildScore(
   const summaryCompactness = words >= 15 && words <= 60 ? 1.0 : 0.5;
 
   return (
-    0.30 * relevanceToParent            +
-    0.20 * candidate.informationGain    +
+    0.30 * relevanceToParent              +
+    0.20 * candidate.informationGain      +
     0.15 * candidate.story.freshnessScore +
     0.10 * candidate.story.sourceAuthority +
-    0.10 * sourceDiversityBonus         +
-    0.10 * angleUniqueness              +
+    0.10 * sourceDiversityBonus           +
+    0.10 * angleUniqueness                +
     0.05 * summaryCompactness
   );
 }
@@ -167,41 +423,66 @@ export function buildChildTree(
     childScore: 0,
   }));
 
+  const diagnostics = initChildSelectionDiagnostics(parent, cfg, candidates.length);
   const selected: InsightStory[] = [];
   const remaining = [...candidates];
 
   while (selected.length < cfg.MAX_CHILDREN_PER_PARENT && remaining.length > 0) {
+    diagnostics.iterationCount += 1;
+
     // Update dynamic scores with current selected set
     for (const c of remaining) {
       c.informationGain = computeInformationGain(c.story, selected, parent);
       c.childScore      = computeChildScore(c, selected, parent);
     }
 
-    // Filter: must pass information gain gate AND constraint checks
-    const eligible = remaining.filter(
-      c =>
-        c.informationGain >= cfg.MIN_CHILD_INFO_GAIN &&
-        passesConstraints(c, selected, cfg) &&
-        isAngleVariant(c.story, selected)
-    );
+    // Filter: must pass information gain gate AND constraint checks.
+    // This preserves the original behavior while recording the reason each
+    // non-eligible candidate was excluded from the child tree.
+    const eligible = remaining.filter(c => {
+      const reasons = getCandidateRejectionReasons(c, selected, cfg);
+
+      if (reasons.length > 0) {
+        recordCandidateRejection(diagnostics, c, reasons);
+        return false;
+      }
+
+      return true;
+    });
 
     if (eligible.length === 0) break;
 
     // Pick best
     const best = eligible.reduce((a, b) => (b.childScore > a.childScore ? b : a));
 
-    best.admittedBecause = buildAdmitReason(best, selected);
+    const admittedBecause = buildAdmitReason(best, selected);
+    best.admittedBecause = admittedBecause;
+
+    // Preserve admission reasons directly on the story object for downstream
+    // diagnostics. This does not affect ranking, dedup, or selection behavior.
+    (best.story as any).admittedBecause = admittedBecause;
+    (best.story as any).childScore = round3(best.childScore);
+    (best.story as any).informationGain = round3(best.informationGain);
+
+    recordAdmittedChild(diagnostics, best, admittedBecause);
     selected.push(best.story);
 
     // Remove chosen from remaining
     const idx = remaining.indexOf(best);
     remaining.splice(idx, 1);
 
-    // Downgrade near-duplicates of chosen story in remaining candidates
+    // Downgrade near-duplicates of chosen story in remaining candidates.
+    // Existing behavior is preserved; this slice only records diagnostics.
     for (const c of remaining) {
       const sim = cosineSimilarity(best.story.embedding, c.story.embedding);
       if (sim > 0.85) {
         c.informationGain = Math.max(0, c.informationGain - 0.15);
+        pushLimited(diagnostics.duplicateDowngrades, {
+          selectedId: best.story.id,
+          downgradedId: c.story.id,
+          similarity: round3(sim),
+          penalty: 0.15,
+        });
       }
     }
   }
@@ -211,7 +492,14 @@ export function buildChildTree(
     hiddenIds.add(c.story.id);
   }
 
+  const weakTreeMetrics = getWeakTreeCause(selected, cfg);
+
   parent.debug.hiddenCount = hiddenIds.size;
+  diagnostics.selectedCount = selected.length;
+  diagnostics.hiddenCount = hiddenIds.size;
+  diagnostics.remainingCandidateCount = remaining.length;
+  diagnostics.weakTreeCauses = weakTreeMetrics.causes;
+  diagnostics.weakTreeMetrics = weakTreeMetrics;
 
   // Sort for display
   return orderChildrenForDisplay(selected);
@@ -270,11 +558,18 @@ export function tryReplaceWeakestChild(
      candCandidate.story.sourceGroup !== weakest.story.sourceGroup)
   ) {
     hiddenIds.add(weakest.story.id);
-    parent.debug.replacements.push({
+
+    const admitReason = buildAdmitReason(candCandidate, selectedChildren);
+    getParentDebug(parent).replacements.push({
       replacedId: weakest.story.id,
       replacedBy: candidate.id,
-      reason: buildAdmitReason(candCandidate, selectedChildren).join(", "),
+      reason: admitReason.join(", "),
     });
+
+    (candidate as any).admittedBecause = admitReason;
+    (candidate as any).childScore = round3(candCandidate.childScore);
+    (candidate as any).informationGain = round3(candCandidate.informationGain);
+
     return [
       ...selectedChildren.filter(s => s.id !== weakest.story.id),
       candidate,

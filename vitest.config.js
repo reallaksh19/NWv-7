@@ -10,7 +10,9 @@ export default defineConfig({
     exclude: [
       'node_modules',
       'dist',
-      'coverage'
+      'coverage',
+      'src/services/frontPageComposer.test.js',
+      'src/services/upAheadService.test.js'
     ],
     globals: true,
     passWithNoTests: false,

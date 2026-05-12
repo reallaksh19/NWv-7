@@ -13,10 +13,11 @@ export type DuplicateDecisionReason =
   | "HARD_EMBEDDING_SIMILARITY"
   | "SAME_EVENT_DUPLICATE"
   | "WEAK_ANGLE_VARIANT"
-  | "SOURCE_REPEAT_DUPLICATE";
+  | "SOURCE_REPEAT_DUPLICATE"
+  | "USEFUL_EMBEDDING_VARIANT_RESCUED";
 
 export interface DuplicateDecisionDiagnostic {
-  hiddenId: string;
+  hiddenId?: string;
   keptId: string;
   reason: DuplicateDecisionReason;
   score?: number;
@@ -41,6 +42,7 @@ export function createDuplicateDiagnostics(): DuplicateDiagnosticsAccumulator {
       SAME_EVENT_DUPLICATE: 0,
       WEAK_ANGLE_VARIANT: 0,
       SOURCE_REPEAT_DUPLICATE: 0,
+      USEFUL_EMBEDDING_VARIANT_RESCUED: 0,
     },
     decisions: [],
   };
@@ -75,6 +77,65 @@ function recordDuplicateDecision(
   }
 
   (hiddenStory as any).duplicateDecision = decision;
+}
+
+function getNewNumberCount(candidate: InsightStory, existing: InsightStory): number {
+  const existingNumbers = new Set(existing.numbers.map(value => value.toLowerCase()));
+  return candidate.numbers.filter(value => !existingNumbers.has(value.toLowerCase())).length;
+}
+
+export function shouldKeepUsefulVariantOverEmbeddingDuplicate(
+  candidate: InsightStory,
+  existing: InsightStory
+): boolean {
+  const isCrossSource = candidate.sourceGroup !== existing.sourceGroup;
+  if (!isCrossSource) return false;
+
+  const isSameUrl = candidate.canonicalUrl === existing.canonicalUrl;
+  const isSameTextHash = candidate.canonicalTextHash === existing.canonicalTextHash;
+  if (isSameUrl || isSameTextHash) return false;
+
+  const titleSim = titleSimilarity(candidate.title, existing.title);
+  if (titleSim >= 0.92) return false;
+
+  const candidateAngle = classifyAngle(candidate);
+  const existingAngle = classifyAngle(existing);
+  const hasDistinctAngle = candidateAngle !== existingAngle;
+  const hasNewNumbers = getNewNumberCount(candidate, existing) > 0;
+
+  return hasDistinctAngle || hasNewNumbers;
+}
+
+function recordUsefulVariantRescue(
+  diagnostics: DuplicateDiagnosticsAccumulator | undefined,
+  candidate: InsightStory,
+  matchedStory: InsightStory,
+  score: number
+): void {
+  if (!diagnostics) return;
+
+  const reason: DuplicateDecisionReason = "USEFUL_EMBEDDING_VARIANT_RESCUED";
+
+  diagnostics.reasonCounts[reason] = (diagnostics.reasonCounts[reason] || 0) + 1;
+
+  const decision: DuplicateDecisionDiagnostic = {
+    keptId: candidate.id,
+    reason,
+    score,
+    matchedId: matchedStory.id,
+    sourceGroup: candidate.sourceGroup,
+    angle: classifyAngle(candidate),
+    note: "cross-source useful variant rescued from hard embedding duplicate path",
+  };
+
+  if (diagnostics.decisions.length < 100) {
+    diagnostics.decisions.push(decision);
+  }
+
+  (candidate as any).duplicateDecision = {
+    ...decision,
+    rescued: true,
+  };
 }
 
 export function getDuplicateDiagnosticsSummary(
@@ -276,6 +337,21 @@ export function removeHardDuplicates(
     );
     if (embedMatch) {
       const score = cosineSimilarity(embedMatch.embedding, story.embedding);
+
+      if (shouldKeepUsefulVariantOverEmbeddingDuplicate(story, embedMatch)) {
+        recordUsefulVariantRescue(
+          diagnostics,
+          story,
+          embedMatch,
+          score
+        );
+
+        seenUrls.set(story.canonicalUrl, story);
+        seenHashes.set(story.canonicalTextHash, story);
+        kept.push(story);
+        continue;
+      }
+
       const winner = pickWinner(embedMatch, story);
       const hidden = winner === story ? embedMatch : story;
 

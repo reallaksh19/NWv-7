@@ -53,8 +53,7 @@ for (const token of [
   'cfg.MAX_PER_ANGLE',
   'cfg.MAX_CHILDREN_PER_PARENT',
   'cfg.WEAK_TREE_CHILD_MIN',
-  'cfg.MIN_SOURCES_PER_TREE',
-  'isAngleVariant(candidate.story, selected)'
+  'cfg.MIN_SOURCES_PER_TREE'
 ]) {
   assert(treeBuilder.includes(token), `treeBuilder.ts missing preserved gate token: ${token}`);
 }

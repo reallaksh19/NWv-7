@@ -15,6 +15,7 @@ const commands = [
   ['npm', ['run', 'test:insight-tree-tuning']],
   ['npm', ['run', 'test:insight-duplicate-diagnostics']],
   ['npm', ['run', 'test:insight-ranking-reason']],
+  ['npm', ['run', 'test:insight-diversity-tuning']],
   ['npm', ['run', 'test:unit']],
   ['npm', ['run', 'build']]
 ];

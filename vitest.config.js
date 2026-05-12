@@ -4,7 +4,8 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: [
-      'src/**/*.cert.test.{js,jsx,ts,tsx}'
+      'src/**/*.cert.test.{js,jsx,ts,tsx}',
+      'src/**/*.test.{js,jsx,ts,tsx}'
     ],
     exclude: [
       'node_modules',

@@ -96,6 +96,16 @@ interface ChildSelectionDiagnostics {
     matchedId?: string;
     metrics?: Record<string, number>;
   }>;
+  diversityTieBreaks: Array<{
+    selectedId: string;
+    displacedId: string;
+    selectedDiversityScore: number;
+    displacedDiversityScore: number;
+    selectedChildScore: number;
+    displacedChildScore: number;
+    margin: number;
+    reasons: string[];
+  }>;
   weakTreeCauses: string[];
   weakTreeMetrics: WeakTreeDiagnostics;
 }
@@ -144,6 +154,7 @@ function initChildSelectionDiagnostics(
     duplicateDowngrades: [],
     duplicateReasonCounts: {},
     duplicateDecisionSamples: [],
+    diversityTieBreaks: [],
     weakTreeCauses: [],
     weakTreeMetrics: {
       causes: [],
@@ -265,6 +276,114 @@ function recordCandidateRejection(
     diagnostics.rejectedCandidates,
     buildRejectedCandidateDiagnostic(candidate, reasons)
   );
+}
+
+function hasNewAngle(candidate: ChildCandidate, selected: InsightStory[]): boolean {
+  return !selected.some(s => s.angle === candidate.angle);
+}
+
+function hasNewSourceGroup(candidate: ChildCandidate, selected: InsightStory[]): boolean {
+  return !selected.some(s => s.sourceGroup === candidate.story.sourceGroup);
+}
+
+export function getCandidateDiversityScore(
+  candidate: ChildCandidate,
+  selected: InsightStory[]
+): number {
+  if (selected.length === 0) return 0;
+
+  let score = 0;
+
+  if (hasNewAngle(candidate, selected)) score += 2;
+  if (hasNewSourceGroup(candidate, selected)) score += 1;
+
+  return score;
+}
+
+function getCandidateDiversityReasons(
+  candidate: ChildCandidate,
+  selected: InsightStory[]
+): string[] {
+  const reasons: string[] = [];
+
+  if (hasNewAngle(candidate, selected)) {
+    reasons.push(`new angle: ${candidate.angle}`);
+  }
+
+  if (hasNewSourceGroup(candidate, selected)) {
+    reasons.push(`new source group: ${candidate.story.sourceGroup}`);
+  }
+
+  return reasons.length > 0 ? reasons : ["highest child score"];
+}
+
+function getBestCandidateByScore(eligible: ChildCandidate[]): ChildCandidate {
+  return eligible.reduce((a, b) => (b.childScore > a.childScore ? b : a));
+}
+
+export function chooseBestChildCandidate(
+  eligible: ChildCandidate[],
+  selected: InsightStory[],
+  cfg: InsightConfig
+): ChildCandidate {
+  const bestByScore = getBestCandidateByScore(eligible);
+
+  if (selected.length === 0) {
+    return bestByScore;
+  }
+
+  const bestScore = bestByScore.childScore;
+  const bestDiversityScore = getCandidateDiversityScore(bestByScore, selected);
+  const margin = cfg.REPLACE_MARGIN;
+
+  const diversityCandidates = eligible
+    .filter(candidate => candidate !== bestByScore)
+    .map(candidate => ({
+      candidate,
+      diversityScore: getCandidateDiversityScore(candidate, selected),
+    }))
+    .filter(item => {
+      return item.candidate.childScore >= bestScore - margin &&
+        item.diversityScore > bestDiversityScore;
+    })
+    .sort((a, b) => {
+      if (b.diversityScore !== a.diversityScore) {
+        return b.diversityScore - a.diversityScore;
+      }
+
+      if (b.candidate.childScore !== a.candidate.childScore) {
+        return b.candidate.childScore - a.candidate.childScore;
+      }
+
+      if (b.candidate.informationGain !== a.candidate.informationGain) {
+        return b.candidate.informationGain - a.candidate.informationGain;
+      }
+
+      return b.candidate.story.freshnessScore - a.candidate.story.freshnessScore;
+    });
+
+  return diversityCandidates[0]?.candidate || bestByScore;
+}
+
+function recordDiversityTieBreak(
+  diagnostics: ChildSelectionDiagnostics,
+  selectedCandidate: ChildCandidate,
+  displacedCandidate: ChildCandidate,
+  selected: InsightStory[],
+  cfg: InsightConfig
+): void {
+  if (selectedCandidate === displacedCandidate) return;
+
+  pushLimited(diagnostics.diversityTieBreaks, {
+    selectedId: selectedCandidate.story.id,
+    displacedId: displacedCandidate.story.id,
+    selectedDiversityScore: getCandidateDiversityScore(selectedCandidate, selected),
+    displacedDiversityScore: getCandidateDiversityScore(displacedCandidate, selected),
+    selectedChildScore: round3(selectedCandidate.childScore),
+    displacedChildScore: round3(displacedCandidate.childScore),
+    margin: cfg.REPLACE_MARGIN,
+    reasons: getCandidateDiversityReasons(selectedCandidate, selected),
+  });
 }
 
 function recordAdmittedChild(
@@ -500,8 +619,14 @@ export function buildChildTree(
 
     if (eligible.length === 0) break;
 
-    // Pick best
-    const best = eligible.reduce((a, b) => (b.childScore > a.childScore ? b : a));
+    // Pick best with a bounded diversity tie-break.
+    // Behavior change is intentionally small:
+    // - thresholds are unchanged
+    // - candidate must already be eligible
+    // - diversity candidate must be within cfg.REPLACE_MARGIN of top childScore
+    const bestByScore = getBestCandidateByScore(eligible);
+    const best = chooseBestChildCandidate(eligible, selected, cfg);
+    recordDiversityTieBreak(diagnostics, best, bestByScore, selected, cfg);
 
     const admittedBecause = buildAdmitReason(best, selected);
     best.admittedBecause = admittedBecause;

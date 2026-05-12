@@ -19,6 +19,9 @@
     "test:insight-tree-tuning": "node scripts/test_insight_tree_tuning_static.mjs",
     "test:insight-duplicate-diagnostics": "node scripts/test_insight_duplicate_diagnostics_static.mjs",
     "test:insight-ranking-reason": "node scripts/test_insight_ranking_reason_static.mjs",
+    "test:insight-diversity-tuning": "node scripts/test_insight_diversity_tuning_static.mjs",
+    "test:unit": "vitest run --config vitest.config.js",
+    "test:certify": "node scripts/run_certification_gate.mjs",
     "dev": "vite",
     "api": "python scripts/server.py",
     "build": "vite build",
@@ -52,6 +55,7 @@
     "globals": "^16.5.0",
     "node-fetch": "^3.3.2",
     "playwright": "^1.59.1",
-    "vite": "^7.2.4"
+    "vite": "^7.2.4",
+    "vitest": "^4.1.6"
   }
 }

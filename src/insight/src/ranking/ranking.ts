@@ -38,6 +38,38 @@ const RANKING_SCORE_LABELS: Record<RankingScoreKey, string> = {
   regionBoost: "Regional relevance",
 };
 
+const IMPACT_SCORE_WEIGHTS = {
+  avgAuthority: 0.28,
+  avgFactDensity: 0.18,
+  largeNumScore: 0.14,
+  entityBoost: 0.14,
+  sourceDiversityScore: 0.16,
+  topStoryProminenceScore: 0.10,
+} as const;
+
+function clamp01(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(0, Math.min(1, value));
+}
+
+function average(values: number[]): number {
+  if (values.length === 0) return 0;
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
+export function computeTopStoryProminenceScore(clusterStories: InsightStory[]): number {
+  const scores = clusterStories
+    .map(story => clamp01(Number(story.rawProminence)))
+    .filter(score => Number.isFinite(score));
+
+  if (scores.length === 0) return 0;
+
+  const avgProminence = average(scores);
+  const maxProminence = Math.max(...scores);
+
+  return clamp01((0.6 * maxProminence) + (0.4 * avgProminence));
+}
+
 function round4(value: number): number {
   return Math.round(value * 10000) / 10000;
 }
@@ -146,13 +178,32 @@ export function computeImpactScore(
   // 5. Source diversity as proxy for real-world importance
   const divScore = parent.sourceDiversityScore;
 
-  return (
-    0.30 * avgAuthority  +
-    0.20 * avgFactDensity +
-    0.15 * largeNumScore  +
-    0.15 * entityBoost    +
-    0.20 * divScore
-  );
+  // 6. Top-story anchoring from source placement/headline rank.
+  // This is deliberately bounded inside impactScore and does not change
+  // final parent-score weights.
+  const topStoryProminenceScore = computeTopStoryProminenceScore(clusterStories);
+
+  const impactScore =
+    IMPACT_SCORE_WEIGHTS.avgAuthority * avgAuthority +
+    IMPACT_SCORE_WEIGHTS.avgFactDensity * avgFactDensity +
+    IMPACT_SCORE_WEIGHTS.largeNumScore * largeNumScore +
+    IMPACT_SCORE_WEIGHTS.entityBoost * entityBoost +
+    IMPACT_SCORE_WEIGHTS.sourceDiversityScore * divScore +
+    IMPACT_SCORE_WEIGHTS.topStoryProminenceScore * topStoryProminenceScore;
+
+  (parent.debug as any).impactScoreDiagnostics = {
+    formulaVersion: "impact-v2-top-story-anchor",
+    weights: { ...IMPACT_SCORE_WEIGHTS },
+    avgAuthority: round4(avgAuthority),
+    avgFactDensity: round4(avgFactDensity),
+    largeNumScore: round4(largeNumScore),
+    entityBoost: round4(entityBoost),
+    sourceDiversityScore: round4(divScore),
+    topStoryProminenceScore: round4(topStoryProminenceScore),
+    impactScore: round4(impactScore),
+  };
+
+  return impactScore;
 }
 
 // ── Novelty score ─────────────────────────────────────────────────────────────

@@ -4,6 +4,114 @@
 
 import { InsightParent, InsightStory, InsightConfig, SnapshotSlot } from "../types";
 
+// ── Ranking reason diagnostics ────────────────────────────────────────────────
+
+type RankingScoreKey =
+  | "impactScore"
+  | "persistenceScore"
+  | "sourceDiversityScore"
+  | "noveltyScore"
+  | "freshnessScore"
+  | "crossSnapshotMomentum"
+  | "editorialClarityScore"
+  | "regionBoost";
+
+const RANKING_SCORE_WEIGHTS: Record<RankingScoreKey, number> = {
+  impactScore: 0.28,
+  persistenceScore: 0.20,
+  sourceDiversityScore: 0.14,
+  noveltyScore: 0.12,
+  freshnessScore: 0.10,
+  crossSnapshotMomentum: 0.08,
+  editorialClarityScore: 0.05,
+  regionBoost: 0.03,
+};
+
+const RANKING_SCORE_LABELS: Record<RankingScoreKey, string> = {
+  impactScore: "Impact",
+  persistenceScore: "Persistence",
+  sourceDiversityScore: "Source diversity",
+  noveltyScore: "Novelty",
+  freshnessScore: "Freshness",
+  crossSnapshotMomentum: "Cross-snapshot momentum",
+  editorialClarityScore: "Editorial clarity",
+  regionBoost: "Regional relevance",
+};
+
+function round4(value: number): number {
+  return Math.round(value * 10000) / 10000;
+}
+
+function getParentScoreValue(parent: InsightParent, key: RankingScoreKey): number {
+  const value = Number(parent[key]);
+  return Number.isFinite(value) ? value : 0;
+}
+
+function getWeightedContribution(parent: InsightParent, key: RankingScoreKey): number {
+  return getParentScoreValue(parent, key) * RANKING_SCORE_WEIGHTS[key];
+}
+
+function buildRankingContributionBreakdown(parent: InsightParent) {
+  return (Object.keys(RANKING_SCORE_WEIGHTS) as RankingScoreKey[]).map(key => {
+    const rawScore = getParentScoreValue(parent, key);
+    const weight = RANKING_SCORE_WEIGHTS[key];
+    const weightedContribution = rawScore * weight;
+
+    return {
+      key,
+      label: RANKING_SCORE_LABELS[key],
+      rawScore: round4(rawScore),
+      weight,
+      weightedContribution: round4(weightedContribution),
+      contributionPercent: 0,
+    };
+  });
+}
+
+function buildTopRankingReasons(parent: InsightParent, finalParentScore: number): string[] {
+  const breakdown = buildRankingContributionBreakdown(parent)
+    .map(item => ({
+      ...item,
+      contributionPercent: finalParentScore > 0
+        ? round4(item.weightedContribution / finalParentScore)
+        : 0,
+    }))
+    .sort((a, b) => b.weightedContribution - a.weightedContribution);
+
+  return breakdown.slice(0, 3).map(item => {
+    return `${item.label} contributed ${round4(item.weightedContribution)} (${Math.round(item.contributionPercent * 100)}%)`;
+  });
+}
+
+function attachRankingReasonDiagnostics(parent: InsightParent, finalParentScore: number): void {
+  const contributionBreakdown = buildRankingContributionBreakdown(parent)
+    .map(item => ({
+      ...item,
+      contributionPercent: finalParentScore > 0
+        ? round4(item.weightedContribution / finalParentScore)
+        : 0,
+    }))
+    .sort((a, b) => b.weightedContribution - a.weightedContribution);
+
+  const contributionSum = round4(
+    contributionBreakdown.reduce((sum, item) => sum + item.weightedContribution, 0)
+  );
+
+  const diagnostics = {
+    formulaVersion: "ranking-v1-weighted-contributions",
+    weights: { ...RANKING_SCORE_WEIGHTS },
+    contributionBreakdown,
+    contributionSum,
+    finalParentScore: round4(finalParentScore),
+    formulaDelta: round4(Math.abs(contributionSum - finalParentScore)),
+    topRankingReasons: buildTopRankingReasons(parent, finalParentScore),
+  };
+
+  (parent.debug as any).rankingContributionBreakdown = contributionBreakdown;
+  (parent.debug as any).rankingReasonLabels = diagnostics.topRankingReasons;
+  (parent.debug as any).rankingFormulaDiagnostics = diagnostics;
+}
+
 // ── Impact score ──────────────────────────────────────────────────────────────
 
 /**
@@ -148,14 +256,14 @@ export function computeIsRising(
 
 export function computeFinalParentScore(parent: InsightParent): number {
   const score =
-    0.28 * parent.impactScore              +
-    0.20 * parent.persistenceScore         +
-    0.14 * parent.sourceDiversityScore     +
-    0.12 * parent.noveltyScore             +
-    0.10 * parent.freshnessScore           +
-    0.08 * parent.crossSnapshotMomentum    +
-    0.05 * parent.editorialClarityScore    +
-    0.03 * parent.regionBoost;
+    getWeightedContribution(parent, "impactScore") +
+    getWeightedContribution(parent, "persistenceScore") +
+    getWeightedContribution(parent, "sourceDiversityScore") +
+    getWeightedContribution(parent, "noveltyScore") +
+    getWeightedContribution(parent, "freshnessScore") +
+    getWeightedContribution(parent, "crossSnapshotMomentum") +
+    getWeightedContribution(parent, "editorialClarityScore") +
+    getWeightedContribution(parent, "regionBoost");
 
   parent.debug.scoreBreakdown = {
     impactScore:             parent.impactScore,
@@ -168,6 +276,8 @@ export function computeFinalParentScore(parent: InsightParent): number {
     regionBoost:             parent.regionBoost,
     finalParentScore:        score,
   };
+
+  attachRankingReasonDiagnostics(parent, score);
 
   return score;
 }

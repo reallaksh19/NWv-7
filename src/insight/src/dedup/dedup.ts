@@ -4,6 +4,85 @@
 
 import { InsightStory, InsightConfig, AngleLabel } from "../types";
 
+// ── Duplicate diagnostics ─────────────────────────────────────────────────────
+
+export type DuplicateDecisionReason =
+  | "CANONICAL_URL_DUPLICATE"
+  | "CANONICAL_TEXT_HASH_DUPLICATE"
+  | "HARD_TITLE_SIMILARITY"
+  | "HARD_EMBEDDING_SIMILARITY"
+  | "SAME_EVENT_DUPLICATE"
+  | "WEAK_ANGLE_VARIANT"
+  | "SOURCE_REPEAT_DUPLICATE";
+
+export interface DuplicateDecisionDiagnostic {
+  hiddenId: string;
+  keptId: string;
+  reason: DuplicateDecisionReason;
+  score?: number;
+  matchedId?: string;
+  sourceGroup?: string;
+  angle?: AngleLabel;
+  note?: string;
+}
+
+export interface DuplicateDiagnosticsAccumulator {
+  reasonCounts: Record<DuplicateDecisionReason, number>;
+  decisions: DuplicateDecisionDiagnostic[];
+}
+
+export function createDuplicateDiagnostics(): DuplicateDiagnosticsAccumulator {
+  return {
+    reasonCounts: {
+      CANONICAL_URL_DUPLICATE: 0,
+      CANONICAL_TEXT_HASH_DUPLICATE: 0,
+      HARD_TITLE_SIMILARITY: 0,
+      HARD_EMBEDDING_SIMILARITY: 0,
+      SAME_EVENT_DUPLICATE: 0,
+      WEAK_ANGLE_VARIANT: 0,
+      SOURCE_REPEAT_DUPLICATE: 0,
+    },
+    decisions: [],
+  };
+}
+
+function recordDuplicateDecision(
+  diagnostics: DuplicateDiagnosticsAccumulator | undefined,
+  reason: DuplicateDecisionReason,
+  hiddenStory: InsightStory,
+  keptStory: InsightStory,
+  score?: number,
+  matchedId?: string,
+  note?: string
+): void {
+  if (!diagnostics) return;
+
+  diagnostics.reasonCounts[reason] = (diagnostics.reasonCounts[reason] || 0) + 1;
+
+  const decision: DuplicateDecisionDiagnostic = {
+    hiddenId: hiddenStory.id,
+    keptId: keptStory.id,
+    reason,
+    score,
+    matchedId,
+    sourceGroup: hiddenStory.sourceGroup,
+    angle: hiddenStory.angle,
+    note,
+  };
+
+  if (diagnostics.decisions.length < 100) {
+    diagnostics.decisions.push(decision);
+  }
+
+  (hiddenStory as any).duplicateDecision = decision;
+}
+
+export function getDuplicateDiagnosticsSummary(
+  diagnostics: DuplicateDiagnosticsAccumulator
+): Record<DuplicateDecisionReason, number> {
+  return { ...diagnostics.reasonCounts };
+}
+
 // ── Similarity helpers ────────────────────────────────────────────────────────
 
 /**
@@ -60,40 +139,131 @@ function jaccardOverlap(a: string[], b: string[]): number {
  *
  * Winner selection: highest sourceAuthority → earliest publishedAt.
  */
+export function getAngleVariantDecision(
+  candidate: InsightStory,
+  selectedChildren: InsightStory[]
+): {
+  eligible: boolean;
+  reason?: DuplicateDecisionReason;
+  matchedId?: string;
+  metrics?: {
+    entityOverlap?: number;
+    numberOverlap?: number;
+    titleSimilarity?: number;
+    embeddingSimilarity?: number;
+  };
+} {
+  if (selectedChildren.length === 0) return { eligible: true };
+
+  const sameAngle = selectedChildren.filter(c => c.angle === candidate.angle);
+  if (sameAngle.length === 0) return { eligible: true };
+
+  for (const existing of sameAngle) {
+    const entOverlap = entityOverlap(candidate, existing);
+    const numOverlap = numberFactMatch(candidate, existing);
+    const titleSim = titleSimilarity(candidate.title, existing.title);
+    const embedSim = cosineSimilarity(candidate.embedding, existing.embedding);
+
+    if (entOverlap > 0.7 && numOverlap > 0.6 && embedSim > 0.85) {
+      return {
+        eligible: false,
+        reason: "WEAK_ANGLE_VARIANT",
+        matchedId: existing.id,
+        metrics: {
+          entityOverlap: entOverlap,
+          numberOverlap: numOverlap,
+          embeddingSimilarity: embedSim,
+        },
+      };
+    }
+
+    if (titleSim > 0.80 && embedSim > 0.80) {
+      return {
+        eligible: false,
+        reason: "SAME_EVENT_DUPLICATE",
+        matchedId: existing.id,
+        metrics: {
+          titleSimilarity: titleSim,
+          embeddingSimilarity: embedSim,
+        },
+      };
+    }
+  }
+
+  return { eligible: true };
+}
+
 export function removeHardDuplicates(
   stories: InsightStory[],
   cfg: InsightConfig,
-  hiddenIds: Set<string>
+  hiddenIds: Set<string>,
+  diagnostics: DuplicateDiagnosticsAccumulator = createDuplicateDiagnostics()
 ): InsightStory[] {
   const kept: InsightStory[] = [];
-  const seenUrls   = new Map<string, InsightStory>();
+  const seenUrls = new Map<string, InsightStory>();
   const seenHashes = new Map<string, InsightStory>();
 
   for (const story of stories) {
-    // 1. Canonical URL match
     if (seenUrls.has(story.canonicalUrl)) {
-      const winner = pickWinner(seenUrls.get(story.canonicalUrl)!, story);
-      hiddenIds.add(winner === story ? seenUrls.get(story.canonicalUrl)!.id : story.id);
+      const previous = seenUrls.get(story.canonicalUrl)!;
+      const winner = pickWinner(previous, story);
+      const hidden = winner === story ? previous : story;
+
+      hiddenIds.add(hidden.id);
+      recordDuplicateDecision(
+        diagnostics,
+        "CANONICAL_URL_DUPLICATE",
+        hidden,
+        winner,
+        1,
+        previous.id,
+        "same canonical URL"
+      );
+
       seenUrls.set(story.canonicalUrl, winner);
       continue;
     }
 
-    // 2. Canonical text hash match
     if (seenHashes.has(story.canonicalTextHash)) {
-      const winner = pickWinner(seenHashes.get(story.canonicalTextHash)!, story);
-      hiddenIds.add(winner === story ? seenHashes.get(story.canonicalTextHash)!.id : story.id);
+      const previous = seenHashes.get(story.canonicalTextHash)!;
+      const winner = pickWinner(previous, story);
+      const hidden = winner === story ? previous : story;
+
+      hiddenIds.add(hidden.id);
+      recordDuplicateDecision(
+        diagnostics,
+        "CANONICAL_TEXT_HASH_DUPLICATE",
+        hidden,
+        winner,
+        1,
+        previous.id,
+        "same canonical text hash"
+      );
+
       seenHashes.set(story.canonicalTextHash, winner);
       continue;
     }
 
-    // 3. Same source group + high title similarity
     const sameGroupMatch = kept.find(
       k => k.sourceGroup === story.sourceGroup &&
            titleSimilarity(k.title, story.title) >= cfg.HARD_DUP_TITLE_SIM
     );
     if (sameGroupMatch) {
+      const score = titleSimilarity(sameGroupMatch.title, story.title);
       const winner = pickWinner(sameGroupMatch, story);
-      hiddenIds.add(winner === story ? sameGroupMatch.id : story.id);
+      const hidden = winner === story ? sameGroupMatch : story;
+
+      hiddenIds.add(hidden.id);
+      recordDuplicateDecision(
+        diagnostics,
+        "HARD_TITLE_SIMILARITY",
+        hidden,
+        winner,
+        score,
+        sameGroupMatch.id,
+        `title similarity >= ${cfg.HARD_DUP_TITLE_SIM}`
+      );
+
       if (winner !== sameGroupMatch) {
         const idx = kept.indexOf(sameGroupMatch);
         kept[idx] = winner;
@@ -101,13 +271,25 @@ export function removeHardDuplicates(
       continue;
     }
 
-    // 4. Embedding similarity (only checked against recent kept items — O(n) is fine for typical batch sizes)
     const embedMatch = kept.find(
       k => cosineSimilarity(k.embedding, story.embedding) >= cfg.HARD_DUP_EMBED_SIM
     );
     if (embedMatch) {
+      const score = cosineSimilarity(embedMatch.embedding, story.embedding);
       const winner = pickWinner(embedMatch, story);
-      hiddenIds.add(winner === story ? embedMatch.id : story.id);
+      const hidden = winner === story ? embedMatch : story;
+
+      hiddenIds.add(hidden.id);
+      recordDuplicateDecision(
+        diagnostics,
+        "HARD_EMBEDDING_SIMILARITY",
+        hidden,
+        winner,
+        score,
+        embedMatch.id,
+        `embedding similarity >= ${cfg.HARD_DUP_EMBED_SIM}`
+      );
+
       if (winner !== embedMatch) {
         const idx = kept.indexOf(embedMatch);
         kept[idx] = winner;
@@ -290,23 +472,5 @@ export function isAngleVariant(
   candidate: InsightStory,
   selectedChildren: InsightStory[]
 ): boolean {
-  if (selectedChildren.length === 0) return true;
-
-  // If angle is already well represented and story adds no new facts, block
-  const sameAngle = selectedChildren.filter(c => c.angle === candidate.angle);
-  if (sameAngle.length === 0) return true; // new angle type — always eligible
-
-  // Check if key entities/numbers overlap strongly (angle rewrite)
-  for (const existing of sameAngle) {
-    const entOverlap  = entityOverlap(candidate, existing);
-    const numOverlap  = numberFactMatch(candidate, existing);
-    const titleSim    = titleSimilarity(candidate.title, existing.title);
-    const embedSim    = cosineSimilarity(candidate.embedding, existing.embedding);
-
-    // Very similar to an existing same-angle story → angle duplicate
-    if (entOverlap > 0.7 && numOverlap > 0.6 && embedSim > 0.85) return false;
-    if (titleSim > 0.80 && embedSim > 0.80) return false;
-  }
-
-  return true;
+  return getAngleVariantDecision(candidate, selectedChildren).eligible;
 }

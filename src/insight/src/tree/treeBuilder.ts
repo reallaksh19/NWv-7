@@ -9,7 +9,7 @@ import {
   AngleLabel,
   ChildCandidate,
 } from "../types";
-import { cosineSimilarity, isAngleVariant, classifyAngle } from "../dedup/dedup";
+import { cosineSimilarity, getAngleVariantDecision, classifyAngle } from "../dedup/dedup";
 
 // ── Angle display order ───────────────────────────────────────────────────────
 
@@ -87,6 +87,15 @@ interface ChildSelectionDiagnostics {
     similarity: number;
     penalty: number;
   }>;
+  duplicateReasonCounts: Record<string, number>;
+  duplicateDecisionSamples: Array<{
+    id: string;
+    angle: AngleLabel;
+    sourceGroup: string;
+    reason: string;
+    matchedId?: string;
+    metrics?: Record<string, number>;
+  }>;
   weakTreeCauses: string[];
   weakTreeMetrics: WeakTreeDiagnostics;
 }
@@ -133,6 +142,8 @@ function initChildSelectionDiagnostics(
     rejectedCandidates: [],
     admittedChildren: [],
     duplicateDowngrades: [],
+    duplicateReasonCounts: {},
+    duplicateDecisionSamples: [],
     weakTreeCauses: [],
     weakTreeMetrics: {
       causes: [],
@@ -161,11 +172,14 @@ function pushLimited<T>(target: T[], item: T, limit = 50): void {
   if (target.length < limit) target.push(item);
 }
 
-function getCandidateRejectionReasons(
+function getCandidateRejectionDetails(
   candidate: ChildCandidate,
   selected: InsightStory[],
   cfg: InsightConfig
-): ChildRejectionReason[] {
+): {
+  reasons: ChildRejectionReason[];
+  angleVariantDecision: ReturnType<typeof getAngleVariantDecision>;
+} {
   const reasons: ChildRejectionReason[] = [];
 
   if (candidate.informationGain < cfg.MIN_CHILD_INFO_GAIN) {
@@ -184,11 +198,23 @@ function getCandidateRejectionReasons(
     reasons.push("MAX_ANGLE");
   }
 
-  if (!isAngleVariant(candidate.story, selected)) {
+  const angleVariantDecision = getAngleVariantDecision(candidate.story, selected);
+  if (!angleVariantDecision.eligible) {
     reasons.push("NOT_ANGLE_VARIANT");
   }
 
-  return reasons;
+  return {
+    reasons,
+    angleVariantDecision,
+  };
+}
+
+function getCandidateRejectionReasons(
+  candidate: ChildCandidate,
+  selected: InsightStory[],
+  cfg: InsightConfig
+): ChildRejectionReason[] {
+  return getCandidateRejectionDetails(candidate, selected, cfg).reasons;
 }
 
 function buildRejectedCandidateDiagnostic(
@@ -204,6 +230,26 @@ function buildRejectedCandidateDiagnostic(
     relevanceToParent: round3(candidate.relevanceToParent),
     reasons,
   };
+}
+
+function recordDuplicateDecisionSample(
+  diagnostics: ChildSelectionDiagnostics,
+  candidate: ChildCandidate,
+  decision: ReturnType<typeof getAngleVariantDecision>
+): void {
+  if (decision.eligible || !decision.reason) return;
+
+  diagnostics.duplicateReasonCounts[decision.reason] =
+    (diagnostics.duplicateReasonCounts[decision.reason] || 0) + 1;
+
+  pushLimited(diagnostics.duplicateDecisionSamples, {
+    id: candidate.story.id,
+    angle: candidate.angle,
+    sourceGroup: candidate.story.sourceGroup,
+    reason: decision.reason,
+    matchedId: decision.matchedId,
+    metrics: decision.metrics,
+  });
 }
 
 function recordCandidateRejection(
@@ -440,10 +486,12 @@ export function buildChildTree(
     // This preserves the original behavior while recording the reason each
     // non-eligible candidate was excluded from the child tree.
     const eligible = remaining.filter(c => {
-      const reasons = getCandidateRejectionReasons(c, selected, cfg);
+      const rejectionDetails = getCandidateRejectionDetails(c, selected, cfg);
+      const reasons = rejectionDetails.reasons;
 
       if (reasons.length > 0) {
         recordCandidateRejection(diagnostics, c, reasons);
+        recordDuplicateDecisionSample(diagnostics, c, rejectionDetails.angleVariantDecision);
         return false;
       }
 

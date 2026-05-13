@@ -18,6 +18,7 @@ const commands = [
   ['npm', ['run', 'test:insight-diversity-tuning']],
   ['npm', ['run', 'test:insight-top-story-anchor']],
   ['npm', ['run', 'test:insight-useful-variant-rescue']],
+  ['npm', ['run', 'test:insight-angle-classifier-enrichment']],
   ['npm', ['run', 'test:unit']],
   ['npm', ['run', 'build']]
 ];

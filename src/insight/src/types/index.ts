@@ -120,6 +120,7 @@ export interface ParentDebug {
   matchedSnapshots: SnapshotSlot[];
   scoreBreakdown: Record<string, number>;
   replacements: Array<{ replacedId: string; replacedBy: string; reason: string }>;
+  representativeDiagnostics?: any;
 }
 
 // ── Child candidate (internal, during tree build) ────────────────────────────

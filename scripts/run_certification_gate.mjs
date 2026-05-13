@@ -20,6 +20,7 @@ const commands = [
   ['npm', ['run', 'test:insight-useful-variant-rescue']],
   ['npm', ['run', 'test:insight-angle-classifier-enrichment']],
   ['npm', ['run', 'test:insight-cluster-anchor']],
+  ['npm', ['run', 'test:insight-24h-concept']],
   ['npm', ['run', 'test:unit']],
   ['npm', ['run', 'build']]
 ];

@@ -42,6 +42,31 @@ function centroidStory(cluster: Cluster): InsightStory {
   return { ...rep, embedding: cluster.centroidEmbedding };
 }
 
+function clamp01(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(0, Math.min(1, value));
+}
+
+export function computeClusterSeedScore(story: InsightStory): number {
+  return (
+    0.35 * clamp01(story.sourceAuthority) +
+    0.25 * clamp01(story.rawProminence) +
+    0.20 * clamp01(story.freshnessScore) +
+    0.10 * clamp01(story.factualDensity) +
+    0.10 * clamp01(story.summaryQuality)
+  );
+}
+
+export function computeParentRepresentativeScore(story: InsightStory): number {
+  return (
+    0.30 * clamp01(story.sourceAuthority) +
+    0.25 * clamp01(story.rawProminence) +
+    0.20 * clamp01(story.summaryQuality) +
+    0.15 * clamp01(story.factualDensity) +
+    0.10 * clamp01(story.freshnessScore)
+  );
+}
+
 // ── Main clustering function ──────────────────────────────────────────────────
 
 /**
@@ -57,7 +82,15 @@ export function clusterIntoParentEvents(
   const clusters: Cluster[] = [];
 
   // Process highest-authority stories first — they become cluster seeds
-  const sorted = [...stories].sort((a, b) => b.sourceAuthority - a.sourceAuthority);
+  const sorted = [...stories].sort((a, b) => {
+    const scoreDiff = computeClusterSeedScore(b) - computeClusterSeedScore(a);
+    if (scoreDiff !== 0) return scoreDiff;
+
+    const authorityDiff = b.sourceAuthority - a.sourceAuthority;
+    if (authorityDiff !== 0) return authorityDiff;
+
+    return b.publishedAt - a.publishedAt;
+  });
 
   for (const story of sorted) {
     let bestCluster: Cluster | null = null;
@@ -126,22 +159,20 @@ function passesMultiStoryCheck(
  * Representative story for a cluster = highest parentRepresentativeScore.
  */
 function getClusterRepresentative(cluster: Cluster): InsightStory {
-  return cluster.stories.reduce((best, s) => {
-    return parentRepresentativeScore(s) > parentRepresentativeScore(best) ? s : best;
-  });
-}
+  return cluster.stories.reduce((best, story) => {
+    const storyScore = computeParentRepresentativeScore(story);
+    const bestScore = computeParentRepresentativeScore(best);
 
-/**
- * Score used to select which story in a cluster becomes the canonical parent.
- */
-function parentRepresentativeScore(s: InsightStory): number {
-  return (
-    0.30 * s.sourceAuthority +
-    0.20 * s.factualDensity  +
-    0.20 * s.summaryQuality  +
-    0.15 * (s.publishedAt < Date.now() ? 0.5 : 0) + // earliest gets mild boost
-    0.15 * s.rawProminence
-  );
+    if (storyScore !== bestScore) {
+      return storyScore > bestScore ? story : best;
+    }
+
+    if (story.sourceAuthority !== best.sourceAuthority) {
+      return story.sourceAuthority > best.sourceAuthority ? story : best;
+    }
+
+    return story.publishedAt > best.publishedAt ? story : best;
+  });
 }
 
 // ── Canonical parent creation ─────────────────────────────────────────────────
@@ -152,6 +183,16 @@ export function createCanonicalParent(
 ): InsightParent {
   const stories = cluster.stories;
   const rep     = getClusterRepresentative(cluster);
+
+  const representativeDiagnostics = {
+    formulaVersion: "cluster-representative-v2-top-story-anchor",
+    representativeId: rep.id,
+    representativeScore: computeParentRepresentativeScore(rep),
+    clusterSeedScore: computeClusterSeedScore(rep),
+    rawProminence: rep.rawProminence,
+    freshnessScore: rep.freshnessScore,
+    sourceAuthority: rep.sourceAuthority,
+  };
 
   // Tag all stories with their parentId and angle
   const tagged = stories.map(s => ({
@@ -219,6 +260,7 @@ export function createCanonicalParent(
                               .map(([k]) => k as SnapshotSlot),
       scoreBreakdown:   {},
       replacements:     [],
+      representativeDiagnostics,
     },
   };
 

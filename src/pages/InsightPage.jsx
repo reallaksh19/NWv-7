@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import Header from '../components/Header.jsx';
 import { runInsightPipeline, DEFAULT_CONFIG } from '../insight/src/index.ts';
+import { getInsightBehaviorEvidence } from '../insight/src/diagnostics/insightBehaviorEvidence.ts';
 import { createInsightFetcher } from '../adapters/insightFetcher.js';
 import '../styles/InsightPage.css';
 
@@ -944,6 +945,104 @@ function InsightRankingDiagnosticsPanel({ rows }) {
   );
 }
 
+function InsightBehaviorEvidencePanel({ evidence }) {
+  return (
+    <section
+      className={`insight-behavior-evidence insight-behavior-evidence--${evidence.status}`}
+      data-insight-behavior-evidence="top-story-24h-angle-rescue"
+    >
+      <div className="insight-behavior-evidence__header">
+        <div>
+          <div className="insight-behavior-evidence__eyebrow">Behavior evidence</div>
+          <h2>{evidence.summaryTitle}</h2>
+          <p>
+            Evidence from top-story anchoring, representative selection, diversity tie-breaks,
+            useful variant rescue, 24h coverage, and angle classification.
+          </p>
+        </div>
+      </div>
+
+      <div className="insight-behavior-evidence__summary-grid">
+        <div className="insight-behavior-evidence__summary-tile">
+          <span>Clusters</span>
+          <strong>{evidence.clusterCount}</strong>
+        </div>
+        <div className="insight-behavior-evidence__summary-tile">
+          <span>Angles</span>
+          <strong>{evidence.angleCount}</strong>
+        </div>
+        <div className="insight-behavior-evidence__summary-tile">
+          <span>24h full</span>
+          <strong>{evidence.full24hClusters}</strong>
+        </div>
+        <div className="insight-behavior-evidence__summary-tile">
+          <span>Top anchor</span>
+          <strong>{evidence.impactAnchoredClusters}</strong>
+        </div>
+        <div className="insight-behavior-evidence__summary-tile">
+          <span>Diversity picks</span>
+          <strong>{evidence.diversityTieBreaks}</strong>
+        </div>
+        <div className="insight-behavior-evidence__summary-tile">
+          <span>Variant rescues</span>
+          <strong>{evidence.usefulVariantRescues}</strong>
+        </div>
+      </div>
+
+      <div className="insight-behavior-evidence__angles">
+        {evidence.angleLabels.length > 0
+          ? evidence.angleLabels.map(angle => (
+            <span key={angle}>{formatAngleLabel(angle)}</span>
+          ))
+          : <span>No child angles detected</span>
+        }
+      </div>
+
+      <details className="insight-behavior-evidence__details">
+        <summary>Behavior evidence by cluster</summary>
+
+        <div className="insight-behavior-evidence__rows">
+          {evidence.parentRows.map((row, index) => (
+            <article
+              key={row.parentId}
+              className="insight-behavior-evidence__row"
+              data-snapshot-coverage={row.snapshotCoverage}
+              data-angle-count={row.angleCount}
+            >
+              <div className="insight-behavior-evidence__row-head">
+                <span>{String(index + 1).padStart(2, '0')}</span>
+                <strong>{row.headline}</strong>
+              </div>
+
+              <div className="insight-behavior-evidence__badges">
+                <span>{row.snapshotCoverage} snapshots</span>
+                <span>{row.angleCount} angle(s)</span>
+                <span>{row.childCount} children</span>
+                <span>{row.topStoryProminenceScore} top anchor</span>
+                <span>{row.representativeScore} representative</span>
+                <span>{row.diversityTieBreakCount} diversity picks</span>
+                <span>{row.usefulVariantRescueCount} rescues</span>
+              </div>
+
+              <ul className="insight-behavior-evidence__notes">
+                {row.notes.map((note, noteIndex) => (
+                  <li key={`${row.parentId}-${noteIndex}`}>{note}</li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </div>
+      </details>
+
+      <ul className="insight-behavior-evidence__notes insight-behavior-evidence__notes--summary">
+        {evidence.notes.map((note, index) => (
+          <li key={`behavior-note-${index}`}>{note}</li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 function InsightTab({ result, source }) {
   const parents = result?.parents || [];
   const storiesById = normalizeStoriesById(result?.storiesById);
@@ -952,6 +1051,7 @@ function InsightTab({ result, source }) {
   const ringDash = (diagnostics.signalScore / 100) * 251.2;
   const auditRows = getInsightAuditRows(result);
   const rankingRows = getInsightRankingDiagnosticRows(result);
+  const behaviorEvidence = getInsightBehaviorEvidence(result);
 
   return (
     <div className="scroll insight-page">
@@ -998,6 +1098,7 @@ function InsightTab({ result, source }) {
       <InsightDiagnosticsPanel diagnostics={diagnostics} />
       <InsightAuditPanel auditRows={auditRows} />
       <InsightRankingDiagnosticsPanel rows={rankingRows} />
+      <InsightBehaviorEvidencePanel evidence={behaviorEvidence} />
 
       <div className="sstrip">
         <div className="sig" data-t="info"><div className="snum">{parents.length}</div><div className="slb">Ranked</div></div>

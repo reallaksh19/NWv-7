@@ -484,24 +484,36 @@ const OFFICIAL_SIGNALS = [
   /regulator said/i, /police confirmed/i, /government said/i, /mea/i,
   /secretary/i, /chairman/i, /ceo said/i, /officially announced/i,
   /government announced/i, /ministry announced/i, /regulator announced/i,
+  /officials? said/i, /authorities said/i, /court said/i, /rbi said/i,
+  /sebi said/i, /central bank said/i, /white house said/i,
+  /according to the ministry/i, /according to officials/i,
 ];
 
 const MARKET_SIGNALS = [
   /shares rose/i, /shares fell/i, /stock (up|down)/i, /yields moved/i,
   /futures (dropped|rose)/i, /crypto (rally|fell)/i, /market reaction/i,
   /nifty/i, /sensex/i, /bse/i, /nse/i, /intraday/i,
+  /stocks? (rallied|slumped|gained|lost|jumped|dropped)/i,
+  /investors? (cheered|sold|bought|reacted)/i,
+  /rupee/i, /bond yields?/i, /oil prices?/i, /gold prices?/i,
 ];
 
 const FACT_UPDATE_SIGNALS = [
   /toll (rises?|climbs?) to/i, /revised estimate/i, /updated count/i,
   /latest figures/i, /now confirmed/i, /figures updated/i,
   /new data/i, /updated figures/i,
+  /latest update/i, /new figures/i, /fresh data/i,
+  /according to data/i, /data showed/i, /report showed/i,
+  /confirmed cases/i, /death toll/i, /casualty count/i,
   // NOTE: "correction:" deliberately removed — it belongs in CORRECTION_SIGNALS only
 ];
 
 const EXPERT_SIGNALS = [
   /analysts? (say|warn|note)/i, /experts? (warn|say)/i, /economists? (note|say)/i,
   /think tank/i, /commentary/i, /crisil/i, /ficci/i, /cii/i, /imf/i,
+  /analysis/i, /explained by/i, /what experts say/i,
+  /why it matters/i, /what it means/i, /implications/i,
+  /strategists? said/i, /researchers? said/i,
 ];
 
 const CORRECTION_SIGNALS = [
@@ -511,31 +523,53 @@ const CORRECTION_SIGNALS = [
 
 const REGIONAL_SIGNALS = [
   /local impact/i, /state government/i, /city council/i,
-  /chennai/i, /trichy/i, /tamil nadu/i, /muscat/i, /kerala/i,
-  /regional/i,
+  /chennai/i, /trichy/i, /tamil nadu/i, /tn/i, /muscat/i, /oman/i, /kerala/i,
+  /regional/i, /district/i, /municipal/i, /local authorities/i,
+  /statewide/i, /in the state/i, /in the city/i,
 ];
 
 const INVESTIGATIVE_SIGNALS = [
   /investigation/i, /leaked/i, /exclusive/i, /document shows/i,
   /sources say/i, /whistleblower/i,
+  /records show/i, /documents reveal/i, /internal memo/i,
+  /probe/i, /inquiry/i, /audit found/i, /obtained by/i,
 ];
+
+const PUBLIC_REACTION_SIGNALS = [
+  /public reaction/i, /people reacted/i, /residents said/i,
+  /citizens said/i, /users reacted/i, /social media/i,
+  /went viral/i, /trending/i, /protesters/i, /protests erupted/i,
+  /backlash/i, /criticism/i, /praised by/i, /condemned by/i,
+  /families said/i, /locals said/i,
+];
+
+const BACKGROUND_CONTEXT_SIGNALS = [
+  /background/i, /explainer/i, /timeline/i, /what happened/i,
+  /how it started/i, /why this matters/i, /what led to/i,
+  /history of/i, /context/i, /key points/i, /all you need to know/i,
+  /five things to know/i, /things to know/i,
+];
+
+function getAngleSignalText(story: InsightStory): string {
+  return `${story.title || ""} ${story.summary || ""}`.trim();
+}
 
 /**
  * Classify a story's angle within a parent cluster.
  */
 export function classifyAngle(story: InsightStory): AngleLabel {
-  const text = story.title + " " + story.summary;
+  const text = getAngleSignalText(story);
 
-  if (CORRECTION_SIGNALS.some(p => p.test(text)))      return "correction";
-  if (FACT_UPDATE_SIGNALS.some(p => p.test(text)))      return "fact_update";
-  if (OFFICIAL_SIGNALS.some(p => p.test(text)))         return "official_response";
-  if (MARKET_SIGNALS.some(p => p.test(text)))           return "market_reaction";
-  if (EXPERT_SIGNALS.some(p => p.test(text)))           return "expert_analysis";
-  if (INVESTIGATIVE_SIGNALS.some(p => p.test(text)))    return "investigative_detail";
-  if (REGIONAL_SIGNALS.some(p => p.test(text)))         return "regional_followup";
+  if (CORRECTION_SIGNALS.some(p => p.test(text)))          return "correction";
+  if (FACT_UPDATE_SIGNALS.some(p => p.test(text)))          return "fact_update";
+  if (OFFICIAL_SIGNALS.some(p => p.test(text)))             return "official_response";
+  if (MARKET_SIGNALS.some(p => p.test(text)))               return "market_reaction";
+  if (EXPERT_SIGNALS.some(p => p.test(text)))               return "expert_analysis";
+  if (INVESTIGATIVE_SIGNALS.some(p => p.test(text)))        return "investigative_detail";
+  if (REGIONAL_SIGNALS.some(p => p.test(text)))             return "regional_followup";
+  if (PUBLIC_REACTION_SIGNALS.some(p => p.test(text)))      return "reaction_public";
+  if (BACKGROUND_CONTEXT_SIGNALS.some(p => p.test(text)))   return "background_context";
 
-  // Default: if it's the most authoritative summary-style text, base_report
-  // (final assignment done after sorting cluster by parentRepresentativeScore)
   return "base_report";
 }
 

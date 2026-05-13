@@ -21,6 +21,7 @@ import { useLongPress } from '../hooks/useLongPress';
 import ProgressBar from '../components/ProgressBar';
 import { shortenSourceLabel } from '../utils/storyMeta';
 import { getRuntimeCapabilities } from '../runtime/runtimeCapabilities';
+import { getUpAheadEvidence } from '../services/upAheadEvidence';
 import './UpAhead.css';
 
 function normalizePlanDate(dateStr) {
@@ -40,6 +41,73 @@ function hasVisibleUpAheadContent(data) {
     if (data.sections && Object.values(data.sections).some(items => Array.isArray(items) && items.length > 0)) return true;
     if (Array.isArray(data.weekly_plan) && data.weekly_plan.some(day => (day?.items || []).length > 0)) return true;
     return false;
+}
+
+function UpAheadEvidencePanel({ evidence }) {
+    if (!evidence) return null;
+
+    return (
+        <section className={`ua-evidence ua-evidence--${evidence.status}`} data-upahead-evidence="coverage-quality">
+            <div className="ua-evidence__header">
+                <div>
+                    <div className="ua-evidence__eyebrow">Coverage evidence</div>
+                    <h2>{evidence.title}</h2>
+                    <p>
+                        Source mode {evidence.sourceModeLabel} · {evidence.locationCount} location(s) · {evidence.coveredCategories.length}/{evidence.enabledCategories.length} categories covered.
+                    </p>
+                </div>
+                <div className="ua-evidence__score">
+                    <span>Score</span>
+                    <strong>{evidence.qualityScore}</strong>
+                </div>
+            </div>
+
+            <div className="ua-evidence__grid">
+                <div className="ua-evidence__tile">
+                    <span>Source</span>
+                    <strong>{evidence.sourceModeLabel}</strong>
+                </div>
+                <div className="ua-evidence__tile">
+                    <span>Locations</span>
+                    <strong>{evidence.locationCount}</strong>
+                </div>
+                <div className="ua-evidence__tile">
+                    <span>Timeline</span>
+                    <strong>{evidence.timelineStats.itemCount}</strong>
+                </div>
+                <div className="ua-evidence__tile">
+                    <span>Plan</span>
+                    <strong>{evidence.weeklyPlanStats.itemCount}</strong>
+                </div>
+                <div className="ua-evidence__tile">
+                    <span>Alerts</span>
+                    <strong>{evidence.visibleAlertCount}</strong>
+                </div>
+                <div className="ua-evidence__tile">
+                    <span>Offers</span>
+                    <strong>{evidence.visibleOfferCount}</strong>
+                </div>
+            </div>
+
+            <div className="ua-evidence__chips">
+                {evidence.locations.map(location => (
+                    <span key={location}>{location}</span>
+                ))}
+                {evidence.coveredCategories.slice(0, 8).map(category => (
+                    <span key={category}>{category}</span>
+                ))}
+            </div>
+
+            <details className="ua-evidence__details">
+                <summary>Evidence notes</summary>
+                <ul>
+                    {evidence.notes.map((note, index) => (
+                        <li key={`ua-evidence-note-${index}`}>{note}</li>
+                    ))}
+                </ul>
+            </details>
+        </section>
+    );
 }
 
 function UpAheadPage() {
@@ -276,6 +344,18 @@ function UpAheadPage() {
     const movieCards = (data.sections?.movies || []).map(buildCardArticle);
     const festivalCards = (data.sections?.festivals || []).map(buildCardArticle);
 
+    const upAheadEvidence = getUpAheadEvidence({
+        data,
+        settings,
+        visible: {
+            weatherAlerts,
+            combinedAlerts,
+            offerItems,
+            movieCards,
+            festivalCards
+        }
+    });
+
     const { isStaticHost } = getRuntimeCapabilities();
     const modeStr = isStaticHost ? (data?.sourceMode === 'snapshot' ? 'snapshot' : 'degraded') : (data?.sourceMode === 'cache' ? 'cached' : 'live');
     const modeLabel = isStaticHost ? (data?.sourceMode === 'snapshot' ? 'Snapshot' : 'Limited') : (data?.sourceMode === 'cache' ? 'Cached' : 'Live');
@@ -323,6 +403,8 @@ function UpAheadPage() {
                     </>
                 )}
             </div>
+
+            <UpAheadEvidencePanel evidence={upAheadEvidence} />
 
             {highPriorityAlert && (
                 <div className={`ua-alert-banner ${weatherAlerts.length > 0 ? 'weather-alert' : ''}`}>

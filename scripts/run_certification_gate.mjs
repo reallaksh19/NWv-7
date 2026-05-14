@@ -23,6 +23,7 @@ const commands = [
   ['npm', ['run', 'test:insight-24h-concept']],
   ['npm', ['run', 'test:insight-behavior-evidence']],
   ['npm', ['run', 'test:upahead-evidence']],
+  ['npm', ['run', 'test:upahead-briefing']],
   ['npm', ['run', 'test:unit']],
   ['npm', ['run', 'build']]
 ];

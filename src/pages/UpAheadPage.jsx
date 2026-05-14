@@ -22,6 +22,7 @@ import ProgressBar from '../components/ProgressBar';
 import { shortenSourceLabel } from '../utils/storyMeta';
 import { getRuntimeCapabilities } from '../runtime/runtimeCapabilities';
 import { getUpAheadEvidence } from '../services/upAheadEvidence';
+import { getUpAheadBriefing } from '../services/upAheadBriefing';
 import './UpAhead.css';
 
 function normalizePlanDate(dateStr) {
@@ -103,6 +104,75 @@ function UpAheadEvidencePanel({ evidence }) {
                 <ul>
                     {evidence.notes.map((note, index) => (
                         <li key={`ua-evidence-note-${index}`}>{note}</li>
+                    ))}
+                </ul>
+            </details>
+        </section>
+    );
+}
+
+function UpAheadBriefingPanel({ briefing }) {
+    if (!briefing) return null;
+
+    const primaryBuckets = briefing.buckets.filter(bucket => bucket.count > 0).slice(0, 5);
+
+    return (
+        <section className={`ua-briefing ua-briefing--${briefing.status}`} data-upahead-briefing="professional-horizon">
+            <div className="ua-briefing__header">
+                <div>
+                    <div className="ua-briefing__eyebrow">Horizon briefing</div>
+                    <h2>{briefing.title}</h2>
+                    <p>
+                        {briefing.locationLabel} · {briefing.next72hCount} item(s) in the next 72h · {briefing.plannerReadyCount} planner-ready item(s).
+                    </p>
+                </div>
+            </div>
+
+            <div className="ua-briefing__stats">
+                <div><span>Alerts</span><strong>{briefing.alertCount}</strong></div>
+                <div><span>Today</span><strong>{briefing.todayCount}</strong></div>
+                <div><span>Next 72h</span><strong>{briefing.next72hCount}</strong></div>
+                <div><span>Events</span><strong>{briefing.eventCount}</strong></div>
+                <div><span>Offers</span><strong>{briefing.offerCount}</strong></div>
+                <div><span>Releases</span><strong>{briefing.movieCount}</strong></div>
+            </div>
+
+            {briefing.highlights.length > 0 && (
+                <div className="ua-briefing__highlights">
+                    {briefing.highlights.map(item => (
+                        <article key={item.id} className="ua-briefing__highlight">
+                            <span>{item.type}</span>
+                            <strong>{item.title}</strong>
+                            {item.date && <em>{formatConciseDate(item.date)}</em>}
+                        </article>
+                    ))}
+                </div>
+            )}
+
+            <div className="ua-briefing__buckets">
+                {primaryBuckets.map(bucket => (
+                    <div key={bucket.key} className="ua-briefing__bucket">
+                        <div className="ua-briefing__bucket-head">
+                            <strong>{bucket.label}</strong>
+                            <span>{bucket.count}</span>
+                        </div>
+                        <ul>
+                            {bucket.items.slice(0, 3).map(item => (
+                                <li key={item.id}>
+                                    <span>{item.title}</span>
+                                    {item.date && <em>{formatConciseDate(item.date)}</em>}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                ))}
+            </div>
+
+            <details className="ua-briefing__details">
+                <summary>Briefing notes</summary>
+                <ul>
+                    {briefing.notes.map((note, index) => (
+                        <li key={`ua-briefing-note-${index}`}>{note}</li>
                     ))}
                 </ul>
             </details>
@@ -356,6 +426,18 @@ function UpAheadPage() {
         }
     });
 
+    const upAheadBriefing = getUpAheadBriefing({
+        data,
+        settings,
+        visible: {
+            weatherAlerts,
+            combinedAlerts,
+            offerItems,
+            movieCards,
+            festivalCards
+        }
+    });
+
     const { isStaticHost } = getRuntimeCapabilities();
     const modeStr = isStaticHost ? (data?.sourceMode === 'snapshot' ? 'snapshot' : 'degraded') : (data?.sourceMode === 'cache' ? 'cached' : 'live');
     const modeLabel = isStaticHost ? (data?.sourceMode === 'snapshot' ? 'Snapshot' : 'Limited') : (data?.sourceMode === 'cache' ? 'Cached' : 'Live');
@@ -405,6 +487,7 @@ function UpAheadPage() {
             </div>
 
             <UpAheadEvidencePanel evidence={upAheadEvidence} />
+            <UpAheadBriefingPanel briefing={upAheadBriefing} />
 
             {highPriorityAlert && (
                 <div className={`ua-alert-banner ${weatherAlerts.length > 0 ? 'weather-alert' : ''}`}>

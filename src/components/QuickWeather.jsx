@@ -218,7 +218,7 @@ const QuickWeather = () => {
 
     useEffect(() => {
         if (cities.length > 0 && !cities.includes(activeCity)) {
-            // eslint-disable-next-line react-hooks/exhaustive-deps
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setActiveCity(cities[0]);
         }
     }, [activeCity, cities]);

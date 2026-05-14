@@ -44,6 +44,19 @@ function hasVisibleUpAheadContent(data) {
     return false;
 }
 
+function formatConciseDate(dateStr) {
+    if (!dateStr) return 'Coming Soon';
+
+    const d = new Date(dateStr);
+    if (Number.isNaN(d.getTime())) return dateStr;
+
+    const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+    const dayNum = d.getDate().toString().padStart(2, '0');
+    const month = d.toLocaleDateString('en-US', { month: 'short' });
+
+    return `${dayName}, ${dayNum} ${month}`;
+}
+
 function UpAheadEvidencePanel({ evidence }) {
     if (!evidence) return null;
 
@@ -305,16 +318,6 @@ function UpAheadPage() {
         });
         loadData();
         alert('Added to Plan!');
-    };
-
-    const formatConciseDate = (dateStr) => {
-        if (!dateStr) return 'Coming Soon';
-        const d = new Date(dateStr);
-        if (isNaN(d.getTime())) return dateStr;
-        const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
-        const dayNum = d.getDate().toString().padStart(2, '0');
-        const month = d.toLocaleDateString('en-US', { month: 'short' });
-        return `${dayName}, ${dayNum} ${month}`;
     };
 
     const GridSection = ({ items, colorClass, emptyMessage, isOffer = false }) => {

@@ -18,10 +18,6 @@ function safeObject(value) {
   return value && typeof value === 'object' ? value : {};
 }
 
-function unique(values) {
-  return [...new Set(values.filter(Boolean))];
-}
-
 function countItems(items) {
   return safeArray(items).filter(Boolean).length;
 }

@@ -1,4 +1,4 @@
-/* eslint-disable */
+
 import React, { useState } from 'react';
 import './DetailedWeatherCard.css';
 import WeatherIcon from './WeatherIcons';

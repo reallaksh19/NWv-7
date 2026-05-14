@@ -34,7 +34,7 @@ const MainPage = () => {
 
     // Use Contexts
     const { weatherData, loading: weatherLoading, refreshWeather, ensureBoot: ensureWeatherBoot } = useWeather();
-    // eslint-disable-next-line no-unused-vars
+
     const { newsData, loading, errors, breakingNews, refreshNews, loadSection, loadedSections } = useNews();
 
     const handleRefreshAll = React.useCallback(async () => {
@@ -126,7 +126,7 @@ const MainPage = () => {
         }
     }, [generatedTopline]);
 
-    // eslint-disable-next-line no-unused-vars
+
     const handleRequestPermission = async () => {
         const granted = await requestNotificationPermission();
         setNotifPermission(granted ? 'granted' : 'denied');
@@ -155,7 +155,7 @@ const MainPage = () => {
     const loadingPhase = isLoading ? 1 : 3;
 
     const isTimelineMode = uiMode === 'timeline';
-    // eslint-disable-next-line no-unused-vars
+
     const isNewspaperMode = uiMode === 'newspaper';
     const isUrgentMode = currentSegment.id === 'urgent_only';
 

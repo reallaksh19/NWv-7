@@ -21,6 +21,8 @@ import { useLongPress } from '../hooks/useLongPress';
 import ProgressBar from '../components/ProgressBar';
 import { shortenSourceLabel } from '../utils/storyMeta';
 import { getRuntimeCapabilities } from '../runtime/runtimeCapabilities';
+import { getUpAheadEvidence } from '../services/upAheadEvidence';
+import { getUpAheadBriefing } from '../services/upAheadBriefing';
 import './UpAhead.css';
 
 function normalizePlanDate(dateStr) {
@@ -40,6 +42,155 @@ function hasVisibleUpAheadContent(data) {
     if (data.sections && Object.values(data.sections).some(items => Array.isArray(items) && items.length > 0)) return true;
     if (Array.isArray(data.weekly_plan) && data.weekly_plan.some(day => (day?.items || []).length > 0)) return true;
     return false;
+}
+
+function formatConciseDate(dateStr) {
+    if (!dateStr) return 'Coming Soon';
+
+    const d = new Date(dateStr);
+    if (Number.isNaN(d.getTime())) return dateStr;
+
+    const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+    const dayNum = d.getDate().toString().padStart(2, '0');
+    const month = d.toLocaleDateString('en-US', { month: 'short' });
+
+    return `${dayName}, ${dayNum} ${month}`;
+}
+
+function UpAheadEvidencePanel({ evidence }) {
+    if (!evidence) return null;
+
+    return (
+        <section className={`ua-evidence ua-evidence--${evidence.status}`} data-upahead-evidence="coverage-quality">
+            <div className="ua-evidence__header">
+                <div>
+                    <div className="ua-evidence__eyebrow">Coverage evidence</div>
+                    <h2>{evidence.title}</h2>
+                    <p>
+                        Source mode {evidence.sourceModeLabel} · {evidence.locationCount} location(s) · {evidence.coveredCategories.length}/{evidence.enabledCategories.length} categories covered.
+                    </p>
+                </div>
+                <div className="ua-evidence__score">
+                    <span>Score</span>
+                    <strong>{evidence.qualityScore}</strong>
+                </div>
+            </div>
+
+            <div className="ua-evidence__grid">
+                <div className="ua-evidence__tile">
+                    <span>Source</span>
+                    <strong>{evidence.sourceModeLabel}</strong>
+                </div>
+                <div className="ua-evidence__tile">
+                    <span>Locations</span>
+                    <strong>{evidence.locationCount}</strong>
+                </div>
+                <div className="ua-evidence__tile">
+                    <span>Timeline</span>
+                    <strong>{evidence.timelineStats.itemCount}</strong>
+                </div>
+                <div className="ua-evidence__tile">
+                    <span>Plan</span>
+                    <strong>{evidence.weeklyPlanStats.itemCount}</strong>
+                </div>
+                <div className="ua-evidence__tile">
+                    <span>Alerts</span>
+                    <strong>{evidence.visibleAlertCount}</strong>
+                </div>
+                <div className="ua-evidence__tile">
+                    <span>Offers</span>
+                    <strong>{evidence.visibleOfferCount}</strong>
+                </div>
+            </div>
+
+            <div className="ua-evidence__chips">
+                {evidence.locations.map(location => (
+                    <span key={location}>{location}</span>
+                ))}
+                {evidence.coveredCategories.slice(0, 8).map(category => (
+                    <span key={category}>{category}</span>
+                ))}
+            </div>
+
+            <details className="ua-evidence__details">
+                <summary>Evidence notes</summary>
+                <ul>
+                    {evidence.notes.map((note, index) => (
+                        <li key={`ua-evidence-note-${index}`}>{note}</li>
+                    ))}
+                </ul>
+            </details>
+        </section>
+    );
+}
+
+function UpAheadBriefingPanel({ briefing }) {
+    if (!briefing) return null;
+
+    const primaryBuckets = briefing.buckets.filter(bucket => bucket.count > 0).slice(0, 5);
+
+    return (
+        <section className={`ua-briefing ua-briefing--${briefing.status}`} data-upahead-briefing="professional-horizon">
+            <div className="ua-briefing__header">
+                <div>
+                    <div className="ua-briefing__eyebrow">Horizon briefing</div>
+                    <h2>{briefing.title}</h2>
+                    <p>
+                        {briefing.locationLabel} · {briefing.next72hCount} item(s) in the next 72h · {briefing.plannerReadyCount} planner-ready item(s).
+                    </p>
+                </div>
+            </div>
+
+            <div className="ua-briefing__stats">
+                <div><span>Alerts</span><strong>{briefing.alertCount}</strong></div>
+                <div><span>Today</span><strong>{briefing.todayCount}</strong></div>
+                <div><span>Next 72h</span><strong>{briefing.next72hCount}</strong></div>
+                <div><span>Events</span><strong>{briefing.eventCount}</strong></div>
+                <div><span>Offers</span><strong>{briefing.offerCount}</strong></div>
+                <div><span>Releases</span><strong>{briefing.movieCount}</strong></div>
+            </div>
+
+            {briefing.highlights.length > 0 && (
+                <div className="ua-briefing__highlights">
+                    {briefing.highlights.map(item => (
+                        <article key={item.id} className="ua-briefing__highlight">
+                            <span>{item.type}</span>
+                            <strong>{item.title}</strong>
+                            {item.date && <em>{formatConciseDate(item.date)}</em>}
+                        </article>
+                    ))}
+                </div>
+            )}
+
+            <div className="ua-briefing__buckets">
+                {primaryBuckets.map(bucket => (
+                    <div key={bucket.key} className="ua-briefing__bucket">
+                        <div className="ua-briefing__bucket-head">
+                            <strong>{bucket.label}</strong>
+                            <span>{bucket.count}</span>
+                        </div>
+                        <ul>
+                            {bucket.items.slice(0, 3).map(item => (
+                                <li key={item.id}>
+                                    <span>{item.title}</span>
+                                    {item.date && <em>{formatConciseDate(item.date)}</em>}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                ))}
+            </div>
+
+            <details className="ua-briefing__details">
+                <summary>Briefing notes</summary>
+                <ul>
+                    {briefing.notes.map((note, index) => (
+                        <li key={`ua-briefing-note-${index}`}>{note}</li>
+                    ))}
+                </ul>
+            </details>
+        </section>
+    );
 }
 
 function UpAheadPage() {
@@ -169,16 +320,6 @@ function UpAheadPage() {
         alert('Added to Plan!');
     };
 
-    const formatConciseDate = (dateStr) => {
-        if (!dateStr) return 'Coming Soon';
-        const d = new Date(dateStr);
-        if (isNaN(d.getTime())) return dateStr;
-        const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
-        const dayNum = d.getDate().toString().padStart(2, '0');
-        const month = d.toLocaleDateString('en-US', { month: 'short' });
-        return `${dayName}, ${dayNum} ${month}`;
-    };
-
     const GridSection = ({ items, colorClass, emptyMessage, isOffer = false }) => {
         if (!items || items.length === 0) return <div className="modern-card empty-state" style={{borderStyle: 'dashed', padding: '40px'}}><p style={{color: 'var(--text-secondary)'}}>{emptyMessage}</p></div>;
         return (
@@ -276,6 +417,30 @@ function UpAheadPage() {
     const movieCards = (data.sections?.movies || []).map(buildCardArticle);
     const festivalCards = (data.sections?.festivals || []).map(buildCardArticle);
 
+    const upAheadEvidence = getUpAheadEvidence({
+        data,
+        settings,
+        visible: {
+            weatherAlerts,
+            combinedAlerts,
+            offerItems,
+            movieCards,
+            festivalCards
+        }
+    });
+
+    const upAheadBriefing = getUpAheadBriefing({
+        data,
+        settings,
+        visible: {
+            weatherAlerts,
+            combinedAlerts,
+            offerItems,
+            movieCards,
+            festivalCards
+        }
+    });
+
     const { isStaticHost } = getRuntimeCapabilities();
     const modeStr = isStaticHost ? (data?.sourceMode === 'snapshot' ? 'snapshot' : 'degraded') : (data?.sourceMode === 'cache' ? 'cached' : 'live');
     const modeLabel = isStaticHost ? (data?.sourceMode === 'snapshot' ? 'Snapshot' : 'Limited') : (data?.sourceMode === 'cache' ? 'Cached' : 'Live');
@@ -323,6 +488,9 @@ function UpAheadPage() {
                     </>
                 )}
             </div>
+
+            <UpAheadEvidencePanel evidence={upAheadEvidence} />
+            <UpAheadBriefingPanel briefing={upAheadBriefing} />
 
             {highPriorityAlert && (
                 <div className={`ua-alert-banner ${weatherAlerts.length > 0 ? 'weather-alert' : ''}`}>

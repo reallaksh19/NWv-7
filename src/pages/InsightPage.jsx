@@ -1224,7 +1224,7 @@ export default function InsightPage() {
     }
 
     return () => { isMounted.current = false; };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Periodic background refresh ─────────────────────────────────────────────
   useEffect(() => {

@@ -1,4 +1,4 @@
-/* eslint-disable */
+
 import React, { useEffect, useMemo } from 'react';
 import { useTopics } from '../context/TopicContext.jsx';
 import { TopicCard } from '../components/TopicCard.jsx';

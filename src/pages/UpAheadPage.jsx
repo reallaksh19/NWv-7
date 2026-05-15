@@ -44,6 +44,8 @@ function hasVisibleUpAheadContent(data) {
     return false;
 }
 
+
+
 function formatConciseDate(dateStr) {
     if (!dateStr) return 'Coming Soon';
 

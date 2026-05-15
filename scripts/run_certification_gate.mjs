@@ -1,6 +1,8 @@
 import { spawnSync } from 'node:child_process';
 
 const commands = [
+  ['npm', ['run', 'lint']],
+  ['npm', ['run', 'test:lint-hotfix']],
   ['npm', ['run', 'test:quick-weather-pro']],
   ['npm', ['run', 'test:bottom-nav']],
   ['npm', ['run', 'test:market-trust']],
@@ -24,6 +26,7 @@ const commands = [
   ['npm', ['run', 'test:insight-behavior-evidence']],
   ['npm', ['run', 'test:upahead-evidence']],
   ['npm', ['run', 'test:upahead-briefing']],
+  ['npm', ['run', 'test:planner-evidence']],
   ['npm', ['run', 'test:unit']],
   ['npm', ['run', 'build']]
 ];

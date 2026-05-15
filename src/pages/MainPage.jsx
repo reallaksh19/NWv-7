@@ -1,4 +1,4 @@
-/* eslint-disable */
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -30,12 +30,12 @@ const MainPage = () => {
     const [onThisDay, setOnThisDay] = useState(null);
 
     // Responsive Detection
-    const { isWebView, isDesktop } = useMediaQuery();
+    const { isWebView, isDesktop: _isDesktop } = useMediaQuery();
 
     // Use Contexts
     const { weatherData, loading: weatherLoading, refreshWeather, ensureBoot: ensureWeatherBoot } = useWeather();
 
-    const { newsData, loading, errors, breakingNews, refreshNews, loadSection, loadedSections } = useNews();
+    const { newsData, loading, errors: _errors, breakingNews, refreshNews, loadSection: _loadSection, loadedSections: _loadedSections } = useNews();
 
     const handleRefreshAll = React.useCallback(async () => {
         await Promise.all([
@@ -127,7 +127,7 @@ const MainPage = () => {
     }, [generatedTopline]);
 
 
-    const handleRequestPermission = async () => {
+    const _handleRequestPermission = async () => {
         const granted = await requestNotificationPermission();
         setNotifPermission(granted ? 'granted' : 'denied');
     };
@@ -156,7 +156,7 @@ const MainPage = () => {
 
     const isTimelineMode = uiMode === 'timeline';
 
-    const isNewspaperMode = uiMode === 'newspaper';
+    const _isNewspaperMode = uiMode === 'newspaper';
     const isUrgentMode = currentSegment.id === 'urgent_only';
 
     // Navigation Sections

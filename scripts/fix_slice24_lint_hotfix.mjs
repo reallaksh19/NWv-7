@@ -42,6 +42,11 @@ patchFile('src/pages/UpAheadPage.jsx', source => {
     /\n {4}const formatConciseDate = \(dateStr\) => \{\n[\s\S]*?\n {4}\};\n(?=\n {4}const GridSection)/,
     '\n'
   );
+  // also handle standard function version if present
+  text = text.replace(
+    /\nfunction formatConciseDate\(dateStr\) \{\n[\s\S]*?\n\}\n(?=\nfunction UpAheadEvidencePanel)/,
+    '\n'
+  );
 
   // Add module-scope function if not already present.
   if (!text.includes('function formatConciseDate(dateStr)')) {

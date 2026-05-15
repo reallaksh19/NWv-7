@@ -1,10 +1,100 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Header from '../components/Header';
 import plannerStorage from '../utils/plannerStorage';
 import { downloadCalendarEvent } from '../utils/calendar';
 import { useLongPress } from '../hooks/useLongPress';
 import { getPlannerEvidence } from '../services/plannerEvidence';
+import { getPlannerViewModel } from '../services/plannerViewModel';
 import './MyPlanner.css';
+
+function PlannerControlsPanel({ viewModel, controls, onControlsChange }) {
+    const updateControl = (key, value) => {
+        onControlsChange(prev => ({
+            ...prev,
+            [key]: value
+        }));
+    };
+
+    return (
+        <section className="planner-controls" data-planner-controls="filter-search-sort">
+            <div className="planner-controls__header">
+                <div>
+                    <div className="planner-controls__eyebrow">Planner controls</div>
+                    <h2>Find and organize saved items</h2>
+                    <p>
+                        Showing {viewModel.filteredCount} of {viewModel.totalCount} saved item(s).
+                    </p>
+                </div>
+            </div>
+
+            <div className="planner-controls__grid">
+                <label className="planner-controls__field planner-controls__field--search">
+                    <span>Search</span>
+                    <input
+                        type="search"
+                        value={controls.query}
+                        placeholder="Search title, category, date..."
+                        onChange={event => updateControl('query', event.target.value)}
+                    />
+                </label>
+
+                <label className="planner-controls__field">
+                    <span>Category</span>
+                    <select
+                        value={controls.category}
+                        onChange={event => updateControl('category', event.target.value)}
+                    >
+                        {viewModel.categoryOptions.map(option => (
+                            <option key={option} value={option}>
+                                {option === 'all' ? 'All categories' : option}
+                            </option>
+                        ))}
+                    </select>
+                </label>
+
+                <label className="planner-controls__field">
+                    <span>Date window</span>
+                    <select
+                        value={controls.dateWindow}
+                        onChange={event => updateControl('dateWindow', event.target.value)}
+                    >
+                        <option value="all">All dates</option>
+                        <option value="today">Today</option>
+                        <option value="next7">Next 7 days</option>
+                        <option value="future">Future</option>
+                        <option value="overdue">Overdue</option>
+                        <option value="undated">Undated</option>
+                    </select>
+                </label>
+
+                <label className="planner-controls__field">
+                    <span>Sort</span>
+                    <select
+                        value={controls.sortMode}
+                        onChange={event => updateControl('sortMode', event.target.value)}
+                    >
+                        <option value="date">Date</option>
+                        <option value="title">Title</option>
+                        <option value="category">Category</option>
+                    </select>
+                </label>
+
+                <button
+                    type="button"
+                    className="planner-controls__reset"
+                    onClick={() => onControlsChange({
+                        query: '',
+                        category: 'all',
+                        dateWindow: 'all',
+                        sortMode: 'date'
+                    })}
+                >
+                    Reset
+                </button>
+            </div>
+        </section>
+    );
+}
 
 function PlannerEvidencePanel({ evidence }) {
     if (!evidence) return null;
@@ -177,7 +267,18 @@ function MyPlannerPage() {
     const [planData, setPlanData] = useState({});
     const [undoItem, setUndoItem] = useState(null);
 
+    const [plannerControls, setPlannerControls] = useState({
+        query: '',
+        category: 'all',
+        dateWindow: 'all',
+        sortMode: 'date'
+    });
+
     const plannerEvidence = getPlannerEvidence(planData);
+
+    const plannerViewModel = useMemo(() => (
+        getPlannerViewModel(planData, plannerControls)
+    ), [planData, plannerControls]);
 
     const loadPlan = () => {
         if (plannerStorage.getPlan) {
@@ -220,12 +321,7 @@ function MyPlannerPage() {
     };
 
     // Prepare sorted dates, auto-prune past dates
-    const today = new Date();
-    today.setHours(0,0,0,0);
-    const sortedDates = Object.keys(planData).filter(dateStr => {
-        const d = new Date(dateStr);
-        return isNaN(d.getTime()) || d >= today;
-    }).sort();
+    const sortedDates = plannerViewModel.groupedDates.map(group => group.dateKey);
 
     return (
         <div className="page-container">
@@ -233,9 +329,20 @@ function MyPlannerPage() {
 
             <main className="main-content" style={{ padding: '16px', margin: '0 auto', maxWidth: '800px' }}>
                 <PlannerEvidencePanel evidence={plannerEvidence} />
+                <PlannerControlsPanel
+                    viewModel={plannerViewModel}
+                    controls={plannerControls}
+                    onControlsChange={setPlannerControls}
+                />
 
                 <div className="ua-weekly-plan">
-                    {sortedDates.length === 0 ? (
+                    {plannerViewModel.totalCount > 0 && plannerViewModel.filteredCount === 0 ? (
+                        <div className="modern-card empty-state" style={{borderStyle: 'dashed'}}>
+                            <span style={{ fontSize: '3rem', marginBottom: '16px', display: 'block' }}>🔎</span>
+                            <h3 style={{marginBottom: '8px', color: 'var(--text-primary)'}}>No planner items match your filters</h3>
+                            <p style={{color: 'var(--text-secondary)'}}>Try clearing search or changing category/date filters.</p>
+                        </div>
+                    ) : sortedDates.length === 0 ? (
                         <div className="modern-card empty-state" style={{borderStyle: 'dashed'}}>
                             <span style={{ fontSize: '3rem', marginBottom: '16px', display: 'block' }}>📭</span>
                             <h3 style={{marginBottom: '8px', color: 'var(--text-primary)'}}>Your planner is empty</h3>
@@ -243,7 +350,8 @@ function MyPlannerPage() {
                         </div>
                     ) : (
                         sortedDates.map((dateKey) => {
-                            const items = planData[dateKey];
+                            const group = plannerViewModel.groupedDates.find(entry => entry.dateKey === dateKey);
+                            const items = group?.items || [];
                             if (!items || items.length === 0) return null;
 
                             // Format date for display

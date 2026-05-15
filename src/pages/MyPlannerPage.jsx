@@ -3,6 +3,87 @@ import Header from '../components/Header';
 import plannerStorage from '../utils/plannerStorage';
 import { downloadCalendarEvent } from '../utils/calendar';
 import { useLongPress } from '../hooks/useLongPress';
+import { getPlannerEvidence } from '../services/plannerEvidence';
+import './MyPlanner.css';
+
+function PlannerEvidencePanel({ evidence }) {
+    if (!evidence) return null;
+
+    return (
+        <section className={`planner-evidence planner-evidence--${evidence.status}`} data-planner-evidence="planner-readiness">
+            <div className="planner-evidence__header">
+                <div>
+                    <div className="planner-evidence__eyebrow">Planner command center</div>
+                    <h2>{evidence.title}</h2>
+                    <p>
+                        {evidence.totalItems} saved item(s) · {evidence.dateGroupCount} date group(s) · {evidence.categoryCount} category bucket(s).
+                    </p>
+                </div>
+                <div className="planner-evidence__score">
+                    <span>Saved</span>
+                    <strong>{evidence.totalItems}</strong>
+                </div>
+            </div>
+
+            <div className="planner-evidence__grid">
+                <div className="planner-evidence__tile">
+                    <span>Today</span>
+                    <strong>{evidence.todayCount}</strong>
+                </div>
+                <div className="planner-evidence__tile">
+                    <span>Next 7d</span>
+                    <strong>{evidence.next7DaysCount}</strong>
+                </div>
+                <div className="planner-evidence__tile">
+                    <span>Overdue</span>
+                    <strong>{evidence.overdueCount}</strong>
+                </div>
+                <div className="planner-evidence__tile">
+                    <span>Undated</span>
+                    <strong>{evidence.undatedCount}</strong>
+                </div>
+                <div className="planner-evidence__tile">
+                    <span>Dates</span>
+                    <strong>{evidence.dateGroupCount}</strong>
+                </div>
+                <div className="planner-evidence__tile">
+                    <span>Categories</span>
+                    <strong>{evidence.categoryCount}</strong>
+                </div>
+            </div>
+
+            {evidence.categoryCounts.length > 0 && (
+                <div className="planner-evidence__chips">
+                    {evidence.categoryCounts.slice(0, 8).map(category => (
+                        <span key={category.key}>{category.key} × {category.count}</span>
+                    ))}
+                </div>
+            )}
+
+            {evidence.upcomingItems.length > 0 && (
+                <div className="planner-evidence__upcoming">
+                    <div className="planner-evidence__section-title">Next 7 days</div>
+                    {evidence.upcomingItems.map(item => (
+                        <article key={item.id} className="planner-evidence__upcoming-item">
+                            <span>{item.displayDate}</span>
+                            <strong>{item.title}</strong>
+                            <em>{item.category}</em>
+                        </article>
+                    ))}
+                </div>
+            )}
+
+            <details className="planner-evidence__details">
+                <summary>Planner notes</summary>
+                <ul>
+                    {evidence.notes.map((note, index) => (
+                        <li key={`planner-note-${index}`}>{note}</li>
+                    ))}
+                </ul>
+            </details>
+        </section>
+    );
+}
 
 function SwipeableItem({ item, dateKey, onRemove, onLongPressAction }) {
     const [offset, setOffset] = useState(0);
@@ -96,6 +177,8 @@ function MyPlannerPage() {
     const [planData, setPlanData] = useState({});
     const [undoItem, setUndoItem] = useState(null);
 
+    const plannerEvidence = getPlannerEvidence(planData);
+
     const loadPlan = () => {
         if (plannerStorage.getPlan) {
             setPlanData(plannerStorage.getPlan());
@@ -149,6 +232,8 @@ function MyPlannerPage() {
             <Header title="My Planner" icon="📌" />
 
             <main className="main-content" style={{ padding: '16px', margin: '0 auto', maxWidth: '800px' }}>
+                <PlannerEvidencePanel evidence={plannerEvidence} />
+
                 <div className="ua-weekly-plan">
                     {sortedDates.length === 0 ? (
                         <div className="modern-card empty-state" style={{borderStyle: 'dashed'}}>

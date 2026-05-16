@@ -28,6 +28,7 @@ const commands = [
   ['npm', ['run', 'test:upahead-briefing']],
   ['npm', ['run', 'test:planner-evidence']],
   ['npm', ['run', 'test:planner-view-model']],
+  ['npm', ['run', 'test:planner-bulk-actions']],
   ['npm', ['run', 'test:unit']],
   ['npm', ['run', 'build']]
 ];

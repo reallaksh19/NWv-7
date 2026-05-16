@@ -5,6 +5,7 @@ import { downloadCalendarEvent } from '../utils/calendar';
 import { useLongPress } from '../hooks/useLongPress';
 import { getPlannerEvidence } from '../services/plannerEvidence';
 import { getPlannerViewModel } from '../services/plannerViewModel';
+import { getPlannerBulkActionSummary, makePlannerSelectionKey } from '../services/plannerBulkActions';
 import './MyPlanner.css';
 
 function PlannerControlsPanel({ viewModel, controls, onControlsChange }) {
@@ -96,6 +97,40 @@ function PlannerControlsPanel({ viewModel, controls, onControlsChange }) {
     );
 }
 
+
+function PlannerBulkActionBar({
+    summary,
+    onSelectAll,
+    onClearSelection,
+    onExportCalendar,
+    onRemoveSelected
+}) {
+    return (
+        <section className={`planner-bulk planner-bulk--${summary.hasSelection ? 'active' : 'idle'}`} data-planner-bulk-actions="select-export-remove">
+            <div className="planner-bulk__copy">
+                <div className="planner-bulk__eyebrow">Bulk actions</div>
+                <strong>{summary.title}</strong>
+                <span>{summary.filteredCount} filtered item(s) available.</span>
+            </div>
+
+            <div className="planner-bulk__actions">
+                <button type="button" onClick={onSelectAll} disabled={summary.filteredCount === 0 || summary.allFilteredSelected}>
+                    Select filtered
+                </button>
+                <button type="button" onClick={onClearSelection} disabled={!summary.hasSelection}>
+                    Clear
+                </button>
+                <button type="button" onClick={onExportCalendar} disabled={!summary.canExportCalendar}>
+                    Export calendar
+                </button>
+                <button type="button" className="planner-bulk__danger" onClick={onRemoveSelected} disabled={!summary.canRemove}>
+                    Remove selected
+                </button>
+            </div>
+        </section>
+    );
+}
+
 function PlannerEvidencePanel({ evidence }) {
     if (!evidence) return null;
 
@@ -175,7 +210,7 @@ function PlannerEvidencePanel({ evidence }) {
     );
 }
 
-function SwipeableItem({ item, dateKey, onRemove, onLongPressAction }) {
+function SwipeableItem({ item, dateKey, onRemove, onLongPressAction, selected = false, onSelectionToggle }) {
     const [offset, setOffset] = useState(0);
     const [startX, setStartX] = useState(0);
 
@@ -248,6 +283,14 @@ function SwipeableItem({ item, dateKey, onRemove, onLongPressAction }) {
                 }}
             >
                 <button className="ua-plan-delete-btn" onClick={() => onRemove(item, dateKey)} aria-label="Remove event" style={{background:'none', border:'none', cursor:'pointer', color:'var(--text-muted)', fontSize:'0.9rem', padding: '0 8px 0 0'}}>✕</button>
+                <input
+                    className="planner-item-select"
+                    type="checkbox"
+                    checked={selected}
+                    onChange={() => onSelectionToggle?.(item)}
+                    onClick={event => event.stopPropagation()}
+                    aria-label={`Select ${item.title}`}
+                />
                 <a href={item.link} target="_blank" draggable="false" rel="noopener noreferrer" style={{flex:1, display:'flex', alignItems:'center', gap:'10px', textDecoration:'none', color:'inherit'}}>
                     <span className="ua-event-icon">{item.icon || '📌'}</span>
                     <div style={{display:'flex', flexDirection:'column'}}>
@@ -274,11 +317,17 @@ function MyPlannerPage() {
         sortMode: 'date'
     });
 
+    const [selectedPlannerIds, setSelectedPlannerIds] = useState([]);
+
     const plannerEvidence = getPlannerEvidence(planData);
 
     const plannerViewModel = useMemo(() => (
         getPlannerViewModel(planData, plannerControls)
     ), [planData, plannerControls]);
+
+    const plannerBulkSummary = useMemo(() => (
+        getPlannerBulkActionSummary(plannerViewModel.filteredItems, selectedPlannerIds)
+    ), [plannerViewModel.filteredItems, selectedPlannerIds]);
 
     const loadPlan = () => {
         if (plannerStorage.getPlan) {
@@ -297,7 +346,7 @@ function MyPlannerPage() {
         if (plannerStorage.removeItem) {
             plannerStorage.removeItem(dateKey, id);
             
-            setUndoItem({ date: dateKey, item: item });
+            setUndoItem({ bulk: false, date: dateKey, item });
             loadPlan(); // Refresh data from storage
 
             setTimeout(() => {
@@ -308,8 +357,15 @@ function MyPlannerPage() {
 
     const undoLastRemove = () => {
         if (!undoItem) return;
-        
-        plannerStorage.addItem?.(undoItem.date, undoItem.item);
+
+        if (undoItem.bulk) {
+            undoItem.items.forEach(entry => {
+                plannerStorage.addItem?.(entry.date, entry.item);
+            });
+        } else {
+            plannerStorage.addItem?.(undoItem.date, undoItem.item);
+        }
+
         setUndoItem(null);
         loadPlan();
     };
@@ -318,6 +374,56 @@ function MyPlannerPage() {
         if (confirm(`Remove "${item.title}" from your planner?`)) {
             removeWithUndo(item, dateKey);
         }
+    };
+
+
+    const togglePlannerSelection = (item) => {
+        const selectionKey = makePlannerSelectionKey(item);
+
+        setSelectedPlannerIds(prev => (
+            prev.includes(selectionKey)
+                ? prev.filter(key => key !== selectionKey)
+                : [...prev, selectionKey]
+        ));
+    };
+
+    const selectAllFilteredPlannerItems = () => {
+        setSelectedPlannerIds(plannerViewModel.filteredItems.map(makePlannerSelectionKey));
+    };
+
+    const clearPlannerSelection = () => {
+        setSelectedPlannerIds([]);
+    };
+
+    const exportSelectedPlannerItems = () => {
+        plannerBulkSummary.selectedItems.forEach(item => {
+            downloadCalendarEvent(item.title, item.description || item.title);
+        });
+    };
+
+    const removeSelectedPlannerItems = () => {
+        if (plannerBulkSummary.selectedItems.length === 0) return;
+
+        const removedItems = plannerBulkSummary.selectedItems.map(item => ({
+            date: item.dateKey,
+            item: item.raw || item
+        }));
+
+        plannerBulkSummary.selectedItems.forEach(item => {
+            plannerStorage.removeItem?.(item.dateKey, item.id);
+        });
+
+        setUndoItem({
+            bulk: true,
+            items: removedItems
+        });
+
+        setSelectedPlannerIds([]);
+        loadPlan();
+
+        setTimeout(() => {
+            setUndoItem(null);
+        }, 5000);
     };
 
     // Prepare sorted dates, auto-prune past dates
@@ -333,6 +439,14 @@ function MyPlannerPage() {
                     viewModel={plannerViewModel}
                     controls={plannerControls}
                     onControlsChange={setPlannerControls}
+                />
+
+                <PlannerBulkActionBar
+                    summary={plannerBulkSummary}
+                    onSelectAll={selectAllFilteredPlannerItems}
+                    onClearSelection={clearPlannerSelection}
+                    onExportCalendar={exportSelectedPlannerItems}
+                    onRemoveSelected={removeSelectedPlannerItems}
                 />
 
                 <div className="ua-weekly-plan">
@@ -370,8 +484,16 @@ function MyPlannerPage() {
                                         </div>
                                     </div>
                                     <div className="ua-plan-day-content" style={{ border: 'none', padding: '8px 0 0 0', background: 'transparent' }}>
-                                        {items.map((item, idx) => (
-                                            <SwipeableItem key={idx} item={item} dateKey={dateKey} onRemove={removeWithUndo} onLongPressAction={handleLongPress} />
+                                        {items.map((item) => (
+                                            <SwipeableItem
+                                                key={makePlannerSelectionKey(item)}
+                                                item={item}
+                                                dateKey={dateKey}
+                                                onRemove={removeWithUndo}
+                                                onLongPressAction={handleLongPress}
+                                                selected={selectedPlannerIds.includes(makePlannerSelectionKey(item))}
+                                                onSelectionToggle={togglePlannerSelection}
+                                            />
                                         ))}
                                     </div>
                                 </div>
@@ -396,7 +518,7 @@ function MyPlannerPage() {
                         gap: '16px',
                         zIndex: 1000
                     }}>
-                        <span style={{ fontSize: '0.9rem' }}>Event removed</span>
+                        <span style={{ fontSize: '0.9rem' }}>{undoItem.bulk ? `${undoItem.items.length} events removed` : 'Event removed'}</span>
                         <button onClick={undoLastRemove} style={{
                             background: 'none',
                             border: 'none',

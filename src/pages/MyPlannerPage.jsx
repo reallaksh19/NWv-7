@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Header from '../components/Header';
 import plannerStorage from '../utils/plannerStorage';
-import { downloadCalendarEvent } from '../utils/calendar';
+import { downloadCalendarEvent, downloadCalendarEvents } from '../utils/calendar';
 import { useLongPress } from '../hooks/useLongPress';
 import { getPlannerEvidence } from '../services/plannerEvidence';
 import { getPlannerViewModel } from '../services/plannerViewModel';
@@ -299,7 +299,7 @@ function SwipeableItem({ item, dateKey, onRemove, onLongPressAction, selected = 
                     </div>
                 </a>
                 <div style={{display:'flex', gap:'8px'}}>
-                    <button className="ua-plan-action-btn" onClick={() => downloadCalendarEvent(item.title, item.description || item.title)} title="Add to Calendar" style={{background:'none', border:'none', cursor:'pointer', fontSize:'1.1rem'}}>📅</button>
+                    <button className="ua-plan-action-btn" onClick={() => downloadCalendarEvent(item.raw || item)} title="Add to Calendar" style={{background:'none', border:'none', cursor:'pointer', fontSize:'1.1rem'}}>📅</button>
                 </div>
             </div>
         </div>
@@ -396,9 +396,10 @@ function MyPlannerPage() {
     };
 
     const exportSelectedPlannerItems = () => {
-        plannerBulkSummary.selectedItems.forEach(item => {
-            downloadCalendarEvent(item.title, item.description || item.title);
-        });
+        downloadCalendarEvents(
+            plannerBulkSummary.selectedItems.map(item => item.raw || item),
+            'nwv7_planner_selection.ics'
+        );
     };
 
     const removeSelectedPlannerItems = () => {

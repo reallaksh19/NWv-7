@@ -70,4 +70,41 @@ describe('Planner calendar export certification', () => {
     expect(event).toContain('DTSTART:');
     expect(event).toContain('DTEND:');
   });
+
+  it('keeps bulk calendar export filename extension cleanly', () => {
+      // Mock document and URL to safely test the download flow in vitest without actually downloading
+      const origDocument = global.document;
+      const origURL = global.URL;
+
+      let linkHrefs = [];
+      let linkDownloads = [];
+
+      global.document = {
+          createElement: (tag) => {
+              if (tag === 'a') {
+                  return {
+                      click: () => {},
+                      set href(val) { linkHrefs.push(val); },
+                      set download(val) { linkDownloads.push(val); }
+                  };
+              }
+              return origDocument ? origDocument.createElement(tag) : null;
+          }
+      };
+
+      global.URL = {
+          createObjectURL: () => 'blob:mock',
+          revokeObjectURL: () => {}
+      };
+
+      const { downloadCalendarEvents } = require('./calendar');
+      downloadCalendarEvents([{ title: 'Event' }], 'weird_name.ICS');
+      downloadCalendarEvents([{ title: 'Event' }], 'Normal Name');
+
+      global.document = origDocument;
+      global.URL = origURL;
+
+      expect(linkDownloads[0]).toBe('weird_name.ics');
+      expect(linkDownloads[1]).toBe('normal_name.ics');
+  });
 });

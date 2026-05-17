@@ -278,6 +278,12 @@ export const downloadCalendarEvents = (items, filename = 'nwv7_planner_selection
         calendarName: 'NWv7 Planner Selection'
     });
 
-    downloadICS(sanitizeFilename(filename).endsWith('.ics') ? sanitizeFilename(filename) : `${sanitizeFilename(filename)}.ics`, content);
+    const rawFilename = String(filename || 'planner_export');
+    const namePart = rawFilename.toLowerCase().endsWith('.ics')
+        ? rawFilename.slice(0, -4)
+        : rawFilename;
+    const finalFilename = `${sanitizeFilename(namePart)}.ics`;
+
+    downloadICS(finalFilename, content);
     return true;
 };

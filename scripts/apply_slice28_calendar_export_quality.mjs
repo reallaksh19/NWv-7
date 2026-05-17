@@ -520,9 +520,9 @@ patchFile('scripts/run_certification_gate.mjs', source => {
   if (source.includes("['npm', ['run', 'test:calendar-export-quality']]")) return source;
 
   return source.replace(
-    "  ['npm', ['run', 'test:planner-bulk-actions']],",
-    "  ['npm', ['run', 'test:planner-bulk-actions']],\n  ['npm', ['run', 'test:calendar-export-quality']],"
+    "['npm', ['run', 'test:planner-bulk-actions']]",
+    "['npm', ['run', 'test:planner-bulk-actions']],\n  ['npm', ['run', 'test:calendar-export-quality']]"
   );
 });
 
-console.log('\\nSlice 28 calendar export quality patch complete.');
+console.log('\nSlice 28 calendar export quality patch complete.');

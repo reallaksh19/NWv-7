@@ -419,3 +419,194 @@
         flex: 1 1 calc(50% - 8px);
     }
 }
+
+
+/* ==========================================================================
+   My Planner item inspector
+   Slice 29
+   ========================================================================== */
+
+.planner-item-inspect-btn {
+    width: 28px;
+    height: 28px;
+    margin-right: 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.24);
+    background: rgba(255, 255, 255, 0.055);
+    color: var(--text-secondary, #9CA5B0);
+    cursor: pointer;
+    font-weight: 900;
+}
+
+.planner-item-inspect-btn:hover {
+    border-color: rgba(88, 166, 255, 0.44);
+    color: #bfdbfe;
+    background: rgba(88, 166, 255, 0.10);
+}
+
+.planner-inspector {
+    position: fixed;
+    inset: 0;
+    z-index: 1300;
+    pointer-events: auto;
+}
+
+.planner-inspector__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(2, 6, 23, 0.66);
+    backdrop-filter: blur(8px);
+}
+
+.planner-inspector__sheet {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    bottom: 18px;
+    width: min(430px, calc(100% - 36px));
+    padding: 18px;
+    overflow: auto;
+    border-radius: 22px;
+    border: 1px solid rgba(148, 163, 184, 0.24);
+    background:
+        radial-gradient(420px 180px at 100% 0%, rgba(88, 166, 255, 0.12), transparent 62%),
+        rgba(15, 23, 42, 0.96);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.42);
+}
+
+.planner-inspector__header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 36px;
+    gap: 12px;
+    align-items: start;
+}
+
+.planner-inspector__eyebrow {
+    color: #93c5fd;
+    font-size: 0.66rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.planner-inspector h2 {
+    margin: 5px 0;
+    color: var(--text-primary, #FFFFFF);
+    font-size: 1.08rem;
+    line-height: 1.25;
+}
+
+.planner-inspector p {
+    margin: 0;
+    color: var(--text-secondary, #9CA5B0);
+    font-size: 0.84rem;
+    line-height: 1.45;
+}
+
+.planner-inspector__close {
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-primary, #FFFFFF);
+    cursor: pointer;
+}
+
+.planner-inspector__facts {
+    display: grid;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.planner-inspector__fact {
+    padding: 10px;
+    border-radius: 14px;
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    background: rgba(255, 255, 255, 0.045);
+}
+
+.planner-inspector__fact span {
+    display: block;
+    color: var(--text-secondary, #9CA5B0);
+    font-size: 0.62rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.planner-inspector__fact strong {
+    display: block;
+    margin-top: 4px;
+    color: var(--text-primary, #FFFFFF);
+    font-size: 0.86rem;
+    line-height: 1.35;
+}
+
+.planner-inspector__link {
+    display: inline-flex;
+    margin-top: 14px;
+    color: #bfdbfe;
+    text-decoration: none;
+    font-weight: 850;
+    font-size: 0.84rem;
+}
+
+.planner-inspector__actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+    margin-top: 16px;
+}
+
+.planner-inspector__actions button {
+    min-height: 38px;
+    border-radius: 12px;
+    border: 1px solid rgba(88, 166, 255, 0.24);
+    background: rgba(88, 166, 255, 0.10);
+    color: #bfdbfe;
+    font-weight: 850;
+    cursor: pointer;
+}
+
+.planner-inspector__actions .planner-inspector__danger {
+    border-color: rgba(239, 68, 68, 0.28);
+    background: rgba(239, 68, 68, 0.10);
+    color: #fecaca;
+}
+
+.planner-inspector__details {
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.planner-inspector__details summary {
+    cursor: pointer;
+    color: #93c5fd;
+    font-size: 0.78rem;
+    font-weight: 850;
+}
+
+.planner-inspector__details ul {
+    margin: 10px 0 0;
+    padding-left: 18px;
+    color: #cbd5e1;
+    font-size: 0.8rem;
+    line-height: 1.45;
+}
+
+@media (max-width: 640px) {
+    .planner-inspector__sheet {
+        top: auto;
+        right: 8px;
+        bottom: 8px;
+        left: 8px;
+        width: auto;
+        max-height: 86vh;
+    }
+
+    .planner-inspector__actions {
+        grid-template-columns: 1fr;
+    }
+}

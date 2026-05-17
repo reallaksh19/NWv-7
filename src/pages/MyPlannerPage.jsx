@@ -6,6 +6,7 @@ import { useLongPress } from '../hooks/useLongPress';
 import { getPlannerEvidence } from '../services/plannerEvidence';
 import { getPlannerViewModel } from '../services/plannerViewModel';
 import { getPlannerBulkActionSummary, makePlannerSelectionKey } from '../services/plannerBulkActions';
+import { getPlannerItemInspector } from '../services/plannerItemInspector';
 import './MyPlanner.css';
 
 function PlannerControlsPanel({ viewModel, controls, onControlsChange }) {
@@ -131,6 +132,62 @@ function PlannerBulkActionBar({
     );
 }
 
+
+function PlannerItemInspectorPanel({ detail, onClose, onExportCalendar, onRemove }) {
+    if (!detail) return null;
+
+    return (
+        <aside className="planner-inspector" data-planner-item-inspector="metadata-actions" role="dialog" aria-label="Planner item inspector">
+            <div className="planner-inspector__backdrop" onClick={onClose} />
+            <section className="planner-inspector__sheet">
+                <div className="planner-inspector__header">
+                    <div>
+                        <div className="planner-inspector__eyebrow">Saved item inspector</div>
+                        <h2>{detail.title}</h2>
+                        <p>{detail.description || 'No description available.'}</p>
+                    </div>
+                    <button type="button" className="planner-inspector__close" onClick={onClose} aria-label="Close inspector">
+                        ✕
+                    </button>
+                </div>
+
+                <div className="planner-inspector__facts">
+                    {detail.facts.map(fact => (
+                        <div key={fact.key} className="planner-inspector__fact">
+                            <span>{fact.label}</span>
+                            <strong>{fact.value}</strong>
+                        </div>
+                    ))}
+                </div>
+
+                {detail.hasLink && (
+                    <a className="planner-inspector__link" href={detail.link} target="_blank" rel="noopener noreferrer">
+                        Open source link
+                    </a>
+                )}
+
+                <div className="planner-inspector__actions">
+                    <button type="button" onClick={() => onExportCalendar(detail)}>
+                        Export calendar
+                    </button>
+                    <button type="button" className="planner-inspector__danger" onClick={() => onRemove(detail)}>
+                        Remove item
+                    </button>
+                </div>
+
+                <details className="planner-inspector__details">
+                    <summary>Action notes</summary>
+                    <ul>
+                        {detail.actionHints.map((hint, index) => (
+                            <li key={`planner-inspector-hint-${index}`}>{hint}</li>
+                        ))}
+                    </ul>
+                </details>
+            </section>
+        </aside>
+    );
+}
+
 function PlannerEvidencePanel({ evidence }) {
     if (!evidence) return null;
 
@@ -210,7 +267,7 @@ function PlannerEvidencePanel({ evidence }) {
     );
 }
 
-function SwipeableItem({ item, dateKey, onRemove, onLongPressAction, selected = false, onSelectionToggle }) {
+function SwipeableItem({ item, dateKey, onRemove, onLongPressAction, selected = false, onSelectionToggle, onInspect }) {
     const [offset, setOffset] = useState(0);
     const [startX, setStartX] = useState(0);
 
@@ -291,6 +348,15 @@ function SwipeableItem({ item, dateKey, onRemove, onLongPressAction, selected = 
                     onClick={event => event.stopPropagation()}
                     aria-label={`Select ${item.title}`}
                 />
+                <button
+                    type="button"
+                    className="planner-item-inspect-btn"
+                    onClick={() => onInspect?.(item, dateKey)}
+                    aria-label={`Inspect ${item.title}`}
+                    title="Inspect item"
+                >
+                    ⓘ
+                </button>
                 <a href={item.link} target="_blank" draggable="false" rel="noopener noreferrer" style={{flex:1, display:'flex', alignItems:'center', gap:'10px', textDecoration:'none', color:'inherit'}}>
                     <span className="ua-event-icon">{item.icon || '📌'}</span>
                     <div style={{display:'flex', flexDirection:'column'}}>
@@ -318,6 +384,7 @@ function MyPlannerPage() {
     });
 
     const [selectedPlannerIds, setSelectedPlannerIds] = useState([]);
+    const [inspectedPlannerItem, setInspectedPlannerItem] = useState(null);
 
     const plannerEvidence = getPlannerEvidence(planData);
 
@@ -328,6 +395,12 @@ function MyPlannerPage() {
     const plannerBulkSummary = useMemo(() => (
         getPlannerBulkActionSummary(plannerViewModel.filteredItems, selectedPlannerIds)
     ), [plannerViewModel.filteredItems, selectedPlannerIds]);
+
+    const inspectedPlannerDetail = useMemo(() => (
+        inspectedPlannerItem
+            ? getPlannerItemInspector(inspectedPlannerItem.item, inspectedPlannerItem.dateKey)
+            : null
+    ), [inspectedPlannerItem]);
 
     const loadPlan = () => {
         if (plannerStorage.getPlan) {
@@ -376,6 +449,24 @@ function MyPlannerPage() {
         }
     };
 
+
+
+    const inspectPlannerItem = (item, dateKey) => {
+        setInspectedPlannerItem({ item, dateKey });
+    };
+
+    const closePlannerInspector = () => {
+        setInspectedPlannerItem(null);
+    };
+
+    const exportInspectedPlannerItem = (detail) => {
+        downloadCalendarEvent(detail.raw || detail);
+    };
+
+    const removeInspectedPlannerItem = (detail) => {
+        removeWithUndo(detail.raw || detail, detail.dateKey);
+        closePlannerInspector();
+    };
 
     const togglePlannerSelection = (item) => {
         const selectionKey = makePlannerSelectionKey(item);
@@ -450,6 +541,13 @@ function MyPlannerPage() {
                     onRemoveSelected={removeSelectedPlannerItems}
                 />
 
+                <PlannerItemInspectorPanel
+                    detail={inspectedPlannerDetail}
+                    onClose={closePlannerInspector}
+                    onExportCalendar={exportInspectedPlannerItem}
+                    onRemove={removeInspectedPlannerItem}
+                />
+
                 <div className="ua-weekly-plan">
                     {plannerViewModel.totalCount > 0 && plannerViewModel.filteredCount === 0 ? (
                         <div className="modern-card empty-state" style={{borderStyle: 'dashed'}}>
@@ -494,6 +592,7 @@ function MyPlannerPage() {
                                                 onLongPressAction={handleLongPress}
                                                 selected={selectedPlannerIds.includes(makePlannerSelectionKey(item))}
                                                 onSelectionToggle={togglePlannerSelection}
+                                                onInspect={inspectPlannerItem}
                                             />
                                         ))}
                                     </div>

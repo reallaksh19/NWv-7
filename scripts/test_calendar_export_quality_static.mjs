@@ -24,6 +24,10 @@ for (const token of [
   'downloadCalendarEvents',
   'DTSTART;VALUE=DATE',
   'PRODID:-//NWv7//Planner Calendar Export//EN',
+  'rawFilename',
+  'hasIcsExtension',
+  'baseName',
+  'safeFilename',
 
 ]) {
   assert(calendar.toLowerCase().includes(token.toLowerCase()), `calendar.js missing token: ${token}`);

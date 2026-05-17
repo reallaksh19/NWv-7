@@ -30,6 +30,7 @@ const commands = [
   ['npm', ['run', 'test:planner-view-model']],
   ['npm', ['run', 'test:planner-bulk-actions']],
   ['npm', ['run', 'test:calendar-export-quality']],
+  ['npm', ['run', 'test:planner-item-inspector']],
   ['npm', ['run', 'test:unit']],
   ['npm', ['run', 'build']]
 ];

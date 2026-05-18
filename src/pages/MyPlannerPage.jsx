@@ -8,6 +8,7 @@ import { getPlannerViewModel } from '../services/plannerViewModel';
 import { getPlannerBulkActionSummary, makePlannerSelectionKey } from '../services/plannerBulkActions';
 import { getPlannerItemInspector } from '../services/plannerItemInspector';
 import { buildPlannerAgendaJson, buildPlannerAgendaText, downloadPlannerAgendaFile, getPlannerAgendaExport, makePlannerAgendaFilename } from '../services/plannerAgendaExport';
+import { getPlannerInteractionQuality } from '../services/plannerInteractionQuality';
 import './MyPlanner.css';
 
 function PlannerControlsPanel({ viewModel, controls, onControlsChange }) {
@@ -135,6 +136,38 @@ function PlannerBulkActionBar({
 
 
 
+
+function PlannerInteractionQualityPanel({ quality }) {
+    return (
+        <section className={`planner-interaction-quality planner-interaction-quality--${quality.status}`} data-planner-interaction-quality="accessibility-readiness">
+            <div className="planner-interaction-quality__header">
+                <div>
+                    <div className="planner-interaction-quality__eyebrow">Interaction quality</div>
+                    <h2>{quality.statusLabel}</h2>
+                    <p>
+                        {quality.filteredCount} visible · {quality.selectedCount} selected · inspector {quality.inspectorOpen ? 'open' : 'closed'}.
+                    </p>
+                </div>
+            </div>
+
+            <div className="planner-interaction-quality__checks">
+                {quality.checks.map(check => (
+                    <div key={check.key} className={`planner-interaction-quality__check planner-interaction-quality__check--${check.state}`}>
+                        <span>{check.label}</span>
+                        <strong>{check.detail}</strong>
+                    </div>
+                ))}
+            </div>
+
+            <ul className="planner-interaction-quality__notes">
+                {quality.notes.map((note, index) => (
+                    <li key={`planner-interaction-note-${index}`}>{note}</li>
+                ))}
+            </ul>
+        </section>
+    );
+}
+
 function PlannerAgendaExportPanel({
     agenda,
     copyStatus,
@@ -144,7 +177,7 @@ function PlannerAgendaExportPanel({
     onPrint
 }) {
     return (
-        <section className={`planner-agenda-export planner-agenda-export--${agenda.empty ? 'empty' : 'ready'}`} data-planner-agenda-export="copy-download-print">
+        <section className={`planner-agenda-export planner-agenda-export--${agenda.empty ? 'empty' : 'ready'}`} data-planner-agenda-export="copy-download-print" role="status" aria-live="polite">
             <div className="planner-agenda-export__header">
                 <div>
                     <div className="planner-agenda-export__eyebrow">Agenda export</div>
@@ -184,7 +217,17 @@ function PlannerItemInspectorPanel({ detail, onClose, onExportCalendar, onRemove
     if (!detail) return null;
 
     return (
-        <aside className="planner-inspector" data-planner-item-inspector="metadata-actions" role="dialog" aria-label="Planner item inspector">
+        <aside
+            className="planner-inspector"
+            data-planner-item-inspector="metadata-actions"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Planner item inspector"
+            tabIndex={-1}
+            onKeyDown={event => {
+                if (event.key === 'Escape') onClose();
+            }}
+        >
             <div className="planner-inspector__backdrop" onClick={onClose} />
             <section className="planner-inspector__sheet">
                 <div className="planner-inspector__header">
@@ -457,6 +500,17 @@ function MyPlannerPage() {
         })
     ), [plannerViewModel, plannerControls]);
 
+    const plannerInteractionQuality = useMemo(() => (
+        getPlannerInteractionQuality({
+            totalCount: plannerViewModel.totalCount,
+            filteredCount: plannerViewModel.filteredCount,
+            selectedCount: plannerBulkSummary.selectedCount,
+            inspectorOpen: Boolean(inspectedPlannerDetail),
+            agendaEmpty: plannerAgendaExport.empty,
+            copyStatus: plannerAgendaCopyStatus
+        })
+    ), [plannerViewModel.totalCount, plannerViewModel.filteredCount, plannerBulkSummary.selectedCount, inspectedPlannerDetail, plannerAgendaExport.empty, plannerAgendaCopyStatus]);
+
     const loadPlan = () => {
         if (plannerStorage.getPlan) {
             setPlanData(plannerStorage.getPlan());
@@ -467,6 +521,23 @@ function MyPlannerPage() {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         loadPlan();
     }, []);
+
+
+    useEffect(() => {
+        if (!inspectedPlannerItem) return undefined;
+
+        const handlePlannerEscape = (event) => {
+            if (event.key === 'Escape') {
+                setInspectedPlannerItem(null);
+            }
+        };
+
+        window.addEventListener('keydown', handlePlannerEscape);
+
+        return () => {
+            window.removeEventListener('keydown', handlePlannerEscape);
+        };
+    }, [inspectedPlannerItem]);
 
     const removeWithUndo = (item, dateKey) => {
         const id = item.hiddenKey || item.canonicalId || item.id;
@@ -652,6 +723,8 @@ function MyPlannerPage() {
                     onPrint={printPlannerAgenda}
                 />
 
+                <PlannerInteractionQualityPanel quality={plannerInteractionQuality} />
+
                 <PlannerItemInspectorPanel
                     detail={inspectedPlannerDetail}
                     onClose={closePlannerInspector}
@@ -714,7 +787,10 @@ function MyPlannerPage() {
                 </div>
                 
                 {undoItem && (
-                    <div style={{
+                    <div
+                    role="status"
+                    aria-live="polite"
+                    style={{
                         position: 'fixed',
                         bottom: '80px',
                         left: '50%',

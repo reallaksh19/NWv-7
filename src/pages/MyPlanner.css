@@ -726,3 +726,104 @@
         flex: 1 1 calc(50% - 8px);
     }
 }
+
+
+/* ==========================================================================
+   My Planner interaction quality
+   Slice 31
+   ========================================================================== */
+
+.planner-interaction-quality {
+    margin: 0 0 16px;
+    padding: 16px;
+    border-radius: 18px;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    background:
+        radial-gradient(420px 180px at 100% 0%, rgba(45, 212, 191, 0.10), transparent 62%),
+        rgba(15, 23, 42, 0.74);
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.16);
+}
+
+.planner-interaction-quality--ready,
+.planner-interaction-quality--active,
+.planner-interaction-quality--focused {
+    border-color: rgba(45, 212, 191, 0.34);
+}
+
+.planner-interaction-quality--empty {
+    border-color: rgba(148, 163, 184, 0.22);
+}
+
+.planner-interaction-quality__eyebrow {
+    color: #5eead4;
+    font-size: 0.68rem;
+    font-weight: 850;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.planner-interaction-quality h2 {
+    margin: 4px 0;
+    color: var(--text-primary, #FFFFFF);
+    font-size: 1.08rem;
+    line-height: 1.18;
+}
+
+.planner-interaction-quality p {
+    margin: 0;
+    color: var(--text-secondary, #9CA5B0);
+    font-size: 0.84rem;
+    line-height: 1.45;
+}
+
+.planner-interaction-quality__checks {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.planner-interaction-quality__check {
+    padding: 10px;
+    border-radius: 14px;
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    background: rgba(255, 255, 255, 0.045);
+}
+
+.planner-interaction-quality__check span {
+    display: block;
+    color: var(--text-secondary, #9CA5B0);
+    font-size: 0.62rem;
+    font-weight: 900;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.planner-interaction-quality__check strong {
+    display: block;
+    margin-top: 4px;
+    color: var(--text-primary, #FFFFFF);
+    font-size: 0.78rem;
+    line-height: 1.35;
+}
+
+.planner-interaction-quality__check--active,
+.planner-interaction-quality__check--focused,
+.planner-interaction-quality__check--ready {
+    border-color: rgba(45, 212, 191, 0.20);
+    background: rgba(45, 212, 191, 0.07);
+}
+
+.planner-interaction-quality__notes {
+    margin: 12px 0 0;
+    padding-left: 18px;
+    color: #cbd5e1;
+    font-size: 0.8rem;
+    line-height: 1.45;
+}
+
+@media print {
+    .planner-interaction-quality {
+        display: none !important;
+    }
+}

@@ -7,6 +7,7 @@ import { getPlannerEvidence } from '../services/plannerEvidence';
 import { getPlannerViewModel } from '../services/plannerViewModel';
 import { getPlannerBulkActionSummary, makePlannerSelectionKey } from '../services/plannerBulkActions';
 import { getPlannerItemInspector } from '../services/plannerItemInspector';
+import { buildPlannerAgendaJson, buildPlannerAgendaText, downloadPlannerAgendaFile, getPlannerAgendaExport, makePlannerAgendaFilename } from '../services/plannerAgendaExport';
 import './MyPlanner.css';
 
 function PlannerControlsPanel({ viewModel, controls, onControlsChange }) {
@@ -132,6 +133,52 @@ function PlannerBulkActionBar({
     );
 }
 
+
+
+function PlannerAgendaExportPanel({
+    agenda,
+    copyStatus,
+    onCopyText,
+    onDownloadText,
+    onDownloadJson,
+    onPrint
+}) {
+    return (
+        <section className={`planner-agenda-export planner-agenda-export--${agenda.empty ? 'empty' : 'ready'}`} data-planner-agenda-export="copy-download-print">
+            <div className="planner-agenda-export__header">
+                <div>
+                    <div className="planner-agenda-export__eyebrow">Agenda export</div>
+                    <h2>Share the current planner view</h2>
+                    <p>
+                        {agenda.filteredCount} filtered item(s), {agenda.groupCount} date group(s), {agenda.categoryCount} category bucket(s).
+                    </p>
+                </div>
+            </div>
+
+            <div className="planner-agenda-export__meta">
+                <span>Search: {agenda.controls.query || 'none'}</span>
+                <span>Category: {agenda.controls.category}</span>
+                <span>Window: {agenda.controls.dateWindow}</span>
+                <span>Sort: {agenda.controls.sortMode}</span>
+            </div>
+
+            <div className="planner-agenda-export__actions">
+                <button type="button" onClick={onCopyText} disabled={agenda.empty}>
+                    {copyStatus || 'Copy text'}
+                </button>
+                <button type="button" onClick={onDownloadText} disabled={agenda.empty}>
+                    Download TXT
+                </button>
+                <button type="button" onClick={onDownloadJson} disabled={agenda.empty}>
+                    Download JSON
+                </button>
+                <button type="button" onClick={onPrint}>
+                    Print
+                </button>
+            </div>
+        </section>
+    );
+}
 
 function PlannerItemInspectorPanel({ detail, onClose, onExportCalendar, onRemove }) {
     if (!detail) return null;
@@ -385,6 +432,7 @@ function MyPlannerPage() {
 
     const [selectedPlannerIds, setSelectedPlannerIds] = useState([]);
     const [inspectedPlannerItem, setInspectedPlannerItem] = useState(null);
+    const [plannerAgendaCopyStatus, setPlannerAgendaCopyStatus] = useState('');
 
     const plannerEvidence = getPlannerEvidence(planData);
 
@@ -401,6 +449,13 @@ function MyPlannerPage() {
             ? getPlannerItemInspector(inspectedPlannerItem.item, inspectedPlannerItem.dateKey)
             : null
     ), [inspectedPlannerItem]);
+
+    const plannerAgendaExport = useMemo(() => (
+        getPlannerAgendaExport({
+            viewModel: plannerViewModel,
+            controls: plannerControls
+        })
+    ), [plannerViewModel, plannerControls]);
 
     const loadPlan = () => {
         if (plannerStorage.getPlan) {
@@ -450,6 +505,53 @@ function MyPlannerPage() {
     };
 
 
+
+
+    const copyPlannerAgendaText = async () => {
+        const text = buildPlannerAgendaText(plannerAgendaExport);
+
+        try {
+            if (navigator?.clipboard?.writeText) {
+                await navigator.clipboard.writeText(text);
+            } else {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.setAttribute('readonly', 'readonly');
+                textarea.style.position = 'fixed';
+                textarea.style.left = '-9999px';
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+            }
+
+            setPlannerAgendaCopyStatus('Copied');
+        } catch {
+            setPlannerAgendaCopyStatus('Copy failed');
+        }
+
+        setTimeout(() => setPlannerAgendaCopyStatus(''), 1800);
+    };
+
+    const downloadPlannerAgendaTextFile = () => {
+        downloadPlannerAgendaFile(
+            makePlannerAgendaFilename('txt'),
+            buildPlannerAgendaText(plannerAgendaExport),
+            'text/plain;charset=utf-8'
+        );
+    };
+
+    const downloadPlannerAgendaJsonFile = () => {
+        downloadPlannerAgendaFile(
+            makePlannerAgendaFilename('json'),
+            buildPlannerAgendaJson(plannerAgendaExport),
+            'application/json;charset=utf-8'
+        );
+    };
+
+    const printPlannerAgenda = () => {
+        window.print();
+    };
 
     const inspectPlannerItem = (item, dateKey) => {
         setInspectedPlannerItem({ item, dateKey });
@@ -539,6 +641,15 @@ function MyPlannerPage() {
                     onClearSelection={clearPlannerSelection}
                     onExportCalendar={exportSelectedPlannerItems}
                     onRemoveSelected={removeSelectedPlannerItems}
+                />
+
+                <PlannerAgendaExportPanel
+                    agenda={plannerAgendaExport}
+                    copyStatus={plannerAgendaCopyStatus}
+                    onCopyText={copyPlannerAgendaText}
+                    onDownloadText={downloadPlannerAgendaTextFile}
+                    onDownloadJson={downloadPlannerAgendaJsonFile}
+                    onPrint={printPlannerAgenda}
                 />
 
                 <PlannerItemInspectorPanel

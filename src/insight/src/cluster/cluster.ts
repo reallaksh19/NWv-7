@@ -9,6 +9,7 @@ import {
   classifyAngle,
   cosineSimilarity,
 } from "../dedup/dedup";
+import { getTopicCohesionDiagnostics } from "./topicCohesion";
 
 // ── Cluster (internal working struct) ────────────────────────────────────────
 
@@ -101,6 +102,7 @@ export function clusterIntoParentEvents(
       const rep   = centroidStory(cluster);
       const raw   = eventSimilarity(story, rep);
       const rule  = applyClusterOverrides(story, rep, raw, cfg);
+      const topicDiagnostics = getTopicCohesionDiagnostics(story, rep);
 
       let score: number;
       if (rule === "SAME")       score = 1.0;
@@ -110,6 +112,13 @@ export function clusterIntoParentEvents(
       if (score >= cfg.SAME_EVENT_THRESHOLD && score > bestScore) {
         bestScore   = score;
         bestCluster = cluster;
+        (story as any).clusterMatchDiagnostics = {
+          matchedClusterId: cluster.id,
+          rawSimilarity: raw,
+          resolvedScore: score,
+          rule,
+          topicDiagnostics,
+        };
       }
 
       // If in possible range but no rule override, do deeper multi-story check

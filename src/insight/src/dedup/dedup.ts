@@ -3,6 +3,7 @@
 // ─────────────────────────────────────────────
 
 import { InsightStory, InsightConfig, AngleLabel } from "../types";
+import { hasSharedTopicSignature, topicTokenOverlap } from "../cluster/topicCohesion";
 
 // ── Duplicate diagnostics ─────────────────────────────────────────────────────
 
@@ -452,15 +453,17 @@ export function eventSimilarity(a: InsightStory, b: InsightStory): number {
   const timeSim   = timeProximity(a, b);
   const placeSim  = jaccardOverlap(a.entities.places, b.entities.places);
   const catSim    = a.category && b.category && a.category === b.category ? 1 : 0;
+  const topicSim  = topicTokenOverlap(a, b);
 
   return (
-    0.30 * embSim  +
-    0.20 * entSim  +
-    0.15 * verbSim +
-    0.10 * numSim  +
-    0.10 * timeSim +
-    0.10 * placeSim +
-    0.05 * catSim
+    0.24 * embSim  +
+    0.17 * entSim  +
+    0.12 * verbSim +
+    0.09 * numSim  +
+    0.09 * timeSim +
+    0.08 * placeSim +
+    0.05 * catSim +
+    0.16 * topicSim
   );
 }
 
@@ -508,6 +511,23 @@ export function applyClusterOverrides(
   const sameRegion = jaccardOverlap(a.entities.places, b.entities.places) > 0.4;
 
   if (sameOrgs && sameVerbs && within24h && sameRegion) return "SAME";
+
+  // topic cohesion cluster override
+  const sharedTopic = hasSharedTopicSignature(a, b);
+  const topicOverlapScore = topicTokenOverlap(a, b);
+  const crossSource = a.sourceGroup !== b.sourceGroup || a.source !== b.source;
+  const within36h = Math.abs(a.publishedAt - b.publishedAt) < 36 * 60 * 60 * 1000;
+  const categoryCompatible = !a.category || !b.category || a.category === b.category || rawSim >= cfg.POSSIBLE_EVENT_THRESHOLD;
+
+  if (
+    sharedTopic &&
+    crossSource &&
+    within36h &&
+    (categoryCompatible || topicOverlapScore >= 0.30) &&
+    (rawSim >= cfg.POSSIBLE_EVENT_THRESHOLD - 0.12 || topicOverlapScore >= 0.30)
+  ) {
+    return "SAME";
+  }
 
   // Force DIFFERENT
   if (

@@ -109,25 +109,144 @@ export async function runInsightPipeline(
   };
 }
 
+function safeArray<T>(value: T[] | undefined | null): T[] {
+  return Array.isArray(value) ? value : [];
+}
+
+function clamp01(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(0, Math.min(1, value));
+}
+
+function getParentChildStories(
+  parent: InsightParent,
+  storiesById: Map<string, InsightStory>
+): InsightStory[] {
+  return safeArray(parent.childStoryIds)
+    .map(id => storiesById.get(id))
+    .filter(Boolean) as InsightStory[];
+}
+
+function getVisibleAngleCount(
+  parent: InsightParent,
+  storiesById: Map<string, InsightStory>
+): number {
+  const angles = new Set(
+    getParentChildStories(parent, storiesById)
+      .map(story => story.angle || "unknown")
+      .filter(angle => angle !== "unknown")
+  );
+
+  return angles.size;
+}
+
+function getChildSourceGroupCount(
+  parent: InsightParent,
+  storiesById: Map<string, InsightStory>
+): number {
+  const sourceGroups = new Set(
+    getParentChildStories(parent, storiesById)
+      .map(story => story.sourceGroup || story.source || "unknown")
+  );
+
+  return sourceGroups.size;
+}
+
+function getClusterSnapshotCount(
+  parent: InsightParent,
+  storiesById: Map<string, InsightStory>
+): number {
+  const snapshots = new Set(
+    safeArray(parent.clusterStoryIds)
+      .map(id => storiesById.get(id))
+      .filter(Boolean)
+      .map(story => story?.capturedAtSnapshot)
+      .filter(Boolean)
+  );
+
+  return snapshots.size;
+}
+
+function getAngleRecoveryCount(parent: InsightParent): number {
+  const diagnostics = (parent.debug as any)?.childSelectionDiagnostics;
+  return Number(diagnostics?.angleRecovery?.recoveredCount || 0);
+}
+
+export function computePostTreeQualityScore(
+  parent: InsightParent,
+  storiesById: Map<string, InsightStory>,
+  cfg: InsightConfig
+): number {
+  const childCount = safeArray(parent.childStoryIds).length;
+  const visibleAngleCount = getVisibleAngleCount(parent, storiesById);
+  const childSourceGroupCount = getChildSourceGroupCount(parent, storiesById);
+  const snapshotCount = getClusterSnapshotCount(parent, storiesById);
+  const recoveryCount = getAngleRecoveryCount(parent);
+
+  const baseScore = clamp01(Number(parent.finalParentScore || 0));
+  const angleBonus = Math.min(0.30, visibleAngleCount * 0.09);
+  const strongAngleBonus = visibleAngleCount >= 3 ? 0.10 : 0;
+  const childDepthBonus = Math.min(0.12, (childCount / Math.max(1, cfg.WEAK_TREE_CHILD_MIN)) * 0.10);
+  const sourceDiversityBonus = Math.min(0.10, (childSourceGroupCount / Math.max(1, cfg.MIN_SOURCES_PER_TREE)) * 0.08);
+  const snapshotBonus = Math.min(0.08, snapshotCount * 0.02);
+  const recoveryBonus = Math.min(0.06, recoveryCount * 0.02);
+
+  const singleAnglePenalty = visibleAngleCount < 2 ? 0.22 : 0;
+  const weakTreePenalty = parent.weakTree ? 0.18 : 0;
+  const thinChildPenalty = childCount < cfg.WEAK_TREE_CHILD_MIN ? 0.10 : 0;
+
+  const postTreeQualityScore =
+    baseScore +
+    angleBonus +
+    strongAngleBonus +
+    childDepthBonus +
+    sourceDiversityBonus +
+    snapshotBonus +
+    recoveryBonus -
+    singleAnglePenalty -
+    weakTreePenalty -
+    thinChildPenalty;
+
+  const roundedScore = Math.round(postTreeQualityScore * 10000) / 10000;
+
+  (parent.debug as any).postTreeQualityDiagnostics = {
+    formulaVersion: "post-tree-quality-v1-angle-first-selection",
+    baseScore,
+    childCount,
+    visibleAngleCount,
+    childSourceGroupCount,
+    snapshotCount,
+    recoveryCount,
+    angleBonus,
+    strongAngleBonus,
+    childDepthBonus,
+    sourceDiversityBonus,
+    snapshotBonus,
+    recoveryBonus,
+    singleAnglePenalty,
+    weakTreePenalty,
+    thinChildPenalty,
+    postTreeQualityScore: roundedScore,
+  };
+
+  return roundedScore;
+}
+
 // ── Top-parent selection with weak tree demotion ──────────────────────────────
 
-function selectTopParentsWithWeakTreeCheck(
+export function selectTopParentsWithWeakTreeCheck(
   ranked: InsightParent[],
   storiesById: Map<string, InsightStory>,
   cfg: InsightConfig,
   hiddenIds: Set<string>
 ): InsightParent[] {
-  const result: InsightParent[] = [];
-  let   candidateIdx = 0;
+  const evaluated: InsightParent[] = [];
 
-  while (result.length < cfg.TOP_PARENTS && candidateIdx < ranked.length) {
-    const parent = ranked[candidateIdx++];
-
+  for (const parent of ranked) {
     const clusterStories = parent.clusterStoryIds
       .map(id => storiesById.get(id))
       .filter(Boolean) as InsightStory[];
 
-    // Build child tree
     const children = buildChildTree(parent, clusterStories, cfg, hiddenIds);
     parent.childStoryIds = children.map(c => c.id);
 
@@ -138,27 +257,29 @@ function selectTopParentsWithWeakTreeCheck(
       storiesById.set(child.id, child);
     }
 
-    // FIX H-4: populate hiddenDuplicateIds on the parent itself so the UI
-    // can show "N similar hidden". Filter the pipeline-level hiddenIds set
-    // down to only IDs that belong to this parent's cluster.
     const clusterIdSet = new Set(parent.clusterStoryIds);
     parent.hiddenDuplicateIds = [...hiddenIds].filter(id => clusterIdSet.has(id));
 
-    // Weak tree check: demote if below minimum quality children
-    if (isWeakTree(children, cfg)) {
-      parent.weakTree = true;
-      // Still include if we're running low on candidates
-      if (ranked.length - candidateIdx < cfg.TOP_PARENTS - result.length) {
-        result.push(parent);
-      }
-      // Otherwise skip and try next cluster
-      continue;
-    }
+    parent.weakTree = isWeakTree(children, cfg);
+    computePostTreeQualityScore(parent, storiesById, cfg);
 
-    result.push(parent);
+    evaluated.push(parent);
   }
 
-  return result;
+  evaluated.sort((a, b) => {
+    const aQuality = Number((a.debug as any)?.postTreeQualityDiagnostics?.postTreeQualityScore || 0);
+    const bQuality = Number((b.debug as any)?.postTreeQualityDiagnostics?.postTreeQualityScore || 0);
+
+    if (bQuality !== aQuality) return bQuality - aQuality;
+    if (b.finalParentScore !== a.finalParentScore) return b.finalParentScore - a.finalParentScore;
+
+    return b.latestSeenAt - a.latestSeenAt;
+  });
+
+  const strongTrees = evaluated.filter(parent => !parent.weakTree);
+  const weakTrees = evaluated.filter(parent => parent.weakTree);
+
+  return [...strongTrees, ...weakTrees].slice(0, cfg.TOP_PARENTS);
 }
 
 // ── Incremental update (new "now" stories arrive) ─────────────────────────────

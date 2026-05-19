@@ -24,6 +24,7 @@ const commands = [
   ['npm', ['run', 'test:insight-core-recovery']],
   ['npm', ['run', 'test:insight-angle-recovery']],
   ['npm', ['run', 'test:insight-cluster-cohesion']],
+  ['npm', ['run', 'test:insight-cache-contract']],
   ['npm', ['run', 'test:insight-cluster-anchor']],
   ['npm', ['run', 'test:insight-24h-concept']],
   ['npm', ['run', 'test:insight-behavior-evidence']],

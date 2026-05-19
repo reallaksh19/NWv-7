@@ -3,12 +3,14 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import Header from '../components/Header.jsx';
 import { runInsightPipeline, DEFAULT_CONFIG } from '../insight/src/index.ts';
 import { getInsightBehaviorEvidence } from '../insight/src/diagnostics/insightBehaviorEvidence.ts';
+import { INSIGHT_OUTPUT_CONTRACT_VERSION, repairInsightResult } from '../insight/src/diagnostics/insightResultRepair.ts';
 import { getInsightCoreQualityDiagnostics } from '../insight/src/diagnostics/insightCoreQuality.ts';
 import { createInsightFetcher } from '../adapters/insightFetcher.js';
 import '../styles/InsightPage.css';
 
 // ── Cache config ──────────────────────────────────────────────────────────────
 const CACHE_KEY      = 'insight_pipeline_cache';
+const CACHE_SCHEMA_VERSION = INSIGHT_OUTPUT_CONTRACT_VERSION;
 const CACHE_MAX_AGE  = 3 * 3_600_000;   // 3 h — aligned to snapshot freshness
 const REFRESH_EVERY  = 5 * 60_000;      // background poll interval (5 min)
 const HIDDEN_REFRESH = 5 * 60_000;      // re-run if tab was hidden for >5 min
@@ -17,13 +19,18 @@ function readCache() {
   try {
     const raw = localStorage.getItem(CACHE_KEY);
     if (!raw) return null;
-    const { ts, data } = JSON.parse(raw);
+    const { ts, data, schemaVersion } = JSON.parse(raw);
+    if (schemaVersion !== CACHE_SCHEMA_VERSION) {
+      localStorage.removeItem(CACHE_KEY);
+      return null;
+    }
     if (Date.now() - ts > CACHE_MAX_AGE) return null;
     // Re-inflate the Map (JSON.stringify flattens it)
     if (data && !(data.storiesById instanceof Map)) {
       data.storiesById = new Map(Object.entries(data.storiesById || {}));
     }
-    return { ts, data };
+    const repaired = repairInsightResult(data);
+    return { ts, data: repaired };
   } catch { return null; }
 }
 
@@ -36,7 +43,11 @@ function writeCache(data) {
         ? Object.fromEntries(data.storiesById)
         : (data.storiesById || {}),
     };
-    localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data: serialisable }));
+    localStorage.setItem(CACHE_KEY, JSON.stringify({
+      ts: Date.now(),
+      schemaVersion: CACHE_SCHEMA_VERSION,
+      data: serialisable
+    }));
   } catch { /* quota errors are non-fatal */ }
 }
 
@@ -1090,7 +1101,7 @@ export default function InsightPage() {
       const config = pipelineConfigOverrides
         ? { ...DEFAULT_CONFIG, ...pipelineConfigOverrides }
         : DEFAULT_CONFIG;
-      const r = await runInsightPipeline(fetcher, config);
+      const r = repairInsightResult(await runInsightPipeline(fetcher, config));
       if (!isMounted.current) return;
 
       if (background && result?.parents?.length) {

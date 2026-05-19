@@ -2,8 +2,11 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useWeather } from '../context/WeatherContext';
 import { useSettings } from '../context/SettingsContext';
 import WeatherIcon from './WeatherIcons';
+import { DEFAULT_WEATHER_CITIES } from '../services/weatherLocations.js';
+import QuickWeatherSignalStrip from './weather/QuickWeatherSignalStrip.jsx';
+import { buildNextRiskSummary, buildTomorrowChip } from '../services/weatherInsights.js';
 
-const DEFAULT_CITIES = ['chennai', 'trichy', 'muscat'];
+const DEFAULT_CITIES = DEFAULT_WEATHER_CITIES;
 
 function normalizeCity(value) {
     return String(value || '')
@@ -501,6 +504,11 @@ const QuickWeather = () => {
                     <span className="qw-severe-text">{severeWarning}</span>
                 </div>
             )}
+
+            <QuickWeatherSignalStrip
+                riskSummary={buildNextRiskSummary(activeCityData)}
+                tomorrowChip={buildTomorrowChip(activeCityData)}
+            />
         </section>
     );
 };

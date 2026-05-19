@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { fetchWeather } from '../services/weatherService';
 import { getSettings } from '../utils/storage';
 import { useSettings } from './SettingsContext';
+import { getConfiguredWeatherCities } from '../services/weatherLocations.js';
 
 const WeatherContext = createContext();
 
@@ -52,7 +53,7 @@ export function WeatherProvider({ children, lazy = false }) {
         }
 
         try {
-            const cities = settings?.weather?.cities || ['chennai', 'trichy', 'muscat'];
+            const cities = getConfiguredWeatherCities(settings);
             const data = {};
             let successCount = 0;
 

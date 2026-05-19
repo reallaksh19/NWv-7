@@ -1,0 +1,112 @@
+.wlm-collapsed {
+    padding: 8px 16px;
+}
+
+.wlm-toggle {
+    background: none;
+    border: 1px solid var(--border-primary, #ccc);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    color: var(--text-secondary, #666);
+}
+
+.wlm-panel {
+    margin: 12px 16px;
+    border: 1px solid var(--border-primary, #ddd);
+    border-radius: 8px;
+    padding: 12px;
+    background: var(--bg-secondary, #f9f9f9);
+}
+
+.wlm-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.wlm-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.wlm-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 10px;
+}
+
+.wlm-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border-primary, #eee);
+}
+
+.wlm-city-name {
+    font-size: 0.85rem;
+}
+
+.wlm-remove {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--accent-danger, #c00);
+    font-size: 0.75rem;
+    padding: 2px 6px;
+}
+
+.wlm-remove:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.wlm-add-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.wlm-select {
+    flex: 1;
+    font-size: 0.85rem;
+    padding: 4px 8px;
+    border: 1px solid var(--border-primary, #ccc);
+    border-radius: 4px;
+    background: var(--bg-primary, #fff);
+}
+
+.wlm-add-btn {
+    padding: 4px 12px;
+    border-radius: 4px;
+    border: 1px solid var(--accent-primary, #0070f3);
+    background: var(--accent-primary, #0070f3);
+    color: #fff;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.wlm-add-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.wlm-error {
+    color: var(--accent-danger, #c00);
+    font-size: 0.78rem;
+    margin: 4px 0;
+}
+
+.wlm-reset {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.78rem;
+    color: var(--text-secondary, #888);
+    text-decoration: underline;
+    padding: 0;
+    margin-top: 4px;
+}

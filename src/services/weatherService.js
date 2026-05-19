@@ -24,11 +24,12 @@ const MODELS = {
     icon: 'https://api.open-meteo.com/v1/dwd-icon'
 };
 
-const LOCATIONS = {
-    chennai: { lat: 13.0827, lon: 80.2707 },
-    trichy: { lat: 10.7905, lon: 78.7047 },
-    muscat: { lat: 23.5859, lon: 58.4059 }
-};
+import { WEATHER_LOCATION_REGISTRY } from './weatherLocations.js';
+
+// Canonical built-in locations derived from the central registry
+const LOCATIONS = Object.fromEntries(
+    Object.entries(WEATHER_LOCATION_REGISTRY).map(([k, v]) => [k, { lat: v.lat, lon: v.lon }])
+);
 
 const WEATHER_CACHE_PREFIX = 'weather_cache_v2_';
 const LEGACY_WEATHER_CACHE_PREFIX = 'weather_cache_';
@@ -125,7 +126,8 @@ async function fetchSingleModel(modelName, lat, lon) {
         longitude: lon,
         current: 'temperature_2m,weather_code,apparent_temperature,relative_humidity_2m,wind_speed_10m,wind_direction_10m',
         hourly: 'temperature_2m,precipitation_probability,precipitation,weather_code,apparent_temperature,relative_humidity_2m,wind_speed_10m,wind_direction_10m,uv_index,cloud_cover,visibility,dew_point_2m',
-        daily: 'precipitation_probability_max,precipitation_sum,uv_index_max,temperature_2m_max,temperature_2m_min',
+        daily: 'precipitation_probability_max,precipitation_sum,uv_index_max,temperature_2m_max,temperature_2m_min,weather_code,wind_speed_10m_max',
+        forecast_days: '7',
         timezone: 'auto'
     });
     const response = await fetch(`${baseUrl}?${params}`);
@@ -348,10 +350,16 @@ function processMultiModelData(modelData, locationName) {
         if (i < 8) next8Hours.push(slot);
     }
 
+    // Build 7-day weekly forecast consensus
+    const weeklyForecast = buildDailyConsensus(modelData, getIcon, getCondition);
+
+    const timezone = modelData.ecmwf?.timezone || modelData.gfs?.timezone || modelData.icon?.timezone || 'auto';
+
     return {
         name: locationName.charAt(0).toUpperCase() + locationName.slice(1),
         icon: locationName === 'muscat' ? '📍' : '🏛️',
         fetchedAt: Date.now(),
+        timezone,
         models: { successful: successfulModels, count: successfulModels.length, names: formatModelNames(successfulModels) },
         current: {
             temp: currentTemp,
@@ -371,6 +379,73 @@ function processMultiModelData(modelData, locationName) {
         tomorrow,
         hourly24,
         next8Hours,
+        weeklyForecast,
         summary: parseFloat(totalPrecip) > 0 ? `Today's max rain probability: ${maxPrecipProb}%. Total precip: ${totalPrecip}mm. UV Index: ${maxUV || 'N/A'}.` : `Condition stable. UV Index: ${maxUV || 'N/A'}.`
     };
+}
+
+function buildDailyConsensus(modelData, getIcon, getCondition) {
+    const days = [];
+    for (let d = 0; d < 7; d++) {
+        const tempMax = [
+            modelData.ecmwf?.daily?.temperature_2m_max?.[d],
+            modelData.gfs?.daily?.temperature_2m_max?.[d],
+            modelData.icon?.daily?.temperature_2m_max?.[d],
+        ].filter(v => v != null);
+        const tempMin = [
+            modelData.ecmwf?.daily?.temperature_2m_min?.[d],
+            modelData.gfs?.daily?.temperature_2m_min?.[d],
+            modelData.icon?.daily?.temperature_2m_min?.[d],
+        ].filter(v => v != null);
+        const precipProb = [
+            modelData.ecmwf?.daily?.precipitation_probability_max?.[d],
+            modelData.gfs?.daily?.precipitation_probability_max?.[d],
+            modelData.icon?.daily?.precipitation_probability_max?.[d],
+        ].filter(v => v != null);
+        const precipSum = [
+            modelData.ecmwf?.daily?.precipitation_sum?.[d],
+            modelData.gfs?.daily?.precipitation_sum?.[d],
+            modelData.icon?.daily?.precipitation_sum?.[d],
+        ].filter(v => v != null);
+        const uvMax = [
+            modelData.ecmwf?.daily?.uv_index_max?.[d],
+            modelData.gfs?.daily?.uv_index_max?.[d],
+            modelData.icon?.daily?.uv_index_max?.[d],
+        ].filter(v => v != null);
+        const windMax = [
+            modelData.ecmwf?.daily?.wind_speed_10m_max?.[d],
+            modelData.gfs?.daily?.wind_speed_10m_max?.[d],
+            modelData.icon?.daily?.wind_speed_10m_max?.[d],
+        ].filter(v => v != null);
+        const weatherCodes = [
+            modelData.ecmwf?.daily?.weather_code?.[d],
+            modelData.gfs?.daily?.weather_code?.[d],
+            modelData.icon?.daily?.weather_code?.[d],
+        ].filter(v => v != null);
+
+        const avg = arr => arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : null;
+        const avgF = arr => arr.length ? parseFloat((arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1)) : null;
+        const code = weatherCodes.length ? weatherCodes[Math.floor(weatherCodes.length / 2)] : 0;
+
+        // Determine day label
+        const date = new Date();
+        date.setDate(date.getDate() + d);
+        const dayLabel = d === 0 ? 'Today' : d === 1 ? 'Tomorrow' : date.toLocaleDateString('en-US', { weekday: 'short' });
+        const dateStr = date.toISOString().slice(0, 10);
+
+        days.push({
+            dayLabel,
+            date: dateStr,
+            tempMax: avg(tempMax),
+            tempMin: avg(tempMin),
+            precipProb: avg(precipProb),
+            precipSum: avgF(precipSum),
+            uvMax: avg(uvMax),
+            windMax: avg(windMax),
+            weatherCode: code,
+            icon: getIcon(code),
+            condition: getCondition(code),
+        });
+    }
+    return days;
 }

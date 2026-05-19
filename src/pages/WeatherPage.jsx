@@ -6,6 +6,11 @@ import { useWeather } from '../context/WeatherContext';
 import { useSettings } from '../context/SettingsContext';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
+import { getConfiguredWeatherCities } from '../services/weatherLocations.js';
+import WeatherLocationManager from '../components/weather/WeatherLocationManager.jsx';
+import WeeklyWeatherForecast from '../components/weather/WeeklyWeatherForecast.jsx';
+import WeatherCityComparison from '../components/weather/WeatherCityComparison.jsx';
+import WeatherPlanningSummary from '../components/weather/WeatherPlanningSummary.jsx';
 
 /**
  * Weather Page
@@ -35,9 +40,7 @@ function WeatherPage() {
 
     // Use real data, if loading show spinner or skeletal
     const displayData = weatherData;
-    const cities = (settings?.weather?.cities || ['chennai', 'trichy', 'muscat'])
-        .map(c => String(c || '').trim().toLowerCase())
-        .filter(Boolean);
+    const cities = getConfiguredWeatherCities(settings);
 
     // Lift active city state up
     const [activeCity, setActiveCity] = useState(() => {
@@ -113,6 +116,8 @@ function WeatherPage() {
                     </div>
                 )}
 
+                <WeatherLocationManager />
+
                 <WeatherTrustPanel
                     weatherData={displayData}
                     cities={cities}
@@ -124,11 +129,22 @@ function WeatherPage() {
 
                 {/* Only render WeatherCard if data is available */}
                 {displayData ? (
-                    <DetailedWeatherCard
-                        weatherData={displayData}
-                        activeCity={activeCity} // Controlled by parent
-                        setActiveCity={setActiveCity} // Controlled by parent
-                    />
+                    <>
+                        <DetailedWeatherCard
+                            weatherData={displayData}
+                            activeCity={activeCity}
+                            setActiveCity={setActiveCity}
+                        />
+                        <WeatherCityComparison weatherData={displayData} cities={cities} />
+                        <WeatherPlanningSummary
+                            cityData={displayData[activeCity]}
+                            cityName={activeCity}
+                        />
+                        <WeeklyWeatherForecast
+                            forecast={displayData[activeCity]?.weeklyForecast}
+                            cityName={activeCity}
+                        />
+                    </>
                 ) : (
                     <div className="empty-state">
                         <div className="empty-state__icon">☁️</div>

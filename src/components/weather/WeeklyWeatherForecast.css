@@ -1,0 +1,84 @@
+.wwf-card {
+    margin: 12px 16px;
+    border: 1px solid var(--border-primary, #ddd);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--bg-secondary, #fafafa);
+}
+
+.wwf-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border-primary, #eee);
+}
+
+.wwf-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.wwf-city {
+    font-size: 0.78rem;
+    color: var(--text-secondary, #888);
+}
+
+.wwf-rows {
+    display: flex;
+    flex-direction: column;
+}
+
+.wwf-row {
+    display: grid;
+    grid-template-columns: 5rem 2rem 1fr 5rem 3.5rem 4.5rem 4.5rem;
+    align-items: center;
+    gap: 4px;
+    padding: 7px 14px;
+    border-bottom: 1px solid var(--border-primary, #f0f0f0);
+    font-size: 0.82rem;
+}
+
+.wwf-row:last-child {
+    border-bottom: none;
+}
+
+.wwf-row--today {
+    background: var(--bg-highlight, #f0f7ff);
+    font-weight: 500;
+}
+
+.wwf-day {
+    color: var(--text-primary, #222);
+}
+
+.wwf-icon {
+    text-align: center;
+}
+
+.wwf-condition {
+    color: var(--text-secondary, #555);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.wwf-temps {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.wwf-max {
+    color: var(--accent-warm, #e07020);
+    font-weight: 500;
+}
+
+.wwf-min {
+    color: var(--text-secondary, #888);
+}
+
+.wwf-rain, .wwf-uv, .wwf-wind {
+    font-size: 0.75rem;
+    color: var(--text-secondary, #666);
+    text-align: right;
+}

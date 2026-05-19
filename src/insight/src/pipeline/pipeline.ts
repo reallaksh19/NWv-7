@@ -131,6 +131,13 @@ function selectTopParentsWithWeakTreeCheck(
     const children = buildChildTree(parent, clusterStories, cfg, hiddenIds);
     parent.childStoryIds = children.map(c => c.id);
 
+    // Persist selected child objects back into storiesById so UI-visible child
+    // records keep the angle, childScore, informationGain and admission reasons
+    // assigned during tree construction.
+    for (const child of children) {
+      storiesById.set(child.id, child);
+    }
+
     // FIX H-4: populate hiddenDuplicateIds on the parent itself so the UI
     // can show "N similar hidden". Filter the pipeline-level hiddenIds set
     // down to only IDs that belong to this parent's cluster.

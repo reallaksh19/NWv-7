@@ -570,12 +570,14 @@ export function buildChildTree(
   cfg: InsightConfig,
   hiddenIds: Set<string>
 ): InsightStory[] {
-  // Classify angles
-  const tagged = clusterStories.map(s => ({
-    ...s,
-    parentId: parent.parentId,
-    angle: classifyAngle(s),
-  }));
+  // Classify angles on the original story objects, not transient copies.
+  // The UI resolves children from storiesById, so the angle must survive
+  // outside this function.
+  const tagged = clusterStories.map(s => {
+    s.parentId = parent.parentId;
+    s.angle = classifyAngle(s);
+    return s;
+  });
 
   // Build candidate pool
   const candidates: ChildCandidate[] = tagged.map(story => ({

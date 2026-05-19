@@ -84,6 +84,47 @@ function getNewNumberCount(candidate: InsightStory, existing: InsightStory): num
   return candidate.numbers.filter(value => !existingNumbers.has(value.toLowerCase())).length;
 }
 
+function getIntentTokens(story: InsightStory): Set<string> {
+  const text = `${story.title || ""} ${story.summary || ""}`
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ");
+
+  const titleTokens = text
+    .split(/\s+/)
+    .filter(token => token.length >= 5)
+    .filter(token => !/^(about|after|before|their|there|which|could|would|should|while|where|being|under|over)$/.test(token));
+
+  return new Set([
+    ...(story.eventVerbs || []).map(token => token.toLowerCase()),
+    ...(story.keywords || []).map(token => token.toLowerCase()),
+    ...(story.numbers || []).map(token => token.toLowerCase()),
+    classifyAngle(story),
+    ...titleTokens.slice(0, 8),
+  ]);
+}
+
+function intentOverlap(candidate: InsightStory, existing: InsightStory): number {
+  const candidateTokens = getIntentTokens(candidate);
+  const existingTokens = getIntentTokens(existing);
+
+  if (candidateTokens.size === 0 || existingTokens.size === 0) return 0;
+
+  let intersection = 0;
+  for (const token of candidateTokens) {
+    if (existingTokens.has(token)) intersection += 1;
+  }
+
+  const union = candidateTokens.size + existingTokens.size - intersection;
+  return union === 0 ? 0 : intersection / union;
+}
+
+function hasDistinctStoryIntent(candidate: InsightStory, existing: InsightStory): boolean {
+  const candidateTokens = getIntentTokens(candidate);
+  if (candidateTokens.size < 3) return false;
+
+  return intentOverlap(candidate, existing) <= 0.42;
+}
+
 export function shouldKeepUsefulVariantOverEmbeddingDuplicate(
   candidate: InsightStory,
   existing: InsightStory
@@ -103,7 +144,16 @@ export function shouldKeepUsefulVariantOverEmbeddingDuplicate(
   const hasDistinctAngle = candidateAngle !== existingAngle;
   const hasNewNumbers = getNewNumberCount(candidate, existing) > 0;
 
-  return hasDistinctAngle || hasNewNumbers;
+  const hasDistinctIntent = hasDistinctStoryIntent(candidate, existing);
+  const hasDifferentSourcePerspective =
+    candidate.sourceGroup !== existing.sourceGroup &&
+    candidate.source !== existing.source &&
+    titleSimilarity(candidate.title, existing.title) < 0.88;
+
+  return hasDistinctAngle ||
+    hasNewNumbers ||
+    hasDistinctIntent ||
+    hasDifferentSourcePerspective;
 }
 
 function recordUsefulVariantRescue(
@@ -265,6 +315,7 @@ export function removeHardDuplicates(
   const seenHashes = new Map<string, InsightStory>();
 
   for (const story of stories) {
+    story.angle = classifyAngle(story);
     if (seenUrls.has(story.canonicalUrl)) {
       const previous = seenUrls.get(story.canonicalUrl)!;
       const winner = pickWinner(previous, story);
@@ -550,6 +601,127 @@ const BACKGROUND_CONTEXT_SIGNALS = [
   /five things to know/i, /things to know/i,
 ];
 
+function countSignalMatches(patterns: RegExp[], text: string): number {
+  return patterns.reduce((count, pattern) => count + (pattern.test(text) ? 1 : 0), 0);
+}
+
+function normalizeAngleCandidateScore(score: number): number {
+  return Math.max(0, Math.round(score * 1000) / 1000);
+}
+
+function getSourceAndCategoryText(story: InsightStory): string {
+  return [
+    story.source,
+    story.sourceGroup,
+    story.category,
+    story.region,
+    story.language,
+  ].filter(Boolean).join(" ").toLowerCase();
+}
+
+function getAngleCandidateScores(story: InsightStory, text: string): Array<{
+  angle: AngleLabel;
+  score: number;
+  reason: string;
+}> {
+  const sourceAndCategory = getSourceAndCategoryText(story);
+  const lowerText = text.toLowerCase();
+  const scores: Array<{ angle: AngleLabel; score: number; reason: string }> = [];
+
+  const correctionScore = countSignalMatches(CORRECTION_SIGNALS, text);
+  if (correctionScore > 0) {
+    scores.push({
+      angle: "correction",
+      score: normalizeAngleCandidateScore(4 + correctionScore),
+      reason: "correction/update language",
+    });
+  }
+
+  const factScore = countSignalMatches(FACT_UPDATE_SIGNALS, text);
+  const numberScore = Math.min(2, (story.numbers || []).length * 0.35);
+  if (factScore > 0 || numberScore >= 0.7) {
+    scores.push({
+      angle: "fact_update",
+      score: normalizeAngleCandidateScore(2.2 + factScore + numberScore),
+      reason: "new numbers or updated facts",
+    });
+  }
+
+  const officialScore = countSignalMatches(OFFICIAL_SIGNALS, text);
+  const officialSourceScore = /government|ministry|minister|regulator|police|court|rbi|sebi|official|authority|company|press/.test(sourceAndCategory) ? 0.9 : 0;
+  const saidScore = /\b(said|announced|confirmed|statement|approved|rejected|clarified|warned)\b/i.test(text) ? 0.55 : 0;
+  if (officialScore > 0 || officialSourceScore > 0 || saidScore > 0) {
+    scores.push({
+      angle: "official_response",
+      score: normalizeAngleCandidateScore(1.5 + officialScore + officialSourceScore + saidScore),
+      reason: "official or institutional response",
+    });
+  }
+
+  const marketScore = countSignalMatches(MARKET_SIGNALS, text);
+  const marketCategoryScore = /business|market|finance|stocks|economy|money|crypto/.test(sourceAndCategory) ? 0.75 : 0;
+  if (marketScore > 0 || marketCategoryScore > 0) {
+    scores.push({
+      angle: "market_reaction",
+      score: normalizeAngleCandidateScore(1.6 + marketScore + marketCategoryScore),
+      reason: "market/business reaction",
+    });
+  }
+
+  const expertScore = countSignalMatches(EXPERT_SIGNALS, text);
+  const expertTextScore = /\b(analysis|analyst|expert|economist|researcher|strategist|explains?|why it matters|implications)\b/i.test(text) ? 0.85 : 0;
+  if (expertScore > 0 || expertTextScore > 0) {
+    scores.push({
+      angle: "expert_analysis",
+      score: normalizeAngleCandidateScore(1.7 + expertScore + expertTextScore),
+      reason: "expert analysis language",
+    });
+  }
+
+  const investigativeScore = countSignalMatches(INVESTIGATIVE_SIGNALS, text);
+  if (investigativeScore > 0) {
+    scores.push({
+      angle: "investigative_detail",
+      score: normalizeAngleCandidateScore(1.8 + investigativeScore),
+      reason: "investigative/source-detail language",
+    });
+  }
+
+  const regionalScore = countSignalMatches(REGIONAL_SIGNALS, text);
+  const regionalEntityScore = (story.entities?.places || []).length > 0 && /local|city|state|district|regional|chennai|trichy|tamil nadu|muscat|oman/i.test(text)
+    ? 0.75
+    : 0;
+  if (regionalScore > 0 || regionalEntityScore > 0) {
+    scores.push({
+      angle: "regional_followup",
+      score: normalizeAngleCandidateScore(1.5 + regionalScore + regionalEntityScore),
+      reason: "regional/local follow-up",
+    });
+  }
+
+  const reactionScore = countSignalMatches(PUBLIC_REACTION_SIGNALS, text);
+  const socialScore = /\b(backlash|viral|trending|users|residents|families|locals|public|protest|criticism|praised|condemned)\b/i.test(text) ? 0.9 : 0;
+  if (reactionScore > 0 || socialScore > 0) {
+    scores.push({
+      angle: "reaction_public",
+      score: normalizeAngleCandidateScore(1.6 + reactionScore + socialScore),
+      reason: "public/social reaction",
+    });
+  }
+
+  const backgroundScore = countSignalMatches(BACKGROUND_CONTEXT_SIGNALS, text);
+  const explainerScore = /\b(explainer|timeline|background|context|what happened|what led|key points|things to know|why this matters)\b/i.test(lowerText) ? 1 : 0;
+  if (backgroundScore > 0 || explainerScore > 0) {
+    scores.push({
+      angle: "background_context",
+      score: normalizeAngleCandidateScore(1.4 + backgroundScore + explainerScore),
+      reason: "background/explainer context",
+    });
+  }
+
+  return scores;
+}
+
 function getAngleSignalText(story: InsightStory): string {
   return `${story.title || ""} ${story.summary || ""}`.trim();
 }
@@ -559,8 +731,22 @@ function getAngleSignalText(story: InsightStory): string {
  */
 export function classifyAngle(story: InsightStory): AngleLabel {
   const text = getAngleSignalText(story);
+  const candidates = getAngleCandidateScores(story, text)
+    .sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return a.angle.localeCompare(b.angle);
+    });
 
-  if (CORRECTION_SIGNALS.some(p => p.test(text)))          return "correction";
+  const best = candidates[0];
+
+  if (best && best.score >= 1.6) {
+    (story as any).angleReason = best.reason;
+    (story as any).angleConfidence = Math.min(1, best.score / 5);
+    return best.angle;
+  }
+
+  // Secondary regex fallbacks to ensure signal patterns are always consulted.
+  if (CORRECTION_SIGNALS.some(p => p.test(text)))           return "correction";
   if (FACT_UPDATE_SIGNALS.some(p => p.test(text)))          return "fact_update";
   if (OFFICIAL_SIGNALS.some(p => p.test(text)))             return "official_response";
   if (MARKET_SIGNALS.some(p => p.test(text)))               return "market_reaction";
@@ -570,6 +756,8 @@ export function classifyAngle(story: InsightStory): AngleLabel {
   if (PUBLIC_REACTION_SIGNALS.some(p => p.test(text)))      return "reaction_public";
   if (BACKGROUND_CONTEXT_SIGNALS.some(p => p.test(text)))   return "background_context";
 
+  (story as any).angleReason = "base event report fallback";
+  (story as any).angleConfidence = 0.35;
   return "base_report";
 }
 

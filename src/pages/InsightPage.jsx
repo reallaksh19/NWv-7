@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import Header from '../components/Header.jsx';
 import { runInsightPipeline, DEFAULT_CONFIG } from '../insight/src/index.ts';
 import { getInsightBehaviorEvidence } from '../insight/src/diagnostics/insightBehaviorEvidence.ts';
+import { getInsightCoreQualityDiagnostics } from '../insight/src/diagnostics/insightCoreQuality.ts';
 import { createInsightFetcher } from '../adapters/insightFetcher.js';
 import '../styles/InsightPage.css';
 
@@ -465,98 +466,7 @@ function getInsightRankingDiagnosticSummary(rows) {
 }
 
 function getInsightDiagnostics(result, source) {
-  const parents = safeArray(result?.parents);
-  const storiesById = normalizeStoriesById(result?.storiesById);
-
-  const rankedCount = parents.length;
-  const totalChildLinks = parents.reduce((sum, parent) => {
-    return sum + safeArray(parent.childStoryIds || parent.clusterStoryIds).length;
-  }, 0);
-
-  const totalClusterLinks = parents.reduce((sum, parent) => {
-    return sum + safeArray(parent.clusterStoryIds).length;
-  }, 0);
-
-  const storyCount = storiesById.size || totalClusterLinks;
-  const risingCount = parents.filter(parent => parent.isRising).length;
-  const thinCount = parents.filter(parent => parent.weakTree).length;
-  const multiAngleCount = parents.filter(parent => {
-    const childCount = safeArray(parent.childStoryIds || parent.clusterStoryIds).length;
-    return childCount >= 2;
-  }).length;
-
-  const lowAngleCount = parents.filter(parent => {
-    const childCount = safeArray(parent.childStoryIds || parent.clusterStoryIds).length;
-    return childCount < 2;
-  }).length;
-
-  const avgAngles = rankedCount > 0 ? totalChildLinks / rankedCount : 0;
-  const avgScore = rankedCount > 0
-    ? parents.reduce((sum, parent) => sum + Number(parent.finalParentScore || 0), 0) / rankedCount
-    : 0;
-
-  const sourceLabel = getInsightSourceLabel(source);
-  const isStale = source === 'stale-snapshot' || source === 'cached';
-
-  const signalScore = clamp(Math.round(
-    (avgScore * 55) +
-    Math.min(25, avgAngles * 7) +
-    Math.min(12, multiAngleCount * 2) +
-    Math.min(8, risingCount * 2) -
-    Math.min(20, thinCount * 5) -
-    Math.min(12, lowAngleCount * 2)
-  ), 0, 100);
-
-  let grade = 'F';
-  let tone = 'danger';
-  let title = 'No insight signal';
-
-  if (signalScore >= 80) {
-    grade = 'A';
-    tone = 'good';
-    title = 'Strong insight signal';
-  } else if (signalScore >= 65) {
-    grade = 'B';
-    tone = 'info';
-    title = 'Useful insight signal';
-  } else if (signalScore >= 45) {
-    grade = 'C';
-    tone = 'warn';
-    title = 'Thin but usable signal';
-  } else if (signalScore > 0) {
-    grade = 'D';
-    tone = 'danger';
-    title = 'Weak insight signal';
-  }
-
-  const warnings = [];
-
-  if (rankedCount === 0) warnings.push('No ranked clusters available.');
-  if (lowAngleCount > 0) warnings.push(`${lowAngleCount} cluster(s) have only one detected angle.`);
-  if (thinCount > 0) warnings.push(`${thinCount} cluster(s) are marked thin.`);
-  if (isStale) warnings.push(`Source is ${sourceLabel.toLowerCase()}.`);
-
-  if (warnings.length === 0) {
-    warnings.push('No major diagnostic warnings.');
-  }
-
-  return {
-    grade,
-    tone,
-    title,
-    signalScore,
-    sourceLabel,
-    rankedCount,
-    storyCount,
-    risingCount,
-    thinCount,
-    multiAngleCount,
-    lowAngleCount,
-    avgAngles,
-    avgScore,
-    coverageLabel: `${multiAngleCount}/${rankedCount || 0}`,
-    warnings
-  };
+  return getInsightCoreQualityDiagnostics(result, source, DEFAULT_CONFIG);
 }
 
 function ICard({ story, index, storiesById = new Map() }) {

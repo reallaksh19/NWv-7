@@ -14,6 +14,7 @@
  */
 
 const H = 3_600_000;
+import { getSnapshotIntakeSummary, selectSnapshotStoriesForSlot } from './insightSnapshotIntake.js';
 const FRESH_MAX_AGE_MS = 8 * H; // snapshot file age — covers IST night gap between hourly runs
 
 const SNAPSHOT_URL = (() => {
@@ -51,25 +52,20 @@ export async function loadInsightSnapshot({ allowStale = false } = {}) {
  * @returns {(slot: string) => Promise<object[]>}
  */
 export function createSnapshotRawFetcher(snapshot) {
-  const pool = snapshot?.stories ?? [];
-
-  const filters = {
-    now:      (s) => { const a = Date.now() - Number(s.publishedAt || 0); return a >= 0 && a < 4 * H; },
-    minus4h:  (s) => { const a = Date.now() - Number(s.publishedAt || 0); return a >= 4 * H && a < 12 * H; },
-    minus12h: (s) => { const a = Date.now() - Number(s.publishedAt || 0); return a >= 12 * H && a < 24 * H; },
-    minus24h: (s) => { const a = Date.now() - Number(s.publishedAt || 0); return a >= 24 * H && a < 36 * H; },
-  };
+  const intakeSummary = getSnapshotIntakeSummary(snapshot, {
+    minStoriesPerSlot: 12,
+    maxStoriesPerSlot: 40,
+  });
 
   return async (slot) => {
-    const filtered = pool.filter(filters[slot] ?? (() => false));
-    // If the `now` bucket is empty (snapshot is a few hours old), fall back to
-    // the freshest minus4h stories so the pipeline always has something to cluster.
-    if (slot === 'now' && filtered.length === 0) {
-      return pool
-        .filter(filters.minus4h)
-        .sort((a, b) => Number(b.publishedAt) - Number(a.publishedAt))
-        .slice(0, 12);
-    }
-    return filtered;
+    const selected = selectSnapshotStoriesForSlot(snapshot, slot, {
+      minStoriesPerSlot: 12,
+      maxStoriesPerSlot: 40,
+    });
+
+    return selected.map(story => ({
+      ...story,
+      _snapshotIntakeSummary: intakeSummary,
+    }));
   };
 }

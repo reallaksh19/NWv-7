@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Header from '../components/Header';
 import plannerStorage from '../utils/plannerStorage';
 import { downloadCalendarEvent, downloadCalendarEvents } from '../utils/calendar';
@@ -9,6 +9,7 @@ import { getPlannerBulkActionSummary, makePlannerSelectionKey } from '../service
 import { getPlannerItemInspector } from '../services/plannerItemInspector';
 import { buildPlannerAgendaJson, buildPlannerAgendaText, downloadPlannerAgendaFile, getPlannerAgendaExport, makePlannerAgendaFilename } from '../services/plannerAgendaExport';
 import { getPlannerInteractionQuality } from '../services/plannerInteractionQuality';
+import { getPlannerStateHygiene, reconcilePlannerSelection } from '../services/plannerStateHygiene';
 import './MyPlanner.css';
 
 function PlannerControlsPanel({ viewModel, controls, onControlsChange }) {
@@ -137,6 +138,29 @@ function PlannerBulkActionBar({
 
 
 
+
+function PlannerStateHygienePanel({ hygiene }) {
+    return (
+        <section className={`planner-state-hygiene planner-state-hygiene--${hygiene.status}`} data-planner-state-hygiene="selection-inspector-sync">
+            <div className="planner-state-hygiene__header">
+                <div>
+                    <div className="planner-state-hygiene__eyebrow">State hygiene</div>
+                    <h2>{hygiene.status === 'clean' ? 'Planner state is clean' : 'Planner state is being cleaned'}</h2>
+                    <p>
+                        {hygiene.cleanSelectedCount} active selection(s) · {hygiene.filteredCount} filtered item(s) · inspector {hygiene.inspectorValid ? 'valid' : 'stale'}.
+                    </p>
+                </div>
+            </div>
+
+            <ul className="planner-state-hygiene__notes">
+                {hygiene.notes.map((note, index) => (
+                    <li key={`planner-state-hygiene-note-${index}`}>{note}</li>
+                ))}
+            </ul>
+        </section>
+    );
+}
+
 function PlannerInteractionQualityPanel({ quality }) {
     return (
         <section className={`planner-interaction-quality planner-interaction-quality--${quality.status}`} data-planner-interaction-quality="accessibility-readiness">
@@ -213,11 +237,12 @@ function PlannerAgendaExportPanel({
     );
 }
 
-function PlannerItemInspectorPanel({ detail, onClose, onExportCalendar, onRemove }) {
+function PlannerItemInspectorPanel({ detail, onClose, onExportCalendar, onRemove, inspectorRef }) {
     if (!detail) return null;
 
     return (
         <aside
+            ref={inspectorRef}
             className="planner-inspector"
             data-planner-item-inspector="metadata-actions"
             role="dialog"
@@ -476,6 +501,7 @@ function MyPlannerPage() {
     const [selectedPlannerIds, setSelectedPlannerIds] = useState([]);
     const [inspectedPlannerItem, setInspectedPlannerItem] = useState(null);
     const [plannerAgendaCopyStatus, setPlannerAgendaCopyStatus] = useState('');
+    const plannerInspectorRef = useRef(null);
 
     const plannerEvidence = getPlannerEvidence(planData);
 
@@ -511,6 +537,14 @@ function MyPlannerPage() {
         })
     ), [plannerViewModel.totalCount, plannerViewModel.filteredCount, plannerBulkSummary.selectedCount, inspectedPlannerDetail, plannerAgendaExport.empty, plannerAgendaCopyStatus]);
 
+    const plannerStateHygiene = useMemo(() => (
+        getPlannerStateHygiene({
+            filteredItems: plannerViewModel.filteredItems,
+            selectedKeys: selectedPlannerIds,
+            inspectedPlannerItem
+        })
+    ), [plannerViewModel.filteredItems, selectedPlannerIds, inspectedPlannerItem]);
+
     const loadPlan = () => {
         if (plannerStorage.getPlan) {
             setPlanData(plannerStorage.getPlan());
@@ -538,6 +572,29 @@ function MyPlannerPage() {
             window.removeEventListener('keydown', handlePlannerEscape);
         };
     }, [inspectedPlannerItem]);
+
+
+    useEffect(() => {
+        const reconciliation = reconcilePlannerSelection(plannerViewModel.filteredItems, selectedPlannerIds);
+
+        if (reconciliation.changed) {
+            queueMicrotask(() => setSelectedPlannerIds(reconciliation.selectedKeys));
+        }
+    }, [plannerViewModel.filteredItems, selectedPlannerIds]);
+
+    useEffect(() => {
+        if (!inspectedPlannerItem) return;
+
+        if (!plannerStateHygiene.inspectorValid) {
+            queueMicrotask(() => setInspectedPlannerItem(null));
+        }
+    }, [inspectedPlannerItem, plannerStateHygiene.inspectorValid]);
+
+    useEffect(() => {
+        if (inspectedPlannerDetail && plannerInspectorRef.current) {
+            plannerInspectorRef.current.focus();
+        }
+    }, [inspectedPlannerDetail]);
 
     const removeWithUndo = (item, dateKey) => {
         const id = item.hiddenKey || item.canonicalId || item.id;
@@ -725,11 +782,14 @@ function MyPlannerPage() {
 
                 <PlannerInteractionQualityPanel quality={plannerInteractionQuality} />
 
+                <PlannerStateHygienePanel hygiene={plannerStateHygiene} />
+
                 <PlannerItemInspectorPanel
                     detail={inspectedPlannerDetail}
                     onClose={closePlannerInspector}
                     onExportCalendar={exportInspectedPlannerItem}
                     onRemove={removeInspectedPlannerItem}
+                    inspectorRef={plannerInspectorRef}
                 />
 
                 <div className="ua-weekly-plan">

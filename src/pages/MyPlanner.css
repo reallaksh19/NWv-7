@@ -827,3 +827,64 @@
         display: none !important;
     }
 }
+
+
+/* ==========================================================================
+   My Planner state hygiene
+   Slice 32
+   ========================================================================== */
+
+.planner-state-hygiene {
+    margin: 0 0 16px;
+    padding: 16px;
+    border-radius: 18px;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    background:
+        radial-gradient(420px 180px at 100% 0%, rgba(132, 204, 22, 0.10), transparent 62%),
+        rgba(15, 23, 42, 0.74);
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.16);
+}
+
+.planner-state-hygiene--clean {
+    border-color: rgba(132, 204, 22, 0.34);
+}
+
+.planner-state-hygiene--needs-cleanup {
+    border-color: rgba(245, 158, 11, 0.38);
+}
+
+.planner-state-hygiene__eyebrow {
+    color: #bef264;
+    font-size: 0.68rem;
+    font-weight: 850;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.planner-state-hygiene h2 {
+    margin: 4px 0;
+    color: var(--text-primary, #FFFFFF);
+    font-size: 1.08rem;
+    line-height: 1.18;
+}
+
+.planner-state-hygiene p {
+    margin: 0;
+    color: var(--text-secondary, #9CA5B0);
+    font-size: 0.84rem;
+    line-height: 1.45;
+}
+
+.planner-state-hygiene__notes {
+    margin: 12px 0 0;
+    padding-left: 18px;
+    color: #cbd5e1;
+    font-size: 0.8rem;
+    line-height: 1.45;
+}
+
+@media print {
+    .planner-state-hygiene {
+        display: none !important;
+    }
+}

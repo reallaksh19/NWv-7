@@ -4,6 +4,7 @@ import Header from '../components/Header.jsx';
 import { runInsightPipeline, DEFAULT_CONFIG } from '../insight/src/index.ts';
 import { getInsightBehaviorEvidence } from '../insight/src/diagnostics/insightBehaviorEvidence.ts';
 import { INSIGHT_OUTPUT_CONTRACT_VERSION, repairInsightResult } from '../insight/src/diagnostics/insightResultRepair.ts';
+import { recoverInsightRuntimeQuality } from '../insight/src/diagnostics/insightRuntimeQualityGate.ts';
 import { getInsightCoreQualityDiagnostics } from '../insight/src/diagnostics/insightCoreQuality.ts';
 import { createInsightFetcher } from '../adapters/insightFetcher.js';
 import '../styles/InsightPage.css';
@@ -973,6 +974,7 @@ function InsightTab({ result, source }) {
   const auditRows = getInsightAuditRows(result);
   const rankingRows = getInsightRankingDiagnosticRows(result);
   const behaviorEvidence = getInsightBehaviorEvidence(result);
+  const runtimeQualityGate = result?.runtimeQualityGate || null;
 
   return (
     <div className="scroll insight-page">
@@ -1020,6 +1022,21 @@ function InsightTab({ result, source }) {
       <InsightAuditPanel auditRows={auditRows} />
       <InsightRankingDiagnosticsPanel rows={rankingRows} />
       <InsightBehaviorEvidencePanel evidence={behaviorEvidence} />
+      {runtimeQualityGate && (
+        <section
+          className={`insight-runtime-quality insight-runtime-quality--${runtimeQualityGate.recovered ? 'recovered' : runtimeQualityGate.attempted ? 'attempted' : 'accepted'}`}
+          data-insight-runtime-quality-gate="post-pipeline-recovery"
+        >
+          <div className="insight-runtime-quality__eyebrow">Runtime quality gate</div>
+          <h2>{runtimeQualityGate.recovered ? 'Recovered Insight quality' : runtimeQualityGate.attempted ? 'Recovery attempted' : 'First-pass accepted'}</h2>
+          <p>{runtimeQualityGate.reason}</p>
+          <div className="insight-runtime-quality__meta">
+            <span>Before: {runtimeQualityGate.before?.grade || '-'}</span>
+            <span>After: {runtimeQualityGate.after?.grade || '-'}</span>
+            <span>Avg angles: {Number(runtimeQualityGate.after?.avgAngles || 0).toFixed(1)}</span>
+          </div>
+        </section>
+      )}
 
       <div className="sstrip">
         <div className="sig" data-t="info"><div className="snum">{parents.length}</div><div className="slb">Ranked</div></div>
@@ -1101,7 +1118,12 @@ export default function InsightPage() {
       const config = pipelineConfigOverrides
         ? { ...DEFAULT_CONFIG, ...pipelineConfigOverrides }
         : DEFAULT_CONFIG;
-      const r = repairInsightResult(await runInsightPipeline(fetcher, config));
+      const runtimeQuality = recoverInsightRuntimeQuality(
+        repairInsightResult(await runInsightPipeline(fetcher, config)),
+        src,
+        config
+      );
+      const r = runtimeQuality.result;
       if (!isMounted.current) return;
 
       if (background && result?.parents?.length) {

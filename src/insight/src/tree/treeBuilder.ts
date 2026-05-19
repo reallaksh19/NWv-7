@@ -10,6 +10,7 @@ import {
   ChildCandidate,
 } from "../types";
 import { cosineSimilarity, getAngleVariantDecision, classifyAngle } from "../dedup/dedup";
+import { recoverAngleDiversity } from "./angleDiversityRecovery";
 
 // ── Angle display order ───────────────────────────────────────────────────────
 
@@ -96,6 +97,19 @@ interface ChildSelectionDiagnostics {
     matchedId?: string;
     metrics?: Record<string, number>;
   }>;
+  angleRecovery: {
+    targetAngleCount: number;
+    beforeAngleCount: number;
+    afterAngleCount: number;
+    recoveredCount: number;
+    recoveredCandidates: Array<{
+      id: string;
+      angle: AngleLabel;
+      sourceGroup: string;
+      score: number;
+      reasons: string[];
+    }>;
+  };
   diversityTieBreaks: Array<{
     selectedId: string;
     displacedId: string;
@@ -661,6 +675,37 @@ export function buildChildTree(
       }
     }
   }
+
+  // Angle diversity recovery fallback:
+  // Normal selection can reject useful perspectives when information gain is
+  // low after the first child. Before hiding the remaining pool, recover
+  // high-evidence stories that expose new visible angles.
+  const angleRecovery = recoverAngleDiversity(selected, remaining, cfg, 3);
+
+  diagnostics.angleRecovery = {
+    targetAngleCount: angleRecovery.targetAngleCount,
+    beforeAngleCount: angleRecovery.beforeAngleCount,
+    afterAngleCount: angleRecovery.afterAngleCount,
+    recoveredCount: angleRecovery.recoveredCount,
+    recoveredCandidates: angleRecovery.recoveredDiagnostics,
+  };
+
+  for (const recovered of angleRecovery.recovered) {
+    const admittedBecause = recovered.admittedBecause || [
+      "angle diversity recovery",
+      `recovered angle: ${recovered.angle}`,
+    ];
+
+    recovered.admittedBecause = admittedBecause;
+    (recovered.story as any).admittedBecause = admittedBecause;
+    (recovered.story as any).childScore = round3(recovered.childScore);
+    (recovered.story as any).informationGain = round3(recovered.informationGain);
+
+    recordAdmittedChild(diagnostics, recovered, admittedBecause);
+  }
+
+  remaining.length = 0;
+  remaining.push(...angleRecovery.remaining);
 
   // Remaining non-selected → hidden duplicates
   for (const c of remaining) {

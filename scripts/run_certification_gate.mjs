@@ -29,6 +29,7 @@ const commands = [
   ['npm', ['run', 'test:insight-runtime-quality-gate']],
   ['npm', ['run', 'test:insight-snapshot-intake']],
   ['npm', ['run', 'test:insight-nlp-enrichment']],
+  ['npm', ['run', 'test:insight-e2e-quality']],
   ['npm', ['run', 'test:insight-cluster-anchor']],
   ['npm', ['run', 'test:insight-24h-concept']],
   ['npm', ['run', 'test:insight-behavior-evidence']],

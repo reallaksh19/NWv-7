@@ -100,7 +100,16 @@
     "test:travel-news-workflow": "node scripts/test_travel_news_workflow_static.mjs && vitest run --config vitest.config.js src/services/travelNewsWorkflow.cert.test.js",
     "test:travel-local-ui-quality": "node scripts/test_travel_local_ui_quality_static.mjs && vitest run --config vitest.config.js src/services/travelLocalUiQuality.cert.test.js",
     "test:travel-local-e2e-closure": "node scripts/test_travel_local_e2e_closure_static.mjs && vitest run --config vitest.config.js src/services/travelLocalE2EClosure.cert.test.js",
-    "ensure:travel-local-manifest": "node scripts/ensure_travel_local_manifest.mjs"
+    "ensure:travel-local-manifest": "node scripts/ensure_travel_local_manifest.mjs",
+    "test:insight-rca-metrics": "node scripts/test_insight_rca_metrics_static.mjs && vitest run --config vitest.config.js src/services/insightQualityRca.cert.test.js",
+    "test:insight-angle-diverse-child": "node scripts/test_insight_angle_diverse_child_static.mjs && vitest run --config vitest.config.js src/insight/src/tree/angleDiverseChildSelection.cert.test.ts",
+    "test:insight-useful-variant-rescue-63c": "node scripts/test_insight_useful_variant_rescue_63c_static.mjs && vitest run --config vitest.config.js src/insight/src/tree/usefulVariantRescue.cert.test.ts",
+    "test:insight-source-diverse-child": "node scripts/test_insight_source_diverse_child_static.mjs && vitest run --config vitest.config.js src/insight/src/tree/sourceDiverseChildSelection.cert.test.ts",
+    "test:insight-post-tree-rerank": "node scripts/test_insight_post_tree_rerank_static.mjs && vitest run --config vitest.config.js src/insight/src/ranking/postTreeParentRerank.cert.test.ts",
+    "test:insight-real-snapshot-ratchet": "node scripts/test_insight_real_snapshot_ratchet_static.mjs && vitest run --config vitest.config.js src/insight/src/quality/insightRealSnapshotQualityRatchet.cert.test.ts",
+    "test:insight-real-snapshot-workflow": "node scripts/test_insight_real_snapshot_workflow_static.mjs",
+    "test:insight-quality-dashboard": "node scripts/test_insight_quality_dashboard_static.mjs && vitest run --config vitest.config.js src/services/insightQualityDashboard.cert.test.js",
+    "test:insight-wave-closure": "node scripts/test_insight_wave_closure_static.mjs && node scripts/verify_insight_wave_closure_register.mjs && vitest run --config vitest.config.js src/services/insightWaveQualityRegister.cert.test.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

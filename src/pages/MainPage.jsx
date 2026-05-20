@@ -24,9 +24,42 @@ import GradeBadge from '../components/audit/GradeBadge.jsx';
 import { auditMainTabQuality } from '../services/pageAuditGrading.js';
 import '../components/audit/AuditDetailModal.css';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
+import TravelLocationBanner from '../components/travel/TravelLocationBanner.jsx';
+import TravelLocalStories from '../components/travel/TravelLocalStories.jsx';
+import { getTravelLocationProfile } from '../services/travelLocationProfile.js';
+import { applyTravelLocationPriority } from '../services/storyLocationPriority.js';
+import {
+    fetchTravelNewsPayload,
+    mergeTravelNewsIntoNewsData,
+} from '../services/travelNewsIngestion.js';
 
 const MainPage = () => {
     const { settings } = useSettings();
+
+    const travelLocationProfile = React.useMemo(
+        () => getTravelLocationProfile(settings),
+        [settings]
+    );
+
+    const [travelNewsPayload, setTravelNewsPayload] = useState(null);
+
+    React.useEffect(() => {
+        if (!travelLocationProfile?.prioritizeStories) {
+            setTravelNewsPayload(null);
+            return;
+        }
+
+        let cancelled = false;
+
+        fetchTravelNewsPayload({ profile: travelLocationProfile }).then(payload => {
+            if (!cancelled) setTravelNewsPayload(payload);
+        });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [travelLocationProfile]);
+
     const { currentSegment } = useSegment();
     const [notifPermission, setNotifPermission] = useState(Notification.permission);
     const [toplineContent, setToplineContent] = useState(null);
@@ -39,6 +72,18 @@ const MainPage = () => {
     const { weatherData, loading: weatherLoading, refreshWeather, ensureBoot: ensureWeatherBoot } = useWeather();
 
     const { newsData, loading, errors: _errors, breakingNews, refreshNews, loadSection: _loadSection, loadedSections: _loadedSections } = useNews();
+
+    const travelMergedNewsData = React.useMemo(
+        () => travelNewsPayload
+            ? mergeTravelNewsIntoNewsData(newsData, travelNewsPayload, travelLocationProfile)
+            : newsData,
+        [newsData, travelNewsPayload, travelLocationProfile]
+    );
+
+    const prioritizedNewsData = React.useMemo(
+        () => applyTravelLocationPriority(travelMergedNewsData, travelLocationProfile),
+        [travelMergedNewsData, travelLocationProfile]
+    );
 
     const handleRefreshAll = React.useCallback(async () => {
         await Promise.all([
@@ -118,7 +163,7 @@ const MainPage = () => {
         const hasWeather = weatherData && Object.keys(weatherData).length > 0;
 
         if (hasNews || hasWeather || onThisDay) {
-            return generateTopline(newsData, weatherData, onThisDay);
+            return generateTopline(prioritizedNewsData, weatherData, onThisDay);
         }
         return null;
     }, [newsData, weatherData, onThisDay]);
@@ -241,7 +286,10 @@ const MainPage = () => {
                     <div className="main-page-grid">
                         <div className="left-col">
                             <QuickWeather />
-                            <div className="modern-card" style={{ marginTop: '20px' }}>
+                            
+                    <TravelLocationBanner profile={travelLocationProfile} />
+                    <TravelLocalStories newsData={prioritizedNewsData} profile={travelLocationProfile} />
+<div className="modern-card" style={{ marginTop: '20px' }}>
                                 <div className="modern-card__header">
                                     <h2 className="modern-card__title">🌍 Global News</h2>
                                 </div>

@@ -41,7 +41,7 @@ export const WEATHER_LOCATION_REGISTRY = {
         display: 'Colombo',
         country: 'Sri Lanka',
         icon: '🌴',
-        aliases: ['kolamba'],
+        aliases: ['columbo', 'kolamba', 'sri lanka capital'],
     },
 };
 

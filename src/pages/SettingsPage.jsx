@@ -12,6 +12,7 @@ import EmptyState from '../components/EmptyState';
 import { getRuntimeCapabilities } from '../runtime/runtimeCapabilities';
 import WeatherLocationManager from '../components/weather/WeatherLocationManager.jsx';
 import DisplayPreferencesPanel from '../components/settings/DisplayPreferencesPanel.jsx';
+import TravelLocationSettingsPanel from '../components/settings/TravelLocationSettingsPanel.jsx';
 
 /**
  * Helper to calculate a "Quality Rating" (1-5 stars) for the current ranking configuration.
@@ -296,6 +297,7 @@ function SettingsPage() {
                         <SectionTitle icon="🧩" title="Display Preferences" />
                         <SettingCard>
                             <DisplayPreferencesPanel />
+                            <TravelLocationSettingsPanel />
                         </SettingCard>
 
                         <SectionTitle icon="🌤️" title="Weather Models" />

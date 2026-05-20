@@ -55,6 +55,11 @@ for (const requiredScript of [
   'test:sections-quality-deploy',
   'test:newsdata-runtime-status',
   'test:news-prefetch-workflow-orchestration',
+  'test:travel-news-prefetch',
+  'test:travel-location-browser-smoke:static',
+  'test:travel-news-workflow',
+  'test:travel-local-ui-quality',
+  'test:travel-local-e2e-closure',
   'test:newsdata-raw-json-fallback',
   'test:certification-manifest',
 ]) {

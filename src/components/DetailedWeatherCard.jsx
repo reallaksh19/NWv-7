@@ -32,6 +32,15 @@ export default function DetailedWeatherCard({ weatherData, activeCity, setActive
 
     const [expandedCard, setExpandedCard] = useState(null);
 
+    const handleTravelAwareCityChange = (city) => {
+        setActiveCity(city);
+        try {
+            localStorage.setItem('weather_active_city', city);
+        } catch {
+            // Ignore storage write failures.
+        }
+    };
+
     if (!weatherData) return null;
     const cityData = weatherData[activeCity] || weatherData['chennai'];
 
@@ -76,7 +85,7 @@ export default function DetailedWeatherCard({ weatherData, activeCity, setActive
                     <button
                         key={city}
                         className={`dw-city-tab ${city === activeCity ? 'active' : ''}`}
-                        onClick={() => setActiveCity(city)}
+                        onClick={() => handleTravelAwareCityChange(city)}
                         aria-label={`Select ${cityLabels[city]}`}
                     >
                         <span className="dw-city-icon">{cityIcons[city] || '📍'}</span>

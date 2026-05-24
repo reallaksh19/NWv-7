@@ -82,9 +82,23 @@ def fetch_slot_stories(slot: str) -> tuple[list, dict]:
     active_feeds = get_active_slot_feeds()
     for url, source, source_group in active_feeds[slot]:
         try:
-            response = requests.get(url, timeout=15)
-            response.raise_for_status()
-            feed = feedparser.parse(response.content)
+            feed = None
+            last_error = None
+            for attempt in range(2):
+                try:
+                    response = requests.get(url, timeout=15)
+                    response.raise_for_status()
+                    feed = feedparser.parse(response.content)
+                    if attempt > 0:
+                        print(f'    retry success for {source_group} ({url})')
+                    break
+                except Exception as inner_error:
+                    last_error = inner_error
+                    if attempt == 0:
+                        print(f'    retrying {source_group} in 3s after error: {inner_error}')
+                        time.sleep(3)
+            if feed is None:
+                raise last_error if last_error else RuntimeError(f'failed to fetch feed: {url}')
             items = []
             slot_entries = feed.entries[:20]
             for idx, entry in enumerate(slot_entries):

@@ -30,6 +30,7 @@ function NewsSection({
 }) {
     const [expanded, setExpanded] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const [infoText, setInfoText] = useState('');
     const { auditResults } = useNews();
 
     // Get trending threshold from settings (default 12)
@@ -61,7 +62,7 @@ function NewsSection({
     };
 
     const handleInfoClick = (item, includeScoreBreakdown = false) => {
-        alert(buildStoryInfoText(item, { includeScoreBreakdown }) || 'No source link available.');
+        setInfoText(buildStoryInfoText(item, { includeScoreBreakdown }) || 'No source link available.');
     };
 
     const handleStoryClick = (item) => {
@@ -215,7 +216,7 @@ function NewsSection({
                             title="Ranked by relevance, breaking status, and sentiment analysis."
                             onClick={(e) => {
                                 e.stopPropagation();
-                                alert('Top Stories Ranking Logic:\n\n1. Breaking news prioritised.\n2. Consensus (multiple sources) boosted.\n3. Sentiment-based weight applied.\n4. Recent articles scored higher.');
+                                setInfoText('Top Stories Ranking Logic:\n\n1. Breaking news prioritised.\n2. Consensus (multiple sources) boosted.\n3. Sentiment-based weight applied.\n4. Recent articles scored higher.');
                             }}
                             style={{ cursor: 'help', fontSize: '0.8em', marginLeft: '5px', opacity: 0.7 }}
                         >
@@ -243,8 +244,16 @@ function NewsSection({
             <ProgressBar active={loading} />
 
             {!isCollapsed && renderContent()}
+            {infoText && (
+                <div className="news-info-modal" role="dialog" aria-modal="true">
+                    <div className="news-info-modal__content">
+                        <pre style={{ whiteSpace: 'pre-wrap', margin: 0 }}>{infoText}</pre>
+                        <button type="button" onClick={() => setInfoText('')}>Close</button>
+                    </div>
+                </div>
+            )}
         </section>
     );
 }
 
-export default NewsSection;
+export default React.memo(NewsSection);

@@ -11,6 +11,10 @@ on:
     - cron: '*/30 3-10 * * 1-5'
   workflow_dispatch:
 
+concurrency:
+  group: market-refresh
+  cancel-in-progress: false
+
 jobs:
   market:
     runs-on: ubuntu-latest
@@ -37,6 +41,7 @@ jobs:
         run: npm run test:market-snapshot
 
       - name: Commit data
+        id: commit_market
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -51,3 +56,20 @@ jobs:
           fi
           git commit -m "data: market refresh $(date -u +'%Y-%m-%dT%H:%MZ')"
           git push
+          echo "committed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Node for Pages publish
+        if: steps.commit_market.outputs.committed == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Publish updated Pages site
+        if: steps.commit_market.outputs.committed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npm ci
+          npm run build
+          npx gh-pages -d dist -u "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"

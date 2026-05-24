@@ -16,6 +16,7 @@ import time
 sys.path.insert(0, os.path.dirname(__file__))
 
 import feedparser
+import requests
 from datetime import datetime
 from prefetch_common import (
     H_MS, DAY_MS, now_ms, read_json, write_json,
@@ -39,7 +40,7 @@ SLOT_TTL_HOURS = {
     'minus24h': 4,  # was 12 — prevents 12h stale content in 24–36h bucket
 }
 
-INSIGHT_RETAIN_HOURS    = 36
+INSIGHT_RETAIN_HOURS    = 36  # 36h retention window (stories visible up to 36h from publishedAt)
 INSIGHT_ARCHIVE_KEEP_DAYS = 7
 
 # ── Source policy / feed registry ─────────────────────────────────────────────
@@ -81,9 +82,12 @@ def fetch_slot_stories(slot: str) -> tuple[list, dict]:
     active_feeds = get_active_slot_feeds()
     for url, source, source_group in active_feeds[slot]:
         try:
-            feed = feedparser.parse(url)
+            response = requests.get(url, timeout=15)
+            response.raise_for_status()
+            feed = feedparser.parse(response.content)
             items = []
-            for entry in feed.entries[:20]:
+            slot_entries = feed.entries[:20]
+            for idx, entry in enumerate(slot_entries):
                 pub = entry.get('published_parsed')
                 pub_ms = int(time.mktime(pub) * 1000) if pub else now_ms()
                 raw = {
@@ -91,10 +95,12 @@ def fetch_slot_stories(slot: str) -> tuple[list, dict]:
                     'summary':     entry.get('summary', ''),
                     'url':         entry.get('link', ''),
                     'publishedAt': pub_ms,
+                    'feedPosition': idx,
+                    'feedLength': len(slot_entries),
                 }
                 items.append(normalize_basic_story(raw, source, source_group))
             source_health[source_group] = {
-                'ok':          True,
+                'ok':          len(items) > 0,
                 'items':       len(items),
                 'lastSuccess': now_ms(),
             }

@@ -496,8 +496,8 @@ function computeInformationGain(
 
   // FIX H-2: weights now sum to 1.0 (was 0.9 — newSourceScore was 0.2, raised to 0.3)
   return Math.max(0,
-    0.4 * newFactsScore +
-    0.3 * newAngleScore +
+    0.3 * newFactsScore +
+    0.4 * newAngleScore +
     0.3 * newSourceScore -
     0.1 * redundancyPenalty
   );

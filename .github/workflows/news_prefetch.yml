@@ -63,6 +63,9 @@ jobs:
       - name: Validate Sections prefetch quality
         run: python scripts/validate_sections_prefetch_output.py
 
+      - name: Generate quality dashboard
+        run: node scripts/generate_quality_dashboard.mjs
+
       - name: Upload Sections quality report
         uses: actions/upload-artifact@v4
         if: always()
@@ -71,6 +74,7 @@ jobs:
           path: |
             public/newsdata/sections_quality_report.json
             public/newsdata/sections_quality_summary.md
+            public/newsdata/quality_dashboard.json
           if-no-files-found: warn
 
       - name: Decide whether news data commit is needed

@@ -22,14 +22,17 @@ ANGLE_PATTERNS = {
     "official_response": [
         r"\bofficials?\b", r"\bministry\b", r"\bregulator\b", r"\bgovernment\b",
         r"\bstatement\b", r"\bconfirmed\b", r"\bapproved\b", r"\brejected\b",
+        r"\bminister says\b", r"\bspokesperson\b", r"\bgovernment confirms\b", r"\bcabinet decides\b",
     ],
     "market_reaction": [
         r"\bshares?\b", r"\bstocks?\b", r"\binvestors?\b", r"\bmarket\b",
         r"\bfell\b", r"\brose\b", r"\bsurged\b", r"\btumbled\b", r"\btrading\b",
+        r"\bstocks rally\b", r"\bshares fall\b", r"\bbond yields?\b", r"\brupee weakens\b",
     ],
     "expert_analysis": [
         r"\banalysts?\b", r"\bexperts?\b", r"\banalysis\b", r"\bexplains?\b",
         r"\bwhy it matters\b", r"\bimplications?\b", r"\bwarns?\b",
+        r"\beconomists? warn\b", r"\banalysts? predict\b", r"\bstudy finds\b", r"\bresearch shows\b",
     ],
     "reaction_public": [
         r"\busers?\b", r"\bpublic\b", r"\bresidents?\b", r"\bbacklash\b",
@@ -46,6 +49,15 @@ ANGLE_PATTERNS = {
     "fact_update": [
         r"\bupdated?\b", r"\bnew figures?\b", r"\bdata\b", r"\bnumber\b",
         r"\bpercent\b", r"\b%\b", r"\bmillion\b", r"\bbillion\b",
+    ],
+    "investigative_detail": [
+        r"\binvestigation\b", r"\bprobe\b", r"\bwhistleblower\b", r"\bleaked documents?\b", r"\bcourt filing\b",
+    ],
+    "correction": [
+        r"\bcorrection\b", r"\bclarified\b", r"\bwalked back\b", r"\bupdated after\b",
+    ],
+    "opinion_editorial": [
+        r"\bopinion\b", r"\beditorial\b", r"\bcolumn\b", r"\bview:\b", r"\bop-ed\b",
     ],
 }
 
@@ -85,7 +97,7 @@ def infer_angle_hints(story: dict[str, Any]) -> list[dict[str, Any]]:
         if matches:
             hints.append({
                 "angle": angle,
-                "score": round(min(1.0, 0.35 + 0.18 * len(matches)), 3),
+                "score": round(min(1.0, 0.45 + 0.22 * len(matches)), 3),
                 "matches": matches[:5],
             })
 

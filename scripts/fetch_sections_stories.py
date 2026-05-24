@@ -13,6 +13,7 @@ import time
 sys.path.insert(0, os.path.dirname(__file__))
 
 import feedparser
+import requests
 from prefetch_common import (
     H_MS, DAY_MS, now_ms, read_json, write_json,
     normalize_basic_story, is_suppressed, compute_content_hash
@@ -46,7 +47,9 @@ def fetch_section(section: str, feeds: list, ts: int) -> tuple[list, dict]:
     results, source_health = [], {}
     for url, source, source_group in feeds:
         try:
-            feed = feedparser.parse(url)
+            response = requests.get(url, timeout=15)
+            response.raise_for_status()
+            feed = feedparser.parse(response.content)
             feed_items = []
             for entry in feed.entries[:20]:
                 pub = entry.get('published_parsed')

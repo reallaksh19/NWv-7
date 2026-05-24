@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
 import Header from '../components/Header';
@@ -145,6 +145,10 @@ const MainPage = () => {
 
     // --- LOGIC: Sync Segment with Data Refresh & UI ---
     useEffect(() => {
+        if (!isInitialFetchDone.current) {
+            isInitialFetchDone.current = true;
+            return;
+        }
         refreshWeather();
         refreshNews();
     }, [currentSegment.id, refreshNews, refreshWeather]);
@@ -487,3 +491,4 @@ const MainPage = () => {
 }
 
 export default MainPage;
+    const isInitialFetchDone = useRef(false);

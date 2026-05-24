@@ -15,7 +15,7 @@ export function composeBalancedFeed(articles, limit = 20, maxTopicPercent = 40, 
     // Quality gate: filter out low-relevance articles before sorting.
     // Minimum score of 2.5 keeps breaking news while filtering celebrity filler.
     // Safety: if fewer than 5 qualify, use top-scored from full list to avoid empty feed.
-    const MIN_IMPACT = 2.5;
+    const MIN_IMPACT = 1.5;
     const qualified  = articles.filter(a => (a.impactScore || 0) >= MIN_IMPACT);
     const pool       = qualified.length >= 5
         ? qualified
@@ -24,7 +24,25 @@ export function composeBalancedFeed(articles, limit = 20, maxTopicPercent = 40, 
     // Rank by temporal decay scoring (freshness + impact)
     const sorted = rankByTemporalScore(pool);
 
+    const sectionBuckets = new Map();
     for (const article of sorted) {
+        const section = article.section || 'general';
+        if (!sectionBuckets.has(section)) sectionBuckets.set(section, []);
+        sectionBuckets.get(section).push(article);
+    }
+
+    const sectionOrder = Array.from(sectionBuckets.keys());
+    let sectionCursor = 0;
+
+    while (selected.length < limit && sectionOrder.length > 0) {
+        const section = sectionOrder[sectionCursor % sectionOrder.length];
+        const bucket = sectionBuckets.get(section) || [];
+        const article = bucket.shift();
+        if (!article) {
+            sectionBuckets.delete(section);
+            sectionOrder.splice(sectionCursor % sectionOrder.length, 1);
+            continue;
+        }
         if (selected.length >= limit) break;
 
         // Extract topic and geography
@@ -42,11 +60,13 @@ export function composeBalancedFeed(articles, limit = 20, maxTopicPercent = 40, 
         // Note: We check strictly '>=', so if max is 8, and we have 8, we skip the 9th.
         if (topicCount >= maxPerTopic) {
             // console.log(`[Composer] Skipping "${article.title}" - topic limit reached`);
+            sectionCursor += 1;
             continue;
         }
 
         if (geoCount >= maxPerGeo) {
             // console.log(`[Composer] Skipping "${article.title}" - geo limit reached`);
+            sectionCursor += 1;
             continue;
         }
 
@@ -54,6 +74,7 @@ export function composeBalancedFeed(articles, limit = 20, maxTopicPercent = 40, 
         selected.push(article);
         topicCounts.set(topic, topicCount + 1);
         geoCounts.set(geo, geoCount + 1);
+        sectionCursor += 1;
     }
 
     console.log('[Composer] Final composition:', {

@@ -75,7 +75,7 @@ def story_source_group(story: dict[str, Any]) -> str:
     ).strip().lower() or "unknown_source"
 
 
-def story_is_usable_24h(story: dict[str, Any], now_ms: int) -> bool:
+def story_is_within_retention_window(story: dict[str, Any], now_ms: int) -> bool:
     published_at = int(story.get("publishedAt") or 0)
     if published_at <= 0:
         return False
@@ -132,7 +132,7 @@ def validate_snapshot(snapshot: dict[str, Any], now_ms: int) -> dict[str, Any]:
 
     total_stories = len(stories)
     source_groups = Counter(story_source_group(story) for story in stories)
-    usable_24h = [story for story in stories if story_is_usable_24h(story, now_ms)]
+    usable_36h = [story for story in stories if story_is_within_retention_window(story, now_ms)]
 
     stories_with_hints = [story for story in stories if story_angle_hints(story)]
     non_base_angle_stories = [
@@ -154,9 +154,9 @@ def validate_snapshot(snapshot: dict[str, Any], now_ms: int) -> dict[str, Any]:
     if total_stories < MIN_TOTAL_STORIES:
         warnings.append(f"Thin story pool: {total_stories} stories < recommended {MIN_TOTAL_STORIES}")
 
-    if len(usable_24h) < MIN_USABLE_24H_STORIES:
+    if len(usable_36h) < MIN_USABLE_24H_STORIES:
         warnings.append(
-            f"Thin usable 24h pool: {len(usable_24h)} stories < recommended {MIN_USABLE_24H_STORIES}"
+            f"Thin usable 36h pool: {len(usable_36h)} stories < recommended {MIN_USABLE_24H_STORIES}"
         )
 
     if len(source_groups) < MIN_SOURCE_GROUPS:

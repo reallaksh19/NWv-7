@@ -54,12 +54,16 @@ export function isTierD(story: RawStory): boolean {
  */
 export function computeFreshnessScore(publishedAt: number): number {
   const ageHours = (Date.now() - publishedAt) / (60 * 60 * 1000);
-  if (ageHours <= 2)  return 1.0;
-  if (ageHours <= 6)  return 0.90;
-  if (ageHours <= 12) return 0.75;
-  if (ageHours <= 18) return 0.60;
-  if (ageHours <= 24) return 0.45;
-  return 0.0; // older than 24h for freshness purposes; 48h hard cutoff enforced in pipeline
+  if (ageHours < 0) return 1.0;
+  return Math.exp((-0.693 * ageHours) / 8); // 8h half-life
+}
+
+export function computeRawProminence(raw: RawStory): number {
+  if (typeof raw.feedPosition !== "number" || typeof raw.feedLength !== "number" || raw.feedLength <= 0) {
+    return 0.5;
+  }
+  const prominence = 1 - (raw.feedPosition / raw.feedLength);
+  return Math.max(0, Math.min(1, prominence));
 }
 
 /**
@@ -168,7 +172,7 @@ export function normalizeStory(
     sourceTier: tier,
     sourceAuthority: TIER_AUTHORITY[tier],
     freshnessScore: computeFreshnessScore(raw.publishedAt),
-    rawProminence: 0.5, // override from source placement data if available
+    rawProminence: computeRawProminence(raw),
     sentiment: 0,       // override from sentiment model if available
     factualDensity: computeFactualDensity(raw, extractedNumbers, allEntities),
     summaryQuality: computeSummaryQuality(raw.summary),

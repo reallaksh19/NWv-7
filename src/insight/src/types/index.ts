@@ -40,6 +40,8 @@ export interface RawStory {
   category?: string;
   region?: string;
   language?: string;
+  feedPosition?: number;
+  feedLength?: number;
 }
 
 // ── Normalized story after enrichment ────────────────────────────────────────

@@ -144,6 +144,21 @@ export function shouldKeepUsefulVariantOverEmbeddingDuplicate(
   const existingAngle = classifyAngle(existing);
   const hasDistinctAngle = candidateAngle !== existingAngle;
   const hasNewNumbers = getNewNumberCount(candidate, existing) > 0;
+  const candidateEntitySet = new Set([
+    ...(candidate.entities?.people || []),
+    ...(candidate.entities?.orgs || []),
+    ...(candidate.entities?.places || []),
+  ].map(x => x.toLowerCase()));
+  const existingEntitySet = new Set([
+    ...(existing.entities?.people || []),
+    ...(existing.entities?.orgs || []),
+    ...(existing.entities?.places || []),
+  ].map(x => x.toLowerCase()));
+  let newEntities = 0;
+  for (const ent of candidateEntitySet) {
+    if (!existingEntitySet.has(ent)) newEntities += 1;
+  }
+  const hasTwoNewEntities = newEntities >= 2;
 
   const hasDistinctIntent = hasDistinctStoryIntent(candidate, existing);
   const hasDifferentSourcePerspective =
@@ -153,6 +168,7 @@ export function shouldKeepUsefulVariantOverEmbeddingDuplicate(
 
   return hasDistinctAngle ||
     hasNewNumbers ||
+    hasTwoNewEntities ||
     hasDistinctIntent ||
     hasDifferentSourcePerspective;
 }
@@ -620,6 +636,9 @@ const BACKGROUND_CONTEXT_SIGNALS = [
   /history of/i, /context/i, /key points/i, /all you need to know/i,
   /five things to know/i, /things to know/i,
 ];
+const OPINION_EDITORIAL_SIGNALS = [
+  /\bopinion\b/i, /\beditorial\b/i, /\bcolumn\b/i, /\bview:\b/i, /\bop-ed\b/i,
+];
 
 function countSignalMatches(patterns: RegExp[], text: string): number {
   return patterns.reduce((count, pattern) => count + (pattern.test(text) ? 1 : 0), 0);
@@ -661,7 +680,7 @@ function getAngleCandidateScores(story: InsightStory, text: string): Array<{
     const rawScore = typeof hint === "string" ? 0.5 : Number(hint?.score || 0.5);
     scores.push({
       angle: angle as AngleLabel,
-      score: normalizeAngleCandidateScore(2.4 + Math.max(0, Math.min(1, rawScore)) * 2.2),
+      score: normalizeAngleCandidateScore(3.0 + Math.max(0, Math.min(1, rawScore)) * 2.2),
       reason: "collector JSON angle hint",
     });
   }
@@ -756,6 +775,14 @@ function getAngleCandidateScores(story: InsightStory, text: string): Array<{
       reason: "background/explainer context",
     });
   }
+  const opinionScore = countSignalMatches(OPINION_EDITORIAL_SIGNALS, text);
+  if (opinionScore > 0) {
+    scores.push({
+      angle: "opinion_editorial",
+      score: normalizeAngleCandidateScore(1.4 + opinionScore),
+      reason: "opinion/editorial labeling",
+    });
+  }
 
   return scores;
 }
@@ -777,7 +804,7 @@ export function classifyAngle(story: InsightStory): AngleLabel {
 
   const best = candidates[0];
 
-  if (best && best.score >= 1.6) {
+  if (best && best.score >= 1.3) {
     (story as any).angleReason = best.reason;
     (story as any).angleConfidence = Math.min(1, best.score / 5);
     return best.angle;
@@ -793,6 +820,15 @@ export function classifyAngle(story: InsightStory): AngleLabel {
   if (REGIONAL_SIGNALS.some(p => p.test(text)))             return "regional_followup";
   if (PUBLIC_REACTION_SIGNALS.some(p => p.test(text)))      return "reaction_public";
   if (BACKGROUND_CONTEXT_SIGNALS.some(p => p.test(text)))   return "background_context";
+  if (OPINION_EDITORIAL_SIGNALS.some(p => p.test(text)))    return "opinion_editorial";
+
+  if (candidates.length >= 2) {
+    const topTwo = candidates.slice(0, 2);
+    const composite = topTwo[0].score + topTwo[1].score;
+    if (topTwo[0].score < 1.3 && topTwo[1].score < 1.3 && composite >= 2.2) {
+      return topTwo[0].angle;
+    }
+  }
 
   (story as any).angleReason = "base event report fallback";
   (story as any).angleConfidence = 0.35;

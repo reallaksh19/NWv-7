@@ -5,7 +5,7 @@ import {
   InsightStory,
 } from "../types";
 
-const TARGET_VISIBLE_ANGLE_COUNT = 3;
+const TARGET_VISIBLE_ANGLE_COUNT = 4;
 
 export interface AngleRecoveryDiagnostic {
   id: string;
@@ -85,7 +85,7 @@ export function scoreAngleRecoveryCandidate(
   }
 
   if (!selectedAngles.has(angle)) {
-    score += 4;
+    score += 5;
     reasons.push(`new visible angle: ${angle}`);
   } else {
     score -= 2;
@@ -141,10 +141,7 @@ export function recoverAngleDiversity(
   const recoveredDiagnostics: AngleRecoveryDiagnostic[] = [];
   const selectedIds = new Set(selected.map(story => story.id));
 
-  while (
-    selected.length < cfg.MAX_CHILDREN_PER_PARENT &&
-    getVisibleAngleCount(selected) < targetAngleCount
-  ) {
+  while (selected.length < cfg.MAX_CHILDREN_PER_PARENT) {
     const selectedAngles = getSelectedAngles(selected);
 
     const candidates = pool

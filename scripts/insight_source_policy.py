@@ -27,7 +27,7 @@ SOURCE_HEALTH_POLICY_VERSION = "insight-source-health-policy-v1"
 
 SOURCE_HEALTH_DEFAULTS = {
     "failedBackoffHours": 6,
-    "zeroItemBackoffHours": 3,
+    "zeroItemBackoffHours": 6,
     "minItemsForHealthy": 3,
     "maxSuppressedFractionPerSlot": 0.5,
 }
@@ -155,6 +155,8 @@ def source_health_score(health: dict[str, Any] | None, ts: int | None = None) ->
         return 0.05
 
     items = int(health.get("items", 0) or 0)
+    if items == 0:
+        return 0.2
     last_success = int(health.get("lastSuccess", 0) or 0)
     ts = int(ts or time.time() * 1000)
 

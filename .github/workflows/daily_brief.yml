@@ -2,9 +2,13 @@ name: Daily News Brief
 
 on:
   schedule:
-    # Runs at 01:00 UTC (6:30 AM IST) daily
-    - cron: '0 1 * * *'
+    # Runs at 01:00, 07:00, 13:00 UTC (6:30 AM, 12:30 PM, 6:30 PM IST)
+    - cron: '0 1,7,13 * * *'
   workflow_dispatch: # Allows manual trigger
+
+concurrency:
+  group: daily-news-brief
+  cancel-in-progress: false
 
 jobs:
   update-news:
@@ -32,13 +36,12 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           python scripts/daily_brief.py
-          python scripts/up_ahead.py
 
       - name: Commit and Push changes
         run: |
           git config --global user.name 'Daily Brief Bot'
           git config --global user.email 'bot@noreply.github.com'
-          git add public/data/epaper_data.json public/data/up_ahead.json
+          git add public/data/epaper_data.json
           # Check if there are changes to commit
           if git diff --staged --quiet; then
             echo "No changes to commit"

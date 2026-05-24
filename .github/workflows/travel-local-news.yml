@@ -14,6 +14,9 @@ jobs:
   collect-travel-news:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    strategy:
+      matrix:
+        location: [colombo, muscat, chennai, trichy]
     permissions:
       contents: write
 
@@ -33,7 +36,7 @@ jobs:
       - name: Collect travel local news
         run: node scripts/collect_travel_local_news.mjs
         env:
-          TRAVEL_LOCATION_KEY: ${{ github.event.inputs.location_key || 'colombo' }}
+          TRAVEL_LOCATION_KEY: ${{ github.event.inputs.location_key || matrix.location }}
 
       - name: Commit updated travel news JSON
         uses: stefanzweifel/git-auto-commit-action@v5

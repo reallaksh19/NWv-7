@@ -47,7 +47,11 @@ function sectionSnapshotAgeMs(snapshot) {
 function getSnapshotUrl() {
   const base = import.meta?.env?.BASE_URL || '/';
   const cleanBase = base.endsWith('/') ? base.slice(0, -1) : base;
-  return `${cleanBase}${SECTION_SNAPSHOT_PATH}?v=${Date.now()}`;
+  return `${cleanBase}${SECTION_SNAPSHOT_PATH}?t=${Date.now()}`;
+}
+
+async function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 function normalizePrefetchedSectionItem(item, requestedSection, sourceSection) {
@@ -102,17 +106,27 @@ export async function loadSectionsSnapshot({ force = false } = {}) {
     return memorySnapshot.snapshot;
   }
 
-  const response = await fetch(getSnapshotUrl(), {
-    cache: 'no-store',
-    headers: {
-      'cache-control': 'no-cache',
-      pragma: 'no-cache',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`sections snapshot fetch failed: HTTP ${response.status}`);
+  let response;
+  let lastError;
+  const backoffs = [2000, 4000, 8000];
+  for (let attempt = 0; attempt < backoffs.length; attempt += 1) {
+    try {
+      response = await fetch(getSnapshotUrl(), {
+        cache: 'no-store',
+        headers: {
+          'cache-control': 'no-cache',
+          pragma: 'no-cache',
+        },
+      });
+      if (!response.ok) throw new Error(`sections snapshot fetch failed: HTTP ${response.status}`);
+      break;
+    } catch (error) {
+      lastError = error;
+      if (attempt < backoffs.length - 1) await sleep(backoffs[attempt]);
+    }
   }
+
+  if (!response || !response.ok) throw lastError || new Error('sections snapshot fetch failed');
 
   const snapshot = await response.json();
 

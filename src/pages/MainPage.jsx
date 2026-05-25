@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
 import Header from '../components/Header';
@@ -36,6 +36,7 @@ import {
 
 const MainPage = () => {
     const { settings } = useSettings();
+    const isInitialFetchDone = useRef(false);
 
     const travelLocationProfile = React.useMemo(
         () => getTravelLocationProfile(settings),
@@ -145,6 +146,10 @@ const MainPage = () => {
 
     // --- LOGIC: Sync Segment with Data Refresh & UI ---
     useEffect(() => {
+        if (!isInitialFetchDone.current) {
+            isInitialFetchDone.current = true;
+            return;
+        }
         refreshWeather();
         refreshNews();
     }, [currentSegment.id, refreshNews, refreshWeather]);
@@ -168,7 +173,7 @@ const MainPage = () => {
             return generateTopline(prioritizedNewsData, weatherData, onThisDay, { includeOnThisDay: isOnThisDayEnabled });
         }
         return null;
-    }, [newsData, weatherData, onThisDay]);
+    }, [newsData, weatherData, onThisDay, prioritizedNewsData, settings]);
 
     useEffect(() => {
         if (generatedTopline) {

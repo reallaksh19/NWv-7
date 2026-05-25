@@ -528,8 +528,7 @@ export async function fetchSectionNews(section, limit = 10, allowedSources = nul
     if (section === 'entertainment') {
         console.log('[RSS] Using entertainmentService for entertainment section');
         try {
-            const entSettings = getSettings();
-            const entertainmentSettings = entSettings?.entertainment || {};
+            const entertainmentSettings = settings?.entertainment || {};
             const articles = await fetchAllEntertainment(entertainmentSettings);
             console.log(`[RSS] Entertainment: Got ${articles.length} articles with distribution`);
             return articles.slice(0, limit);
@@ -625,7 +624,6 @@ export async function fetchSectionNews(section, limit = 10, allowedSources = nul
         // Use specialized settings for Buzz (social) section
         let rankingOverrides = null;
         if (section === 'social') {
-            const settings = getSettings();
             if (settings.buzzRankingWeights) {
                 // Merge base weights with buzz specific overrides
                 rankingOverrides = {
@@ -862,9 +860,10 @@ async function rankAndFilter(items, section, limit, allowedSources, overrideSett
  * @returns {Object} Cache stats including entries and ages
  */
 export function getCacheStats() {
+    const settings = getSettings();
     const stats = {
         totalEntries: memoryCache.size,
-        cacheEnabled: getSettings().enableCache !== false,
+        cacheEnabled: settings.enableCache !== false,
         cacheTTL: CACHE_TTL_MS / 1000, // in seconds
         entries: []
     };

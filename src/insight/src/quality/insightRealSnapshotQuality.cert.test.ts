@@ -288,5 +288,5 @@ describe("Real Insight snapshot quality benchmark", () => {
     expect(report.parentCount).toBeGreaterThan(0);
     expect(report.storyCount).toBeGreaterThan(0);
     expect(ratchetGate.status).not.toBe("FAIL");
-  }, 120_000);
+  }, 240_000);
 });

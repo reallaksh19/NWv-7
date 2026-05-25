@@ -144,6 +144,16 @@ function NewsSection({
                                     {sanitizeHtmlText(item.headline || item.title)}
                                 </h3>
 
+                                {item.imageUrl && (
+                                    <img
+                                        src={item.imageUrl}
+                                        alt={sanitizeHtmlText(item.headline || item.title)}
+                                        className="mnc-image"
+                                        loading="lazy"
+                                        referrerPolicy="no-referrer"
+                                    />
+                                )}
+
                                 {item.summary && (
                                     <p className="mnc-summary">
                                         {sanitizeHtmlText(item.summary, { maxLength: 200 })}

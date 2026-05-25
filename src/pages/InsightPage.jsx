@@ -105,6 +105,7 @@ const ANGLE_DISPLAY_LABELS = {
   background_context: 'Background context',
   reaction_public: 'Public reaction',
   investigative_detail: 'Investigative detail',
+  opinion_editorial: 'Opinion/editorial',
   unknown: 'Unknown angle'
 };
 
@@ -978,6 +979,33 @@ function InsightTab({ result, source }) {
   const rankingRows = getInsightRankingDiagnosticRows(result);
   const behaviorEvidence = getInsightBehaviorEvidence(result);
   const runtimeQualityGate = result?.runtimeQualityGate || null;
+  const newestStoryTs = React.useMemo(() => {
+    let latest = 0;
+    for (const story of storiesById.values()) {
+      const ts = Number(story?.publishedAt || 0);
+      if (ts > latest) latest = ts;
+    }
+    return latest;
+  }, [storiesById]);
+  const freshnessMinutes = newestStoryTs > 0 ? Math.max(0, Math.round((Date.now() - newestStoryTs) / 60000)) : null;
+  const sourceGroupCount = React.useMemo(() => {
+    const set = new Set();
+    for (const story of storiesById.values()) {
+      set.add(story?.sourceGroup || story?.source || 'unknown');
+    }
+    return set.size;
+  }, [storiesById]);
+  const angleCounts = React.useMemo(() => {
+    const map = new Map();
+    for (const parent of parents) {
+      for (const id of safeArray(parent.childStoryIds)) {
+        const s = storiesById.get(id);
+        const key = String(s?.angle || 'unknown');
+        map.set(key, (map.get(key) || 0) + 1);
+      }
+    }
+    return [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6);
+  }, [parents, storiesById]);
 
   const insightTabAudit = React.useMemo(() => auditInsightTabQuality({
     result,
@@ -1036,6 +1064,20 @@ function InsightTab({ result, source }) {
           </div>
         </div>
       </div>
+      <div className="ins-meta" style={{ marginTop: 8 }}>
+        <span>{freshnessMinutes == null ? 'Freshness unknown' : `Data from ~${freshnessMinutes} min ago`}</span>
+        <span>·</span>
+        <span>{sourceGroupCount} source groups</span>
+        <span>·</span>
+        <span>{angleCounts.length} visible angle types</span>
+      </div>
+      {angleCounts.length > 0 && (
+        <div className="ins-meta" style={{ marginTop: 6, flexWrap: 'wrap', gap: 6 }}>
+          {angleCounts.map(([angle, count]) => (
+            <span key={angle}>{formatAngleLabel(angle)}: <b>{count}</b></span>
+          ))}
+        </div>
+      )}
 
       <InsightDiagnosticsPanel diagnostics={diagnostics} />
       <InsightAuditPanel auditRows={auditRows} />

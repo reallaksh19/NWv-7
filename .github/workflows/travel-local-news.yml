@@ -25,7 +25,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22'
           cache: 'npm'
@@ -39,7 +39,7 @@ jobs:
           TRAVEL_LOCATION_KEY: ${{ github.event.inputs.location_key || matrix.location }}
 
       - name: Commit updated travel news JSON
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v6
         with:
           commit_message: 'chore: update travel-local news JSON [skip ci]'
           file_pattern: 'public/data/travel-local-*.json'

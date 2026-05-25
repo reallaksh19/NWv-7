@@ -155,7 +155,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add public/newsdata/insight_latest.json public/newsdata/sections_latest.json public/newsdata/source_health.json public/newsdata/prefetch_commit_manifest.json
+          git add public/newsdata/insight_latest.json public/newsdata/sections_latest.json public/newsdata/source_health.json public/newsdata/prefetch_commit_manifest.json public/newsdata/quality_dashboard.json public/newsdata/quality_dashboard_history.json
           if git diff --staged --quiet; then
             echo "No meaningful news-data changes — skipping commit"
             exit 0

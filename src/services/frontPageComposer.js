@@ -1,10 +1,15 @@
 import { rankByTemporalScore } from './temporalScorer.js';
+import { getSettings } from '../utils/storage.js';
 
 /**
  * Composes a balanced front page with diversity constraints
  */
 
 export function composeBalancedFeed(articles, limit = 20, maxTopicPercent = 40, maxGeoPercent = 30) {
+    const settings = getSettings();
+    const diversitySettings = settings?.frontPageDiversity || {};
+    const effectiveTopicPercent = Number(diversitySettings.maxTopicPercent ?? maxTopicPercent);
+    const effectiveGeoPercent = Number(diversitySettings.maxGeoPercent ?? maxGeoPercent);
     const selected = [];
     const topicCounts = new Map();
     const geoCounts = new Map();
@@ -53,8 +58,8 @@ export function composeBalancedFeed(articles, limit = 20, maxTopicPercent = 40, 
         const geoCount = geoCounts.get(geo) || 0;
 
         // Diversity constraints
-        const maxPerTopic = Math.floor(limit * (maxTopicPercent / 100));
-        const maxPerGeo = Math.floor(limit * (maxGeoPercent / 100));
+        const maxPerTopic = Math.floor(limit * (effectiveTopicPercent / 100));
+        const maxPerGeo = Math.floor(limit * (effectiveGeoPercent / 100));
 
         // Skip if exceeds constraints
         // Note: We check strictly '>=', so if max is 8, and we have 8, we skip the 9th.

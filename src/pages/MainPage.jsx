@@ -36,6 +36,7 @@ import {
 
 const MainPage = () => {
     const { settings } = useSettings();
+    const isInitialFetchDone = useRef(false);
 
     const travelLocationProfile = React.useMemo(
         () => getTravelLocationProfile(settings),
@@ -172,7 +173,7 @@ const MainPage = () => {
             return generateTopline(prioritizedNewsData, weatherData, onThisDay, { includeOnThisDay: isOnThisDayEnabled });
         }
         return null;
-    }, [newsData, weatherData, onThisDay]);
+    }, [newsData, weatherData, onThisDay, prioritizedNewsData, settings]);
 
     useEffect(() => {
         if (generatedTopline) {

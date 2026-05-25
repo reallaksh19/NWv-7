@@ -190,7 +190,7 @@ def validate_snapshot(snapshot: dict[str, Any], now_ms: int) -> dict[str, Any]:
         "contentHash": snapshot.get("contentHash", ""),
         "fetchedAt": snapshot.get("fetchedAt", 0),
         "storyCount": total_stories,
-        "usable24hStoryCount": len(usable_24h),
+        "usable24hStoryCount": len(usable_36h),
         "sourceGroupCount": len(source_groups),
         "topSources": [
             {"sourceGroup": source, "count": count}

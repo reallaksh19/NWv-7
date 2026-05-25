@@ -17,6 +17,7 @@ export type AngleLabel =
   | "background_context"
   | "reaction_public"
   | "investigative_detail"
+  | "opinion_editorial"
   | "unknown";
 
 export type StoryBucket =
@@ -40,6 +41,8 @@ export interface RawStory {
   category?: string;
   region?: string;
   language?: string;
+  feedPosition?: number;
+  feedLength?: number;
 }
 
 // ── Normalized story after enrichment ────────────────────────────────────────
@@ -189,7 +192,7 @@ export const DEFAULT_CONFIG: InsightConfig = {
   SAME_EVENT_THRESHOLD: 0.88,
   POSSIBLE_EVENT_THRESHOLD: 0.75,
 
-  MIN_CHILD_INFO_GAIN: 0.22,
+  MIN_CHILD_INFO_GAIN: 0.16,
   REPLACE_MARGIN: 0.08,
 
   MAX_PER_SOURCE_GROUP: 2,

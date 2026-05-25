@@ -492,4 +492,3 @@ const MainPage = () => {
 }
 
 export default MainPage;
-    const isInitialFetchDone = useRef(false);

@@ -209,8 +209,41 @@ function processMultiModelData(modelData, locationName) {
     const currentData = [modelData.ecmwf?.current, modelData.gfs?.current, modelData.icon?.current].filter(Boolean);
     const getIconForHour = (code, hour) => getWeatherIconId(code, hour ?? new Date().getHours());
     const getIcon = (code) => { if (code <= 1) return '☀️'; if (code <= 3) return '⛅'; if (code <= 67) return '🌧️'; if (code <= 99) return '⛈️'; return '❓'; };
-    const conditionMap = { 0: 'Clear', 1: 'Mainly Clear', 2: 'Partly Cloudy', 3: 'Overcast', 45: 'Fog', 48: 'Fog', 51: 'Light Drizzle', 61: 'Light Rain', 63: 'Rain', 65: 'Heavy Rain', 80: 'Rain Showers', 95: 'Thunderstorm' };
-    const getCondition = (code) => conditionMap[code] || 'Unknown';
+    const conditionMap = {
+        0: 'Clear',
+        1: 'Mainly Clear',
+        2: 'Partly Cloudy',
+        3: 'Overcast',
+        45: 'Fog',
+        48: 'Depositing Rime Fog',
+        51: 'Light Drizzle',
+        53: 'Moderate Drizzle',
+        55: 'Dense Drizzle',
+        56: 'Light Freezing Drizzle',
+        57: 'Dense Freezing Drizzle',
+        61: 'Light Rain',
+        63: 'Rain',
+        65: 'Heavy Rain',
+        66: 'Light Freezing Rain',
+        67: 'Heavy Freezing Rain',
+        71: 'Light Snow',
+        73: 'Snow',
+        75: 'Heavy Snow',
+        77: 'Snow Grains',
+        80: 'Light Rain Showers',
+        81: 'Rain Showers',
+        82: 'Violent Rain Showers',
+        85: 'Light Snow Showers',
+        86: 'Heavy Snow Showers',
+        95: 'Thunderstorm',
+        96: 'Thunderstorm with Hail',
+        99: 'Severe Thunderstorm with Hail'
+    };
+    const getCondition = (code) => {
+        const normalizedCode = Number.isFinite(Number(code)) ? Number(code) : null;
+        if (normalizedCode == null) return 'Forecast';
+        return conditionMap[normalizedCode] || conditionMap[Math.round(normalizedCode)] || 'Forecast';
+    };
 
     const allModelHourlyData = [];
     if (modelData.ecmwf?.hourly) allModelHourlyData.push(modelData.ecmwf.hourly);

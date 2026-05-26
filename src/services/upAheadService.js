@@ -1,17 +1,15 @@
 import { DEFAULT_SETTINGS } from '../utils/storage.js';
 import plannerStorage from '../utils/plannerStorage.js';
 import { fetchIntelligentUpAheadData } from './intelligentUpAheadFetcher.js';
+import { toDateKey } from '../utils/dateDisplay.js';
 
 export const CACHE_KEY = 'upAhead_cache';
 
 const CACHE_MAX_AGE_MS = 6 * 60 * 60 * 1000; // 6h — aligned to 5×/day pre-fetch cadence
 
 function normalizeDateKey(value) {
-  if (!value) return null;
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return null;
-  parsed.setHours(0, 0, 0, 0);
-  return parsed.toISOString().slice(0, 10);
+  const key = toDateKey(value, null);
+  return key || null;
 }
 
 function getItemKey(item) {

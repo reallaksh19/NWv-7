@@ -10,6 +10,7 @@ import { getPlannerItemInspector } from '../services/plannerItemInspector';
 import { buildPlannerAgendaJson, buildPlannerAgendaText, downloadPlannerAgendaFile, getPlannerAgendaExport, makePlannerAgendaFilename } from '../services/plannerAgendaExport';
 import { getPlannerInteractionQuality } from '../services/plannerInteractionQuality';
 import { getPlannerStateHygiene, reconcilePlannerSelection } from '../services/plannerStateHygiene';
+import { formatPlannerDateLabel } from '../utils/dateDisplay';
 import './MyPlanner.css';
 
 function PlannerControlsPanel({ viewModel, controls, onControlsChange }) {
@@ -834,9 +835,7 @@ function MyPlannerPage() {
                             const items = group?.items || [];
                             if (!items || items.length === 0) return null;
 
-                            // Format date for display
-                            const dateObj = new Date(dateKey);
-                            const displayDate = !isNaN(dateObj.getTime()) ? dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }) : dateKey;
+                            const displayDate = formatPlannerDateLabel(dateKey);
 
                             return (
                                 <div key={dateKey} className="modern-card" style={{ marginBottom: '16px' }}>

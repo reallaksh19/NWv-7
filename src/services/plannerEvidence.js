@@ -1,18 +1,11 @@
+import { toDateKey, formatPlannerCompactDateLabel } from '../utils/dateDisplay';
+
 function safeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
 function safeObject(value) {
   return value && typeof value === 'object' ? value : {};
-}
-
-function toDateKey(value) {
-  if (!value) return 'undated';
-
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return 'undated';
-
-  return parsed.toISOString().slice(0, 10);
 }
 
 function startOfDayMs(value) {
@@ -24,16 +17,7 @@ function startOfDayMs(value) {
 }
 
 function formatDisplayDate(dateKey) {
-  if (dateKey === 'undated') return 'Undated';
-
-  const date = new Date(dateKey);
-  if (Number.isNaN(date.getTime())) return dateKey;
-
-  return date.toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric'
-  });
+  return formatPlannerCompactDateLabel(dateKey, 'Date TBD');
 }
 
 function normalizeCategory(item) {

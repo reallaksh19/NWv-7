@@ -276,6 +276,7 @@ const MainPage = () => {
                     icon={currentSegment.icon}
                     actions={headerActions}
                     loadingPhase={loadingPhase}
+                    showMarket
                 />
             )}
 

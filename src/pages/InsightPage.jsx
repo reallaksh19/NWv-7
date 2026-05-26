@@ -80,6 +80,23 @@ function getInsightSourceLabel(source) {
   return 'Live';
 }
 
+function getInsightEmptyStateMessage(result, source) {
+  const runtimeReason = String(result?.runtimeQualityGate?.reason || '').trim();
+  if (runtimeReason) return runtimeReason;
+
+  const diagnostics = result?.diagnostics || result?.coreDiagnostics || {};
+  const storyCount = Number(diagnostics.storyCount || result?.storiesById?.size || 0);
+  const sourceGroups = Number(diagnostics.sourceGroupCount || 0);
+  const angleTypes = Number(diagnostics.visibleAngleTypeCount || diagnostics.angleTypeCount || 0);
+
+  if (storyCount === 0) return 'No usable stories were available from the latest feed snapshot.';
+  if (sourceGroups <= 1) return 'Insight clustering needs more source diversity; only one source group is currently available.';
+  if (angleTypes <= 1) return 'Stories are available, but angle diversity is too low to build reliable insight clusters.';
+  if (source === 'stale-snapshot') return 'Only stale snapshot data is available right now; retry after the next feed refresh.';
+
+  return "Couldn't generate clusters from the latest news right now.";
+}
+
 const INSIGHT_SNAPSHOT_SLOTS = ['now', 'minus4h', 'minus12h', 'minus24h'];
 
 function getStoryFromMap(storiesById, storyId) {
@@ -1286,6 +1303,7 @@ export default function InsightPage() {
     : null;
 
   if (!result?.parents?.length) {
+    const emptyReason = getInsightEmptyStateMessage(result, source);
     return (
       <div className="page-container insight-page">
         <Header title="Insight" stateLabel={staleLabel || 'Up to date'} stateType={staleLabel ? 'stale' : 'live'} />
@@ -1293,7 +1311,7 @@ export default function InsightPage() {
           <EmptyState
             icon="🧠"
             title="No Insights Available"
-            message="Couldn't generate clusters from the latest news right now."
+            message={emptyReason}
           />
         </div>
       </div>

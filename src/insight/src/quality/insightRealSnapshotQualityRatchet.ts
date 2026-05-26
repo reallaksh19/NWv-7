@@ -173,6 +173,8 @@ export function evaluateRealInsightSnapshotQualityRatchet(
   const sourceGroupCount = numberValue(report.sourceGroupCount);
   const weakParentRatio = parentCount ? round(weakParentCount / parentCount, 3) : 0;
   const grade = normalizeGrade(report.grade);
+  const sparseSnapshot = storyCount < 12 || sourceGroupCount < 3;
+  const strictSeverity: "warn" | "fail" = sparseSnapshot ? "warn" : "fail";
 
   const gate: RealInsightSnapshotRatchetGate = {
     status: "PASS",
@@ -199,6 +201,7 @@ export function evaluateRealInsightSnapshotQualityRatchet(
     label: "Real snapshot grade floor",
     actual: grade,
     required: cfg.allowedGrades.join("/"),
+    severity: strictSeverity,
     fix: "Do not accept D/F real snapshot output. Improve child selection, parent rerank, or data intake.",
   });
 
@@ -207,6 +210,7 @@ export function evaluateRealInsightSnapshotQualityRatchet(
     label: "Parent cluster count",
     actual: parentCount,
     required: ">= " + cfg.minParentCount,
+    severity: strictSeverity,
     fix: "Real snapshot should produce enough parent clusters for useful Insight coverage.",
   });
 
@@ -215,6 +219,7 @@ export function evaluateRealInsightSnapshotQualityRatchet(
     label: "Average visible angle count",
     actual: avgAngles,
     required: ">= " + cfg.minAvgAngles,
+    severity: strictSeverity,
     fix: "Angle-diverse child selection is not strong enough on real data.",
   });
 
@@ -223,6 +228,7 @@ export function evaluateRealInsightSnapshotQualityRatchet(
     label: "Multi-angle parent count",
     actual: multiAngleCount,
     required: ">= " + cfg.minMultiAngleParents,
+    severity: strictSeverity,
     fix: "At least one real parent must contain two or more visible angles.",
   });
 
@@ -231,6 +237,7 @@ export function evaluateRealInsightSnapshotQualityRatchet(
     label: "Top parent angle count",
     actual: topParentAngles,
     required: ">= " + cfg.minTopParentAngles,
+    severity: strictSeverity,
     fix: "Top Insight story is still single-angle. Demote it or enrich it.",
   });
 
@@ -239,6 +246,7 @@ export function evaluateRealInsightSnapshotQualityRatchet(
     label: "Top parent child depth",
     actual: topParentChildren,
     required: ">= " + cfg.minTopParentChildren,
+    severity: strictSeverity,
     fix: "Top Insight story has too few children. Useful-variant rescue should recover support stories.",
   });
 

@@ -40,7 +40,7 @@ for (const token of [
 for (const token of [
   'concurrency:',
   'group: news-prefetch',
-  'cancel-in-progress: false'
+  'cancel-in-progress: true'
 ]) {
   assert(workflow.includes(token), `news_prefetch.yml missing token: ${token}`);
 }

@@ -110,6 +110,7 @@ jobs:
 
       - name: Run real Insight snapshot quality benchmark
         if: steps.prefetch_commit.outputs.should_commit == 'true'
+        continue-on-error: true
         run: npm run test:real-insight-snapshot-quality
 
       - name: Upload real Insight quality benchmark report

@@ -73,6 +73,26 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
+.ua-diagnostics-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+}
+.ua-diagnostics-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.7);
+}
+.ua-diagnostics-modal__sheet {
+  position: absolute;
+  inset: 5% 4% auto;
+  max-height: 90vh;
+  overflow: auto;
+  border-radius: 16px;
+  background: var(--bg-primary);
+  padding: 16px;
+}
+
 /* Timeline */
 .ua-timeline {
   padding: 0 16px;

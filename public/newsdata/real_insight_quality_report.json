@@ -1,7 +1,7 @@
 {
   "status": "PASS",
   "benchmarkVersion": "real-insight-snapshot-quality-v1",
-  "generatedAt": 1779245820417,
+  "generatedAt": 1779787620806,
   "contentHash": "40f989d5da9c",
   "schemaVersion": 2,
   "collectorVersion": "",
@@ -130,5 +130,67 @@
     }
   ],
   "warnings": [],
-  "errors": []
+  "errors": [],
+  "ratchetGate": {
+    "status": "PASS",
+    "gateVersion": "real-insight-snapshot-ratchet-v1",
+    "grade": "B",
+    "score": 100,
+    "passed": [
+      {
+        "id": "grade-floor",
+        "label": "Real snapshot grade floor",
+        "actual": "B",
+        "required": "A/B/C"
+      },
+      {
+        "id": "parent-count",
+        "label": "Parent cluster count",
+        "actual": 5,
+        "required": ">= 3"
+      },
+      {
+        "id": "avg-angle-count",
+        "label": "Average visible angle count",
+        "actual": 2,
+        "required": ">= 1.8"
+      },
+      {
+        "id": "multi-angle-parent-count",
+        "label": "Multi-angle parent count",
+        "actual": 5,
+        "required": ">= 1"
+      },
+      {
+        "id": "top-parent-angle-count",
+        "label": "Top parent angle count",
+        "actual": 2,
+        "required": ">= 2"
+      },
+      {
+        "id": "top-parent-child-depth",
+        "label": "Top parent child depth",
+        "actual": 4,
+        "required": ">= 2"
+      },
+      {
+        "id": "weak-parent-ratio",
+        "label": "Weak parent ratio",
+        "actual": 0,
+        "required": "<= 0.5"
+      }
+    ],
+    "failed": [],
+    "summary": {
+      "parentCount": 5,
+      "avgAngles": 2,
+      "multiAngleCount": 5,
+      "weakParentCount": 0,
+      "weakParentRatio": 0,
+      "topParentAngles": 2,
+      "topParentChildren": 4,
+      "storyCount": 877,
+      "sourceGroupCount": 8
+    }
+  }
 }

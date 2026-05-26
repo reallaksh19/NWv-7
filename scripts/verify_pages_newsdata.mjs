@@ -146,20 +146,25 @@ function summarizeSectionsSnapshot(snapshot) {
   };
 }
 
-async function fetchJson(url) {
-  const response = await fetch(url, {
-    cache: 'no-store',
-    headers: {
-      'cache-control': 'no-cache',
-      pragma: 'no-cache',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status} while fetching ${url}`);
+async function fetchJson(url, timeoutMs = 10000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, {
+      signal: controller.signal,
+      cache: 'no-store',
+      headers: {
+        'cache-control': 'no-cache',
+        pragma: 'no-cache',
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status} while fetching ${url}`);
+    }
+    return response.json();
+  } finally {
+    clearTimeout(timer);
   }
-
-  return response.json();
 }
 
 function makeReport({

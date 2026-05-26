@@ -14,23 +14,20 @@ const trustPanel = read('src/components/weather/WeatherTrustPanel.jsx');
 const trustCss = read('src/components/weather/WeatherTrustPanel.css');
 const detailedCard = read('src/components/DetailedWeatherCard.jsx');
 
-assert(
-  weatherPage.includes("import WeatherTrustPanel from '../components/weather/WeatherTrustPanel';"),
-  'WeatherPage must import WeatherTrustPanel'
-);
-
 for (const token of [
-  '<WeatherTrustPanel',
-  'weatherData={displayData}',
-  'cities={cities}',
-  'activeCity={activeCity}',
-  'error={error}',
-  'loading={loading}',
-  'onRefresh={handleRefresh}',
+  'GradeBadge',
+  'auditWeatherTabQuality',
+  'weatherTabAudit',
+  'Weather tab quality grade',
   '!cities.includes(activeCity)'
 ]) {
   assert(weatherPage.includes(token), `WeatherPage missing token: ${token}`);
 }
+
+assert(
+  !weatherPage.includes('<WeatherTrustPanel'),
+  'WeatherTrustPanel must not be inline on WeatherPage (it is surfaced via GradeBadge modal diagnostics)'
+);
 
 for (const token of [
   'getCityCoverage',
@@ -70,7 +67,9 @@ assert(
 );
 
 assert(
-  detailedCard.includes('cities.reduce'),
+  detailedCard.includes('getConfiguredWeatherCities') &&
+    detailedCard.includes('cityLabels') &&
+    detailedCard.includes('cities.map('),
   'DetailedWeatherCard must support dynamic configured city labels'
 );
 
@@ -78,7 +77,7 @@ console.log(JSON.stringify({
   status: 'PASS',
   checked: 'Weather trust panel slice',
   guarantees: [
-    'Weather page has a source/coverage trust panel',
+    'Weather page has weather quality/trust diagnostics via GradeBadge',
     'configured cities are checked for coverage',
     'invalid active city is corrected',
     'dynamic city labels are supported',

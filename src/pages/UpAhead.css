@@ -73,6 +73,52 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
+.ua-diagnostics-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+}
+.ua-diagnostics-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.7);
+}
+.ua-diagnostics-modal__sheet {
+  position: absolute;
+  inset: 5% 4% auto;
+  max-height: 90vh;
+  overflow: auto;
+  border-radius: 16px;
+  background: var(--bg-primary);
+  padding: 16px;
+}
+
+.ua-diagnostics-modal__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.ua-diagnostics-modal__eyebrow {
+  color: var(--accent-secondary);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ua-diagnostics-modal__close {
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: 10px;
+  width: 34px;
+  height: 34px;
+  cursor: pointer;
+}
+
 /* Timeline */
 .ua-timeline {
   padding: 0 16px;

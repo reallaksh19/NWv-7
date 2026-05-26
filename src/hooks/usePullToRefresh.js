@@ -1,16 +1,19 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 
 export function usePullToRefresh(onRefresh, threshold = 60) {
   const [pullDistance, setPullDistance] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
-  const [startY, setStartY] = useState(0);
+  const startYRef = useRef(0);
+  const refreshingRef = useRef(false);
 
   const triggerRefresh = useCallback(async () => {
+    refreshingRef.current = true;
     setRefreshing(true);
     try {
       await onRefresh();
     } finally {
       setTimeout(() => {
+        refreshingRef.current = false;
         setRefreshing(false);
         setPullDistance(0);
       }, 100);
@@ -20,30 +23,29 @@ export function usePullToRefresh(onRefresh, threshold = 60) {
   useEffect(() => {
     const handleTouchStart = (e) => {
       if (window.scrollY === 0) {
-        setStartY(e.touches[0].clientY);
+        startYRef.current = e.touches[0].clientY;
       }
     };
 
     const handleTouchMove = (e) => {
-      if (window.scrollY === 0 && startY > 0) {
+      if (window.scrollY === 0 && startYRef.current > 0) {
         const y = e.touches[0].clientY;
-        const dist = y - startY;
+        const dist = y - startYRef.current;
         if (dist > 0) {
-          // Prevent scroll
           if (e.cancelable) e.preventDefault();
-          setPullDistance(() => Math.min(dist * 0.5, threshold * 1.5));
+          setPullDistance(Math.min(dist * 0.5, threshold * 1.5));
         }
       }
     };
 
     const handleTouchEnd = () => {
-      setPullDistance((prevPullDistance) => {
-        if (prevPullDistance >= threshold && !refreshing) {
+      setPullDistance((prev) => {
+        if (prev >= threshold && !refreshingRef.current) {
           triggerRefresh();
         }
         return 0;
       });
-      setStartY(0);
+      startYRef.current = 0;
     };
 
     document.addEventListener('touchstart', handleTouchStart, { passive: true });
@@ -55,7 +57,7 @@ export function usePullToRefresh(onRefresh, threshold = 60) {
       document.removeEventListener('touchmove', handleTouchMove);
       document.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [startY, threshold, refreshing, triggerRefresh]);
+  }, [threshold, triggerRefresh]);
 
   return { pullDistance, refreshing, triggerRefresh, setPullDistance };
 }

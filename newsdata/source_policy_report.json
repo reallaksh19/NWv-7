@@ -1,5 +1,5 @@
 {
-  "generatedAt": 1779818121176,
+  "generatedAt": 1779825946802,
   "policyVersion": "insight-source-policy-v1",
   "reportVersion": "insight-source-policy-report-v1",
   "schemaVersion": 1,
@@ -82,7 +82,7 @@
   },
   "sourceCount": 13,
   "sourceHealthPolicy": {
-    "generatedAt": 1779818121176,
+    "generatedAt": 1779825946802,
     "policyVersion": "insight-source-health-policy-v1",
     "schemaVersion": 1,
     "slotReports": {
@@ -100,31 +100,7 @@
           },
           {
             "backoffReason": "",
-            "healthScore": 1.0,
-            "source": "Reuters India",
-            "sourceGroup": "reuters",
-            "tier": "A",
-            "topic": "india"
-          },
-          {
-            "backoffReason": "",
-            "healthScore": 1.0,
-            "source": "Reuters India (Google)",
-            "sourceGroup": "reuters",
-            "tier": "A",
-            "topic": "india"
-          },
-          {
-            "backoffReason": "",
-            "healthScore": 1.0,
-            "source": "Gadgets 360",
-            "sourceGroup": "gadgets360",
-            "tier": "B",
-            "topic": "tech"
-          },
-          {
-            "backoffReason": "",
-            "healthScore": 0.05,
+            "healthScore": 0.55,
             "source": "BBC World",
             "sourceGroup": "bbc",
             "tier": "A",
@@ -132,11 +108,35 @@
           },
           {
             "backoffReason": "",
-            "healthScore": 0.05,
+            "healthScore": 0.55,
             "source": "BBC India",
             "sourceGroup": "bbc",
             "tier": "A",
             "topic": "india"
+          },
+          {
+            "backoffReason": "",
+            "healthScore": 0.55,
+            "source": "Reuters India",
+            "sourceGroup": "reuters",
+            "tier": "A",
+            "topic": "india"
+          },
+          {
+            "backoffReason": "",
+            "healthScore": 0.55,
+            "source": "Reuters India (Google)",
+            "sourceGroup": "reuters",
+            "tier": "A",
+            "topic": "india"
+          },
+          {
+            "backoffReason": "",
+            "healthScore": 0.55,
+            "source": "Gadgets 360",
+            "sourceGroup": "gadgets360",
+            "tier": "B",
+            "topic": "tech"
           }
         ],
         "suppressedCount": 0
@@ -148,14 +148,6 @@
           {
             "backoffReason": "",
             "healthScore": 1.0,
-            "source": "ET Markets",
-            "sourceGroup": "economic_times",
-            "tier": "A",
-            "topic": "markets"
-          },
-          {
-            "backoffReason": "",
-            "healthScore": 0.55,
             "source": "Business Line",
             "sourceGroup": "business_line",
             "tier": "A",
@@ -163,15 +155,7 @@
           },
           {
             "backoffReason": "",
-            "healthScore": 0.55,
-            "source": "Financial Express",
-            "sourceGroup": "financial_express",
-            "tier": "A",
-            "topic": "business"
-          },
-          {
-            "backoffReason": "",
-            "healthScore": 0.55,
+            "healthScore": 1.0,
             "source": "Moneycontrol",
             "sourceGroup": "moneycontrol",
             "tier": "B",
@@ -179,11 +163,27 @@
           },
           {
             "backoffReason": "",
-            "healthScore": 0.55,
+            "healthScore": 1.0,
             "source": "ESPNcricinfo",
             "sourceGroup": "espn",
             "tier": "B",
             "topic": "sports"
+          },
+          {
+            "backoffReason": "",
+            "healthScore": 0.05,
+            "source": "ET Markets",
+            "sourceGroup": "economic_times",
+            "tier": "A",
+            "topic": "markets"
+          },
+          {
+            "backoffReason": "",
+            "healthScore": 0.05,
+            "source": "Financial Express",
+            "sourceGroup": "financial_express",
+            "tier": "A",
+            "topic": "business"
           }
         ],
         "suppressedCount": 0
@@ -242,14 +242,6 @@
           {
             "backoffReason": "",
             "healthScore": 1.0,
-            "source": "Economic Times",
-            "sourceGroup": "economic_times",
-            "tier": "A",
-            "topic": "business"
-          },
-          {
-            "backoffReason": "",
-            "healthScore": 1.0,
             "source": "NDTV",
             "sourceGroup": "ndtv",
             "tier": "B",
@@ -262,6 +254,14 @@
             "sourceGroup": "google_news",
             "tier": "B",
             "topic": "breaking"
+          },
+          {
+            "backoffReason": "",
+            "healthScore": 0.05,
+            "source": "Economic Times",
+            "sourceGroup": "economic_times",
+            "tier": "A",
+            "topic": "business"
           },
           {
             "backoffReason": "",
@@ -279,11 +279,7 @@
   "sources": [
     {
       "configuredFeeds": 2,
-      "health": {
-        "error": "404 Client Error: Not Found for url: https://feeds.bbci.co.uk/news/india/rss.xml",
-        "items": 0,
-        "ok": false
-      },
+      "health": {},
       "slots": [
         "minus12h"
       ],
@@ -297,7 +293,11 @@
     },
     {
       "configuredFeeds": 1,
-      "health": {},
+      "health": {
+        "items": 20,
+        "lastSuccess": 1779825942080,
+        "ok": true
+      },
       "slots": [
         "minus24h"
       ],
@@ -311,9 +311,9 @@
     {
       "configuredFeeds": 2,
       "health": {
-        "items": 20,
-        "lastSuccess": 1779818108814,
-        "ok": true
+        "items": 0,
+        "lastSuccess": 1779825941532,
+        "ok": false
       },
       "slots": [
         "minus24h",
@@ -329,7 +329,11 @@
     },
     {
       "configuredFeeds": 1,
-      "health": {},
+      "health": {
+        "error": "403 Client Error: Forbidden for url: https://www.financialexpress.com/feed/",
+        "items": 0,
+        "ok": false
+      },
       "slots": [
         "minus24h"
       ],
@@ -342,11 +346,7 @@
     },
     {
       "configuredFeeds": 2,
-      "health": {
-        "items": 20,
-        "lastSuccess": 1779818120828,
-        "ok": true
-      },
+      "health": {},
       "slots": [
         "minus12h"
       ],
@@ -361,7 +361,7 @@
       "configuredFeeds": 3,
       "health": {
         "items": 20,
-        "lastSuccess": 1779818112652,
+        "lastSuccess": 1779825937400,
         "ok": true
       },
       "slots": [
@@ -379,7 +379,11 @@
     },
     {
       "configuredFeeds": 1,
-      "health": {},
+      "health": {
+        "items": 20,
+        "lastSuccess": 1779825943164,
+        "ok": true
+      },
       "slots": [
         "minus24h"
       ],
@@ -392,11 +396,7 @@
     },
     {
       "configuredFeeds": 1,
-      "health": {
-        "items": 20,
-        "lastSuccess": 1779818121002,
-        "ok": true
-      },
+      "health": {},
       "slots": [
         "minus12h"
       ],
@@ -411,7 +411,7 @@
       "configuredFeeds": 1,
       "health": {
         "items": 20,
-        "lastSuccess": 1779818108659,
+        "lastSuccess": 1779825933660,
         "ok": true
       },
       "slots": [
@@ -444,7 +444,11 @@
     },
     {
       "configuredFeeds": 1,
-      "health": {},
+      "health": {
+        "items": 15,
+        "lastSuccess": 1779825942670,
+        "ok": true
+      },
       "slots": [
         "minus24h"
       ],
@@ -459,7 +463,7 @@
       "configuredFeeds": 2,
       "health": {
         "items": 20,
-        "lastSuccess": 1779818112561,
+        "lastSuccess": 1779825941099,
         "ok": true
       },
       "slots": [
@@ -478,7 +482,7 @@
       "configuredFeeds": 1,
       "health": {
         "items": 20,
-        "lastSuccess": 1779818112304,
+        "lastSuccess": 1779825937609,
         "ok": true
       },
       "slots": [

@@ -752,15 +752,23 @@ function MyPlannerPage() {
     // Prepare sorted dates, auto-prune past dates
     const sortedDates = plannerViewModel.groupedDates.map(group => group.dateKey);
 
+    const plannerHeaderActions = (
+        <button
+            type="button"
+            className="planner-diagnostics-trigger"
+            onClick={() => setShowDiagnostics(true)}
+            title="Diagnostics"
+            aria-label="Open planner diagnostics"
+        >
+            🩺
+        </button>
+    );
+
     return (
         <div className="page-container">
-            <Header title="My Planner" icon="📌" />
+            <Header title="My Planner" icon="📌" actions={plannerHeaderActions} />
 
             <main className="main-content" style={{ padding: '16px', margin: '0 auto', maxWidth: '800px' }}>
-                <div className="ua-view-toggle scrollable-tabs">
-                    <button className="ua-toggle-btn active" type="button">📌 Planner</button>
-                    <button className="ua-toggle-btn" type="button" onClick={() => setShowDiagnostics(true)} title="Diagnostics">🩺</button>
-                </div>
                 <PlannerControlsPanel
                     viewModel={plannerViewModel}
                     controls={plannerControls}

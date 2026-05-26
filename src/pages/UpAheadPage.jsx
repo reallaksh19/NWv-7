@@ -527,12 +527,12 @@ function UpAheadPage() {
                     <aside className="ua-diagnostics-modal" role="dialog" aria-modal="true" aria-label="Up Ahead diagnostics">
                         <div className="ua-diagnostics-modal__backdrop" onClick={() => setShowDiagnostics(false)} />
                         <section className="ua-diagnostics-modal__sheet">
-                            <div className="planner-inspector__header">
+                            <div className="ua-diagnostics-modal__header">
                                 <div>
-                                    <div className="planner-inspector__eyebrow">Up Ahead diagnostics</div>
+                                    <div className="ua-diagnostics-modal__eyebrow">Up Ahead diagnostics</div>
                                     <h2>Coverage and briefing details</h2>
                                 </div>
-                                <button type="button" className="planner-inspector__close" onClick={() => setShowDiagnostics(false)} aria-label="Close diagnostics">✕</button>
+                                <button type="button" className="ua-diagnostics-modal__close" onClick={() => setShowDiagnostics(false)} aria-label="Close diagnostics">✕</button>
                             </div>
                             <UpAheadEvidencePanel evidence={upAheadEvidence} />
                             <UpAheadBriefingPanel briefing={upAheadBriefing} />

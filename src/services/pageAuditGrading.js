@@ -71,6 +71,7 @@ export function auditMainTabQuality({
 
   const sectionStories = enabledSections.flatMap(section => asArray(news[section]));
   const allStories = [...frontPage, ...sectionStories, ...asArray(breakingNews)];
+  const enabledSectionCount = Math.max(1, enabledSections.length);
 
   const keys = allStories.map(storyKey).filter(Boolean);
   const duplicateCount = Math.max(0, keys.length - unique(keys).length);
@@ -101,6 +102,11 @@ export function auditMainTabQuality({
   const weatherCities = Object.keys(weather).filter(city => weather[city]);
   const weatherCityCount = weatherCities.length;
   const weatherReadyCount = weatherCities.filter(city => weather[city]?.current || weather[city]?.temp || weather[city]?.weeklyForecast).length;
+  const expectedSourceGroups = Math.max(3, Math.min(6, enabledSectionCount + 2));
+  const minPassSectionCount = Math.max(1, enabledSectionCount);
+  const minWarnSectionCount = Math.max(1, enabledSectionCount - 1);
+  const healthySectionCount = sectionHealth.filter(item => item.status === 'PASS').length;
+  const nonEmptySectionCount = sectionHealth.filter(item => item.storyCount > 0).length;
 
   const audits = [
     {
@@ -112,13 +118,17 @@ export function auditMainTabQuality({
     {
       id: 'source-diversity',
       label: 'Source diversity',
-      status: sourceGroups.length >= 6 ? 'PASS' : sourceGroups.length >= 3 ? 'WARN' : 'FAIL',
+      status: sourceGroups.length >= expectedSourceGroups ? 'PASS' : sourceGroups.length >= Math.max(2, expectedSourceGroups - 2) ? 'WARN' : 'FAIL',
       detail: `${sourceGroups.length} unique source groups across visible main-tab news.`,
     },
     {
       id: 'section-coverage',
       label: 'Section coverage',
-      status: missingSections.length === 0 && weakSections.length === 0 ? 'PASS' : missingSections.length === 0 ? 'WARN' : 'FAIL',
+      status: healthySectionCount >= minPassSectionCount
+        ? 'PASS'
+        : nonEmptySectionCount >= minWarnSectionCount
+          ? 'WARN'
+          : 'FAIL',
       detail: missingSections.length
         ? `Missing sections: ${missingSections.join(', ')}.`
         : weakSections.length
@@ -187,6 +197,7 @@ export function auditMainTabQuality({
       frontPageStoryCount: frontPage.length,
       totalVisibleStoryCount: allStories.length,
       sourceGroupCount: sourceGroups.length,
+      expectedSourceGroups,
       duplicateRate: Number(duplicateRate.toFixed(3)),
       newestAgeMinutes,
       enabledSections,

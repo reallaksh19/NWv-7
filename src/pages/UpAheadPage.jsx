@@ -203,6 +203,7 @@ function UpAheadPage() {
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [loadingPhase, setLoadingPhase] = useState(0);
     const [view, setView] = useState('plan');
+    const [showDiagnostics, setShowDiagnostics] = useState(false);
     const [, setBlacklist] = useState(plannerStorage.getBlacklist ? plannerStorage.getBlacklist() : new Set());
     const { toggleWatchlist, isWatched } = useWatchlist();
 
@@ -492,9 +493,6 @@ function UpAheadPage() {
                 )}
             </div>
 
-            <UpAheadEvidencePanel evidence={upAheadEvidence} />
-            <UpAheadBriefingPanel briefing={upAheadBriefing} />
-
             {highPriorityAlert && (
                 <div className={`ua-alert-banner ${weatherAlerts.length > 0 ? 'weather-alert' : ''}`}>
                     <span className="ua-alert-icon">{alertIcon}</span>
@@ -507,13 +505,14 @@ function UpAheadPage() {
 
             <main className="main-content">
                 <div className="ua-view-toggle scrollable-tabs">
-                    <button className={`ua-toggle-btn ${view === 'plan' ? 'active' : ''}`} onClick={() => setView('plan')}>Suggested</button>
-                    <button className={`ua-toggle-btn ${view === 'offers' ? 'active' : ''}`} onClick={() => setView('offers')}>Offers</button>
-                    <button className={`ua-toggle-btn ${view === 'movies' ? 'active' : ''}`} onClick={() => setView('movies')}>Releasing Soon</button>
-                    <button className={`ua-toggle-btn ${view === 'events' ? 'active' : ''}`} onClick={() => setView('events')}>Upcoming Events</button>
-                    <button className={`ua-toggle-btn ${view === 'alerts' ? 'active' : ''}`} onClick={() => setView('alerts')}>Alerts</button>
-                    <button className={`ua-toggle-btn ${view === 'festivals' ? 'active' : ''}`} onClick={() => setView('festivals')}>Festivals</button>
-                    <button className={`ua-toggle-btn ${view === 'feed' ? 'active' : ''}`} onClick={() => setView('feed')}>Timeline</button>
+                    <button className={`ua-toggle-btn ${view === 'plan' ? 'active' : ''}`} onClick={() => setView('plan')} title="Suggested">✨ Suggested</button>
+                    <button className={`ua-toggle-btn ${view === 'offers' ? 'active' : ''}`} onClick={() => setView('offers')} title="Offers">🏷️ Offers</button>
+                    <button className={`ua-toggle-btn ${view === 'movies' ? 'active' : ''}`} onClick={() => setView('movies')} title="Releases">🎬 Release</button>
+                    <button className={`ua-toggle-btn ${view === 'events' ? 'active' : ''}`} onClick={() => setView('events')} title="Events">🎫 Events</button>
+                    <button className={`ua-toggle-btn ${view === 'alerts' ? 'active' : ''}`} onClick={() => setView('alerts')} title="Alerts">🚨 Alerts</button>
+                    <button className={`ua-toggle-btn ${view === 'festivals' ? 'active' : ''}`} onClick={() => setView('festivals')} title="Festivals">🎉 Festivals</button>
+                    <button className={`ua-toggle-btn ${view === 'feed' ? 'active' : ''}`} onClick={() => setView('feed')} title="Civics / Timeline">🏛️ Civics</button>
+                    <button className="ua-toggle-btn" onClick={() => setShowDiagnostics(true)} title="Diagnostics">🩺</button>
                     {import.meta.env.DEV && (
                       <button onClick={async () => {
                         const { runPlannerBenchmark } = await import('../benchmarks/runPlannerBenchmark.js');
@@ -524,6 +523,22 @@ function UpAheadPage() {
                       </button>
                     )}
                 </div>
+                {showDiagnostics && (
+                    <aside className="ua-diagnostics-modal" role="dialog" aria-modal="true" aria-label="Up Ahead diagnostics">
+                        <div className="ua-diagnostics-modal__backdrop" onClick={() => setShowDiagnostics(false)} />
+                        <section className="ua-diagnostics-modal__sheet">
+                            <div className="planner-inspector__header">
+                                <div>
+                                    <div className="planner-inspector__eyebrow">Up Ahead diagnostics</div>
+                                    <h2>Coverage and briefing details</h2>
+                                </div>
+                                <button type="button" className="planner-inspector__close" onClick={() => setShowDiagnostics(false)} aria-label="Close diagnostics">✕</button>
+                            </div>
+                            <UpAheadEvidencePanel evidence={upAheadEvidence} />
+                            <UpAheadBriefingPanel briefing={upAheadBriefing} />
+                        </section>
+                    </aside>
+                )}
 
                 {view === 'plan' && (
                     <div className="ua-weekly-plan">

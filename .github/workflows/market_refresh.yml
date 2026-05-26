@@ -69,11 +69,13 @@ jobs:
 
       - name: Publish updated Pages site
         if: steps.commit_market.outputs.committed == 'true'
+        continue-on-error: true
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npm ci
           npm run build
+          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           npx gh-pages -d dist -u "GitHub Actions <github-actions@users.noreply.github.com>"
 
       - name: Open issue on workflow failure

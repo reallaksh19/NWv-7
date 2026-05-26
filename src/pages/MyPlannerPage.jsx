@@ -501,6 +501,7 @@ function MyPlannerPage() {
     const [selectedPlannerIds, setSelectedPlannerIds] = useState([]);
     const [inspectedPlannerItem, setInspectedPlannerItem] = useState(null);
     const [plannerAgendaCopyStatus, setPlannerAgendaCopyStatus] = useState('');
+    const [showDiagnostics, setShowDiagnostics] = useState(false);
     const plannerInspectorRef = useRef(null);
 
     const plannerEvidence = getPlannerEvidence(planData);
@@ -751,18 +752,28 @@ function MyPlannerPage() {
     // Prepare sorted dates, auto-prune past dates
     const sortedDates = plannerViewModel.groupedDates.map(group => group.dateKey);
 
+    const plannerHeaderActions = (
+        <button
+            type="button"
+            className="planner-diagnostics-trigger"
+            onClick={() => setShowDiagnostics(true)}
+            title="Diagnostics"
+            aria-label="Open planner diagnostics"
+        >
+            🩺
+        </button>
+    );
+
     return (
         <div className="page-container">
-            <Header title="My Planner" icon="📌" />
+            <Header title="My Planner" icon="📌" actions={plannerHeaderActions} />
 
             <main className="main-content" style={{ padding: '16px', margin: '0 auto', maxWidth: '800px' }}>
-                <PlannerEvidencePanel evidence={plannerEvidence} />
                 <PlannerControlsPanel
                     viewModel={plannerViewModel}
                     controls={plannerControls}
                     onControlsChange={setPlannerControls}
                 />
-
                 <PlannerBulkActionBar
                     summary={plannerBulkSummary}
                     onSelectAll={selectAllFilteredPlannerItems}
@@ -771,19 +782,6 @@ function MyPlannerPage() {
                     onRemoveSelected={removeSelectedPlannerItems}
                 />
 
-                <PlannerAgendaExportPanel
-                    agenda={plannerAgendaExport}
-                    copyStatus={plannerAgendaCopyStatus}
-                    onCopyText={copyPlannerAgendaText}
-                    onDownloadText={downloadPlannerAgendaTextFile}
-                    onDownloadJson={downloadPlannerAgendaJsonFile}
-                    onPrint={printPlannerAgenda}
-                />
-
-                <PlannerInteractionQualityPanel quality={plannerInteractionQuality} />
-
-                <PlannerStateHygienePanel hygiene={plannerStateHygiene} />
-
                 <PlannerItemInspectorPanel
                     detail={inspectedPlannerDetail}
                     onClose={closePlannerInspector}
@@ -791,6 +789,31 @@ function MyPlannerPage() {
                     onRemove={removeInspectedPlannerItem}
                     inspectorRef={plannerInspectorRef}
                 />
+                {showDiagnostics && (
+                    <aside className="planner-inspector" role="dialog" aria-modal="true" aria-label="Planner diagnostics">
+                        <div className="planner-inspector__backdrop" onClick={() => setShowDiagnostics(false)} />
+                        <section className="planner-inspector__sheet">
+                            <div className="planner-inspector__header">
+                                <div>
+                                    <div className="planner-inspector__eyebrow">Planner diagnostics</div>
+                                    <h2>Quality, state and export details</h2>
+                                </div>
+                                <button type="button" className="planner-inspector__close" onClick={() => setShowDiagnostics(false)} aria-label="Close diagnostics">✕</button>
+                            </div>
+                            <PlannerEvidencePanel evidence={plannerEvidence} />
+                            <PlannerAgendaExportPanel
+                                agenda={plannerAgendaExport}
+                                copyStatus={plannerAgendaCopyStatus}
+                                onCopyText={copyPlannerAgendaText}
+                                onDownloadText={downloadPlannerAgendaTextFile}
+                                onDownloadJson={downloadPlannerAgendaJsonFile}
+                                onPrint={printPlannerAgenda}
+                            />
+                            <PlannerInteractionQualityPanel quality={plannerInteractionQuality} />
+                            <PlannerStateHygienePanel hygiene={plannerStateHygiene} />
+                        </section>
+                    </aside>
+                )}
 
                 <div className="ua-weekly-plan">
                     {plannerViewModel.totalCount > 0 && plannerViewModel.filteredCount === 0 ? (

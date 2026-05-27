@@ -36,6 +36,15 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Setup Node for market validation
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Node dependencies
+        run: npm ci
+
       - name: Fetch rich market snapshot
         run: python scripts/market_snapshot_worker.py
 
@@ -62,20 +71,12 @@ jobs:
           git push
           echo "committed=true" >> "$GITHUB_OUTPUT"
 
-      - name: Setup Node for Pages publish
-        if: steps.commit_market.outputs.committed == 'true'
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
       - name: Publish updated Pages site
         if: steps.commit_market.outputs.committed == 'true'
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          npm ci
           npm run build
           git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           npx gh-pages -d dist -u "GitHub Actions <github-actions@users.noreply.github.com>"

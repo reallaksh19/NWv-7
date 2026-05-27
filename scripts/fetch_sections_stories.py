@@ -75,9 +75,9 @@ def fetch_section(section: str, feeds: list, ts: int) -> tuple[list, dict]:
 
             results.extend(feed_items)
             source_health[source_group] = {
-                'ok': True,
+                'ok': len(feed_items) > 0,
                 'items': len(feed_items),
-                'lastSuccess': ts,
+                'lastSuccess': ts if len(feed_items) > 0 else None,
                 'section': section,
             }
         except Exception as e:

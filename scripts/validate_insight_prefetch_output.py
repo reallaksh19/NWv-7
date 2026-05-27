@@ -27,7 +27,7 @@ RECOMMENDED_SCHEMA = 3
 SLOT_ORDER = ["now", "minus4h", "minus12h", "minus24h"]
 
 MIN_TOTAL_STORIES = 24
-MIN_USABLE_24H_STORIES = 18
+MIN_USABLE_36H_STORIES = 18
 MIN_SOURCE_GROUPS = 5
 MIN_ANGLE_HINT_COVERAGE = 0.35
 MIN_NON_BASE_ANGLE_STORIES = 6
@@ -154,9 +154,9 @@ def validate_snapshot(snapshot: dict[str, Any], now_ms: int) -> dict[str, Any]:
     if total_stories < MIN_TOTAL_STORIES:
         warnings.append(f"Thin story pool: {total_stories} stories < recommended {MIN_TOTAL_STORIES}")
 
-    if len(usable_36h) < MIN_USABLE_24H_STORIES:
+    if len(usable_36h) < MIN_USABLE_36H_STORIES:
         warnings.append(
-            f"Thin usable 36h pool: {len(usable_36h)} stories < recommended {MIN_USABLE_24H_STORIES}"
+            f"Thin usable 36h pool: {len(usable_36h)} stories < recommended {MIN_USABLE_36H_STORIES}"
         )
 
     if len(source_groups) < MIN_SOURCE_GROUPS:
@@ -190,7 +190,7 @@ def validate_snapshot(snapshot: dict[str, Any], now_ms: int) -> dict[str, Any]:
         "contentHash": snapshot.get("contentHash", ""),
         "fetchedAt": snapshot.get("fetchedAt", 0),
         "storyCount": total_stories,
-        "usable24hStoryCount": len(usable_36h),
+        "usable36hStoryCount": len(usable_36h),
         "sourceGroupCount": len(source_groups),
         "topSources": [
             {"sourceGroup": source, "count": count}
@@ -207,7 +207,7 @@ def validate_snapshot(snapshot: dict[str, Any], now_ms: int) -> dict[str, Any]:
         "warnings": warnings,
         "thresholds": {
             "minTotalStories": MIN_TOTAL_STORIES,
-            "minUsable24hStories": MIN_USABLE_24H_STORIES,
+            "minUsable24hStories": MIN_USABLE_36H_STORIES,
             "minSourceGroups": MIN_SOURCE_GROUPS,
             "minAngleHintCoverage": MIN_ANGLE_HINT_COVERAGE,
             "minNonBaseAngleStories": MIN_NON_BASE_ANGLE_STORIES,
@@ -224,7 +224,7 @@ def write_summary(report: dict[str, Any]) -> None:
         f"- Collector: `{report.get('collectorVersion') or 'n/a'}`",
         f"- Content hash: `{report.get('contentHash') or 'n/a'}`",
         f"- Stories: `{report['storyCount']}`",
-        f"- Usable 24h stories: `{report['usable24hStoryCount']}`",
+        f"- Usable 36h stories: `{report['usable36hStoryCount']}`",
         f"- Source groups: `{report['sourceGroupCount']}`",
         f"- Angle hint coverage: `{report['angleHintCoverage']:.0%}`",
         f"- Non-base angle stories: `{report['nonBaseAngleStoryCount']}`",
@@ -273,7 +273,7 @@ def main() -> int:
             "collectorVersion": "",
             "contentHash": "",
             "storyCount": 0,
-            "usable24hStoryCount": 0,
+            "usable36hStoryCount": 0,
             "sourceGroupCount": 0,
             "angleHintCoverage": 0,
             "nonBaseAngleStoryCount": 0,
@@ -292,7 +292,7 @@ def main() -> int:
     print(json.dumps({
         "status": report["status"],
         "storyCount": report["storyCount"],
-        "usable24hStoryCount": report["usable24hStoryCount"],
+        "usable36hStoryCount": report["usable36hStoryCount"],
         "sourceGroupCount": report["sourceGroupCount"],
         "angleHintCoverage": report["angleHintCoverage"],
         "errors": report["errors"],

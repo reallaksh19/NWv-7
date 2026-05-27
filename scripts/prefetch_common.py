@@ -152,4 +152,11 @@ def normalize_basic_story(raw: dict, source: str, source_group: str) -> dict:
         'language':    raw.get('language', 'en'),
     }
     item['id'] = make_story_id(item)
+    # Preserve feed-position metadata used by rawProminence ranking signal
+    if 'feedPosition' in raw:
+        item['feedPosition'] = raw['feedPosition']
+    if 'feedLength' in raw:
+        item['feedLength'] = raw['feedLength']
+    if 'angleHints' in raw:
+        item['angleHints'] = raw['angleHints']
     return item

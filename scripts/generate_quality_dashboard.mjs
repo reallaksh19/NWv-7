@@ -29,9 +29,9 @@ function main() {
   const latest = {
     insightGrade: insightQuality.grade || realInsightQuality.grade || null,
     insightScore: toNumber(insightQuality.score ?? realInsightQuality.score, 0),
-    totalStories: toNumber(insightQuality.totalStories, 0),
-    usableStories36h: toNumber(insightQuality.usableStories, 0),
-    sourceGroups: toNumber(insightQuality.sourceGroups, 0),
+    totalStories: toNumber(insightQuality.storyCount ?? insightQuality.totalStories, 0),
+    usableStories36h: toNumber(insightQuality.usable36hStoryCount ?? insightQuality.usable24hStoryCount ?? insightQuality.usableStories, 0),
+    sourceGroups: toNumber(insightQuality.sourceGroupCount ?? insightQuality.sourceGroups, 0),
     angleHintCoverage: toNumber(insightQuality.angleHintCoverage, 0),
     sectionsTotalStories: toNumber(sectionsQuality.totalStories, 0),
     sectionsCount: toNumber(sectionsQuality.sectionCount, 0),

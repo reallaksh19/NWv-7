@@ -151,6 +151,7 @@ function NewsSection({
                                         className="mnc-image"
                                         loading="lazy"
                                         referrerPolicy="no-referrer"
+                                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
                                     />
                                 )}
 

@@ -1,5 +1,7 @@
 import { getFeedWeight } from './feedHealthMonitor.js';
 
+const CURRENT_YEAR = new Date().getFullYear();
+
 const DEFAULT_FEED_SOURCE_REGISTRY = Object.freeze({
   alerts: {
     Chennai: [
@@ -30,8 +32,8 @@ const DEFAULT_FEED_SOURCE_REGISTRY = Object.freeze({
   },
   shopping: {
     online: [
-      { url: 'https://news.google.com/rss/search?q=Amazon+sale+OR+Flipkart+sale+OR+Myntra+sale+2025&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'high' },
-      { url: 'https://news.google.com/rss/search?q=online+shopping+sale+discount+coupon+India+2025&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'high' }
+      { url: `https://news.google.com/rss/search?q=Amazon+sale+OR+Flipkart+sale+OR+Myntra+sale+${CURRENT_YEAR}&hl=en-IN&gl=IN&ceid=IN:en`, sourceType: 'search', trust: 'high' },
+      { url: `https://news.google.com/rss/search?q=online+shopping+sale+discount+coupon+India+${CURRENT_YEAR}&hl=en-IN&gl=IN&ceid=IN:en`, sourceType: 'search', trust: 'high' }
     ],
     Chennai: [
       { url: 'https://news.google.com/rss/search?q=Chennai+sale+OR+T+Nagar+shopping+OR+Saravana+Stores+offer&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'high' }
@@ -42,7 +44,7 @@ const DEFAULT_FEED_SOURCE_REGISTRY = Object.freeze({
   },
   airlines: {
     global: [
-      { url: 'https://news.google.com/rss/search?q=IndiGo+OR+Air+India+OR+Oman+Air+OR+SalamAir+fare+sale+booking+2025&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'high' }
+      { url: `https://news.google.com/rss/search?q=IndiGo+OR+Air+India+OR+Oman+Air+OR+SalamAir+fare+sale+booking+${CURRENT_YEAR}&hl=en-IN&gl=IN&ceid=IN:en`, sourceType: 'search', trust: 'high' }
     ]
   },
   events: {
@@ -60,16 +62,16 @@ const DEFAULT_FEED_SOURCE_REGISTRY = Object.freeze({
     India: [
       { url: 'https://www.hindustantimes.com/feeds/rss/entertainment/tamil-cinema/rssfeed.xml', sourceType: 'cinema', trust: 'high' },
       { url: 'https://www.hindustantimes.com/feeds/rss/entertainment/bollywood/rssfeed.xml', sourceType: 'cinema', trust: 'high' },
-      { url: 'https://news.google.com/rss/search?q=upcoming+movie+release+date+theatre+OTT+India+2025&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'high' }
+      { url: `https://news.google.com/rss/search?q=upcoming+movie+release+date+theatre+OTT+India+${CURRENT_YEAR}&hl=en-IN&gl=IN&ceid=IN:en`, sourceType: 'search', trust: 'high' }
     ]
   },
   festivals: {
     India: [
       { url: 'https://www.timeanddate.com/holidays/india/feed', sourceType: 'calendar', trust: 'high' },
-      { url: 'https://news.google.com/rss/search?q=India+public+holiday+OR+Pongal+OR+Diwali+OR+Republic+Day+2025&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'high' }
+      { url: `https://news.google.com/rss/search?q=India+public+holiday+OR+Pongal+OR+Diwali+OR+Republic+Day+${CURRENT_YEAR}&hl=en-IN&gl=IN&ceid=IN:en`, sourceType: 'search', trust: 'high' }
     ],
     Oman: [
-      { url: 'https://news.google.com/rss/search?q=Oman+public+holiday+OR+Eid+OR+National+Day+2025&hl=en-US&gl=US&ceid=US:en', sourceType: 'search', trust: 'high' }
+      { url: `https://news.google.com/rss/search?q=Oman+public+holiday+OR+Eid+OR+National+Day+${CURRENT_YEAR}&hl=en-US&gl=US&ceid=US:en`, sourceType: 'search', trust: 'high' }
     ]
   },
   civic: {

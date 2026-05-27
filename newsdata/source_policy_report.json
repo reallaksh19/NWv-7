@@ -1,5 +1,5 @@
 {
-  "generatedAt": 1779904587862,
+  "generatedAt": 1779912888833,
   "policyVersion": "insight-source-policy-v1",
   "reportVersion": "insight-source-policy-report-v1",
   "schemaVersion": 1,
@@ -82,7 +82,7 @@
   },
   "sourceCount": 13,
   "sourceHealthPolicy": {
-    "generatedAt": 1779904587862,
+    "generatedAt": 1779912888833,
     "policyVersion": "insight-source-health-policy-v1",
     "schemaVersion": 1,
     "slotReports": {
@@ -148,14 +148,6 @@
           {
             "backoffReason": "",
             "healthScore": 1.0,
-            "source": "ET Markets",
-            "sourceGroup": "economic_times",
-            "tier": "A",
-            "topic": "markets"
-          },
-          {
-            "backoffReason": "",
-            "healthScore": 0.55,
             "source": "Business Line",
             "sourceGroup": "business_line",
             "tier": "A",
@@ -163,15 +155,7 @@
           },
           {
             "backoffReason": "",
-            "healthScore": 0.55,
-            "source": "Financial Express",
-            "sourceGroup": "financial_express",
-            "tier": "A",
-            "topic": "business"
-          },
-          {
-            "backoffReason": "",
-            "healthScore": 0.55,
+            "healthScore": 1.0,
             "source": "Moneycontrol",
             "sourceGroup": "moneycontrol",
             "tier": "B",
@@ -179,11 +163,27 @@
           },
           {
             "backoffReason": "",
-            "healthScore": 0.55,
+            "healthScore": 1.0,
             "source": "ESPNcricinfo",
             "sourceGroup": "espn",
             "tier": "B",
             "topic": "sports"
+          },
+          {
+            "backoffReason": "",
+            "healthScore": 0.05,
+            "source": "ET Markets",
+            "sourceGroup": "economic_times",
+            "tier": "A",
+            "topic": "markets"
+          },
+          {
+            "backoffReason": "",
+            "healthScore": 0.05,
+            "source": "Financial Express",
+            "sourceGroup": "financial_express",
+            "tier": "A",
+            "topic": "business"
           }
         ],
         "suppressedCount": 0
@@ -242,14 +242,6 @@
           {
             "backoffReason": "",
             "healthScore": 1.0,
-            "source": "Economic Times",
-            "sourceGroup": "economic_times",
-            "tier": "A",
-            "topic": "business"
-          },
-          {
-            "backoffReason": "",
-            "healthScore": 1.0,
             "source": "NDTV",
             "sourceGroup": "ndtv",
             "tier": "B",
@@ -262,6 +254,14 @@
             "sourceGroup": "google_news",
             "tier": "B",
             "topic": "breaking"
+          },
+          {
+            "backoffReason": "",
+            "healthScore": 0.05,
+            "source": "Economic Times",
+            "sourceGroup": "economic_times",
+            "tier": "A",
+            "topic": "business"
           },
           {
             "backoffReason": "",
@@ -297,7 +297,11 @@
     },
     {
       "configuredFeeds": 1,
-      "health": {},
+      "health": {
+        "items": 20,
+        "lastSuccess": 1779912883593,
+        "ok": true
+      },
       "slots": [
         "minus24h"
       ],
@@ -311,9 +315,9 @@
     {
       "configuredFeeds": 2,
       "health": {
-        "items": 20,
-        "lastSuccess": 1779904574841,
-        "ok": true
+        "items": 0,
+        "lastSuccess": 1779912883166,
+        "ok": false
       },
       "slots": [
         "minus24h",
@@ -329,7 +333,11 @@
     },
     {
       "configuredFeeds": 1,
-      "health": {},
+      "health": {
+        "error": "403 Client Error: Forbidden for url: https://www.financialexpress.com/feed/",
+        "items": 0,
+        "ok": false
+      },
       "slots": [
         "minus24h"
       ],
@@ -344,7 +352,7 @@
       "configuredFeeds": 2,
       "health": {
         "items": 20,
-        "lastSuccess": 1779904586882,
+        "lastSuccess": 1779912882462,
         "ok": true
       },
       "slots": [
@@ -361,7 +369,7 @@
       "configuredFeeds": 3,
       "health": {
         "items": 20,
-        "lastSuccess": 1779904578473,
+        "lastSuccess": 1779912873757,
         "ok": true
       },
       "slots": [
@@ -379,7 +387,11 @@
     },
     {
       "configuredFeeds": 1,
-      "health": {},
+      "health": {
+        "items": 20,
+        "lastSuccess": 1779912884693,
+        "ok": true
+      },
       "slots": [
         "minus24h"
       ],
@@ -394,7 +406,7 @@
       "configuredFeeds": 1,
       "health": {
         "items": 20,
-        "lastSuccess": 1779904587056,
+        "lastSuccess": 1779912882664,
         "ok": true
       },
       "slots": [
@@ -411,7 +423,7 @@
       "configuredFeeds": 1,
       "health": {
         "items": 20,
-        "lastSuccess": 1779904574689,
+        "lastSuccess": 1779912868948,
         "ok": true
       },
       "slots": [
@@ -444,7 +456,11 @@
     },
     {
       "configuredFeeds": 1,
-      "health": {},
+      "health": {
+        "items": 15,
+        "lastSuccess": 1779912884034,
+        "ok": true
+      },
       "slots": [
         "minus24h"
       ],
@@ -459,7 +475,7 @@
       "configuredFeeds": 2,
       "health": {
         "items": 20,
-        "lastSuccess": 1779904578391,
+        "lastSuccess": 1779912873580,
         "ok": true
       },
       "slots": [
@@ -478,7 +494,7 @@
       "configuredFeeds": 1,
       "health": {
         "items": 20,
-        "lastSuccess": 1779904578258,
+        "lastSuccess": 1779912873280,
         "ok": true
       },
       "slots": [

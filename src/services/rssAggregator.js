@@ -54,11 +54,16 @@ const SECTION_FEEDS = {
         "https://www.thehindu.com/news/cities/chennai/feeder/default.rss"
     ],
     trichy: [
-        "https://www.thehindu.com/news/cities/Tiruchirapalli/feeder/default.rss"
+        "https://www.thehindu.com/news/cities/Tiruchirapalli/feeder/default.rss",
+        "https://www.dtnext.in/rss",
+        "https://news.google.com/rss/search?q=Trichy+OR+Tiruchirappalli+news&hl=en-IN&gl=IN&ceid=IN:en",
     ],
     local: [
-        "https://news.google.com/rss/search?q=Muscat+Oman&hl=en-OM&gl=OM&ceid=OM:en",
-        "https://www.muscatdaily.com/feed" // Backup (often > 48h old)
+        "https://timesofoman.com/rss",
+        "https://www.muscatdaily.com/feed",
+        "https://www.omanobserver.om/feed",
+        "https://news.google.com/rss/search?q=Muscat+Oman+news+today&hl=en-OM&gl=OM&ceid=OM:en",
+        "https://news.google.com/rss/search?q=Oman+news&hl=en-IN&gl=IN&ceid=IN:en",
     ],
     business: [
         // "https://news.google.com/rss/search?q=Business+Economy+India&hl=en-IN&gl=IN&ceid=IN:en", // Working Replacement

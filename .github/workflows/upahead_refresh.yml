@@ -1,19 +1,15 @@
 name: UpAhead Refresh
 
-# Runs 5× per day for events/offers/alerts/movies (IST 4am, 10am, 2pm, 6pm, 8pm)
+# Runs hourly during IST 6am–10pm (UTC 00:30–16:30) every day.
 # Plus weekly festivals refresh (Sunday IST 3am = Saturday UTC 21:30)
 #
-# IST 4:00am  = UTC 22:30 (previous day)
-# IST 10:00am = UTC 04:30
-# IST 2:00pm  = UTC 08:30
-# IST 6:00pm  = UTC 12:30
-# IST 8:00pm  = UTC 14:30
+# IST 6:00am  = UTC 00:30
+# IST 10:00pm = UTC 16:30
 # Sunday IST 3:00am = Saturday UTC 21:30
 
 on:
   schedule:
-    - cron: '30 22 * * *'         # IST ~4:00am  (UTC prev-day 22:30)
-    - cron: '30 4,8,12,14 * * *'  # IST ~10am, 2pm, 6pm, 8pm
+    - cron: '30 0-16 * * *'       # Hourly IST 6am–10:30pm (UTC 00:30–16:30)
     - cron: '30 21 * * 6'         # Weekly festivals: Saturday UTC 21:30 = Sunday IST 3:00am
   workflow_dispatch:
 
@@ -37,6 +33,8 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Fetch UpAhead events
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
         run: python scripts/fetch_upahead_events.py
 
       - name: Fetch Festivals (weekly Saturday UTC run only)

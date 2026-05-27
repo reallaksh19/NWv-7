@@ -252,7 +252,7 @@ export function createCanonicalParent(
     snapshotPresence,
     impactScore:       0,
     persistenceScore:  computePersistenceScore(snapshotPresence),
-    sourceDiversityScore: Math.min(1, uniqueSources.size / 5),
+    sourceDiversityScore: Math.min(1, uniqueSources.size / 3),
     noveltyScore:      0,
     freshnessScore:    Math.max(...tagged.map(s => s.freshnessScore)),
     crossSnapshotMomentum: 0,

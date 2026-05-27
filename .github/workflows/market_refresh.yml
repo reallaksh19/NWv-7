@@ -8,7 +8,8 @@ name: Market Refresh
 
 on:
   schedule:
-    - cron: '*/30 3-10 * * 1-5'
+    - cron: '*/30 3-10 * * 1-5'   # every 30 min IST 9am–4pm weekdays
+    - cron: '0 */4 * * 0,6'        # every 4 h on weekends (MF NAV, IPO calendar, market news)
   workflow_dispatch:
 
 concurrency:

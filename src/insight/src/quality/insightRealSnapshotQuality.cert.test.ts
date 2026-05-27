@@ -225,7 +225,7 @@ function buildReport(snapshot: any, result: any, diagnostics: any) {
 
 const cfg: InsightConfig = {
   ...DEFAULT_CONFIG,
-  TOP_PARENTS: 5,
+  TOP_PARENTS: 10,
   MAX_CHILDREN_PER_PARENT: 7,
   MIN_CHILD_INFO_GAIN: 0.08,
   WEAK_TREE_CHILD_MIN: 2,

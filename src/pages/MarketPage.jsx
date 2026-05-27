@@ -541,7 +541,7 @@ function MarketPage() {
                                 <div className="modern-card__header">
                                     <h3 className="modern-card__title">🎯 IPO Watch</h3>
                                 </div>
-                                <div className="market-empty-explanation" style={{textAlign: 'center', padding: '20px', color: 'var(--text-muted)'}}>IPO live scrape disabled in static-host mode</div>
+                                <div className="market-empty-explanation" style={{textAlign: 'center', padding: '20px', color: 'var(--text-muted)'}}>No upcoming or live IPOs at this time</div>
                             </div>
                         ) : (
                         <div id="ipo-tracker" className="market-section modern-card">
@@ -559,6 +559,39 @@ function MarketPage() {
                 </section>
 
                 
+
+                {hasUsableSectionData(marketData?.marketNews) && (
+                    <section id="market-news" className="market-section modern-card">
+                        <div className="modern-card__header">
+                            <div>
+                                <div className="market-section__eyebrow">Latest updates</div>
+                                <h2 className="modern-card__title">Market News</h2>
+                            </div>
+                            <div className="market-section__subtitle">Fresh from business desks</div>
+                        </div>
+                        <div className="market-news-list">
+                            {(marketData.marketNews || []).map(item => (
+                                <a
+                                    key={item.id || item.url}
+                                    href={item.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="market-news-item"
+                                >
+                                    <div className="market-news-item__meta">
+                                        <span className="market-news-item__source">{item.source}</span>
+                                        {item.publishedAt && (
+                                            <span className="market-news-item__time">
+                                                {new Date(item.publishedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="market-news-item__title">{item.title}</div>
+                                </a>
+                            ))}
+                        </div>
+                    </section>
+                )}
 
                 {marketSettings.showMarketHealth !== false && (
                     <section id="source-health" className="market-section modern-card market-source-health-section">

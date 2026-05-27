@@ -34,6 +34,13 @@ STORY_RETAIN_HOURS       = 24          # stories older than 24h are dropped
 SECTION_FEEDS = get_section_feeds_map()
 
 MAX_STORIES_PER_SECTION = 30
+MIN_STORIES_PER_SECTION = 10  # backfill from parent section when count falls below this
+
+# Backfill map: if a city section is thin, pull extras from the named parent section
+SECTION_BACKFILL = {
+    'trichy':  'tn',       # pull TN stories if Trichy feed is thin
+    'muscat':  'world',    # pull World/Gulf stories if Muscat feed is thin
+}
 
 DEFAULT_SECTIONS_SNAPSHOT = {
     'schemaVersion': 1,
@@ -112,6 +119,31 @@ def main():
         deduped.sort(key=lambda x: x.get('publishedAt', 0), reverse=True)
         new_sections[section] = deduped[:MAX_STORIES_PER_SECTION]
         print(f'  [{section}] {len(new_sections[section])} stories')
+
+    # Backfill under-populated city sections from their parent sections
+    existing_ids: set = set()
+    for section_stories in new_sections.values():
+        for s in section_stories:
+            if s.get('id'):
+                existing_ids.add(s['id'])
+
+    for child_section, parent_section in SECTION_BACKFILL.items():
+        current = new_sections.get(child_section, [])
+        if len(current) < MIN_STORIES_PER_SECTION and parent_section in new_sections:
+            needed = MIN_STORIES_PER_SECTION - len(current)
+            parent_pool = new_sections.get(parent_section, [])
+            extras = []
+            for story in parent_pool:
+                if story.get('id') not in existing_ids:
+                    tagged = dict(story)
+                    tagged['backfilledFrom'] = parent_section
+                    extras.append(tagged)
+                    existing_ids.add(story['id'])
+                    if len(extras) >= needed:
+                        break
+            if extras:
+                new_sections[child_section] = current + extras
+                print(f'  [{child_section}] backfilled +{len(extras)} from [{parent_section}] → {len(new_sections[child_section])} total')
 
     all_stories_flat = [item for items in new_sections.values() for item in items]
     section_quality = build_section_quality(new_sections)

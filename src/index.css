@@ -1754,6 +1754,56 @@ body {
   font-weight: 700;
 }
 
+.market-news-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 8px;
+}
+
+.market-news-item {
+  display: block;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-default);
+  text-decoration: none;
+  color: inherit;
+}
+
+.market-news-item:last-child {
+  border-bottom: none;
+}
+
+.market-news-item:hover .market-news-item__title {
+  color: var(--accent-primary);
+}
+
+.market-news-item__meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.market-news-item__source {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent-primary);
+}
+
+.market-news-item__time {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.market-news-item__title {
+  font-size: 0.88rem;
+  line-height: 1.4;
+  color: var(--text-primary);
+  transition: color 0.15s ease;
+}
+
 .market-health-list {
   display: grid;
   gap: 8px;

@@ -36,6 +36,13 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 import requests
 import yfinance as yf
 
+# Local fetchers (same scripts/ directory)
+import sys
+import os as _os
+sys.path.insert(0, _os.path.dirname(__file__))
+from fetch_ipo_nfo import fetch_ipo_nfo_data
+from fetch_market_news import fetch_market_news
+
 
 OUTPUT_MARKET = "public/data/market_snapshot.json"
 OUTPUT_METRICS = "public/data/market_metrics.json"
@@ -840,7 +847,7 @@ def run_worker() -> None:
 
     provider_health: List[ProviderResult] = []
 
-    with ThreadPoolExecutor(max_workers=6) as pool:
+    with ThreadPoolExecutor(max_workers=8) as pool:
         futures = {
             "indices": pool.submit(fetch_yahoo_indices),
             "globalIndices": pool.submit(fetch_yahoo_global_indices),
@@ -850,6 +857,8 @@ def run_worker() -> None:
             "rbiFx": pool.submit(fetch_rbi_fx_reference),
             "amfi": pool.submit(fetch_amfi_navall),
             "eod": pool.submit(fetch_eod_bhavcopies),
+            "ipoNfo": pool.submit(fetch_ipo_nfo_data),
+            "marketNews": pool.submit(fetch_market_news),
         }
 
         indices, h = futures["indices"].result()
@@ -880,6 +889,20 @@ def run_worker() -> None:
         eod_payload, h = futures["eod"].result()
         provider_health.extend(h)
 
+        # IPO/NFO — live scrape; fall back to previous snapshot on any failure
+        try:
+            ipo_nfo_payload = futures["ipoNfo"].result()
+        except Exception as exc:
+            print(f"[MarketWorker] IPO/NFO fetch failed: {exc}; using previous snapshot data")
+            ipo_nfo_payload = None
+
+        # Market news — live RSS; silently falls back to empty on failure
+        try:
+            market_news = futures["marketNews"].result()
+        except Exception as exc:
+            print(f"[MarketWorker] Market news fetch failed: {exc}")
+            market_news = []
+
     sectorals = [
         item for item in indices
         if item.get("name") in {"NIFTY BANK", "NIFTY IT", "NIFTY AUTO", "NIFTY PHARMA"}
@@ -900,8 +923,10 @@ def run_worker() -> None:
         "commodities": commodities,
         "currencies": currencies,
         "mutualFunds": mutual_funds[:50],
-        "ipo": previous_snapshot.get("ipo", {"upcoming": [], "live": [], "recent": []}) if previous_snapshot else {"upcoming": [], "live": [], "recent": []},
-        "nfo": previous_snapshot.get("nfo", []) if previous_snapshot else [],
+        "ipo": (ipo_nfo_payload or {}).get("ipo") or (previous_snapshot.get("ipo") if previous_snapshot else None) or {"upcoming": [], "live": [], "recent": []},
+        "nfo": (ipo_nfo_payload or {}).get("nfo") or (previous_snapshot.get("nfo") if previous_snapshot else []) or [],
+        "ipoLastCheckedAt": (ipo_nfo_payload or {}).get("lastCheckedAt"),
+        "marketNews": market_news,
         "stockCategories": previous_snapshot.get("stockCategories", {"highs": [], "lows": [], "all": []}) if previous_snapshot else {"highs": [], "lows": [], "all": []},
         "fiidii": previous_snapshot.get("fiidii", {"fii": {}, "dii": {}, "date": ""}) if previous_snapshot else {"fii": {}, "dii": {}, "date": ""},
         "sourceHealth": compat_source_health(source_health),

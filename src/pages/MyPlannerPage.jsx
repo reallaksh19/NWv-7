@@ -767,7 +767,7 @@ function MyPlannerPage() {
 
     return (
         <div className="page-container">
-            <Header title="My Planner" icon="📌" actions={plannerHeaderActions} />
+            <Header title="My Planner" actions={plannerHeaderActions} />
 
             <main className="main-content" style={{ padding: '16px', margin: '0 auto', maxWidth: '800px' }}>
                 <PlannerControlsPanel

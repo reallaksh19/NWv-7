@@ -13,7 +13,7 @@ function MorePage() {
 
     return (
         <div className="page-container">
-            <Header title="More" icon="⋯" />
+            <Header title="More" showBack backTo="/" />
 
             <main className="main-content" style={{ padding: '16px' }}>
                 <div className="dashboard-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>

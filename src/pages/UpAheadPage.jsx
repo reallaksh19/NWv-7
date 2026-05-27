@@ -486,7 +486,7 @@ function UpAheadPage() {
                     </>
                 ) : (
                     <>
-                        <span>Live Feed • {settings.upAhead?.locations?.join(', ') || 'All Locations'}</span>
+                        <span>{isStaticHost ? 'Snapshot' : 'Live Feed'} • {settings.upAhead?.locations?.join(', ') || 'All Locations'}</span>
                         <button onClick={() => loadData({ forceRefresh: true })} style={{background:'none', border:'none', cursor:'pointer', fontSize:'0.8rem'}} title="Refresh using cached and static data first">🔄</button>
                         <button onClick={() => loadData({ forceRefresh: true, liveOnly: true })} className="btn btn--secondary" style={{ padding: '4px 8px', fontSize: '0.7rem' }} title="Clear stale Up Ahead cache and reload from live feeds only">Force Refresh</button>
                     </>

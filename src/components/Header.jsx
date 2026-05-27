@@ -14,7 +14,7 @@ export function DataStatePill({ mode, label }) {
 /**
  * Header Component with optional back navigation
  */
-function Header({ title, showBack = false, backTo = '/', actions, pills, activePill, onPillChange, compact = false, loadingPhase, showMarket = false }) {
+function Header({ title, showBack = false, backTo = '/', actions, pills, activePill, onPillChange, compact = false, loadingPhase, showMarket = false, stateLabel, stateType }) {
     const { isDesktop, isDevMobileView } = useMediaQuery();
     const isDevMode = import.meta.env.DEV;
     const runtime = getRuntimeCapabilities();
@@ -83,6 +83,7 @@ function Header({ title, showBack = false, backTo = '/', actions, pills, activeP
             )}
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {stateLabel && <DataStatePill mode={stateType || 'live'} label={stateLabel} />}
                 {actions}
                 {!showBack && (
                     <Link to="/more" className="header__action-btn" title="More Options">

@@ -381,7 +381,7 @@ function UpAheadPage() {
     if (loading && !data) {
         return (
             <div className="page-container">
-                <Header title="Up Ahead" icon="🗓️" loadingPhase={loadingPhase} />
+                <Header title="Up Ahead" loadingPhase={loadingPhase} />
                 <div className="loading">
                     <div className="loading__spinner"></div>
                     <p>Scanning horizon...</p>
@@ -393,7 +393,7 @@ function UpAheadPage() {
     if (!hasVisibleUpAheadContent(data)) {
          return (
             <div className="page-container">
-                <Header title="Up Ahead" icon="🗓️" loadingPhase={loadingPhase} />
+                <Header title="Up Ahead" loadingPhase={loadingPhase} />
                 <div className="modern-card empty-state" style={{borderStyle: 'dashed', margin: '20px auto', maxWidth: '600px'}}>
                     <span style={{ fontSize: '3rem', marginBottom: '16px', display: 'block' }}>🔭</span>
                     <h3 style={{marginBottom: '8px', color: 'var(--text-primary)'}}>Nothing on the radar</h3>
@@ -486,7 +486,7 @@ function UpAheadPage() {
                     </>
                 ) : (
                     <>
-                        <span>Live Feed • {settings.upAhead?.locations?.join(', ') || 'All Locations'}</span>
+                        <span>{isStaticHost ? 'Snapshot' : 'Live Feed'} • {settings.upAhead?.locations?.join(', ') || 'All Locations'}</span>
                         <button onClick={() => loadData({ forceRefresh: true })} style={{background:'none', border:'none', cursor:'pointer', fontSize:'0.8rem'}} title="Refresh using cached and static data first">🔄</button>
                         <button onClick={() => loadData({ forceRefresh: true, liveOnly: true })} className="btn btn--secondary" style={{ padding: '4px 8px', fontSize: '0.7rem' }} title="Clear stale Up Ahead cache and reload from live feeds only">Force Refresh</button>
                     </>

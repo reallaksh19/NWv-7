@@ -785,8 +785,10 @@ async function rankAndFilter(items, section, limit, allowedSources, overrideSett
                 }
 
                 // 1. Freshness Filter (Strict)
-                // Relax freshness for "Live" blogs as they might have started days ago but are active
-                const isLive = /\b(live|updates)\b/i.test(item.title) || (item.url && item.url.includes('/live/'));
+                // Relax freshness only for genuine live blogs (title starts with LIVE, or
+                // explicit "live blog/updates/coverage" phrase, or URL path contains /live/)
+                const isLive = /^live\b|\b(live\s+blog|live\s+updates:|live\s+coverage)\b/i.test(item.title) ||
+                               (item.url && item.url.includes('/live/'));
                 const effectiveMaxAge = isLive ? MAX_AGE_MS * 3 : MAX_AGE_MS; // Allow up to 3x longer (e.g. ~7 days)
 
                 if (!bypassFreshness && (now - item.publishedAt > effectiveMaxAge)) return false;

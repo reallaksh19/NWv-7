@@ -167,6 +167,7 @@ jobs:
             exit 0
           fi
           git commit -m "data: news prefetch $(date -u +'%Y-%m-%dT%H:%MZ')"
+          git pull --rebase origin main
           git push
 
       - name: Skip commit for diagnostic-only changes

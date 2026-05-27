@@ -184,7 +184,7 @@ export interface InsightConfig {
 }
 
 export const DEFAULT_CONFIG: InsightConfig = {
-  TOP_PARENTS: 5,
+  TOP_PARENTS: 10,
   MAX_CHILDREN_PER_PARENT: 7,
 
   HARD_DUP_TITLE_SIM: 0.96,

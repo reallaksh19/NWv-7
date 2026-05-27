@@ -426,7 +426,7 @@ function MarketPage() {
                             </div>
 
                             <div className="market-macro-list">
-                                {marketData.commodities.map((commodity) => {
+                                {(marketData?.commodities || []).map((commodity) => {
                                     const isUp = getFloat(commodity.changePercent) >= 0;
                                     return (
                                         <div key={commodity.name} className={`market-macro-item ${getMarketToneClass(commodity.changePercent)}`}>
@@ -460,7 +460,7 @@ function MarketPage() {
                             </div>
 
                             <div className="market-macro-list">
-                                {marketData.currencies.map((currency) => {
+                                {(marketData?.currencies || []).map((currency) => {
                                     const isUp = getFloat(currency.changePercent) >= 0;
                                     return (
                                         <div key={currency.name} className={`market-macro-item ${getMarketToneClass(currency.changePercent)}`}>

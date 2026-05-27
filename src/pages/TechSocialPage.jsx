@@ -35,9 +35,7 @@ function TechSocialPage() {
                 const parsed = JSON.parse(cached);
                 const age = Date.now() - (parsed.timestamp || 0);
                 if (age < 8 * 60 * 60 * 1000) {
-                     setTimeout(() => { setCachedData(parsed); setLoadingPhase(1); }, 0);
-                } else {
-                     setTimeout(() => { setCachedData(parsed); setLoadingPhase(1); }, 0);
+                    setTimeout(() => { setCachedData(parsed); setLoadingPhase(1); }, 0);
                 }
             }
         } catch (e) {
@@ -273,7 +271,7 @@ function TechSocialPage() {
                         </h2>
                     </div>
 
-                    <ProgressBar active={contextLoading && loadingPhase > 1} style={{ marginBottom: '16px' }} />
+                    <ProgressBar active={contextLoading && loadingPhase >= 1} style={{ marginBottom: '16px' }} />
 
                     {/* Modern Icons for Entertainment Tabs */}
                     <div className="entertainment-tabs modern-icons">

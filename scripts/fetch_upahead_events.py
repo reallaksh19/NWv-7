@@ -33,6 +33,7 @@ from datetime import datetime, timezone, timedelta
 sys.path.insert(0, os.path.dirname(__file__))
 
 import feedparser
+from fetch_tmdb_releases import fetch_tmdb_releases
 from prefetch_common import (
     H_MS, DAY_MS, now_ms, read_json, write_json,
     canonical_url, title_fingerprint, make_story_id,
@@ -61,14 +62,24 @@ CATEGORY_FEEDS = {
     },
     'events': {
         'Chennai': [
+            ('https://allevents.in/chennai/rss',
+             'AllEvents Chennai', 'allevents'),
             ('https://news.google.com/rss/search?q=Chennai+upcoming+events+concert+exhibition+workshop+this+week&hl=en-IN&gl=IN&ceid=IN:en',
              'Google News Chennai', 'google_news'),
+            ('https://news.google.com/rss/search?q=Chennai+festival+cultural+program+2025&hl=en-IN&gl=IN&ceid=IN:en',
+             'Google News Chennai Festivals', 'google_news'),
         ],
         'Muscat': [
+            ('https://allevents.in/muscat/rss',
+             'AllEvents Muscat', 'allevents'),
             ('https://news.google.com/rss/search?q=Muscat+upcoming+events+concert+exhibition+this+month&hl=en-US&gl=US&ceid=US:en',
              'Google News Muscat', 'google_news'),
+            ('https://news.google.com/rss/search?q=Oman+event+festival+weekend+2025&hl=en-US&gl=US&ceid=US:en',
+             'Google News Oman Events', 'google_news'),
         ],
         'Trichy': [
+            ('https://allevents.in/trichy/rss',
+             'AllEvents Trichy', 'allevents'),
             ('https://news.google.com/rss/search?q=Trichy+events+exhibition+cultural+event+this+week&hl=en-IN&gl=IN&ceid=IN:en',
              'Google News Trichy', 'google_news'),
         ],
@@ -299,11 +310,19 @@ def is_planner_eligible(item: dict, ts: int) -> bool:
         days_ahead = (event_start - ts) / DAY_MS
         if days_ahead < -0.25 or days_ahead > 7:
             return False
-    elif category not in ('shopping', 'alerts', 'weather_alerts', 'civic', 'airlines'):
-        return False
+    else:
+        # No event date: allow only categories that don't require one,
+        # OR 'events' that are very recent (≤2 days) from a high-locality source
+        if category == 'events' and item.get('localityScore', 0) >= 0.7:
+            if (ts - item.get('publishedAt', 0)) <= 2 * DAY_MS:
+                pass  # recent high-locality event without date: allow
+            else:
+                return False
+        elif category not in ('shopping', 'alerts', 'weather_alerts', 'civic', 'airlines'):
+            return False
     if item.get('localityScore', 0) < 0.30:
         return False
-    if item.get('dateConfidence') == 'unknown' and category not in ('alerts', 'shopping', 'weather_alerts', 'civic'):
+    if item.get('dateConfidence') == 'unknown' and category not in ('alerts', 'shopping', 'weather_alerts', 'civic', 'events'):
         return False
     return True
 
@@ -401,6 +420,13 @@ def main():
             items, health = fetch_category_items(category, location, feeds, ts)
             all_health.update(health)
             new_items.extend(items)
+
+    # Augment movies section with TMDB structured release data (real dates)
+    tmdb_items = fetch_tmdb_releases(ts)
+    if tmdb_items:
+        new_items.extend(tmdb_items)
+        print(f'  [tmdb] added {len(tmdb_items)} releases to movies section')
+        all_health['tmdb'] = {'ok': True, 'items': len(tmdb_items), 'lastSuccess': ts}
 
     # Merge: new wins (fresh data replaces stale on same ID)
     merged_by_id = {**retained_by_id}

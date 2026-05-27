@@ -12,13 +12,19 @@ export default function TopicDetail() {
 
     const [articles, setArticles] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [notFoundTimeout, setNotFoundTimeout] = useState(false);
 
     // Find the topic in the context state
     const topic = followedTopics.find(t => t.id === topicId);
 
+    // If context hasn't hydrated yet, wait up to 5s before showing not-found
     useEffect(() => {
-        // If we don't have the topic yet (e.g., refreshing on this page), wait a bit or handle it.
-        // If followedTopics is empty but loading is true in context, we wait.
+        if (topic) return;
+        const t = setTimeout(() => setNotFoundTimeout(true), 5000);
+        return () => clearTimeout(t);
+    }, [topic]);
+
+    useEffect(() => {
         if (!topic) return;
 
         const loadNews = async () => {
@@ -39,12 +45,17 @@ export default function TopicDetail() {
 
     // Handle "Topic Not Found" after initial load
     if (!topic) {
-        // Return null or loader while context initializes
         return (
              <div className="page-container">
                  <div className="loading" style={{padding: '20px'}}>
-                     <p>Loading topic...</p>
-                     <button onClick={() => navigate('/following')}>Back to List</button>
+                     {notFoundTimeout ? (
+                         <>
+                             <p>Topic not found.</p>
+                             <button onClick={() => navigate('/following')}>Back to List</button>
+                         </>
+                     ) : (
+                         <p>Loading topic…</p>
+                     )}
                  </div>
              </div>
         );

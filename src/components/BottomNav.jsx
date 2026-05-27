@@ -60,14 +60,13 @@ function BottomNav() {
       )}
 
       <div className="bottom-nav__items" role="list">
-        {ALL_NAV_ITEMS.map((item) => {
-          const isActive = isActivePath(location.pathname, item.path);
-
-          return (
+        {ALL_NAV_ITEMS.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
-              className={`bottom-nav__item ${isActive ? 'active' : ''}`}
+              className={({ isActive: navActive }) =>
+                `bottom-nav__item${(navActive || isActivePath(location.pathname, item.path)) ? ' active' : ''}`
+              }
               title={item.label}
               aria-label={item.label}
               role="listitem"
@@ -75,8 +74,7 @@ function BottomNav() {
               <span className="bottom-nav__icon" aria-hidden="true">{item.icon}</span>
               <span className="bottom-nav__label">{item.label}</span>
             </NavLink>
-          );
-        })}
+        ))}
       </div>
 
       <button

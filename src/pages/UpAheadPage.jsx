@@ -215,7 +215,8 @@ function UpAheadPage() {
         ...item,
         time: formatConciseDate(item.date || item.releaseDate),
         summary: item.description || item.summary || '',
-        source: item.source || item.platform || item.category || 'Up Ahead'
+        source: item.source || item.platform || item.category || 'Up Ahead',
+        imageUrl: item.posterUrl || item.imageUrl || null,
     });
 
     const loadData = useCallback(async ({ forceRefresh = false, liveOnly = false } = {}) => {
@@ -415,7 +416,7 @@ function UpAheadPage() {
     const highPriorityAlert = weatherAlerts[0] || generalAlerts[0] || null;
     const alertIcon = weatherAlerts.length > 0 ? '🌪️' : '⚠️';
     const alertTitle = weatherAlerts.length > 0 ? 'Weather Warning' : 'Worth Knowing';
-    const OFFER_MAX_AGE_MS = 14 * 24 * 60 * 60 * 1000;
+    const OFFER_MAX_AGE_MS = 2 * 24 * 60 * 60 * 1000; // 2 days — matches Python backend expiryAt logic
     const offerItems = [...(data.sections?.shopping || []), ...(data.sections?.airlines || [])].filter(item => {
         if (!isActualOfferText(`${item?.title || ''} ${item?.description || ''}`, settings.upAhead)) return false;
         const pub = item?.publishedAt || item?.eventStartAt;

@@ -29,7 +29,7 @@ console.log(`Queries: ${highPriorityQueries.map(q => q.query).join(', ')}`);
 function fetchUrl(url) {
   return new Promise((resolve, reject) => {
     const lib = url.startsWith('https') ? https : http;
-    const request = lib.get(url, { timeout: 10000 }, response => {
+    const request = lib.get(url, { timeout: 12000 }, response => {
       if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
         return resolve(fetchUrl(response.headers.location));
       }
@@ -41,6 +41,21 @@ function fetchUrl(url) {
     request.on('error', reject);
     request.on('timeout', () => { request.destroy(); reject(new Error('Request timeout: ' + url)); });
   });
+}
+
+async function fetchWithRetry(url, attempts = 2, delaysMs = [3000, 8000]) {
+  let lastErr;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await fetchUrl(url);
+    } catch (err) {
+      lastErr = err;
+      if (i < attempts - 1) {
+        await new Promise(r => setTimeout(r, delaysMs[i] || 3000));
+      }
+    }
+  }
+  throw lastErr;
 }
 
 function parseRssItems(xml) {
@@ -75,11 +90,12 @@ function parseRssItems(xml) {
 
 const allStories = [];
 const seen = new Set();
+const fetchErrors = [];
 
 for (const query of highPriorityQueries) {
   try {
     console.log(`  Fetching: ${query.query}`);
-    const xml = await fetchUrl(query.url);
+    const xml = await fetchWithRetry(query.url);
     const items = parseRssItems(xml);
     console.log(`  Got ${items.length} items`);
 
@@ -91,7 +107,9 @@ for (const query of highPriorityQueries) {
       }
     }
   } catch (error) {
-    console.warn(`  Warning: failed to fetch ${query.query}: ${error.message}`);
+    const msg = `${query.query}: ${error.message}`;
+    console.warn(`  Warning: failed to fetch ${msg}`);
+    fetchErrors.push(msg);
   }
 }
 
@@ -105,6 +123,7 @@ const payload = {
   generatedAt: new Date().toISOString(),
   sourceMode: 'github-rss-prefetch',
   storyCount: allStories.length,
+  fetchErrors: fetchErrors.length > 0 ? fetchErrors : undefined,
   stories: allStories,
 };
 

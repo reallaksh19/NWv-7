@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm --version)"
+      "Bash(npm --version)",
+      "Bash(python3 -c \"import json; d=json.load\\(open\\('/home/user/NWv-7/public/newsdata/insight_quality_report.json'\\)\\); print\\('keys:', list\\(d.keys\\(\\)\\)[:30]\\); print\\('angle related:'\\); [print\\(' ', k,'=',v\\) for k,v in d.items\\(\\) if 'angle' in k.lower\\(\\) or 'grade' in k.lower\\(\\) or 'signal' in k.lower\\(\\)]\")",
+      "Bash(python3 -c ' *)",
+      "Bash(rm /home/user/NWv-7/scripts/insight_angle_inference.py)",
+      "Bash(npx vitest *)"
     ]
   }
 }

@@ -57,6 +57,7 @@ jobs:
             exit 0
           fi
           git commit -m "data: market refresh $(date -u +'%Y-%m-%dT%H:%MZ')"
+          git pull --rebase origin main
           git push
           echo "committed=true" >> "$GITHUB_OUTPUT"
 

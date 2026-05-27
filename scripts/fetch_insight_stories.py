@@ -8,9 +8,16 @@ Run via GitHub Actions (news_prefetch.yml):
   python scripts/fetch_insight_stories.py
 """
 import glob
+import html as html_lib
 import os
+import re
 import sys
 import time
+
+def _strip_html(text):
+    text = html_lib.unescape(text or '')
+    text = re.sub(r'<[^>]+>', ' ', text)
+    return re.sub(r'\s+', ' ', text).strip()
 
 # Allow importing from scripts/ when run from repo root
 sys.path.insert(0, os.path.dirname(__file__))
@@ -105,8 +112,8 @@ def fetch_slot_stories(slot: str) -> tuple[list, dict]:
                 pub = entry.get('published_parsed')
                 pub_ms = int(time.mktime(pub) * 1000) if pub else now_ms()
                 raw = {
-                    'title':       entry.get('title', ''),
-                    'summary':     entry.get('summary', ''),
+                    'title':       _strip_html(entry.get('title', '')),
+                    'summary':     _strip_html(entry.get('summary', '')),
                     'url':         entry.get('link', ''),
                     'publishedAt': pub_ms,
                     'feedPosition': idx,

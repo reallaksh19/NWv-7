@@ -92,7 +92,8 @@ const SECTION_FEEDS = {
         "https://www.pinkvilla.com/rss/feed/entertainment" // General India Ent
     ],
     social: [
-        "https://www.theverge.com/rss/index.xml" // Proxy for trends
+        "https://news.google.com/rss/search?q=trending+India+social+media+viral&hl=en-IN&gl=IN&ceid=IN:en",
+        "https://news.google.com/rss/search?q=India+culture+lifestyle+trending&hl=en-IN&gl=IN&ceid=IN:en"
     ]
 };
 

@@ -206,7 +206,7 @@ export function getInsightCoreQualityDiagnostics(
     avgScore,
     sourceDiversityCoverage: rankedCount > 0 ? sourceGroupCounts.filter(count => count >= cfg.MIN_SOURCES_PER_TREE).length : 0,
     snapshotCoverage: rankedCount > 0 ? snapshotCounts.filter(count => count >= 2).length : 0,
-    coverageLabel: `${multiAngleCount}/${rankedCount || 0}`,
+    coverageLabel: rankedCount > 0 ? `${multiAngleCount}/${rankedCount}` : 'none',
     warnings,
   };
 }

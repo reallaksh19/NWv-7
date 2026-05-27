@@ -292,7 +292,7 @@ function TechSocialPage() {
                     <div className="masonry-grid">
                         {filterOldNews(processedEntertainment.filter(item => item.region === activeEntTab)).slice(0, 8).map((item, idx) => (
                             <ImageCard
-                                key={idx}
+                                key={item.id || item.link || idx}
                                 article={{
                                     ...item,
                                     time: item.time || 'Recently',
@@ -320,7 +320,7 @@ function TechSocialPage() {
                     <div className="masonry-grid">
                         {socialTrends.map((item, idx) => (
                             <ImageCard
-                                key={idx}
+                                key={item.id || item.link || idx}
                                 article={{
                                     ...item,
                                     time: item.time || 'Recently'

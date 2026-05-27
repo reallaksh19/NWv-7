@@ -511,11 +511,11 @@ function UpAheadPage() {
             <main className="main-content">
                 <div className="ua-view-toggle scrollable-tabs">
                     <button className={`ua-toggle-btn ${view === 'plan' ? 'active' : ''}`} onClick={() => setView('plan')} title="Suggested">✨ Suggested</button>
-                    <button className={`ua-toggle-btn ${view === 'offers' ? 'active' : ''}`} onClick={() => setView('offers')} title="Offers">🏷️ Offers</button>
-                    <button className={`ua-toggle-btn ${view === 'movies' ? 'active' : ''}`} onClick={() => setView('movies')} title="Releases">🎬 Release</button>
-                    <button className={`ua-toggle-btn ${view === 'events' ? 'active' : ''}`} onClick={() => setView('events')} title="Events">🎫 Events</button>
-                    <button className={`ua-toggle-btn ${view === 'alerts' ? 'active' : ''}`} onClick={() => setView('alerts')} title="Alerts">🚨 Alerts</button>
-                    <button className={`ua-toggle-btn ${view === 'festivals' ? 'active' : ''}`} onClick={() => setView('festivals')} title="Festivals">🎉 Festivals</button>
+                    <button className={`ua-toggle-btn ${view === 'offers' ? 'active' : ''}`} onClick={() => setView('offers')} title="Offers">🏷️ Offers{offerItems.length > 0 && <span className="ua-tab-count">{offerItems.length}</span>}</button>
+                    <button className={`ua-toggle-btn ${view === 'movies' ? 'active' : ''}`} onClick={() => setView('movies')} title="Releases">🎬 Release{movieCards.length > 0 && <span className="ua-tab-count">{movieCards.length}</span>}</button>
+                    <button className={`ua-toggle-btn ${view === 'events' ? 'active' : ''}`} onClick={() => setView('events')} title="Events">🎫 Events{(data.sections?.events?.length || 0) > 0 && <span className="ua-tab-count">{data.sections.events.length}</span>}</button>
+                    <button className={`ua-toggle-btn ${view === 'alerts' ? 'active' : ''}`} onClick={() => setView('alerts')} title="Alerts">🚨 Alerts{(weatherAlerts.length + civicAlerts.length) > 0 && <span className="ua-tab-count">{weatherAlerts.length + civicAlerts.length}</span>}</button>
+                    <button className={`ua-toggle-btn ${view === 'festivals' ? 'active' : ''}`} onClick={() => setView('festivals')} title="Festivals">🎉 Festivals{festivalCards.length > 0 && <span className="ua-tab-count">{festivalCards.length}</span>}</button>
                     <button className={`ua-toggle-btn ${view === 'feed' ? 'active' : ''}`} onClick={() => setView('feed')} title="Civics / Timeline">🏛️ Civics</button>
                     <button className="ua-toggle-btn" onClick={() => setShowDiagnostics(true)} title="Diagnostics">🩺</button>
                     {import.meta.env.DEV && (

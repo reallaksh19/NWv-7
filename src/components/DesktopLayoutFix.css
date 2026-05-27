@@ -116,11 +116,13 @@
   min-width: 0;
   height: auto;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: center;
   align-items: center;
   gap: 4px 6px;
-  overflow: visible;
+  overflow-x: auto;
+  overflow-y: visible;
+  scrollbar-width: none;
 }
 
 .bottom-nav--desktop .bottom-nav__item {

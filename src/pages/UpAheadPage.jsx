@@ -415,9 +415,13 @@ function UpAheadPage() {
     const highPriorityAlert = weatherAlerts[0] || generalAlerts[0] || null;
     const alertIcon = weatherAlerts.length > 0 ? '🌪️' : '⚠️';
     const alertTitle = weatherAlerts.length > 0 ? 'Weather Warning' : 'Worth Knowing';
-    const offerItems = [...(data.sections?.shopping || []), ...(data.sections?.airlines || [])].filter(item =>
-        isActualOfferText(`${item?.title || ''} ${item?.description || ''}`, settings.upAhead)
-    );
+    const OFFER_MAX_AGE_MS = 14 * 24 * 60 * 60 * 1000;
+    const offerItems = [...(data.sections?.shopping || []), ...(data.sections?.airlines || [])].filter(item => {
+        if (!isActualOfferText(`${item?.title || ''} ${item?.description || ''}`, settings.upAhead)) return false;
+        const pub = item?.publishedAt || item?.eventStartAt;
+        if (pub && (Date.now() - pub) > OFFER_MAX_AGE_MS) return false;
+        return true;
+    });
     const movieCards = (data.sections?.movies || []).map(buildCardArticle);
     const festivalCards = (data.sections?.festivals || []).map(buildCardArticle);
 

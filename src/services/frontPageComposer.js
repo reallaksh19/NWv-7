@@ -18,9 +18,9 @@ export function composeBalancedFeed(articles, limit = 20, maxTopicPercent = 40, 
     // We assume impactScore is present, otherwise we default to 0.
     // If scores are equal or missing, the original order is preserved roughly by the sort stability or nature of data.
     // Quality gate: filter out low-relevance articles before sorting.
-    // Minimum score of 2.5 keeps breaking news while filtering celebrity filler.
+    // 2.5 keeps breaking news while filtering celebrity filler / listicle fodder.
     // Safety: if fewer than 5 qualify, use top-scored from full list to avoid empty feed.
-    const MIN_IMPACT = 1.5;
+    const MIN_IMPACT = 2.5;
     const qualified  = articles.filter(a => (a.impactScore || 0) >= MIN_IMPACT);
     const pool       = qualified.length >= 5
         ? qualified

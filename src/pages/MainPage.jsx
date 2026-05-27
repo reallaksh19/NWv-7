@@ -211,7 +211,6 @@ const MainPage = () => {
 
     const isTimelineMode = uiMode === 'timeline';
 
-    const _isNewspaperMode = uiMode === 'newspaper';
     const isUrgentMode = currentSegment.id === 'urgent_only';
 
     const mainTabAudit = React.useMemo(() => auditMainTabQuality({

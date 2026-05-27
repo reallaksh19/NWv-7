@@ -99,17 +99,17 @@ function MutualFundCard({ funds }) {
                         {displayFunds.map((fund, idx) => (
                             <div key={fund.code || `${fund.name}-${idx}`} className="mf-fund">
                                 <div className="mf-fund__info">
-                                    <div className="mf-fund__name">{fund.name}</div>
+                                    <div className="mf-fund__name">{fund.name || '—'}</div>
                                     <div className="mf-fund__category">
-                                        {fund.category}
+                                        {fund.category || ''}
                                         {fund.fundHouse ? ` · ${fund.fundHouse}` : ''}
                                     </div>
                                     <div className="mf-fund__badge">{fund.fundTypeLabel || getTabLabel(fund.fundType)}</div>
                                 </div>
                                 <div className="mf-fund__nav">
-                                    <div className="mf-fund__value">₹{fund.nav}</div>
+                                    <div className="mf-fund__value">₹{fund.nav != null ? fund.nav : '—'}</div>
                                     <div className={`mf-fund__change mf-fund__change--${fund.direction}`}>
-                                        {fund.direction === 'up' ? '▲' : '▼'} {fund.changePercent}%
+                                        {fund.direction === 'up' ? '▲' : '▼'} {fund.changePercent != null ? `${Number(fund.changePercent).toFixed(2)}%` : '—'}
                                     </div>
                                 </div>
                             </div>

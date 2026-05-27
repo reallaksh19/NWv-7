@@ -34,10 +34,12 @@ function IPOCard({ ipoData }) {
                 </div>
             </div>
 
-            <div className="ipo-card__tabs">
+            <div className="ipo-card__tabs" role="tablist" aria-label="IPO tracker tabs">
                 {tabs.map(tab => (
                     <button
                         key={tab.key}
+                        role="tab"
+                        aria-selected={activeTab === tab.key}
                         className={`ipo-tab ${activeTab === tab.key ? 'ipo-tab--active' : ''}`}
                         onClick={() => setActiveTab(tab.key)}
                     >

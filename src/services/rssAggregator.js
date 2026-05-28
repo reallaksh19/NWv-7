@@ -287,8 +287,15 @@ export function computeImpactScore(item, section, viewCount = 0, overrideSetting
     // 2. Source Weight and Category Relevance (NEW)
     const sourceScore = calculateSourceScore(item.source);
     const categoryWeight = getSourceWeightForCategory(item.source, section);
-    // Combined source component, scaled up (Default 0.5 for +50% max boost)
-    const tierBoost = w.source?.tier1Boost || 0.5;
+    // Tier-1 sources get up to +50% on Main / global sections, but local
+    // sections (Chennai, Trichy, Muscat, TN) get a lighter +25% boost —
+    // tier-2/3 regional outlets are often the only ones covering the story
+    // and shouldn't be buried under syndicated tier-1 wire copy.
+    const LOCAL_SECTIONS = new Set(['chennai', 'trichy', 'tn', 'muscat', 'oman']);
+    const isLocalSection = LOCAL_SECTIONS.has(String(section || '').toLowerCase());
+    const tierBoost = isLocalSection
+        ? (w.source?.localTierBoost || 0.25)
+        : (w.source?.tier1Boost || 0.5);
 
     // Define sourceComponent for legacy use
     const sourceComponent = sourceScore * categoryWeight;

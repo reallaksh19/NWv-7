@@ -121,16 +121,17 @@ def fetch_slot_stories(slot: str) -> tuple[list, dict]:
                 }
                 items.append(normalize_basic_story(raw, source, source_group))
             source_health[source_group] = {
-                'ok':          len(items) > 0,
-                'items':       len(items),
-                'lastSuccess': now_ms(),
+                'ok':      True,
+                'items':   len(items),
+                'feedUrl': url,
             }
             results.extend(items)
         except Exception as e:
             source_health[source_group] = {
-                'ok':    False,
-                'error': str(e),
-                'items': 0,
+                'ok':      False,
+                'error':   str(e),
+                'items':   0,
+                'feedUrl': url,
             }
     return results, source_health
 
@@ -211,9 +212,11 @@ def refresh_insight_snapshot(old_snapshot: dict, ts: int) -> tuple[dict, dict]:
 
 # ── Source health ─────────────────────────────────────────────────────────────
 def update_source_health(new_health: dict) -> None:
+    from source_health import apply_source_health
+    ts = now_ms()
     existing = read_json(SOURCE_HEALTH_PATH, {'lastChecked': 0, 'sources': {}})
-    existing['sources'].update(new_health)
-    existing['lastChecked'] = now_ms()
+    existing['sources'] = apply_source_health(existing.get('sources', {}), new_health, ts)
+    existing['lastChecked'] = ts
     write_json(SOURCE_HEALTH_PATH, existing)
 
 
@@ -250,6 +253,11 @@ def main() -> None:
     update_source_health(health)
     write_source_policy_report(get_active_slot_feeds(), health)
     prune_old_archives()
+
+    from source_health import zero_item_warnings
+    final_health = read_json(SOURCE_HEALTH_PATH, {'sources': {}}).get('sources', {})
+    for w in zero_item_warnings(final_health):
+        print(f'  [health-warn] {w}')
 
     print(
         f'Done. stories={len(new_snap["stories"])}, '

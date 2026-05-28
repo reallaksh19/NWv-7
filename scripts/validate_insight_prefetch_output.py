@@ -180,6 +180,18 @@ def validate_snapshot(snapshot: dict[str, Any], now_ms: int) -> dict[str, Any]:
         if health["linkedStories"] == 0:
             warnings.append(f"Slot {slot} has zero linked stories")
 
+    try:
+        sys.path.insert(0, os.path.dirname(__file__))
+        from source_health import zero_item_warnings
+        sh_path = 'public/newsdata/source_health.json'
+        if os.path.exists(sh_path):
+            with open(sh_path, 'r', encoding='utf-8') as fh:
+                sh_doc = json.load(fh)
+            for w in zero_item_warnings(sh_doc.get('sources', {})):
+                warnings.append(w)
+    except Exception:
+        pass
+
     status = "FAIL" if errors else "WARN" if warnings else "PASS"
 
     return {

@@ -18,7 +18,8 @@ from prefetch_common import (
 )
 from fetch_upahead_events import (
     extract_event_date, derive_expiry, is_planner_eligible,
-    estimate_actionability, keep_upahead_item, LOCATION_LOCALITY
+    estimate_actionability, keep_upahead_item, LOCATION_LOCALITY,
+    _safe_feed_parse, THIS_YEAR
 )
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
@@ -30,13 +31,13 @@ FESTIVAL_FEEDS = [
     # India
     ('https://www.timeanddate.com/holidays/india/feed',
      'Time and Date India', 'timeanddate', 'India'),
-    ('https://news.google.com/rss/search?q=India+public+holiday+OR+Pongal+OR+Diwali+OR+Republic+Day+2025&hl=en-IN&gl=IN&ceid=IN:en',
+    (f'https://news.google.com/rss/search?q=India+public+holiday+OR+Pongal+OR+Diwali+OR+Republic+Day+{THIS_YEAR}&hl=en-IN&gl=IN&ceid=IN:en',
      'Google News India Festivals', 'google_news', 'India'),
     # Oman / Muscat
-    ('https://news.google.com/rss/search?q=Oman+public+holiday+OR+Eid+OR+National+Day+2025&hl=en-US&gl=US&ceid=US:en',
+    (f'https://news.google.com/rss/search?q=Oman+public+holiday+OR+Eid+OR+National+Day+{THIS_YEAR}&hl=en-US&gl=US&ceid=US:en',
      'Google News Oman Festivals', 'google_news', 'Oman'),
     # Tamil Nadu specific
-    ('https://news.google.com/rss/search?q=Tamil+Nadu+festival+OR+state+holiday+2025+date&hl=en-IN&gl=IN&ceid=IN:en',
+    (f'https://news.google.com/rss/search?q=Tamil+Nadu+festival+OR+state+holiday+{THIS_YEAR}+date&hl=en-IN&gl=IN&ceid=IN:en',
      'Google News TN Festivals', 'google_news', 'India'),
 ]
 
@@ -47,7 +48,7 @@ def fetch_festival_items(ts: int) -> tuple[list, dict]:
     for url, source, source_group, location in FESTIVAL_FEEDS:
         locality_meta = LOCATION_LOCALITY.get(location, {'city': None, 'region': None, 'localityScore': 0.5})
         try:
-            feed = feedparser.parse(url)
+            feed = _safe_feed_parse(url)
             for entry in feed.entries[:30]:
                 pub = entry.get('published_parsed')
                 pub_ms  = int(time.mktime(pub) * 1000) if pub else ts

@@ -137,7 +137,7 @@ describe('Insight top-story anchoring certification', () => {
     ]);
 
     expect(highImpact).toBeGreaterThan(lowImpact);
-    expect((highParent.debug as any).impactScoreDiagnostics.formulaVersion).toBe('impact-v2-top-story-anchor');
+    expect((highParent.debug as any).impactScoreDiagnostics.formulaVersion).toBe('impact-v3-log-source-diversity');
     expect((highParent.debug as any).impactScoreDiagnostics.topStoryProminenceScore).toBe(1);
   });
 

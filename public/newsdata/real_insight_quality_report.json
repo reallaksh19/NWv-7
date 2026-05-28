@@ -1,90 +1,111 @@
 {
   "status": "PASS",
   "benchmarkVersion": "real-insight-snapshot-quality-v1",
-  "generatedAt": 1779902746261,
-  "contentHash": "40f989d5da9c",
-  "schemaVersion": 2,
-  "collectorVersion": "",
-  "storyCount": 877,
-  "sourceGroupCount": 8,
-  "grade": "B",
+  "generatedAt": 1779928028376,
+  "contentHash": "69fce93b47c61dae",
+  "schemaVersion": 3,
+  "collectorVersion": "insight-collector-json-v3",
+  "storyCount": 703,
+  "sourceGroupCount": 11,
+  "grade": "C",
   "parentCount": 10,
-  "avgAngles": 2,
-  "multiAngleCount": 10,
+  "avgAngles": 1.5,
+  "multiAngleCount": 5,
   "weakParentCount": 0,
   "runtimeQualityGate": {
-    "attempted": false,
+    "attempted": true,
     "recovered": false,
-    "reason": "first-pass acceptable",
+    "reason": "relaxed-tree recovery could not produce acceptable output",
     "before": {
-      "grade": "B",
-      "tone": "info",
-      "title": "Useful insight signal",
-      "signalScore": 66,
+      "grade": "C",
+      "tone": "warn",
+      "title": "Thin but usable signal",
+      "signalScore": 54,
       "sourceLabel": "Live",
       "rankedCount": 10,
-      "storyCount": 824,
+      "storyCount": 652,
       "risingCount": 2,
       "thinCount": 0,
-      "multiAngleCount": 10,
-      "lowAngleCount": 0,
+      "multiAngleCount": 5,
+      "lowAngleCount": 5,
       "strongAngleCount": 0,
-      "avgAngles": 2,
-      "avgChildren": 2.3,
-      "avgScore": 0.5887504560969852,
+      "avgAngles": 1.5,
+      "avgChildren": 2.2,
+      "avgScore": 0.5767749147104857,
       "sourceDiversityCoverage": 10,
-      "snapshotCoverage": 2,
-      "coverageLabel": "10/10",
+      "snapshotCoverage": 1,
+      "coverageLabel": "5/10",
       "warnings": [
+        "5 cluster(s) have fewer than two visible child angles.",
         "No cluster currently exposes three or more visible child angles.",
-        "8 cluster(s) have weak snapshot coverage.",
-        "539 duplicate/near-duplicate item(s) were hidden or downgraded."
+        "9 cluster(s) have weak snapshot coverage.",
+        "510 duplicate/near-duplicate item(s) were hidden or downgraded."
       ]
     },
     "after": {
-      "grade": "B",
-      "tone": "info",
-      "title": "Useful insight signal",
-      "signalScore": 66,
+      "grade": "C",
+      "tone": "warn",
+      "title": "Thin but usable signal",
+      "signalScore": 54,
       "sourceLabel": "Live",
       "rankedCount": 10,
-      "storyCount": 824,
+      "storyCount": 652,
       "risingCount": 2,
       "thinCount": 0,
-      "multiAngleCount": 10,
-      "lowAngleCount": 0,
+      "multiAngleCount": 5,
+      "lowAngleCount": 5,
       "strongAngleCount": 0,
-      "avgAngles": 2,
-      "avgChildren": 2.3,
-      "avgScore": 0.5887504560969852,
+      "avgAngles": 1.5,
+      "avgChildren": 2.2,
+      "avgScore": 0.5767749147104857,
       "sourceDiversityCoverage": 10,
-      "snapshotCoverage": 2,
-      "coverageLabel": "10/10",
+      "snapshotCoverage": 1,
+      "coverageLabel": "5/10",
       "warnings": [
+        "5 cluster(s) have fewer than two visible child angles.",
         "No cluster currently exposes three or more visible child angles.",
-        "8 cluster(s) have weak snapshot coverage.",
-        "539 duplicate/near-duplicate item(s) were hidden or downgraded."
+        "9 cluster(s) have weak snapshot coverage."
       ]
+    },
+    "recoveryConfig": {
+      "MIN_CHILD_INFO_GAIN": 0.08,
+      "WEAK_TREE_CHILD_MIN": 2,
+      "MIN_SOURCES_PER_TREE": 2,
+      "MAX_PER_SOURCE_GROUP": 3,
+      "MAX_PER_ANGLE": 4,
+      "TIER_D_EXCLUDE": false
     }
   },
   "parents": [
     {
-      "parentId": "cluster_89_70d77d1e33d12bd9",
-      "headline": "TMC's Jahangir Khan cites CM Adhikari’s promise, withdraws from Falta re-poll",
-      "score": 0.6401154013449327,
-      "postTreeScore": 1.0601,
+      "parentId": "cluster_157_add8a80ddae4e2a5",
+      "headline": "Air India flight to San Francisco returns to Delhi due to technical snag",
+      "score": 0.6235810543049342,
+      "postTreeScore": 1.0436,
       "childCount": 3,
       "angles": [
         "base_report",
-        "official_response"
+        "fact_update"
       ],
       "weakTree": false
     },
     {
-      "parentId": "cluster_25_199af1cdf1213876",
-      "headline": "Delhi-NCR imposes GRAP-I anti-pollution curbs as AQI turns ‘poor’ in May",
-      "score": 0.6265467197849982,
-      "postTreeScore": 1.0265,
+      "parentId": "cluster_338_20e7529388c9b1e0",
+      "headline": "Pregnant Woman Jumps To Death In Delhi; Family Alleges Dowry Torture: Cops",
+      "score": 0.5699800531183317,
+      "postTreeScore": 0.95,
+      "childCount": 2,
+      "angles": [
+        "base_report",
+        "fact_update"
+      ],
+      "weakTree": false
+    },
+    {
+      "parentId": "cluster_219_d997d615257e069f",
+      "headline": "Three dead in latest strike, Israel claims Hamas military chief was targetted",
+      "score": 0.5690800531183317,
+      "postTreeScore": 0.9491,
       "childCount": 2,
       "angles": [
         "base_report",
@@ -93,98 +114,81 @@
       "weakTree": false
     },
     {
-      "parentId": "cluster_165_11b481903f043e1c",
-      "headline": "U.S.-China: A temporary truce",
-      "score": 0.5841154013449328,
-      "postTreeScore": 1.0241,
-      "childCount": 4,
+      "parentId": "cluster_407_f28230097ead314b",
+      "headline": "Siddaramaiah To Resign, Congress Bosses Back DK Shivakumar: Sources",
+      "score": 0.5690800531183317,
+      "postTreeScore": 0.9491,
+      "childCount": 2,
       "angles": [
         "base_report",
-        "market_reaction"
+        "fact_update"
       ],
       "weakTree": false
     },
     {
-      "parentId": "cluster_480_9df36b44e85e925c",
-      "headline": "Rajnath begins Vietnam, South Korea tour; BrahMos deal talks to progress in Hanoi",
-      "score": 0.5774467197849983,
-      "postTreeScore": 0.9574,
+      "parentId": "cluster_52_afa297bd471508d1",
+      "headline": "Russian Lawmakers Want Banks, Their Staff To Help Fight Ukrainian Drones",
+      "score": 0.5090933333333334,
+      "postTreeScore": 0.9091,
       "childCount": 2,
       "angles": [
         "official_response",
+        "fact_update"
+      ],
+      "weakTree": false
+    },
+    {
+      "parentId": "cluster_507_c70c8d96edad6e8d",
+      "headline": "Four killed as school minibus collides with train in Belgium",
+      "score": 0.6235810543049342,
+      "postTreeScore": 0.7336,
+      "childCount": 3,
+      "angles": [
+        "base_report"
+      ],
+      "weakTree": false
+    },
+    {
+      "parentId": "cluster_493_938764417c9c67cc",
+      "headline": "Iran media says negotiators seek $24 billion asset release in U.S. deal",
+      "score": 0.595213386451665,
+      "postTreeScore": 0.6652,
+      "childCount": 2,
+      "angles": [
+        "fact_update"
+      ],
+      "weakTree": false
+    },
+    {
+      "parentId": "cluster_511_0f4ec8ed5cb948a2",
+      "headline": "Tamil Nadu CM Vijay urges PM Narendra Modi to reject Karnataka’s Mekedatu project proposal",
+      "score": 0.5699800531183317,
+      "postTreeScore": 0.64,
+      "childCount": 2,
+      "angles": [
         "regional_followup"
       ],
       "weakTree": false
     },
     {
-      "parentId": "cluster_3_78a6bd5c0f157041",
-      "headline": "Heatwave warning in 12 districts, thunderstorm forecast in six others on May 20",
-      "score": 0.5765467197849983,
-      "postTreeScore": 0.9565,
+      "parentId": "cluster_124_866634f17a7abea3",
+      "headline": "PM Modi urges citizens to take all possible precautions amid soaring mercury",
+      "score": 0.5690800531183317,
+      "postTreeScore": 0.6391,
       "childCount": 2,
       "angles": [
-        "base_report",
-        "regional_followup"
+        "base_report"
       ],
       "weakTree": false
     },
     {
-      "parentId": "cluster_19_d9ed27e73112c4f9",
-      "headline": "President Putin to attend BRICS summit in New Delhi on September 12-13: Kremlin aide",
-      "score": 0.5765467197849983,
-      "postTreeScore": 0.9565,
+      "parentId": "cluster_130_85874ba75563b2cb",
+      "headline": "Ahead of crucial Congress meeting, Karnataka CM has breakfast with loyalists in Delhi",
+      "score": 0.5690800531183317,
+      "postTreeScore": 0.6391,
       "childCount": 2,
       "angles": [
-        "base_report",
-        "official_response"
-      ],
-      "weakTree": false
-    },
-    {
-      "parentId": "cluster_181_d70cac4876c4dde6",
-      "headline": "India's post 2014 economic transformation  an anchor point of ties with U.S.: Envoy Vinay Kwatra",
-      "score": 0.5765467197849983,
-      "postTreeScore": 0.9565,
-      "childCount": 2,
-      "angles": [
-        "market_reaction",
-        "regional_followup"
-      ],
-      "weakTree": false
-    },
-    {
-      "parentId": "cluster_189_68483fd53ab8d739",
-      "headline": "Texas Teacher Arrested For Sex With Teen Student Inside Classroom",
-      "score": 0.5765467197849983,
-      "postTreeScore": 0.9565,
-      "childCount": 2,
-      "angles": [
-        "regional_followup",
-        "investigative_detail"
-      ],
-      "weakTree": false
-    },
-    {
-      "parentId": "cluster_210_47006dc2c145b5f6",
-      "headline": "How Trump's crypto venture and Iran's top exchange tapped into the same industry networks",
-      "score": 0.5765467197849983,
-      "postTreeScore": 0.9565,
-      "childCount": 2,
-      "angles": [
-        "base_report",
-        "market_reaction"
-      ],
-      "weakTree": false
-    },
-    {
-      "parentId": "cluster_254_b90ced02dea8c5c1",
-      "headline": "Stock Market LIVE Updates, Sensex Today: Sensex Jumps 300 Points At Open, India Raises Fuel Prices Again",
-      "score": 0.5765467197849983,
-      "postTreeScore": 0.9565,
-      "childCount": 2,
-      "angles": [
-        "base_report",
-        "market_reaction"
+        "base_report"
       ],
       "weakTree": false
     }
@@ -194,13 +198,13 @@
   "ratchetGate": {
     "status": "PASS",
     "gateVersion": "real-insight-snapshot-ratchet-v1",
-    "grade": "B",
+    "grade": "C",
     "score": 100,
     "passed": [
       {
         "id": "grade-floor",
         "label": "Real snapshot grade floor",
-        "actual": "B",
+        "actual": "C",
         "required": "A/B/C"
       },
       {
@@ -212,13 +216,13 @@
       {
         "id": "avg-angle-count",
         "label": "Average visible angle count",
-        "actual": 2,
-        "required": ">= 1.8"
+        "actual": 1.5,
+        "required": ">= 1.4"
       },
       {
         "id": "multi-angle-parent-count",
         "label": "Multi-angle parent count",
-        "actual": 10,
+        "actual": 5,
         "required": ">= 1"
       },
       {
@@ -243,14 +247,14 @@
     "failed": [],
     "summary": {
       "parentCount": 10,
-      "avgAngles": 2,
-      "multiAngleCount": 10,
+      "avgAngles": 1.5,
+      "multiAngleCount": 5,
       "weakParentCount": 0,
       "weakParentRatio": 0,
       "topParentAngles": 2,
       "topParentChildren": 3,
-      "storyCount": 877,
-      "sourceGroupCount": 8
+      "storyCount": 703,
+      "sourceGroupCount": 11
     }
   }
 }

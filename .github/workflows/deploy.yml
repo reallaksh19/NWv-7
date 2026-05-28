@@ -37,6 +37,9 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Write pages data manifest
+        run: node scripts/write_pages_data_manifest.mjs
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
 

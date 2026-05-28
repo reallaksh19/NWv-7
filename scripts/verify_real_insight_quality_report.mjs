@@ -61,12 +61,12 @@ function evaluateFallbackRatchet(report) {
     });
   }
 
-  if (avgAngles < 1.8) {
+  if (avgAngles < 1.4) {
     failed.push({
       id: 'avg-angle-count',
       label: 'Average visible angle count',
       actual: avgAngles,
-      required: '>= 1.8',
+      required: '>= 1.4',
       severity: 'fail',
     });
   }

@@ -10,10 +10,13 @@ function read(path) {
 }
 
 const verifier = read('scripts/verify_pages_newsdata.mjs');
-const workflow = read('.github/workflows/news_prefetch.yml');
+const prefetchWorkflow = read('.github/workflows/news_prefetch.yml');
 const packageJson = read('package.json');
 const certGate = read('scripts/run_certification_gate.mjs');
 
+// The verifier script remains available for manual/post-deploy invocation,
+// but it must NOT run inline in news_prefetch.yml — that workflow ends
+// at the data commit; deploy.yml handles Pages publish asynchronously.
 for (const token of [
   'pages-newsdata-verifier-v1',
   'verify_pages_newsdata',
@@ -29,25 +32,16 @@ for (const token of [
   assert(verifier.includes(token), `verify_pages_newsdata.mjs missing token: ${token}`);
 }
 
-for (const token of [
+for (const forbidden of [
   'Verify deployed Pages newsdata',
   'node scripts/verify_pages_newsdata.mjs',
-  'Upload Pages newsdata verification report',
   'pages-newsdata-verification',
-  "if: steps.prefetch_commit.outputs.should_commit == 'true'"
 ]) {
-  assert(workflow.includes(token), `news_prefetch.yml missing deployed verification token: ${token}`);
+  assert(
+    !prefetchWorkflow.includes(forbidden),
+    `news_prefetch.yml must not contain "${forbidden}" — verification cannot run inline once deploy is async`
+  );
 }
-
-assert(
-  workflow.includes('Publish updated Pages site'),
-  'workflow must publish Pages before verifying deployed newsdata'
-);
-
-assert(
-  workflow.indexOf('Publish updated Pages site') < workflow.indexOf('Verify deployed Pages newsdata'),
-  'workflow must verify deployed newsdata after publishing Pages'
-);
 
 assert(
   packageJson.includes('"test:pages-newsdata-verification"'),
@@ -61,15 +55,13 @@ assert(
 
 console.log(JSON.stringify({
   status: 'PASS',
-  checked: 'Pages deployed newsdata verification slice',
+  checked: 'Pages deployed newsdata verification slice (async deploy)',
   guarantees: [
-    'deployed Pages JSON verifier exists',
+    'deployed Pages JSON verifier exists for manual / post-deploy use',
     'verifier compares schema/contentHash/storyCount',
     'verifier writes JSON and Markdown reports',
-    'workflow verifies live Pages JSON after publish',
-    'workflow uploads verification artifact',
-    'diagnostic-only runs do not trigger verification',
-    'certification gate includes deployed newsdata verification check'
+    'news_prefetch.yml does not verify deployed newsdata inline (deploy is async)',
+    'certification gate includes deployed newsdata verifier static check'
   ]
 }, null, 2));
 

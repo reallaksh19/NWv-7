@@ -32,6 +32,7 @@ from datetime import datetime, timezone, timedelta
 
 sys.path.insert(0, os.path.dirname(__file__))
 
+import socket as _socket
 import feedparser
 from fetch_tmdb_releases import fetch_tmdb_releases
 from prefetch_common import (
@@ -39,6 +40,23 @@ from prefetch_common import (
     canonical_url, title_fingerprint, make_story_id,
     compute_content_hash, is_suppressed, normalize_basic_story
 )
+
+THIS_YEAR = datetime.now().year
+
+
+def _safe_feed_parse(url, timeout=10):
+    prev = _socket.getdefaulttimeout()
+    _socket.setdefaulttimeout(timeout)
+    try:
+        for attempt in range(2):
+            try:
+                return feedparser.parse(url)
+            except Exception:
+                if attempt == 1:
+                    raise
+                time.sleep(3)
+    finally:
+        _socket.setdefaulttimeout(prev)
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 UP_AHEAD_PATH      = 'public/data/up_ahead.json'
@@ -54,9 +72,9 @@ CATEGORY_FEEDS = {
              'Hindustan Times Tamil', 'hindustan_times'),
             ('https://www.hindustantimes.com/feeds/rss/entertainment/bollywood/rssfeed.xml',
              'Hindustan Times Bollywood', 'hindustan_times'),
-            ('https://news.google.com/rss/search?q=upcoming+Tamil+movie+release+date+2025&hl=en-IN&gl=IN&ceid=IN:en',
+            (f'https://news.google.com/rss/search?q=upcoming+Tamil+movie+release+date+{THIS_YEAR}&hl=en-IN&gl=IN&ceid=IN:en',
              'Google News', 'google_news'),
-            ('https://news.google.com/rss/search?q=upcoming+Hindi+movie+release+OTT+2025&hl=en-IN&gl=IN&ceid=IN:en',
+            (f'https://news.google.com/rss/search?q=upcoming+Hindi+movie+release+OTT+{THIS_YEAR}&hl=en-IN&gl=IN&ceid=IN:en',
              'Google News', 'google_news'),
         ],
     },
@@ -66,7 +84,7 @@ CATEGORY_FEEDS = {
              'AllEvents Chennai', 'allevents'),
             ('https://news.google.com/rss/search?q=Chennai+upcoming+events+concert+exhibition+workshop+this+week&hl=en-IN&gl=IN&ceid=IN:en',
              'Google News Chennai', 'google_news'),
-            ('https://news.google.com/rss/search?q=Chennai+festival+cultural+program+2025&hl=en-IN&gl=IN&ceid=IN:en',
+            (f'https://news.google.com/rss/search?q=Chennai+festival+cultural+program+{THIS_YEAR}&hl=en-IN&gl=IN&ceid=IN:en',
              'Google News Chennai Festivals', 'google_news'),
         ],
         'Muscat': [
@@ -74,7 +92,7 @@ CATEGORY_FEEDS = {
              'AllEvents Muscat', 'allevents'),
             ('https://news.google.com/rss/search?q=Muscat+upcoming+events+concert+exhibition+this+month&hl=en-US&gl=US&ceid=US:en',
              'Google News Muscat', 'google_news'),
-            ('https://news.google.com/rss/search?q=Oman+event+festival+weekend+2025&hl=en-US&gl=US&ceid=US:en',
+            (f'https://news.google.com/rss/search?q=Oman+event+festival+weekend+{THIS_YEAR}&hl=en-US&gl=US&ceid=US:en',
              'Google News Oman Events', 'google_news'),
         ],
         'Trichy': [
@@ -124,9 +142,9 @@ CATEGORY_FEEDS = {
     },
     'shopping': {
         'online': [
-            ('https://news.google.com/rss/search?q=Amazon+sale+OR+Flipkart+sale+OR+Myntra+sale+2025&hl=en-IN&gl=IN&ceid=IN:en',
+            (f'https://news.google.com/rss/search?q=Amazon+sale+OR+Flipkart+sale+OR+Myntra+sale+{THIS_YEAR}&hl=en-IN&gl=IN&ceid=IN:en',
              'Google News Shopping', 'google_news'),
-            ('https://news.google.com/rss/search?q=online+shopping+sale+discount+coupon+India+2025&hl=en-IN&gl=IN&ceid=IN:en',
+            (f'https://news.google.com/rss/search?q=online+shopping+sale+discount+coupon+India+{THIS_YEAR}&hl=en-IN&gl=IN&ceid=IN:en',
              'Google News Deals', 'google_news'),
         ],
         'Chennai': [
@@ -140,7 +158,7 @@ CATEGORY_FEEDS = {
     },
     'airlines': {
         'global': [
-            ('https://news.google.com/rss/search?q=IndiGo+OR+Air+India+OR+Oman+Air+OR+SalamAir+fare+sale+booking+2025&hl=en-IN&gl=IN&ceid=IN:en',
+            (f'https://news.google.com/rss/search?q=IndiGo+OR+Air+India+OR+Oman+Air+OR+SalamAir+fare+sale+booking+{THIS_YEAR}&hl=en-IN&gl=IN&ceid=IN:en',
              'Google News Airlines', 'google_news'),
         ],
     },
@@ -357,7 +375,7 @@ def fetch_category_items(category: str, location: str, feeds: list, ts: int) -> 
 
     for url, source, source_group in feeds:
         try:
-            feed = feedparser.parse(url)
+            feed = _safe_feed_parse(url)
             for entry in feed.entries[:15]:
                 pub = entry.get('published_parsed')
                 pub_ms = int(time.mktime(pub) * 1000) if pub else ts

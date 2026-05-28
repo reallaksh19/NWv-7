@@ -16,7 +16,7 @@ describe('Newsdata runtime status certification', () => {
         status: 'PASS',
         schemaVersion: 3,
         storyCount: 40,
-        usable24hStoryCount: 30,
+        usable36hStoryCount: 30,
         sourceGroupCount: 8,
         angleHintCoverage: 0.7,
         contentHash: 'insight-hash',

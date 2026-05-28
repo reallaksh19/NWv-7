@@ -175,8 +175,13 @@ export function computeImpactScore(
   ).length;
   const entityBoost = Math.min(1, impactEntities / 2);
 
-  // 5. Source diversity as proxy for real-world importance
-  const divScore = parent.sourceDiversityScore;
+  // 5. Source diversity — log-scaled so the first multi-outlet confirmation
+  //    matters most and further sources have diminishing returns:
+  //      1 source → 0.33, 3 → 0.60, 7 → 0.94, 8+ → 1.00 (clamped).
+  const distinctSourceGroups = new Set(
+    clusterStories.map(s => s.sourceGroup ?? s.source ?? '')
+  ).size;
+  const divScore = clamp01(Math.log1p(distinctSourceGroups) / Math.log1p(8));
 
   // 6. Top-story anchoring from source placement/headline rank.
   // This is deliberately bounded inside impactScore and does not change
@@ -192,12 +197,13 @@ export function computeImpactScore(
     IMPACT_SCORE_WEIGHTS.topStoryProminenceScore * topStoryProminenceScore;
 
   (parent.debug as any).impactScoreDiagnostics = {
-    formulaVersion: "impact-v2-top-story-anchor",
+    formulaVersion: "impact-v3-log-source-diversity",
     weights: { ...IMPACT_SCORE_WEIGHTS },
     avgAuthority: round4(avgAuthority),
     avgFactDensity: round4(avgFactDensity),
     largeNumScore: round4(largeNumScore),
     entityBoost: round4(entityBoost),
+    distinctSourceGroups,
     sourceDiversityScore: round4(divScore),
     topStoryProminenceScore: round4(topStoryProminenceScore),
     impactScore: round4(impactScore),

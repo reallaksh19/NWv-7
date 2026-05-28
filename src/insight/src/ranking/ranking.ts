@@ -175,9 +175,9 @@ export function computeImpactScore(
   ).length;
   const entityBoost = Math.min(1, impactEntities / 2);
 
-  // 5. Source diversity — log-scaled so the first few distinct sources matter
-  //    most (the real multi-outlet signal) and additional sources diminish.
-  //    log1p(1)/log1p(8) ≈ 0.33, log1p(3) ≈ 0.60, log1p(7) ≈ 0.94, log1p(8) = 1.0
+  // 5. Source diversity — log-scaled so the first multi-outlet confirmation
+  //    matters most and further sources have diminishing returns:
+  //      1 source → 0.33, 3 → 0.60, 7 → 0.94, 8+ → 1.00 (clamped).
   const distinctSourceGroups = new Set(
     clusterStories.map(s => s.sourceGroup ?? s.source ?? '')
   ).size;

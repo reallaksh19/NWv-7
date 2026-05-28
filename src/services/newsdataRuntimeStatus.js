@@ -114,7 +114,7 @@ function summarizeRawInsightSnapshot(snapshot) {
     status: stories.length > 0 ? 'RAW' : 'UNKNOWN',
     schemaVersion: safeNumber(snapshot?.schemaVersion),
     storyCount: stories.length,
-    usable24hStoryCount: stories.length,
+    usable36hStoryCount: stories.length,
     sourceGroupCount: sourceGroups.size,
     angleHintCoverage: stories.length > 0 ? storiesWithAngleHints.length / stories.length : 0,
     contentHash: snapshot?.contentHash || '',
@@ -233,7 +233,9 @@ export function summarizeNewsdataRuntimeReports(reports) {
       tone: getTone(insightStatus),
       schemaVersion: safeNumber(insightQuality?.schemaVersion),
       storyCount: safeNumber(insightQuality?.storyCount),
-      usable24hStoryCount: safeNumber(insightQuality?.usable24hStoryCount),
+      usable36hStoryCount: safeNumber(
+        insightQuality?.usable36hStoryCount ?? insightQuality?.usable24hStoryCount
+      ),
       sourceGroupCount: safeNumber(insightQuality?.sourceGroupCount),
       angleHintCoverage: safeNumber(insightQuality?.angleHintCoverage),
       contentHash: insightQuality?.contentHash || pagesManifest?.insight?.contentHash || '',

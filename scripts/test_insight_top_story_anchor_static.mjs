@@ -17,7 +17,7 @@ for (const token of [
   'IMPACT_SCORE_WEIGHTS',
   'computeTopStoryProminenceScore',
   'topStoryProminenceScore',
-  'impact-v2-top-story-anchor',
+  'impact-v3-log-source-diversity',
   'impactScoreDiagnostics',
   'rawProminence',
   'avgAuthority: 0.28',

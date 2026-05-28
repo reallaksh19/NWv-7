@@ -79,7 +79,7 @@ def test_write_summary_creates_markdown(tmp_path, monkeypatch):
         "collectorVersion": "v",
         "contentHash": "h",
         "storyCount": 10,
-        "usable24hStoryCount": 8,
+        "usable36hStoryCount": 8,
         "sourceGroupCount": 3,
         "angleHintCoverage": 0.5,
         "nonBaseAngleStoryCount": 4,

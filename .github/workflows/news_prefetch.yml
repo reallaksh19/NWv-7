@@ -10,6 +10,10 @@ name: News Prefetch
 # IST 10:30pm = UTC 17:00
 # IST 1:30am  = UTC 20:00
 # IST 4:30am  = UTC 23:00
+#
+# This workflow only refreshes JSON data and commits it to main.
+# Publishing to GitHub Pages is handled by deploy.yml, which fires
+# automatically when the data commit lands on main.
 
 on:
   schedule:
@@ -39,14 +43,13 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: pip install -r requirements.txt
 
       - name: Fetch Insight stories
         run: python scripts/fetch_insight_stories.py
 
       - name: Validate Insight prefetch quality
-        continue-on-error: true
         run: python scripts/validate_insight_prefetch_output.py
 
       - name: Upload Insight quality report
@@ -63,7 +66,6 @@ jobs:
         run: python scripts/fetch_sections_stories.py
 
       - name: Validate Sections prefetch quality
-        continue-on-error: true
         run: python scripts/validate_sections_prefetch_output.py
 
       - name: Generate quality dashboard
@@ -93,26 +95,19 @@ jobs:
           path: public/newsdata/prefetch_commit_manifest.json
           if-no-files-found: warn
 
-      - name: Setup Node for Pages publish
+      - name: Setup Node for benchmark
         if: steps.prefetch_commit.outputs.should_commit == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install Node dependencies for Pages publish
+      - name: Install Node dependencies for benchmark
         if: steps.prefetch_commit.outputs.should_commit == 'true'
         run: npm ci
 
-      - name: Build Pages site with latest newsdata
-        if: steps.prefetch_commit.outputs.should_commit == 'true'
-        run: |
-          npm run build
-          node scripts/write_pages_data_manifest.mjs
-
       - name: Run real Insight snapshot quality benchmark
         if: steps.prefetch_commit.outputs.should_commit == 'true'
-        continue-on-error: true
         run: npm run test:real-insight-snapshot-quality
 
       - name: Upload real Insight quality benchmark report
@@ -125,50 +120,21 @@ jobs:
             public/newsdata/real_insight_quality_summary.md
           if-no-files-found: warn
 
-      - name: Publish updated Pages site
-        if: steps.prefetch_commit.outputs.should_commit == 'true'
-        continue-on-error: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          npx gh-pages -d dist -u "GitHub Actions <github-actions@users.noreply.github.com>"
-
-      - name: Verify deployed Pages newsdata
-        if: steps.prefetch_commit.outputs.should_commit == 'true'
-        continue-on-error: true
-        run: |
-          node scripts/verify_pages_newsdata.mjs --retries 10 --delay-ms 15000
-
-      - name: Upload Pages newsdata verification report
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: pages-newsdata-verification
-          path: |
-            public/newsdata/pages_newsdata_verify_report.json
-            public/newsdata/pages_newsdata_verify_summary.md
-          if-no-files-found: warn
-
-      - name: Skip Pages publish for diagnostic-only changes
-        if: steps.prefetch_commit.outputs.should_commit != 'true'
-        run: |
-          echo "No meaningful news content changes. Pages publish skipped."
-
-
       - name: Commit data
         if: steps.prefetch_commit.outputs.should_commit == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add public/newsdata/insight_latest.json public/newsdata/sections_latest.json public/newsdata/source_health.json public/newsdata/prefetch_commit_manifest.json public/newsdata/quality_dashboard.json public/newsdata/quality_dashboard_history.json
+          git add public/newsdata/insight_latest.json public/newsdata/sections_latest.json public/newsdata/source_health.json public/newsdata/prefetch_commit_manifest.json public/newsdata/quality_dashboard.json public/newsdata/quality_dashboard_history.json public/newsdata/real_insight_quality_report.json public/newsdata/real_insight_quality_summary.md
           if git diff --staged --quiet; then
             echo "No meaningful news-data changes — skipping commit"
             exit 0
           fi
           git commit -m "data: news prefetch $(date -u +'%Y-%m-%dT%H:%MZ')"
-          git pull --rebase origin main
-          git push
+          for i in 1 2 3 4; do
+            git pull --rebase origin main && git push && break
+            sleep $((2 ** i))
+          done
 
       - name: Skip commit for diagnostic-only changes
         if: steps.prefetch_commit.outputs.should_commit != 'true'

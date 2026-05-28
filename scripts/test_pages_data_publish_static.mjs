@@ -10,7 +10,9 @@ function read(path) {
 }
 
 const manifestWriter = read('scripts/write_pages_data_manifest.mjs');
-const workflow = read('.github/workflows/news_prefetch.yml');
+const deployWorkflow = read('.github/workflows/deploy.yml');
+const prefetchWorkflow = read('.github/workflows/news_prefetch.yml');
+const marketWorkflow = read('.github/workflows/market_refresh.yml');
 const packageJson = read('package.json');
 const certGate = read('scripts/run_certification_gate.mjs');
 
@@ -25,22 +27,38 @@ for (const token of [
   assert(manifestWriter.includes(token), `write_pages_data_manifest.mjs missing token: ${token}`);
 }
 
+// deploy.yml is the single authoritative deploy path; it must build,
+// generate the data manifest, and publish via the official Pages action.
 for (const token of [
-  'Setup Node for Pages publish',
-  'npm ci',
-  'Build Pages site with latest newsdata',
+  'npm run build',
   'node scripts/write_pages_data_manifest.mjs',
-  'Publish updated Pages site',
-  'npx gh-pages -d dist',
-  "if: steps.prefetch_commit.outputs.should_commit == 'true'"
+  'actions/upload-pages-artifact',
+  'actions/deploy-pages'
 ]) {
-  assert(workflow.includes(token), `news_prefetch.yml missing Pages publish token: ${token}`);
+  assert(deployWorkflow.includes(token), `deploy.yml missing token: ${token}`);
 }
 
 assert(
-  workflow.includes('Skip Pages publish for diagnostic-only changes'),
-  'workflow must explicitly skip Pages publish for diagnostic-only runs'
+  deployWorkflow.indexOf('npm run build') < deployWorkflow.indexOf('node scripts/write_pages_data_manifest.mjs'),
+  'deploy.yml must build before writing the data manifest'
 );
+
+assert(
+  deployWorkflow.indexOf('node scripts/write_pages_data_manifest.mjs') < deployWorkflow.indexOf('actions/upload-pages-artifact'),
+  'deploy.yml must write the data manifest before uploading the Pages artifact'
+);
+
+// Data workflows must NOT run their own gh-pages publish (single deploy path).
+for (const forbidden of ['npx gh-pages', 'Publish updated Pages site']) {
+  assert(
+    !prefetchWorkflow.includes(forbidden),
+    `news_prefetch.yml must not contain "${forbidden}" — deploy.yml is the single deploy path`
+  );
+  assert(
+    !marketWorkflow.includes(forbidden),
+    `market_refresh.yml must not contain "${forbidden}" — deploy.yml is the single deploy path`
+  );
+}
 
 assert(
   packageJson.includes('"test:pages-data-publish"'),
@@ -54,13 +72,12 @@ assert(
 
 console.log(JSON.stringify({
   status: 'PASS',
-  checked: 'Pages data publish slice',
+  checked: 'Pages data publish slice (consolidated deploy)',
   guarantees: [
     'dist/newsdata manifest writer exists',
-    'workflow builds Pages site only after meaningful news content change',
-    'workflow publishes gh-pages only when should_commit=true',
-    'diagnostic-only runs skip Pages publish',
-    'deployed data manifest records latest insight contentHash',
+    'deploy.yml builds then writes the data manifest before publish',
+    'deploy.yml is the single Pages deploy path',
+    'data workflows do not run their own gh-pages publish',
     'certification gate includes Pages publish static check'
   ]
 }, null, 2));

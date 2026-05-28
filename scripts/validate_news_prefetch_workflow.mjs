@@ -45,7 +45,7 @@ function requireToken(workflow, token, reason) {
 function validateNewsPrefetchWorkflow(workflow) {
   requireToken(workflow, 'concurrency:', 'workflow must use concurrency guard');
   requireToken(workflow, 'group: news-prefetch', 'workflow concurrency group must be news-prefetch');
-  requireToken(workflow, 'contents: write', 'workflow needs contents: write for data commits and gh-pages publish');
+  requireToken(workflow, 'contents: write', 'workflow needs contents: write for data commits');
 
   rejectToken(
     workflow,
@@ -59,32 +59,47 @@ function validateNewsPrefetchWorkflow(workflow) {
     'workflow must not blindly add all public/newsdata files'
   );
 
+  // The old in-workflow Pages publish/verify path is forbidden — deploy.yml
+  // is the single authoritative deploy path.
+  for (const forbidden of [
+    'npx gh-pages',
+    'Publish updated Pages site',
+    'Verify deployed Pages newsdata',
+    'Build Pages site with latest newsdata',
+    'pages-newsdata-verification',
+  ]) {
+    rejectToken(
+      workflow,
+      forbidden,
+      `news_prefetch.yml must not contain "${forbidden}" — Pages publish is owned by deploy.yml`
+    );
+  }
+
+  // Required core data-pipeline steps
   requireStep(workflow, 'Fetch Insight stories');
   requireStep(workflow, 'Validate Insight prefetch quality');
   requireStep(workflow, 'Fetch Sections stories');
   requireStep(workflow, 'Validate Sections prefetch quality');
   requireStep(workflow, 'Decide whether news data commit is needed');
   requireStep(workflow, 'Commit data');
-  requireStep(workflow, 'Build Pages site with latest newsdata');
-  requireStep(workflow, 'Publish updated Pages site');
-  requireStep(workflow, 'Verify deployed Pages newsdata');
+
+  // Optional benchmark step still gated on should_commit
+  requireStep(workflow, 'Run real Insight snapshot quality benchmark');
 
   requireOrder(workflow, 'Fetch Insight stories', 'Validate Insight prefetch quality');
   requireOrder(workflow, 'Fetch Sections stories', 'Validate Sections prefetch quality');
   requireOrder(workflow, 'Validate Insight prefetch quality', 'Decide whether news data commit is needed');
   requireOrder(workflow, 'Validate Sections prefetch quality', 'Decide whether news data commit is needed');
   requireOrder(workflow, 'Decide whether news data commit is needed', 'Commit data');
-  requireOrder(workflow, 'Decide whether news data commit is needed', 'Build Pages site with latest newsdata');
-  requireOrder(workflow, 'Build Pages site with latest newsdata', 'Publish updated Pages site');
-  requireOrder(workflow, 'Publish updated Pages site', 'Verify deployed Pages newsdata');
+  requireOrder(workflow, 'Decide whether news data commit is needed', 'Run real Insight snapshot quality benchmark');
+  // Benchmark runs before commit so its report can be committed too
+  requireOrder(workflow, 'Run real Insight snapshot quality benchmark', 'Commit data');
 
   for (const step of [
     'Commit data',
-    'Setup Node for Pages publish',
-    'Install Node dependencies for Pages publish',
-    'Build Pages site with latest newsdata',
-    'Publish updated Pages site',
-    'Verify deployed Pages newsdata',
+    'Setup Node for benchmark',
+    'Install Node dependencies for benchmark',
+    'Run real Insight snapshot quality benchmark',
   ]) {
     const stepIndex = requireStep(workflow, step);
     const nextStepIndex = workflow.indexOf('\n      - name:', stepIndex + 1);
@@ -102,13 +117,10 @@ function validateNewsPrefetchWorkflow(workflow) {
     'python scripts/validate_insight_prefetch_output.py',
     'python scripts/validate_sections_prefetch_output.py',
     'python scripts/prefetch_commit_decision.py',
-    'node scripts/write_pages_data_manifest.mjs',
-    'npx gh-pages -d dist',
-    'node scripts/verify_pages_newsdata.mjs',
     'insight-quality-report',
     'sections-quality-report',
     'prefetch-commit-manifest',
-    'pages-newsdata-verification',
+    'real-insight-quality-report',
   ]) {
     requireToken(workflow, token, `workflow missing required command/artifact token: ${token}`);
   }
@@ -125,15 +137,9 @@ function validateNewsPrefetchWorkflow(workflow) {
     'workflow must explicitly skip commits for diagnostic-only changes'
   );
 
-  requireToken(
-    workflow,
-    'Skip Pages publish for diagnostic-only changes',
-    'workflow must explicitly skip Pages publish for diagnostic-only changes'
-  );
-
   return {
     status: 'PASS',
-    checked: 'News prefetch workflow orchestration',
+    checked: 'News prefetch workflow orchestration (consolidated deploy)',
     guarantees: [
       'concurrency guard exists',
       'fetchedAt-only sentinel is rejected',
@@ -141,9 +147,10 @@ function validateNewsPrefetchWorkflow(workflow) {
       'Insight quality validation runs after Insight fetch',
       'Sections quality validation runs after Sections fetch',
       'commit decision runs after all quality validators',
-      'commit/build/publish/verify are gated by should_commit=true',
-      'Pages verification runs after gh-pages publish',
-      'required quality and deployment artifacts are uploaded',
+      'benchmark / commit are gated by should_commit=true',
+      'benchmark runs before commit so its report joins the commit',
+      'workflow does not publish Pages directly — deploy.yml owns publish',
+      'required quality and benchmark artifacts are uploaded',
     ],
   };
 }

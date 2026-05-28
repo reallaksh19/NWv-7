@@ -67,19 +67,13 @@ jobs:
             exit 0
           fi
           git commit -m "data: market refresh $(date -u +'%Y-%m-%dT%H:%MZ')"
-          git pull --rebase origin main
-          git push
+          for i in 1 2 3 4; do
+            git pull --rebase origin main && git push && break
+            sleep $((2 ** i))
+          done
           echo "committed=true" >> "$GITHUB_OUTPUT"
 
-      - name: Publish updated Pages site
-        if: steps.commit_market.outputs.committed == 'true'
-        continue-on-error: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          npm run build
-          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          npx gh-pages -d dist -u "GitHub Actions <github-actions@users.noreply.github.com>"
+      # Publishing handled by deploy.yml — it fires on push to main.
 
       - name: Open issue on workflow failure
         if: failure()

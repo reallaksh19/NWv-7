@@ -75,9 +75,9 @@ def fetch_section(section: str, feeds: list, ts: int) -> tuple[list, dict]:
 
             results.extend(feed_items)
             source_health[source_group] = {
-                'ok': len(feed_items) > 0,
+                'ok': True,
                 'items': len(feed_items),
-                'lastSuccess': ts if len(feed_items) > 0 else None,
+                'feedUrl': url,
                 'section': section,
             }
         except Exception as e:
@@ -85,6 +85,7 @@ def fetch_section(section: str, feeds: list, ts: int) -> tuple[list, dict]:
                 'ok': False,
                 'error': str(e),
                 'items': 0,
+                'feedUrl': url,
                 'section': section,
             }
 
@@ -157,11 +158,16 @@ def main():
     }
     write_json(SECTIONS_PATH, snapshot)
 
+    from source_health import apply_source_health, zero_item_warnings
     existing_health = read_json(SOURCE_HEALTH_PATH, {'lastChecked': 0, 'sources': {}})
-    existing_health['sources'].update(all_health)
+    existing_health['sources'] = apply_source_health(existing_health.get('sources', {}), all_health, ts)
     existing_health['lastChecked'] = ts
     write_json(SOURCE_HEALTH_PATH, existing_health)
     write_section_source_policy_report(new_sections, all_health)
+
+    warnings = zero_item_warnings(existing_health['sources'])
+    for w in warnings:
+        print(f'  [health-warn] {w}')
 
     total = sum(len(v) for v in new_sections.values())
     print(f'Done. total={total}, contentHash={snapshot["contentHash"]}')

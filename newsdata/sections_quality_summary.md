@@ -2,9 +2,9 @@
 
 - Status: **WARN**
 - Schema: `2`
-- Content hash: `f4f96a80aa82`
+- Content hash: `bd5edadeb722`
 - Sections: `9`
-- Stories: `239`
+- Stories: `240`
 - Source groups: `8`
 
 ## Section health
@@ -19,7 +19,7 @@
 | business | 30 | 3 | False |
 | technology | 30 | 2 | False |
 | sports | 30 | 3 | False |
-| entertainment | 10 | 1 | True |
+| entertainment | 11 | 1 | True |
 
 ## Warnings
 

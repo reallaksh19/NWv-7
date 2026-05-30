@@ -83,6 +83,16 @@ function buildTopline(sectionsEnv, weatherEnv, marketEnv, upAheadEnv, insightEnv
   ].filter(Boolean).slice(0, 5);
 }
 
+function collectInputWarnings(...envelopes) {
+  return envelopes.flatMap(env => (
+    Array.isArray(env?.validation?.warnings) ? env.validation.warnings : []
+  ));
+}
+
+function hasStaleInput(...envelopes) {
+  return envelopes.some(env => env?.freshness === ENVELOPE_FRESHNESS.STALE);
+}
+
 export async function load(options = {}) {
   const includeInsight = options.includeInsight === true;
 
@@ -117,9 +127,11 @@ export async function load(options = {}) {
     upAheadEnv && !upAheadEnv.ok ? 'main_upAhead_degraded' : null,
     includeInsight && insightEnv && !insightEnv.ok ? 'main_insight_degraded' : null,
     !includeInsight ? 'main_insight_skipped_adapter_only' : null,
+    ...collectInputWarnings(weatherEnv, marketEnv),
   ].filter(Boolean);
 
   const ok = frontPage.length > 0 || Boolean(quickWeather || marketSummary?.primary || upAheadSummary?.event);
+  const stale = ok && hasStaleInput(weatherEnv, marketEnv);
 
   const envelope = makeEnvelope({
     ok,
@@ -143,7 +155,9 @@ export async function load(options = {}) {
       },
     },
     source: ENVELOPE_SOURCES.LIVE,
-    freshness: ok ? ENVELOPE_FRESHNESS.FRESH : ENVELOPE_FRESHNESS.EMPTY,
+    freshness: ok
+      ? (stale ? ENVELOPE_FRESHNESS.STALE : ENVELOPE_FRESHNESS.FRESH)
+      : ENVELOPE_FRESHNESS.EMPTY,
     error: ok ? null : 'main dataset unavailable',
     validation: {
       passed: ok,

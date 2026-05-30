@@ -33,6 +33,27 @@ function getWeatherSourceMode(cityDataMap) {
   return ENVELOPE_SOURCES.LIVE;
 }
 
+function getWeatherTimestamp(value) {
+  const numericFetchedAt = Number(value?.fetchedAt);
+  if (Number.isFinite(numericFetchedAt) && numericFetchedAt > 0) return numericFetchedAt;
+
+  const generatedAt = Date.parse(value?.generatedAt || value?.generated_at || '');
+  if (Number.isFinite(generatedAt) && generatedAt > 0) return generatedAt;
+
+  return null;
+}
+
+function isStaleCityWeather(value) {
+  const mode = String(value?.sourceMode || '').toLowerCase();
+  if (value?.isStale === true) return true;
+  if (mode.includes('stale')) return true;
+
+  const timestamp = getWeatherTimestamp(value);
+  if (!timestamp) return false;
+
+  return Date.now() - timestamp > 2 * 60 * 60 * 1000;
+}
+
 function safeGetSettings() {
   try {
     return getSettings?.() || {};
@@ -86,6 +107,11 @@ export async function load() {
 
   const missingCities = cities.filter(city => !usableCities.includes(city));
   const ok = usableCities.length > 0;
+  const staleCities = usableCities.filter(city => isStaleCityWeather(data[city]));
+  const warnings = [
+    missingCities.length ? `weather_missing_cities:${missingCities.join(',')}` : null,
+    staleCities.length ? `weather_stale_data:${staleCities.join(',')}` : null,
+  ].filter(Boolean);
 
   return makeEnvelope({
     ok,
@@ -95,14 +121,17 @@ export async function load() {
       weatherData: data,
       usableCities,
       missingCities,
+      staleCities,
     },
     source: getWeatherSourceMode(data),
-    freshness: ok ? ENVELOPE_FRESHNESS.FRESH : ENVELOPE_FRESHNESS.UNKNOWN,
+    freshness: ok
+      ? (staleCities.length ? ENVELOPE_FRESHNESS.STALE : ENVELOPE_FRESHNESS.FRESH)
+      : ENVELOPE_FRESHNESS.UNKNOWN,
     error: ok ? null : (errors.join('; ') || 'weather unavailable'),
     validation: {
       passed: ok,
       errors: ok ? [] : ['weather_unavailable', ...errors],
-      warnings: missingCities.length ? [`weather_missing_cities:${missingCities.join(',')}`] : [],
+      warnings,
     },
     slo: {
       id: 'weatherDatasetBasicValidation',
@@ -110,11 +139,12 @@ export async function load() {
       passed: ok,
       score: ok ? Math.max(60, 100 - missingCities.length * 10) : 0,
       reasons: ok ? [] : ['weather_unavailable'],
-      warnings: missingCities.length ? [`weather_missing_cities:${missingCities.join(',')}`] : [],
+      warnings,
       metrics: {
         configuredCityCount: cities.length,
         usableCityCount: usableCities.length,
         missingCityCount: missingCities.length,
+        staleCityCount: staleCities.length,
       },
     },
     diagnostics,
@@ -123,5 +153,6 @@ export async function load() {
 
 export const __weatherDatasetInternalsForTest = {
   hasUsableCityWeather,
+  isStaleCityWeather,
   getConfiguredCities,
 };

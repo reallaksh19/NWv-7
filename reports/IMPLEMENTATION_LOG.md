@@ -283,3 +283,29 @@
   - Initial `test:certify:workflow` failed because the local Python environment lacked `pytest`; installing `pytest` allowed the Python workflow certs to run.
   - Workflow cert then exposed stale validators: benchmark observability is now unconditional by design, while only commits are gated by `should_commit`; certification manifest static/validator expected v1 while the live manifest is v2. These static checks were updated to current repo contracts and now pass.
   - No lint errors. The known 14 hook warnings remain unchanged for Phase D.
+
+## F6-2 / F6-3 / A-15 - Stale Visible Market And Weather Widgets
+
+- Branch: `fix/A-15-stale-widget-freshness`
+- Commit: this finding commit
+- Added test:
+  - `src/data/datasets/marketWeatherStaleVisibility.cert.test.js`
+- Scope:
+  - Updated `marketDataset` to reuse `marketTrust` freshness/displayability semantics, set the market SLO as non-required in the envelope path, and emit `ENVELOPE_FRESHNESS.STALE` plus `market_stale_data:<hours>h` for displayable-but-old market data.
+  - Updated `weatherDataset` to mark usable stale city data as `ENVELOPE_FRESHNESS.STALE` with `weather_stale_data:<city>` warnings.
+  - Propagated stale market/weather input freshness through `mainDataset` so the Main page `DataStateBoundary` can render the existing stale banner/badge path instead of presenting stale widgets as fresh.
+- Local verification:
+  - Red before fix: `npm.cmd run test:unit -- src/data/datasets/marketWeatherStaleVisibility.cert.test.js` failed because stale market/weather payloads were labeled `fresh`.
+  - Pass: `npm.cmd run test:unit -- src/data/datasets/marketWeatherStaleVisibility.cert.test.js src/data/datasets/marketDataset.cert.test.js src/data/datasets/weatherDataset.cert.test.js src/components/data-state/dataStateComponents.cert.test.jsx` (4 files / 24 tests)
+  - Pass: touched-file lint via `npx.cmd eslint src/data/datasets/marketDataset.js src/data/datasets/weatherDataset.js src/data/datasets/mainDataset.js src/data/datasets/marketWeatherStaleVisibility.cert.test.js`
+  - Pass: `npm.cmd run test:weather-trust`
+  - Pass: `npm.cmd run test:weather-weekly-planning`
+  - Pass: `npm.cmd run test:unit` (138 files / 780 tests)
+  - Pass: `npm.cmd run lint` (0 errors / 14 warnings)
+  - Pass: `npm.cmd run build`
+  - Pass: `npm.cmd run test:certify:smoke`
+  - Pass: `git diff --check` (line-ending warnings only)
+- Existing failures observed:
+  - `npm.cmd run test:market-trust` is stale against the current Market page/view-model migration and expects page-level `MarketTrustPanel` wiring.
+  - `npm.cmd run test:market-snapshot` is time-sensitive and currently fails because `public/data/market_snapshot.json` is about 70h old while the cert's max age is 48h.
+  - No lint errors. The known 14 hook warnings remain unchanged for Phase D.

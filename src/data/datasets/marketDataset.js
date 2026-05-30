@@ -5,6 +5,12 @@ import {
 } from '../dataEnvelope.js';
 import { fetchAllMarketData } from '../../services/indianMarketStableService.js';
 import { evaluateMarketSlo } from '../slo/marketSlo.js';
+import {
+  getMarketPayloadAgeMs,
+  isMarketPayloadDisplayable,
+  isMarketPayloadFresh,
+  MARKET_SERVICE_CACHE_TTL_MS,
+} from '../../services/marketTrust.js';
 
 function normalizeMarketSource(sourceMode) {
   if (!sourceMode) return ENVELOPE_SOURCES.LIVE;
@@ -46,42 +52,65 @@ export async function load() {
     const data = await fetchAllMarketData();
     const timestamp = getMarketTimestamp(data);
     const sourceMode = getMarketSourceMode(data);
-    const slo = evaluateMarketSlo({ ...data, fetchedAt: timestamp, sourceMode });
+    const payload = { ...data, fetchedAt: timestamp, sourceMode };
+    const slo = evaluateMarketSlo(payload);
+    const displayable = isMarketPayloadDisplayable(payload);
+    const stale = displayable && !isMarketPayloadFresh(payload, MARKET_SERVICE_CACHE_TTL_MS);
+    const ok = displayable;
+    const staleAgeHours = Math.max(1, Math.round(getMarketPayloadAgeMs(payload) / 3600000));
+    const warnings = [
+      ...(slo.warnings || []),
+      stale ? `market_stale_data:${staleAgeHours}h` : null,
+    ].filter(Boolean);
+    const requiredAwareSlo = {
+      ...slo,
+      required: false,
+      passed: ok,
+      warnings,
+      metrics: {
+        ...(slo.metrics || {}),
+        ageMs: getMarketPayloadAgeMs(payload),
+        displayable,
+        stale,
+      },
+    };
 
     return makeEnvelope({
-      ok: slo.passed,
+      ok,
       datasetId: 'market',
       data,
       source: normalizeMarketSource(sourceMode),
-      freshness: slo.passed ? ENVELOPE_FRESHNESS.FRESH : ENVELOPE_FRESHNESS.EMPTY,
+      freshness: ok
+        ? (stale ? ENVELOPE_FRESHNESS.STALE : ENVELOPE_FRESHNESS.FRESH)
+        : ENVELOPE_FRESHNESS.EMPTY,
       generatedAt: timestamp,
       fetchedAt: Number(data?.fetchedAt || timestamp) || timestamp,
       validation: {
-        passed: slo.passed,
-        errors: slo.reasons || [],
-        warnings: slo.warnings || [],
+        passed: ok,
+        errors: ok ? [] : (slo.reasons || []),
+        warnings,
       },
-      slo,
+      slo: requiredAwareSlo,
       diagnostics: [
         {
-          event: slo.passed ? 'market_dataset_loaded' : 'market_indices_empty',
-          severity: slo.passed ? 'info' : 'warn',
-          message: slo.passed
+          event: ok ? 'market_dataset_loaded' : 'market_indices_empty',
+          severity: stale ? 'warn' : (ok ? 'info' : 'warn'),
+          message: ok
             ? `${data?.indices?.length ?? 0} market index row(s) loaded`
             : 'Market indices are empty or invalid',
-          details: { sourceMode },
+          details: { sourceMode, stale },
         },
         {
-          event: slo.passed ? 'market_slo_passed' : 'market_slo_failed',
-          severity: slo.passed ? 'info' : 'warn',
-          message: slo.passed
-            ? 'Market dataset passed SLO'
-            : 'Market dataset failed SLO',
+          event: ok ? 'market_slo_degraded_or_passed' : 'market_slo_failed',
+          severity: ok && !stale ? 'info' : 'warn',
+          message: ok
+            ? 'Market dataset is displayable'
+            : 'Market dataset failed displayability checks',
           details: {
             sourceMode,
-            score: slo.score,
-            reasons: slo.reasons,
-            warnings: slo.warnings,
+            score: requiredAwareSlo.score,
+            reasons: requiredAwareSlo.reasons,
+            warnings: requiredAwareSlo.warnings,
           },
         },
       ],

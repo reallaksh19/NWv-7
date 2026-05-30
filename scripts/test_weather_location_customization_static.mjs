@@ -38,7 +38,7 @@ check('weatherService imports WEATHER_LOCATION_REGISTRY', fileContains('src/serv
 check('WeatherContext uses getConfiguredWeatherCities', fileContains('src/context/WeatherContext.jsx', 'getConfiguredWeatherCities'));
 
 // WeatherPage uses getConfiguredWeatherCities and WeatherLocationManager
-check('WeatherPage uses getConfiguredWeatherCities', fileContains('src/pages/WeatherPage.jsx', 'getConfiguredWeatherCities'));
+check('Weather ViewModel uses getConfiguredWeatherCities', fileContains('src/viewModels/useWeatherTabViewModel.js', 'getConfiguredWeatherCities'));
 check('WeatherPage imports WeatherLocationManager', fileContains('src/pages/WeatherPage.jsx', 'WeatherLocationManager'));
 check('WeatherPage renders WeatherLocationManager', fileContains('src/pages/WeatherPage.jsx', '<WeatherLocationManager'));
 

@@ -10,18 +10,27 @@ function read(path) {
 }
 
 const weatherPage = read('src/pages/WeatherPage.jsx');
+const weatherViewModel = read('src/viewModels/useWeatherTabViewModel.js');
 const trustPanel = read('src/components/weather/WeatherTrustPanel.jsx');
 const trustCss = read('src/components/weather/WeatherTrustPanel.css');
 const detailedCard = read('src/components/DetailedWeatherCard.jsx');
 
 for (const token of [
   'GradeBadge',
-  'auditWeatherTabQuality',
   'weatherTabAudit',
   'Weather tab quality grade',
-  '!cities.includes(activeCity)'
 ]) {
   assert(weatherPage.includes(token), `WeatherPage missing token: ${token}`);
+}
+
+for (const token of [
+  'auditWeatherTabQuality',
+  'weatherTabAudit',
+  'getConfiguredWeatherCities',
+  'resolveActiveWeatherCity',
+  'safeWriteActiveCity(activeCity)'
+]) {
+  assert(weatherViewModel.includes(token), `Weather ViewModel missing token: ${token}`);
 }
 
 assert(
@@ -67,9 +76,10 @@ assert(
 );
 
 assert(
-  detailedCard.includes('getConfiguredWeatherCities') &&
-    detailedCard.includes('cityLabels') &&
-    detailedCard.includes('cities.map('),
+  detailedCard.includes('cityLabels') &&
+    detailedCard.includes('safeCities.map(') &&
+    weatherViewModel.includes('detailedWeatherCardProps') &&
+    weatherViewModel.includes('cityLabels'),
   'DetailedWeatherCard must support dynamic configured city labels'
 );
 

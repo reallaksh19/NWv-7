@@ -101,7 +101,7 @@
 ## S-1 - Weather Active City Derived State
 
 - Branch: `fix/S-1-weather-active-city-derived-state`
-- Commit: `fix(S-1): derive weather active city during render` (this finding commit)
+- Commit: `8643b3c` - `fix(S-1): derive weather active city during render`
 - Added test:
   - `src/viewModels/useWeatherTabViewModelS1.cert.test.js`
 - Local verification:
@@ -114,3 +114,23 @@
 - Existing failures observed:
   - `npm.cmd run lint` still fails, now at 10 errors / 14 warnings. The `useWeatherTabViewModel.js` `react-hooks/set-state-in-effect` error is gone.
   - Remaining errors are the two other S-1 sites (`useDataset`, `useMyPlannerPageViewModel`) plus deferred React Refresh export-boundary issues.
+
+## R-0 - Weather Static Cert Regression Repair
+
+- Branch: `fix/R-0-weather-static-certs`
+- Commit: this finding commit
+- Scope:
+  - Updated stale weather static cert assertions to follow Release 6K ownership: `WeatherPage.jsx` remains render-focused, while `useWeatherTabViewModel.js` owns `getConfiguredWeatherCities`, `auditWeatherTabQuality`, active-city resolution, and detailed-card props.
+  - Did not reintroduce duplicate weather audit/settings wiring into `WeatherPage.jsx`; the older source-token expectations were obsolete after the view-model migration.
+- Local verification:
+  - Red before fix: `npm.cmd run test:weather-trust` failed with `WeatherPage missing token: auditWeatherTabQuality`.
+  - Red before fix: `npm.cmd run test:weather-location-customization` failed with `WeatherPage uses getConfiguredWeatherCities`.
+  - Pass: `npm.cmd run test:weather-trust`
+  - Pass: `npm.cmd run test:weather-location-customization`
+  - Pass: touched-file lint via `npx.cmd eslint scripts/test_weather_trust_static.mjs scripts/test_weather_location_customization_static.mjs`
+  - Pass: `npm.cmd run build`
+  - Pass: `npm.cmd run test:unit` (127 files / 765 tests)
+  - Pass: `git diff --check` (line-ending warnings only)
+- Existing failures observed:
+  - `npm.cmd run lint` remains at the expected continuation baseline: 10 errors / 14 warnings.
+  - `npm.cmd run test:certify:smoke` fails at its first lint step because the baseline lint gate is still red; Phase A is the planned lint-zero remediation.

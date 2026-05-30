@@ -5,6 +5,7 @@
 
 const BASE_URL = 'https://newsdata.io/api/1/news';
 import { proxyManager } from './proxyManager.js';
+import { fnv1aHex } from '../data/dataEnvelope.js';
 
 // Mapping from Settings Keys (or general identifiers) to Google News Source Strings
 const SOURCE_MAPPINGS = {
@@ -27,6 +28,11 @@ const SOURCE_MAPPINGS = {
 };
 
 const HIGH_IMPACT_SOURCES = ['ndtv', 'theHindu'];
+
+export function makeStableNewsId(prefix, article) {
+    const seed = article?.url || article?.link || article?.title || article?.headline || '';
+    return `${prefix}-${fnv1aHex(seed)}`;
+}
 
 export async function fetchNews(query, keys = {}) {
     // Handle both old signature (query, apiKeyString) and new (query, keyObject)
@@ -95,7 +101,7 @@ async function fetchRSSNews(query, settings = null) {
         const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-IN&gl=IN&ceid=IN:en`;
         const data = await proxyManager.fetchViaProxy(rssUrl);
 
-        let items = (data.items || []).map((item, idx) => {
+        let items = (data.items || []).map((item) => {
             // Extract source from title if author is missing/generic
             let source = item.author || 'Google News';
             if (source === 'Google News' || !source) {
@@ -103,7 +109,7 @@ async function fetchRSSNews(query, settings = null) {
             }
 
             return {
-                id: `rss-${idx}`,
+                id: makeStableNewsId('rss', item),
                 headline: item.title,
                 summary: 'Latest coverage from Google News',
                 source: source,
@@ -148,8 +154,8 @@ async function fetchDDGNews(query) {
         const rssUrl = `https://www.bing.com/news/search?q=${encodeURIComponent(query)}&format=rss`;
         const data = await proxyManager.fetchViaProxy(rssUrl);
 
-        return (data.items || []).map((item, idx) => ({
-            id: `ddg-${idx}`,
+        return (data.items || []).map((item) => ({
+            id: makeStableNewsId('ddg', item),
             headline: item.title,
             summary: item.description || 'Web Result',
             source: item.author || 'DuckDuckGo/Bing',

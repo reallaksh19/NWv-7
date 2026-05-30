@@ -207,7 +207,7 @@
 ## W8-2 - Weather Location-Local Now Hour
 
 - Branch: `fix/W8-2-weather-local-now`
-- Commit: this finding commit
+- Commit: `50bd662` - `fix(W8-2): use weather location local hour`
 - Added test:
   - `src/services/weatherLocalHour.cert.test.js`
 - Scope:
@@ -225,3 +225,29 @@
   - Pass: `git diff --check` (line-ending warnings only)
 - Existing failures observed:
   - None. Lint remains at 0 errors; the known 14 warnings are unchanged.
+
+## A-5 / A-18 - Stable News Content IDs And Topic Notifications
+
+- Branch: `fix/A-5-stable-content-ids`
+- Commit: this finding commit
+- Added tests:
+  - `src/services/newsStableIds.cert.test.js`
+  - `src/context/TopicContextNotifications.cert.test.jsx`
+- Scope:
+  - Added stable FNV-based IDs for RSS/DDG news items and slot stories using article URL/link/title/headline seeds instead of fetch-order indexes or `Date.now()`.
+  - Extracted topic-refresh notification comparison into `notifyTopicUpdates` / `getTopicUpdateSummary` so unchanged refreshed article IDs do not trigger notifications.
+  - Repaired stale `test:following` static cert to follow the current Following page/view-model ownership after the Release 5F-C migration.
+- Local verification:
+  - Red before fix: `npm.cmd run test:unit -- src/services/newsStableIds.cert.test.js` failed because `makeStableNewsId` / `makeStableSlotStoryId` did not exist.
+  - Red before fix: `npm.cmd run test:unit -- src/context/TopicContextNotifications.cert.test.jsx` failed because `notifyTopicUpdates` did not exist.
+  - Pass: `npm.cmd run test:unit -- src/services/newsStableIds.cert.test.js src/context/TopicContextNotifications.cert.test.jsx` (2 files / 3 tests)
+  - Pass: touched-file lint via `npx.cmd eslint src/adapters/newsFetcher.js src/services/newsService.js src/services/newsStableIds.cert.test.js src/context/TopicContext.jsx src/context/TopicContextNotifications.cert.test.jsx`
+  - Pass: `npm.cmd run test:unit` (135 files / 775 tests)
+  - Pass: `npm.cmd run lint` (0 errors / 14 warnings)
+  - Pass: `npm.cmd run build`
+  - Pass: `npm.cmd run test:following-migration` (2 files / 31 tests)
+  - Pass: `npm.cmd run test:certify:smoke`
+  - Pass after stale-cert repair: `npm.cmd run test:following`
+- Existing failures observed:
+  - `npm.cmd run test:following` initially failed because the static cert still expected `getTopicStats` and raw `topicNews` access in `FollowingPage.jsx`; that ownership now lives in `useFollowingTabViewModel.js`. The cert now checks the current page/view-model contract and passes.
+  - No lint errors. The known 14 hook warnings remain unchanged for Phase D.

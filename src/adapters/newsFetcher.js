@@ -1,6 +1,7 @@
 
 import { fetchNews } from '../services/newsService.js';
 import { extractSchemaOrg } from './schemaOrgExtractor.js';
+import { fnv1aHex } from '../data/dataEnvelope.js';
 
 // Different query per slot for temporal diversity
 const SLOT_QUERIES = {
@@ -16,12 +17,17 @@ const SLOT_QUERIES = {
   chennai   : 'Chennai Tamil Nadu news today',
 };
 
+export function makeStableSlotStoryId(slot, article) {
+  const seed = article?.url || article?.link || article?.title || article?.headline || '';
+  return `${slot}-${fnv1aHex(seed)}`;
+}
+
 export async function fetchStoriesForSlot(slot) {
   const query = SLOT_QUERIES[slot] || `${slot} news today`;
   const news = await fetchNews(query, { newsApiKey: '' });
   if (!news || !Array.isArray(news)) return [];
 
-  return news.map((article, idx) => {
+  return news.map((article) => {
     // Try Schema.org enrichment if raw HTML is available
     const schema = article.rawHtml ? extractSchemaOrg(article.rawHtml) : null;
 
@@ -40,7 +46,7 @@ export async function fetchStoriesForSlot(slot) {
 
     return {
       // Slot-prefixed ID prevents cross-slot collisions in storiesById Map
-      id         : `${slot}-${idx}-${Date.now()}`,
+      id         : makeStableSlotStoryId(slot, article),
       title      : schema?.headline    || article.headline || article.title   || '',
       summary    : schema?.description || article.description || article.summary || article.headline || '',
       content    : schema?.description || article.description || article.summary || '',

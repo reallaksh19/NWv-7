@@ -10,6 +10,7 @@ function read(path) {
 }
 
 const followingPage = read('src/pages/FollowingPage.jsx');
+const followingViewModel = read('src/viewModels/useFollowingTabViewModel.js');
 const followingCss = read('src/pages/FollowingPage.css');
 const topicCard = read('src/components/TopicCard.jsx');
 const topicCardCss = read('src/components/TopicCard.css');
@@ -17,16 +18,26 @@ const topicContext = read('src/context/TopicContext.jsx');
 
 for (const token of [
   'following-page--pro',
-  'getTopicStats',
   'sortedTopics',
   'topicMessage',
   'clearTopicMessage',
   'Refresh topics',
   'following-page__stats',
   'following-page__topic-grid',
-  'articles={topicNews[topic.id] || []}'
+  'articles={getArticlesForTopic(topic.id)}'
 ]) {
   assert(followingPage.includes(token), `FollowingPage missing token: ${token}`);
+}
+
+for (const token of [
+  'getTopicStats',
+  'sortFollowedTopics',
+  'stats',
+  'sortedTopics',
+  'getArticlesForTopic',
+  'getArticleCountForTopic'
+]) {
+  assert(followingViewModel.includes(token), `Following ViewModel missing token: ${token}`);
 }
 
 for (const token of [

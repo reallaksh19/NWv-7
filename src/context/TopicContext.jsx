@@ -70,6 +70,45 @@ function unwrapTopicEnvelope(value, previousArticles = []) {
     };
 }
 
+export function getTopicUpdateSummary({ newNews, oldNews = {}, followedTopics = [] }) {
+    let newCount = 0;
+    let topicName = '';
+
+    Object.entries(newNews).forEach(([topicId, articles]) => {
+        const oldArticles = oldNews[topicId] || [];
+
+        if (articles.length > 0 && oldArticles.length > 0) {
+            if (articles[0].id !== oldArticles[0].id) {
+                newCount++;
+                const topic = followedTopics.find(t => t.id === topicId);
+                if (topic) topicName = topic.name;
+            }
+        }
+    });
+
+    return { newCount, topicName };
+}
+
+export function notifyTopicUpdates({
+    newNews,
+    oldNews = {},
+    followedTopics = [],
+    notify = sendNotification,
+}) {
+    const { newCount, topicName } = getTopicUpdateSummary({ newNews, oldNews, followedTopics });
+
+    if (newCount === 0) return;
+
+    const title = newCount === 1
+        ? `New update for ${topicName}`
+        : `Updates in ${newCount} followed topics`;
+
+    notify(title, {
+        body: 'Click to see the latest stories.',
+        tag: 'topic-update'
+    });
+}
+
 export function TopicProvider({ children }) {
     const [followedTopics, setFollowedTopics] = useState([]);
     const [topicNews, setTopicNews] = useState({});
@@ -158,31 +197,7 @@ export function TopicProvider({ children }) {
     };
 
     const checkForUpdates = (newNews, oldNews = topicNewsRef.current) => {
-        let newCount = 0;
-        let topicName = '';
-
-        Object.entries(newNews).forEach(([topicId, articles]) => {
-            const oldArticles = oldNews[topicId] || [];
-
-            if (articles.length > 0 && oldArticles.length > 0) {
-                if (articles[0].id !== oldArticles[0].id) {
-                    newCount++;
-                    const topic = followedTopics.find(t => t.id === topicId);
-                    if (topic) topicName = topic.name;
-                }
-            }
-        });
-
-        if (newCount > 0) {
-            const title = newCount === 1
-                ? `New update for ${topicName}`
-                : `Updates in ${newCount} followed topics`;
-
-            sendNotification(title, {
-                body: 'Click to see the latest stories.',
-                tag: 'topic-update'
-            });
-        }
+        notifyTopicUpdates({ newNews, oldNews, followedTopics });
     };
 
     const addTopic = (topic) => {

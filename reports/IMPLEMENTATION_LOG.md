@@ -159,7 +159,7 @@
 ## A-b - React Refresh Component Export Boundaries
 
 - Branch: `fix/A-b-react-refresh-internals`
-- Commit: this finding commit
+- Commit: `b040cbb` - `fix(A-b): split component test internals`
 - Added test:
   - `src/components/reactRefreshInternals.cert.test.js`
 - Scope:
@@ -178,3 +178,28 @@
   - Pass: `git diff --check` (line-ending warnings only)
 - Existing failures observed:
   - No lint errors remain after Phase A. The 14 remaining lint warnings are the planned S-2/exhaustive-deps cleanup later in Phase D.
+
+## A-4 - Shared Local Date-Key Helper
+
+- Branch: `fix/A-4-local-date-key-continuation`
+- Commit: this finding commit
+- Added tests:
+  - `src/utils/dateKey.cert.test.js`
+  - `src/utils/plannerStorageDateKey.cert.test.js`
+- Scope:
+  - Added `src/utils/dateKey.js` with `toLocalDateKey`, using local `getFullYear()` / `getMonth()` / `getDate()` parts rather than UTC ISO slicing.
+  - Replaced UTC-slice date-key generation in `dateAware`, `canonicalItemBuilder`, `deDuplication`, `dateExtractor.expandDateKeys`, `weatherService.buildDailyConsensus`, and `plannerStorage`.
+  - Checked Python generators; weather worker uses provider daily date keys, and remaining `isoformat()` usages are timestamps rather than planner/event date keys.
+- Local verification:
+  - Red before fix: `npm.cmd run test:unit -- src/utils/plannerStorageDateKey.cert.test.js` failed with `2026-05-29` instead of `2026-05-30` for an Asia/Kolkata local-midnight event.
+  - Pass: `npm.cmd run test:unit -- src/utils/dateKey.cert.test.js src/utils/plannerStorageDateKey.cert.test.js src/services/weatherFinalClosure.cert.test.js src/services/weatherIntegrationHardening.cert.test.js` (4 files / 15 tests)
+  - Pass: touched-file lint via `npx.cmd eslint src/utils/dateKey.js src/utils/dateKey.cert.test.js src/utils/plannerStorage.js src/utils/plannerStorageDateKey.cert.test.js src/intelligence/dateAware.js src/intelligence/canonicalItemBuilder.js src/intelligence/deDuplication.js src/utils/dateExtractor.js src/services/weatherService.js`
+  - Pass: specified-site grep found no remaining `toISOString().slice(0, 10)` / `toISOString().split('T')[0]`.
+  - Pass: `npm.cmd run test:weather-weekly-planning`
+  - Pass: `npm.cmd run lint` (0 errors / 14 warnings)
+  - Pass: `npm.cmd run build`
+  - Pass: `npm.cmd run test:unit` (132 files / 771 tests)
+  - Pass: `npm.cmd run test:certify:smoke`
+  - Pass: `git diff --check` (line-ending warnings only)
+- Existing failures observed:
+  - None. Lint remains at 0 errors; the known 14 warnings are unchanged.

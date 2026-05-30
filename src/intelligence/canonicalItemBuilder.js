@@ -2,6 +2,7 @@ import { classifyItemCategory } from './classification.js';
 import { analyzeDateText } from './dateAware.js';
 import { annotateItemLocation } from './locationAware.js';
 import { evaluateEligibility } from './eligibilityWindowing.js';
+import { toLocalDateKey } from '../utils/dateKey.js';
 
 function normalizeText(value) {
   return String(value || '')
@@ -27,10 +28,7 @@ function safeDate(input) {
 }
 
 function toDateKey(input) {
-  const d = safeDate(input);
-  if (!d) return null;
-  d.setHours(0, 0, 0, 0);
-  return d.toISOString().slice(0, 10);
+  return toLocalDateKey(input);
 }
 
 function normalizeLink(link) {

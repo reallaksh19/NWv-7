@@ -1,4 +1,5 @@
 import { extractDate, expandDateKeys } from '../utils/dateExtractor.js';
+import { toLocalDateKey } from '../utils/dateKey.js';
 
 const DOW = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
@@ -15,7 +16,7 @@ function addDays(input, days) {
 }
 
 function formatDateKey(input) {
-  return atStartOfDay(input).toISOString().slice(0, 10);
+  return toLocalDateKey(atStartOfDay(input));
 }
 
 function safeDate(input) {

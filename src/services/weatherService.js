@@ -16,6 +16,7 @@ import { getSettings } from '../utils/storage.js';
 import logStore from '../utils/logStore.js';
 import { getWeatherIconId } from '../utils/weatherUtils.js';
 import { getRuntimeCapabilities } from "../runtime/runtimeCapabilities.js";
+import { toLocalDateKey } from '../utils/dateKey.js';
 
 const MODELS = {
     ecmwf: 'https://api.open-meteo.com/v1/ecmwf',
@@ -505,7 +506,7 @@ function buildDailyConsensus(modelData, getIcon, getCondition) {
         const date = new Date();
         date.setDate(date.getDate() + d);
         const dayLabel = d === 0 ? 'Today' : d === 1 ? 'Tomorrow' : date.toLocaleDateString('en-US', { weekday: 'short' });
-        const dateStr = date.toISOString().slice(0, 10);
+        const dateStr = toLocalDateKey(date);
 
         days.push({
             dayLabel,

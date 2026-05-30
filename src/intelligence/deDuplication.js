@@ -1,3 +1,5 @@
+import { toLocalDateKey } from '../utils/dateKey.js';
+
 function normalizeText(value) {
   return String(value || '')
     .toLowerCase()
@@ -39,11 +41,7 @@ function normalizeCategory(category) {
 }
 
 function normalizeDateKey(value) {
-  if (!value) return null;
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return null;
-  date.setHours(0, 0, 0, 0);
-  return date.toISOString().slice(0, 10);
+  return toLocalDateKey(value);
 }
 
 function dayDistance(a, b) {

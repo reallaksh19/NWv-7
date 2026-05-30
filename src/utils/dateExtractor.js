@@ -1,4 +1,5 @@
 /* eslint-disable */
+import { toLocalDateKey } from './dateKey.js';
 /**
  * 5-Layer Date Extraction Engine for Up Ahead.
  *
@@ -249,7 +250,7 @@ export function expandDateKeys(dateResult, maxDays = 14) {
 
     let d = new Date(start);
     while (d <= end && keys.length < maxDays) {
-        keys.push(d.toISOString().slice(0, 10));
+        keys.push(toLocalDateKey(d));
         d.setDate(d.getDate() + 1);
     }
     return keys;

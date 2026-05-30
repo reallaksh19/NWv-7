@@ -1,5 +1,6 @@
 import { deduplicatePlanningItems, isLikelyDuplicateStory } from './similarity.js';
 import { getRuntimeCapabilities } from "../runtime/runtimeCapabilities.js";
+import { toLocalDateKey } from './dateKey.js';
 
 const PLANNER_KEY = 'upAhead_planner';
 const BLACKLIST_KEY = 'upAhead_blacklist';
@@ -26,10 +27,7 @@ function generateCanonicalId(title, dateStr) {
 
 function normalizeDateKey(value) {
     if (!value) return 'nodate';
-    if (value instanceof Date && !Number.isNaN(value.getTime())) return value.toISOString().slice(0, 10);
-    const parsed = new Date(value);
-    if (!Number.isNaN(parsed.getTime())) return parsed.toISOString().slice(0, 10);
-    return 'nodate';
+    return toLocalDateKey(value) || 'nodate';
 }
 
 function resolveOccurrenceDateKey(item, fallbackDate = null) {
@@ -76,7 +74,7 @@ function normalizePlanData(planData) {
 }
 function readLocalPlan() { try { const data = localStorage.getItem(PLANNER_KEY); return normalizePlanData(data ? JSON.parse(data) : {}); } catch (e) { console.error('Failed to read planner storage', e); return {}; } }
 function pruneStaleEntries(planData, maxAgeMs) {
-    const cutoff = new Date(Date.now() - maxAgeMs).toISOString().slice(0, 10);
+    const cutoff = toLocalDateKey(new Date(Date.now() - maxAgeMs));
     return Object.fromEntries(Object.entries(planData).filter(([date]) => date >= cutoff));
 }
 function writeLocalPlan(planData) {
@@ -165,7 +163,7 @@ const plannerStorage = {
     getUpcomingDays: (days = 14) => {
         try {
             const parsed = readLocalPlan();
-            const today = new Date().toISOString().split('T')[0];
+            const today = toLocalDateKey(new Date());
             return Object.entries(parsed).filter(([date]) => date >= today).sort((a, b) => a[0].localeCompare(b[0])).slice(0, days).map(([date, items]) => ({ date, items }));
         } catch (e) {
             console.error('Failed to read planner storage', e);

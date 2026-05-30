@@ -1,4 +1,5 @@
 import React from 'react';
+import { RefreshIcon } from './AppIcons';
 import './QuickMarket.css';
 
 /**
@@ -10,16 +11,16 @@ function QuickMarket({
   marketData = {},
   loading = false,
   error = null,
-  lastFetch = null,
   booted = true,
   sessionState = null,
   onRefreshMarket = null,
 }) {
   const indices = Array.isArray(marketData?.indices) ? marketData.indices : [];
+  const canRefresh = typeof onRefreshMarket === 'function';
 
   async function handleRefresh() {
     try {
-      if (typeof onRefreshMarket === 'function') {
+      if (canRefresh) {
         await Promise.resolve(onRefreshMarket(true));
       }
     } catch (err) {
@@ -101,9 +102,24 @@ function QuickMarket({
         <div style={{ fontWeight: 600, color: 'var(--accent-success)' }}>
           Market Pulse
         </div>
-        <div className={`qm-status ${statusClass}`}>
+        <div className="qm-header-actions">
+          {canRefresh && (
+            <button
+              type="button"
+              className="qm-refresh-btn"
+              onClick={handleRefresh}
+              aria-label="Refresh market pulse"
+              title="Refresh market pulse"
+              disabled={loading}
+            >
+              <RefreshIcon size={14} />
+            </button>
+          )}
+          <div className={`qm-status ${statusClass}`}>
           {statusText} • {now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </div>
+      </div>
+
       </div>
 
       <div className="qm-body">

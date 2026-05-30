@@ -12,8 +12,6 @@ import {
 } from '../components/weather/WeatherLocationManager.jsx';
 
 const {
-  safeReadActiveCity,
-  safeWriteActiveCity,
   buildCityLabels,
   buildCityIcons,
   getRenderableWeatherData,

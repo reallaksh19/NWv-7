@@ -480,7 +480,7 @@ export function useNewspaperPageViewModel() {
     // Normalized reload interface: reload(force) and handleRefresh align with
     // useNewspaperTabViewModel pattern (reloadDataset(force))
     handleRefresh: fetchData,
-    reload: (_force) => fetchData(),
+    reload: () => fetchData(),
     fetchFallbackPaper,
     fetchFallbackRSS: fetchFallbackPaper,
     generateClientSummary,

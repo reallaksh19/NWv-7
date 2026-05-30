@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { loadWithPolicy } from './loadWithPolicy.js';
 import { makeEnvelope, ENVELOPE_SOURCES, ENVELOPE_FRESHNESS } from './dataEnvelope.js';
 

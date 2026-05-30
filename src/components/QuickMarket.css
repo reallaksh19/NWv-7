@@ -28,6 +28,37 @@
     flex-shrink: 0; /* Prevent being crushed */
 }
 
+.qm-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.qm-refresh-btn {
+    width: 26px;
+    height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-default);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    flex: 0 0 26px;
+}
+
+.qm-refresh-btn:hover:not(:disabled) {
+    color: var(--accent-success);
+    border-color: var(--accent-success);
+}
+
+.qm-refresh-btn:disabled {
+    cursor: default;
+    opacity: 0.55;
+}
+
 .qm-status--open {
     color: var(--accent-success);
 }

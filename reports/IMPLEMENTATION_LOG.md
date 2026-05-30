@@ -77,3 +77,23 @@
   - Pass: `npm run test:unit` (126 files / 763 tests)
 - Existing failures observed:
   - `npm run lint` still fails, now at 18 errors / 15 warnings. The B-2 Settings `rules-of-hooks` errors are gone; remaining errors are unrelated baseline items.
+
+## Lint Gate Cleanup - Unused Bindings
+
+- Branch: `chore/lint-cleanup-unused-bindings`
+- Commit: `chore(lint): remove unused cleanup blockers` (this cleanup commit)
+- Scope:
+  - Removed stale blanket lint disable from `src/components/ErrorBoundary.jsx`.
+  - Removed unused test imports/destructures from `src/data/loadWithPolicy.cert.test.js` and `src/pages/WeatherPage.release6K.cert.test.jsx`.
+  - Removed unused `_force` parameter from `src/viewModels/useNewspaperPageViewModel.js`.
+  - Kept `QuickMarket`'s prop-driven refresh contract live by wiring `onRefreshMarket` to a compact header action.
+- Local verification:
+  - Red before cleanup: `npm run lint` failed at 18 errors / 15 warnings after the B-2 commit.
+  - Pass: touched-file lint via `npx.cmd eslint src/components/QuickMarket.jsx src/components/ErrorBoundary.jsx src/data/loadWithPolicy.cert.test.js src/pages/WeatherPage.release6K.cert.test.jsx src/viewModels/useNewspaperPageViewModel.js`
+  - Pass: `npm.cmd run test:unit -- src/pages/MarketPage.release6J.cert.test.jsx src/data/loadWithPolicy.cert.test.js src/pages/WeatherPage.release6K.cert.test.jsx` (3 files / 27 tests)
+  - Pass: `npm.cmd run build`
+  - Pass: `npm.cmd run test:unit` (126 files / 763 tests)
+  - Pass: `git diff --check`
+- Existing failures observed:
+  - `npm.cmd run lint` still fails, now at 11 errors / 14 warnings.
+  - Remaining errors are unrelated `react-refresh/only-export-components` export-shape issues and `react-hooks/set-state-in-effect` findings in `useDataset`, `useMyPlannerPageViewModel`, and `useWeatherTabViewModel`.

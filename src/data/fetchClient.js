@@ -5,6 +5,23 @@ import {
 } from './dataEnvelope.js';
 import { withTimeout } from '../utils/withTimeout.js';
 
+function makeAbortableSignal(externalSignal) {
+  const controller = new AbortController();
+  const relayAbort = () => controller.abort(externalSignal.reason);
+
+  if (externalSignal?.aborted) {
+    controller.abort(externalSignal.reason);
+  } else if (externalSignal) {
+    externalSignal.addEventListener('abort', relayAbort, { once: true });
+  }
+
+  return {
+    controller,
+    signal: controller.signal,
+    cleanup: () => externalSignal?.removeEventListener?.('abort', relayAbort),
+  };
+}
+
 export function publicDataUrl(path) {
   const base = (import.meta.env.BASE_URL || './').replace(/\/?$/, '/');
   return `${base}${String(path).replace(/^\//, '')}`;
@@ -37,19 +54,23 @@ export async function fetchJson(url, options = {}) {
   } = options;
 
   const startedAt = Date.now();
+  const abortable = makeAbortableSignal(signal);
 
   try {
     const response = await withTimeout(
       fetch(url, {
         cache,
-        signal,
+        signal: abortable.signal,
         headers: {
           Accept: 'application/json',
           ...headers,
         },
       }),
       timeoutMs,
-      { message: `Fetch timed out after ${timeoutMs}ms: ${url}` }
+      {
+        message: `Fetch timed out after ${timeoutMs}ms: ${url}`,
+        abortController: abortable.controller,
+      }
     );
 
     const durationMs = Date.now() - startedAt;
@@ -106,7 +127,12 @@ export async function fetchJson(url, options = {}) {
     });
   } catch (error) {
     const durationMs = Date.now() - startedAt;
-    const message = error?.message || String(error);
+    const timeoutError =
+      abortable.signal.reason?.name === 'TimeoutError'
+        ? abortable.signal.reason
+        : null;
+    const reportedError = timeoutError || error;
+    const message = reportedError?.message || String(reportedError);
 
     return makeEnvelope({
       ok: false,
@@ -114,7 +140,7 @@ export async function fetchJson(url, options = {}) {
       data: null,
       source: ENVELOPE_SOURCES.FAILED,
       freshness: ENVELOPE_FRESHNESS.UNKNOWN,
-      error: error?.name === 'TimeoutError' ? 'TimeoutError' : message,
+      error: reportedError?.name === 'TimeoutError' ? 'TimeoutError' : message,
       diagnostics: [
         {
           event: 'fetch_json_failed',
@@ -129,5 +155,7 @@ export async function fetchJson(url, options = {}) {
         warnings: [],
       },
     });
+  } finally {
+    abortable.cleanup();
   }
 }

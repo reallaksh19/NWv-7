@@ -61,22 +61,65 @@ describe('fetchClient', () => {
     expect(env.diagnostics[0].event).toBe('fetch_json_failed');
   });
 
-  it('passes optional signal into fetch', async () => {
+  it('relays optional signal aborts into the active fetch', async () => {
     const controller = new AbortController();
+    let fetchSignal;
 
-    const fetchMock = vi.fn(async () => ({
-      ok: true,
-      status: 200,
-      json: async () => ({ timestamp: Date.now() }),
-    }));
+    const fetchMock = vi.fn((_url, options = {}) => {
+      fetchSignal = options.signal;
+
+      return new Promise((_, reject) => {
+        fetchSignal.addEventListener('abort', () => {
+          reject(new DOMException('Aborted', 'AbortError'));
+        });
+      });
+    });
 
     vi.stubGlobal('fetch', fetchMock);
 
-    await fetchJson('/mock.json', {
+    const envPromise = fetchJson('/mock.json', {
       datasetId: 'mock',
       signal: controller.signal,
     });
 
-    expect(fetchMock.mock.calls[0][1].signal).toBe(controller.signal);
+    expect(fetchSignal).toBeInstanceOf(AbortSignal);
+
+    controller.abort();
+    const env = await envPromise;
+
+    expect(fetchSignal.aborted).toBe(true);
+    expect(env.ok).toBe(false);
+  });
+
+  it('aborts the underlying fetch when timeout expires', async () => {
+    vi.useFakeTimers();
+
+    try {
+      let fetchSignal;
+
+      vi.stubGlobal('fetch', vi.fn((_url, options = {}) => {
+        fetchSignal = options.signal;
+
+        return new Promise((_, reject) => {
+          fetchSignal.addEventListener('abort', () => {
+            reject(new DOMException('Aborted', 'AbortError'));
+          });
+        });
+      }));
+
+      const envPromise = fetchJson('/slow.json', {
+        datasetId: 'slow',
+        timeoutMs: 10,
+      });
+
+      await vi.advanceTimersByTimeAsync(10);
+      const env = await envPromise;
+
+      expect(fetchSignal.aborted).toBe(true);
+      expect(env.ok).toBe(false);
+      expect(env.error).toBe('TimeoutError');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

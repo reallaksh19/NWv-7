@@ -309,3 +309,27 @@
   - `npm.cmd run test:market-trust` is stale against the current Market page/view-model migration and expects page-level `MarketTrustPanel` wiring.
   - `npm.cmd run test:market-snapshot` is time-sensitive and currently fails because `public/data/market_snapshot.json` is about 70h old while the cert's max age is 48h.
   - No lint errors. The known 14 hook warnings remain unchanged for Phase D.
+
+## F1-3 / A-10 - Abort Timed-Out Fetches
+
+- Branch: `fix/A-10-abortable-timeout`
+- Commit: this finding commit
+- Added test:
+  - `src/data/fetchClient.cert.test.js`
+- Scope:
+  - Updated `withTimeout` to abort an owned `AbortController` with the `TimeoutError` reason when the timeout fires.
+  - Wrapped `fetchJson` requests in an internal abort controller, relayed caller cancellation while a fetch is active, and cleaned up the relay listener after completion.
+  - Normalized timeout-triggered fetch aborts back to the user-facing `TimeoutError` envelope even when the underlying fetch rejects with `AbortError`.
+- Local verification:
+  - Red before fix: `npm.cmd run test:unit -- src/data/fetchClient.cert.test.js` failed because the timeout path did not provide/abort the underlying fetch signal.
+  - Pass: `npm.cmd run test:unit -- src/data/fetchClient.cert.test.js` (1 file / 6 tests)
+  - Pass: touched-file lint via `npx.cmd eslint src/utils/withTimeout.js src/data/fetchClient.js src/data/fetchClient.cert.test.js`
+  - Pass: `npm.cmd run test:hardening:release1B`
+  - Pass: `npm.cmd run test:hardening:release2`
+  - Pass: `npm.cmd run test:unit` (138 files / 781 tests)
+  - Pass: `npm.cmd run lint` (0 errors / 14 warnings)
+  - Pass: `npm.cmd run build`
+  - Pass: `npm.cmd run test:certify:smoke`
+  - Pass: `git diff --check` (line-ending warnings only)
+- Existing failures observed:
+  - None in this phase. Lint remains at 0 errors; the known 14 hook warnings are unchanged for Phase D.

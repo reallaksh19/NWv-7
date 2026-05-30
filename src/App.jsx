@@ -1,21 +1,7 @@
 /* eslint-disable */
-import React, { useState, useEffect } from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import ErrorBoundary from './components/ErrorBoundary';
-import MainPage from './pages/MainPage';
-import UpAheadPage from './pages/UpAheadPage';
-import MyPlannerPage from './pages/MyPlannerPage';
-import WeatherPage from './pages/WeatherPage';
-import MarketPage from './pages/MarketPage';
-import TechSocialPage from './pages/TechSocialPage';
-import NewspaperPage from './pages/NewspaperPage';
-import SettingsPage from './pages/SettingsPage';
-import RefreshPage from './pages/RefreshPage';
-import FollowingPage from './pages/FollowingPage';
-import TopicDetail from './pages/TopicDetail';
-import MorePage from './pages/MorePage';
-import InsightPage from './pages/InsightPage';
-import DataHealthPage from './pages/DataHealthPage';
 import BottomNav from './components/BottomNav';
 import ScrollToTop from './components/ScrollToTop';
 import DebugConsole from './components/DebugConsole';
@@ -31,6 +17,21 @@ import './index.css';
 import './styles/desktopRevamp.css';
 import './styles/desktopPolish.css';
 import './styles/weatherProfessionalTheme.css';
+
+const MainPage = React.lazy(() => import('./pages/MainPage'));
+const UpAheadPage = React.lazy(() => import('./pages/UpAheadPage'));
+const MyPlannerPage = React.lazy(() => import('./pages/MyPlannerPage'));
+const WeatherPage = React.lazy(() => import('./pages/WeatherPage'));
+const MarketPage = React.lazy(() => import('./pages/MarketPage'));
+const TechSocialPage = React.lazy(() => import('./pages/TechSocialPage'));
+const NewspaperPage = React.lazy(() => import('./pages/NewspaperPage'));
+const SettingsPage = React.lazy(() => import('./pages/SettingsPage'));
+const RefreshPage = React.lazy(() => import('./pages/RefreshPage'));
+const FollowingPage = React.lazy(() => import('./pages/FollowingPage'));
+const TopicDetail = React.lazy(() => import('./pages/TopicDetail'));
+const MorePage = React.lazy(() => import('./pages/MorePage'));
+const InsightPage = React.lazy(() => import('./pages/InsightPage'));
+const DataHealthPage = React.lazy(() => import('./pages/DataHealthPage'));
 
 /**
  * Global Progress Bar
@@ -122,133 +123,135 @@ function App() {
                   <OnThisDayVisibilityBinding />
 
                   <div className="app app-shell">
-                    <Routes>
-                      <Route
-                        path="/"
-                        element={
-                          <ErrorBoundary label="Main">
-                            <MainPage />
-                          </ErrorBoundary>
-                        }
-                      />
+                    <Suspense fallback={<div className="route-loader" role="status" aria-label="Loading page" />}>
+                      <Routes>
+                        <Route
+                          path="/"
+                          element={
+                            <ErrorBoundary label="Main">
+                              <MainPage />
+                            </ErrorBoundary>
+                          }
+                        />
 
-                      <Route
-                        path="/insight"
-                        element={
-                          <ErrorBoundary label="Insight">
-                            <InsightPage />
-                          </ErrorBoundary>
-                        }
-                      />
+                        <Route
+                          path="/insight"
+                          element={
+                            <ErrorBoundary label="Insight">
+                              <InsightPage />
+                            </ErrorBoundary>
+                          }
+                        />
 
-                      <Route
-                        path="/markets"
-                        element={
-                          <ErrorBoundary label="Markets">
-                            <MarketPage />
-                          </ErrorBoundary>
-                        }
-                      />
+                        <Route
+                          path="/markets"
+                          element={
+                            <ErrorBoundary label="Markets">
+                              <MarketPage />
+                            </ErrorBoundary>
+                          }
+                        />
 
-                      <Route
-                        path="/up-ahead"
-                        element={
-                          <ErrorBoundary label="Up Ahead">
-                            <UpAheadPage />
-                          </ErrorBoundary>
-                        }
-                      />
+                        <Route
+                          path="/up-ahead"
+                          element={
+                            <ErrorBoundary label="Up Ahead">
+                              <UpAheadPage />
+                            </ErrorBoundary>
+                          }
+                        />
 
-                      <Route
-                        path="/my-planner"
-                        element={
-                          <ErrorBoundary label="My Planner">
-                            <MyPlannerPage />
-                          </ErrorBoundary>
-                        }
-                      />
+                        <Route
+                          path="/my-planner"
+                          element={
+                            <ErrorBoundary label="My Planner">
+                              <MyPlannerPage />
+                            </ErrorBoundary>
+                          }
+                        />
 
-                      <Route
-                        path="/more"
-                        element={
-                          <ErrorBoundary label="More">
-                            <MorePage />
-                          </ErrorBoundary>
-                        }
-                      />
+                        <Route
+                          path="/more"
+                          element={
+                            <ErrorBoundary label="More">
+                              <MorePage />
+                            </ErrorBoundary>
+                          }
+                        />
 
-                      <Route
-                        path="/weather"
-                        element={
-                          <ErrorBoundary label="Weather">
-                            <WeatherPage />
-                          </ErrorBoundary>
-                        }
-                      />
+                        <Route
+                          path="/weather"
+                          element={
+                            <ErrorBoundary label="Weather">
+                              <WeatherPage />
+                            </ErrorBoundary>
+                          }
+                        />
 
-                      <Route
-                        path="/tech-social"
-                        element={
-                          <ErrorBoundary label="Buzz Hub">
-                            <TechSocialPage />
-                          </ErrorBoundary>
-                        }
-                      />
+                        <Route
+                          path="/tech-social"
+                          element={
+                            <ErrorBoundary label="Buzz Hub">
+                              <TechSocialPage />
+                            </ErrorBoundary>
+                          }
+                        />
 
-                      <Route
-                        path="/newspaper"
-                        element={
-                          <ErrorBoundary label="Newspaper">
-                            <NewspaperPage />
-                          </ErrorBoundary>
-                        }
-                      />
+                        <Route
+                          path="/newspaper"
+                          element={
+                            <ErrorBoundary label="Newspaper">
+                              <NewspaperPage />
+                            </ErrorBoundary>
+                          }
+                        />
 
-                      <Route
-                        path="/settings"
-                        element={
-                          <ErrorBoundary label="Settings">
-                            <SettingsPage />
-                          </ErrorBoundary>
-                        }
-                      />
+                        <Route
+                          path="/settings"
+                          element={
+                            <ErrorBoundary label="Settings">
+                              <SettingsPage />
+                            </ErrorBoundary>
+                          }
+                        />
 
-                      <Route
-                        path="/refresh"
-                        element={
-                          <ErrorBoundary label="Refresh">
-                            <RefreshPage />
-                          </ErrorBoundary>
-                        }
-                      />
+                        <Route
+                          path="/refresh"
+                          element={
+                            <ErrorBoundary label="Refresh">
+                              <RefreshPage />
+                            </ErrorBoundary>
+                          }
+                        />
 
-                      <Route
-                        path="/following"
-                        element={
-                          <ErrorBoundary label="Following">
-                            <FollowingPage />
-                          </ErrorBoundary>
-                        }
-                      />
+                        <Route
+                          path="/following"
+                          element={
+                            <ErrorBoundary label="Following">
+                              <FollowingPage />
+                            </ErrorBoundary>
+                          }
+                        />
 
-                      <Route
-                        path="/following/:topicId"
-                        element={
-                          <ErrorBoundary label="Topic Detail">
-                            <TopicDetail />
-                          </ErrorBoundary>
-                        }
-                      />
+                        <Route
+                          path="/following/:topicId"
+                          element={
+                            <ErrorBoundary label="Topic Detail">
+                              <TopicDetail />
+                            </ErrorBoundary>
+                          }
+                        />
 
-                      <Route
-                        path="/data-health"
-                        element={
-                          <ErrorBoundary label="Data Health">
-                            <DataHealthPage />
-                          </ErrorBoundary>
-                        }
-                      />
-                    </Routes>
+                        <Route
+                          path="/data-health"
+                          element={
+                            <ErrorBoundary label="Data Health">
+                              <DataHealthPage />
+                            </ErrorBoundary>
+                          }
+                        />
+                      </Routes>
+                    </Suspense>
 
                     <BottomNav />
                   </div>

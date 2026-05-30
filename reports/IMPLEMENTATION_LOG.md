@@ -389,3 +389,33 @@
   - `npm.cmd run test:hardening:release6J` is stale for this dirty continuation worktree: it rejects unrelated changed files before behavior checks; `npm.cmd run test:marketpage-binding` passed.
   - `npm.cmd run test:certify:data-platform` now passes through Release 3 after the cert repair, then fails at stale Release 4 assertions that still forbid later dataset loaders/view-model migrations.
   - No lint errors. The known 14 hook warnings remain unchanged for Phase D.
+
+## A-9 / V12-2 - Route Code Splitting
+
+- Branch: `fix/A-9-route-code-split`
+- Commit: this finding commit
+- Added test:
+  - `src/AppCodeSplit.cert.test.jsx`
+- Scope:
+  - Converted route page imports in `src/App.jsx` to `React.lazy(() => import(...))`.
+  - Wrapped the route table in `<Suspense>` with a non-text loading status element while keeping providers, navigation, debug shell, and visibility controls eager.
+  - Preserved all existing route paths and `ErrorBoundary` labels.
+- Local verification:
+  - Red before fix: `npm.cmd run test:unit -- src/AppCodeSplit.cert.test.jsx` failed because `App.jsx` had static page imports and no `React.lazy` / `<Suspense>` route boundary.
+  - Pass: `npm.cmd run test:unit -- src/AppCodeSplit.cert.test.jsx` (1 file / 2 tests)
+  - Pass: touched-file lint via `npx.cmd eslint src/App.jsx src/AppCodeSplit.cert.test.jsx`
+  - Pass: `npm.cmd run test:hardening:release1C`
+  - Pass: `npm.cmd run test:desktop-polish`
+  - Pass: `npm.cmd run test:weather-professional-theme`
+  - Pass: `npm.cmd run test:hardening:release6T`
+  - Pass: `npm.cmd run test:page-orchestration-closeout`
+  - Pass: `npm.cmd run build`; main app chunk shrank from the prior `index-D5g9EZua.js` 991.66 kB to `index-BzsVFlPv.js` 363.47 kB.
+  - Pass: `npm.cmd run test:unit` (141 files / 787 tests)
+  - Pass: `npm.cmd run lint` (0 errors / 14 warnings)
+  - Pass: `npm.cmd run test:certify:smoke`
+  - Pass: `git diff --check` (line-ending warnings only)
+- Existing failures observed:
+  - `npm.cmd run test:weather-settings-onthisday` fails on stale `DisplayPreferencesPanel.jsx` copy/token text unrelated to route splitting.
+  - `npm.cmd run test:hardening:release6N` and `npm.cmd run test:hardening:release6O` reject the pre-existing dirty `reports/walkthrough_coverage_addendum.md` before behavior checks.
+  - `npm.cmd run test:weather-final-closure` fails on stale `.qw-config-bar input` CSS-token expectations unrelated to route splitting.
+  - No lint errors. The known 14 hook warnings remain unchanged for Phase D.

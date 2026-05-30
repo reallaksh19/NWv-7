@@ -17,7 +17,7 @@ describe('data-state components', () => {
   });
 
   it('freshness badge supports freshness tones', () => {
-    const src = read('src/components/data-state/DataFreshnessBadge.jsx');
+    const src = read('src/components/data-state/DataFreshnessBadge.internals.js');
 
     expect(src).toContain('getFreshnessLabel');
     expect(src).toContain('getFreshnessTone');
@@ -27,7 +27,7 @@ describe('data-state components', () => {
   });
 
   it('source badge supports fallback and failed states', () => {
-    const src = read('src/components/data-state/DataSourceBadge.jsx');
+    const src = read('src/components/data-state/DataSourceBadge.internals.js');
 
     expect(src).toContain('fallbackUsed');
     expect(src).toContain('failed');
@@ -35,7 +35,7 @@ describe('data-state components', () => {
   });
 
   it('SLO badge normalizes score safely', () => {
-    const src = read('src/components/data-state/DataSloBadge.jsx');
+    const src = read('src/components/data-state/DataSloBadge.internals.js');
 
     expect(src).toContain('normalizeScore');
     expect(src).toContain('Math.max(0, Math.min(100');
@@ -43,7 +43,7 @@ describe('data-state components', () => {
   });
 
   it('DataStateMeta guards warning arrays', () => {
-    const src = read('src/components/data-state/DataStateMeta.jsx');
+    const src = read('src/components/data-state/DataStateMeta.internals.js');
 
     expect(src).toContain('function asArray');
     expect(src).toContain('asArray(envelope?.validation?.warnings)');

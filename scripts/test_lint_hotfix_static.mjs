@@ -10,16 +10,23 @@ function read(path) {
 }
 
 const upAheadPage = read('src/pages/UpAheadPage.jsx');
+const upAheadPageViewModel = read('src/viewModels/useUpAheadPageViewModel.js');
 const upAheadEvidence = read('src/services/upAheadEvidence.js');
 const certGate = read('scripts/run_certification_gate.mjs');
 const packageJson = read('package.json');
 
-const moduleFormatIndex = upAheadPage.indexOf('function formatConciseDate(dateStr)');
-const pageIndex = upAheadPage.indexOf('function UpAheadPage()');
+const moduleFormatIndex = upAheadPageViewModel.indexOf('function formatConciseDate(dateStr');
+const viewModelIndex = upAheadPageViewModel.indexOf('export function useUpAheadPageViewModel()');
 
 assert(moduleFormatIndex !== -1, 'formatConciseDate must exist as module-scope function');
-assert(pageIndex !== -1, 'UpAheadPage function must exist');
-assert(moduleFormatIndex < pageIndex, 'formatConciseDate must be declared before UpAheadPage');
+assert(viewModelIndex !== -1, 'useUpAheadPageViewModel function must exist');
+assert(moduleFormatIndex < viewModelIndex, 'formatConciseDate must be declared before useUpAheadPageViewModel');
+
+assert(
+  upAheadPage.includes('formatConciseDate') &&
+    upAheadPage.includes('__upAheadPageViewModelInternalsForTest'),
+  'UpAheadPage must consume formatConciseDate from page ViewModel internals'
+);
 
 assert(
   !upAheadPage.includes('const formatConciseDate = (dateStr) =>'),

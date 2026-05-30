@@ -2,35 +2,7 @@ import React from 'react';
 import DataFreshnessBadge from './DataFreshnessBadge.jsx';
 import DataSourceBadge from './DataSourceBadge.jsx';
 import DataSloBadge from './DataSloBadge.jsx';
-
-function asArray(value) {
-  return Array.isArray(value) ? value : [];
-}
-
-function formatTimestamp(value) {
-  if (!value) return null;
-
-  const numeric = Number(value);
-  const date = Number.isFinite(numeric)
-    ? new Date(numeric)
-    : new Date(value);
-
-  if (Number.isNaN(date.getTime())) return null;
-
-  return date.toLocaleString('en-IN', {
-    day: '2-digit',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
-function getWarningCount(envelope) {
-  return [
-    ...asArray(envelope?.validation?.warnings),
-    ...asArray(envelope?.slo?.warnings),
-  ].length;
-}
+import { formatTimestamp, getWarningCount } from './DataStateMeta.internals.js';
 
 export default function DataStateMeta({
   envelope,
@@ -76,7 +48,7 @@ export default function DataStateMeta({
             color: 'var(--text-secondary, #9CA5B0)',
           }}
         >
-          ▲ {warningCount} warning{warningCount === 1 ? '' : 's'}
+          â–² {warningCount} warning{warningCount === 1 ? '' : 's'}
         </span>
       )}
 
@@ -105,9 +77,3 @@ export default function DataStateMeta({
     </div>
   );
 }
-
-export const __dataStateMetaInternalsForTest = {
-  asArray,
-  formatTimestamp,
-  getWarningCount,
-};

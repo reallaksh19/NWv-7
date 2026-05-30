@@ -1,14 +1,6 @@
 import React from 'react';
 import './TravelLocationSettingsPanel.css';
-
-const FALLBACK_PROFILE = {
-  key: 'none',
-  icon: '📍',
-  display: 'No travel location',
-  countryLabel: 'Not configured',
-  source: 'settings',
-  prioritizeStories: false,
-};
+import { FALLBACK_PROFILE } from './TravelLocationSettingsPanel.internals.js';
 
 export default function TravelLocationSettingsPanel({
   profile = null,
@@ -67,7 +59,7 @@ export default function TravelLocationSettingsPanel({
           >
             {safeOptions.map(option => (
               <option key={option.key} value={option.key}>
-                {option.icon} {option.label} — {option.country}
+                {option.icon} {option.label} â€” {option.country}
               </option>
             ))}
           </select>
@@ -76,12 +68,8 @@ export default function TravelLocationSettingsPanel({
 
       <div className="travel-location-settings__status">
         <strong>{safeProfile.icon} {safeProfile.display}</strong>
-        <span>{safeProfile.countryLabel} · source: {safeProfile.source}</span>
+        <span>{safeProfile.countryLabel} Â· source: {safeProfile.source}</span>
       </div>
     </section>
   );
 }
-
-export const __travelLocationSettingsPanelInternalsForTest = {
-  FALLBACK_PROFILE,
-};

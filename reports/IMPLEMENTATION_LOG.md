@@ -138,7 +138,7 @@
 ## A-a - Deferred Initial Loads For Hook Lint
 
 - Branch: `fix/A-a-set-state-in-effect`
-- Commit: this finding commit
+- Commit: `69605c6` - `fix(A-a): defer initial hook loads`
 - Added tests:
   - `src/data/orchestrator/useDatasetS1.cert.test.js`
   - `src/viewModels/useMyPlannerPageViewModelS1.cert.test.js`
@@ -155,3 +155,26 @@
   - Pass: `git diff --check` (line-ending warnings only)
 - Existing failures observed:
   - `npm.cmd run lint` now fails at 8 errors / 14 warnings, down from 10 errors / 14 warnings. Remaining errors are the React Refresh export-boundary findings scheduled for A-b.
+
+## A-b - React Refresh Component Export Boundaries
+
+- Branch: `fix/A-b-react-refresh-internals`
+- Commit: this finding commit
+- Added test:
+  - `src/components/reactRefreshInternals.cert.test.js`
+- Scope:
+  - Moved data-state, data-boundary, travel-location, and weather-location test internals into sibling `*.internals.js` modules so component files export only components.
+  - Updated direct unit/static imports to use the new internals modules.
+  - Updated the stale `test:lint-hotfix` cert to follow the current Up Ahead page-view-model location for `formatConciseDate`.
+- Local verification:
+  - Red before fix: `npm.cmd run test:unit -- src/components/reactRefreshInternals.cert.test.js` failed because component files still exported `InternalsForTest`.
+  - Pass: `npm.cmd run test:unit -- src/components/reactRefreshInternals.cert.test.js src/components/DataStateBoundary.cert.test.jsx src/components/data-state/dataStateComponents.cert.test.jsx src/pages/WeatherPage.release6K.cert.test.jsx src/pages/SettingsPage.release6M.cert.test.jsx` (5 files / 35 tests)
+  - Pass: touched-file lint via `npx.cmd eslint ...` on all moved component, internals, and updated cert files (0 errors; existing WeatherLocationManager hook warnings only).
+  - Pass: `npm.cmd run lint` (0 errors / 14 warnings)
+  - Pass: `npm.cmd run build`
+  - Pass: `npm.cmd run test:unit` (130 files / 768 tests)
+  - Pass: `npm.cmd run test:lint-hotfix`
+  - Pass: `npm.cmd run test:certify:smoke`
+  - Pass: `git diff --check` (line-ending warnings only)
+- Existing failures observed:
+  - No lint errors remain after Phase A. The 14 remaining lint warnings are the planned S-2/exhaustive-deps cleanup later in Phase D.

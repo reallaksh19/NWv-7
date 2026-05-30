@@ -9,7 +9,7 @@ import {
 } from '../viewModels/useWeatherTabViewModel.js';
 import {
   __weatherLocationManagerInternalsForTest,
-} from '../components/weather/WeatherLocationManager.jsx';
+} from '../components/weather/WeatherLocationManager.internals.js';
 
 const {
   buildCityLabels,

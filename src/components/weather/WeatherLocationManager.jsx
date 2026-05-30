@@ -303,9 +303,3 @@ export default function WeatherLocationManager({
     </section>
   );
 }
-
-export const __weatherLocationManagerInternalsForTest = {
-  getCityDisplay,
-  getCityIcon,
-  optionMatchesSearch,
-};

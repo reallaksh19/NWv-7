@@ -1,34 +1,5 @@
 import React from 'react';
-
-function getSourceLabel(source, fallbackUsed = false) {
-  if (fallbackUsed) return 'fallback';
-
-  if (!source) return 'unknown';
-
-  const normalized = String(source).toLowerCase();
-
-  if (normalized === 'live') return 'live';
-  if (normalized === 'snapshot') return 'snapshot';
-  if (normalized === 'cache') return 'cache';
-  if (normalized === 'seed') return 'seed';
-  if (normalized === 'failed') return 'failed';
-
-  return normalized;
-}
-
-function getSourceTone(source, fallbackUsed = false) {
-  if (fallbackUsed) return 'warning';
-
-  const normalized = String(source || '').toLowerCase();
-
-  if (normalized === 'live') return 'positive';
-  if (normalized === 'snapshot') return 'neutral';
-  if (normalized === 'cache') return 'warning';
-  if (normalized === 'seed') return 'warning';
-  if (normalized === 'failed') return 'danger';
-
-  return 'neutral';
-}
+import { getSourceLabel, getSourceTone } from './DataSourceBadge.internals.js';
 
 export default function DataSourceBadge({ source, fallbackUsed = false, labelPrefix = 'Source' }) {
   const label = getSourceLabel(source, fallbackUsed);
@@ -59,8 +30,3 @@ export default function DataSourceBadge({ source, fallbackUsed = false, labelPre
     </span>
   );
 }
-
-export const __dataSourceBadgeInternalsForTest = {
-  getSourceLabel,
-  getSourceTone,
-};

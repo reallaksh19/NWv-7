@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { __dataStateBoundaryInternalsForTest } from './DataStateBoundary.jsx';
+import { __dataStateBoundaryInternalsForTest } from './DataStateBoundary.internals.js';
 
 const {
   getBoundaryState,

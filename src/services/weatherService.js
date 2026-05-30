@@ -1,4 +1,3 @@
-/* eslint-disable */
 /**
  * Multi-Model Weather Service
  * Static-host safe: prefer fresh complete cache, then live Open-Meteo for built-in cities,
@@ -34,8 +33,35 @@ const LOCATIONS = Object.fromEntries(
 const WEATHER_CACHE_PREFIX = 'weather_cache_v2_';
 const LEGACY_WEATHER_CACHE_PREFIX = 'weather_cache_';
 const WEATHER_CACHE_TTL_MS = 4 * 60 * 60 * 1000;
+const WEATHER_DISPLAY_MAX_AGE_MS = 48 * 60 * 60 * 1000;
 
 function isStaticHostRuntime() { return getRuntimeCapabilities().isStaticHost; }
+
+function parseWeatherTimestamp(value) {
+    if (typeof value === 'number' && Number.isFinite(value)) return value;
+    if (typeof value === 'string' && value.trim()) {
+        const parsed = Date.parse(value);
+        return Number.isFinite(parsed) ? parsed : null;
+    }
+    return null;
+}
+
+function getWeatherPayloadTimestamp(payload) {
+    return parseWeatherTimestamp(
+        payload?.fetchedAt ||
+        payload?.generatedAt ||
+        payload?.generated_at ||
+        payload?.timestamp
+    );
+}
+
+function isWeatherPayloadDisplayable(payload, maxAgeMs = WEATHER_DISPLAY_MAX_AGE_MS, now = Date.now()) {
+    const timestamp = getWeatherPayloadTimestamp(payload);
+    if (!timestamp) return false;
+
+    const age = now - timestamp;
+    return age >= 0 && age <= maxAgeMs;
+}
 
 function hasHourlyForecast(payload) {
     return Boolean(
@@ -58,7 +84,9 @@ async function fetchWeatherSnapshot(locationKey) {
     const resp = await fetch(publicDataUrl('data/weather_snapshot.json'), { cache: 'no-cache' });
     if (!resp.ok) return null;
     const snapshot = await resp.json();
-    return snapshot?.[String(locationKey || '').toLowerCase()] || null;
+    const citySnapshot = snapshot?.[String(locationKey || '').toLowerCase()] || null;
+    if (!isWeatherPayloadDisplayable(citySnapshot)) return null;
+    return citySnapshot;
   } catch {
     return null;
   }
@@ -74,6 +102,7 @@ function readCachedWeather(locationKey, allowStale = true) {
         if (!parsed) return null;
         const age = Date.now() - (parsed?.fetchedAt || 0);
         if (!allowStale && age > WEATHER_CACHE_TTL_MS) return null;
+        if (!isWeatherPayloadDisplayable(parsed, allowStale ? WEATHER_DISPLAY_MAX_AGE_MS : WEATHER_CACHE_TTL_MS)) return null;
         return parsed;
     } catch {
         return null;
@@ -161,7 +190,7 @@ export async function fetchWeather(locationKey) {
         const coords = await resolveLocation(key);
         lat = coords.lat;
         lon = coords.lon;
-    } catch (e) {
+    } catch {
         const cached = readCachedWeather(key, true);
         if (cached) return cached;
         throw new Error(`Unknown location: ${locationKey}`);

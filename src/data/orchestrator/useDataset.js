@@ -95,7 +95,9 @@ export function useDataset(datasetId, options = {}) {
 
   useEffect(() => {
     if (!auto) return;
-    reload(false).catch(() => {});
+    queueMicrotask(() => {
+      reload(false).catch(() => {});
+    });
   }, [auto, reload]);
 
   return {

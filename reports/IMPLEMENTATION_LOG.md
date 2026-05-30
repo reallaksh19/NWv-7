@@ -118,7 +118,7 @@
 ## R-0 - Weather Static Cert Regression Repair
 
 - Branch: `fix/R-0-weather-static-certs`
-- Commit: this finding commit
+- Commit: `08af5cb` - `fix(R-0): repair weather static certs`
 - Scope:
   - Updated stale weather static cert assertions to follow Release 6K ownership: `WeatherPage.jsx` remains render-focused, while `useWeatherTabViewModel.js` owns `getConfiguredWeatherCities`, `auditWeatherTabQuality`, active-city resolution, and detailed-card props.
   - Did not reintroduce duplicate weather audit/settings wiring into `WeatherPage.jsx`; the older source-token expectations were obsolete after the view-model migration.
@@ -134,3 +134,24 @@
 - Existing failures observed:
   - `npm.cmd run lint` remains at the expected continuation baseline: 10 errors / 14 warnings.
   - `npm.cmd run test:certify:smoke` fails at its first lint step because the baseline lint gate is still red; Phase A is the planned lint-zero remediation.
+
+## A-a - Deferred Initial Loads For Hook Lint
+
+- Branch: `fix/A-a-set-state-in-effect`
+- Commit: this finding commit
+- Added tests:
+  - `src/data/orchestrator/useDatasetS1.cert.test.js`
+  - `src/viewModels/useMyPlannerPageViewModelS1.cert.test.js`
+- Scope:
+  - Deferred `useDataset` auto-load with `queueMicrotask` so `reload(false)` is not invoked synchronously in the effect body.
+  - Deferred the one-time planner `loadPlan()` call with `queueMicrotask` while keeping explicit user-triggered planner reloads synchronous.
+- Local verification:
+  - Red before fix: `npm.cmd run test:unit -- src/data/orchestrator/useDatasetS1.cert.test.js` failed on the direct `reload(false)` effect call.
+  - Red before fix: `npm.cmd run test:unit -- src/viewModels/useMyPlannerPageViewModelS1.cert.test.js` failed on the direct `loadPlan()` mount-effect call.
+  - Pass: `npm.cmd run test:unit -- src/data/orchestrator/useDatasetS1.cert.test.js src/viewModels/useMyPlannerPageViewModelS1.cert.test.js src/data/orchestrator/useDataset.cert.test.js src/pages/MyPlannerPage.release6S.cert.test.jsx` (4 files / 19 tests)
+  - Pass: touched-file lint via `npx.cmd eslint src/data/orchestrator/useDataset.js src/data/orchestrator/useDatasetS1.cert.test.js src/viewModels/useMyPlannerPageViewModel.js src/viewModels/useMyPlannerPageViewModelS1.cert.test.js`
+  - Pass: `npm.cmd run build`
+  - Pass: `npm.cmd run test:unit` (129 files / 767 tests)
+  - Pass: `git diff --check` (line-ending warnings only)
+- Existing failures observed:
+  - `npm.cmd run lint` now fails at 8 errors / 14 warnings, down from 10 errors / 14 warnings. Remaining errors are the React Refresh export-boundary findings scheduled for A-b.

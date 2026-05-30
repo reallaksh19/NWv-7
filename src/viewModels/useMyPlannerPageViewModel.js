@@ -129,7 +129,9 @@ export function useMyPlannerPageViewModel() {
   }, []);
 
   useEffect(() => {
-    loadPlan();
+    queueMicrotask(() => {
+      loadPlan();
+    });
 
     return () => {
       clearTimer(undoTimerRef);

@@ -182,7 +182,7 @@
 ## A-4 - Shared Local Date-Key Helper
 
 - Branch: `fix/A-4-local-date-key-continuation`
-- Commit: this finding commit
+- Commit: `7b75080` - `fix(A-4): use local date keys`
 - Added tests:
   - `src/utils/dateKey.cert.test.js`
   - `src/utils/plannerStorageDateKey.cert.test.js`
@@ -199,6 +199,28 @@
   - Pass: `npm.cmd run lint` (0 errors / 14 warnings)
   - Pass: `npm.cmd run build`
   - Pass: `npm.cmd run test:unit` (132 files / 771 tests)
+  - Pass: `npm.cmd run test:certify:smoke`
+  - Pass: `git diff --check` (line-ending warnings only)
+- Existing failures observed:
+  - None. Lint remains at 0 errors; the known 14 warnings are unchanged.
+
+## W8-2 - Weather Location-Local Now Hour
+
+- Branch: `fix/W8-2-weather-local-now`
+- Commit: this finding commit
+- Added test:
+  - `src/services/weatherLocalHour.cert.test.js`
+- Scope:
+  - Added `getLocationLocalHour(locationName, now)` to derive the current hour from `WEATHER_LOCATION_REGISTRY[locationName].timezone` using `Intl.DateTimeFormat`.
+  - Replaced browser-local `new Date().getHours()` usage for the weather "Now" hourly strip and current icon hour.
+- Local verification:
+  - Red before fix: `npm.cmd run test:unit -- src/services/weatherLocalHour.cert.test.js` failed because `getLocationLocalHour` did not exist.
+  - Pass: `npm.cmd run test:unit -- src/services/weatherLocalHour.cert.test.js src/services/weatherIntegrationHardening.cert.test.js` (2 files / 6 tests)
+  - Pass: touched-file lint via `npx.cmd eslint src/services/weatherService.js src/services/weatherLocalHour.cert.test.js`
+  - Pass: `npm.cmd run test:weather-weekly-planning`
+  - Pass: `npm.cmd run lint` (0 errors / 14 warnings)
+  - Pass: `npm.cmd run build`
+  - Pass: `npm.cmd run test:unit` (133 files / 772 tests)
   - Pass: `npm.cmd run test:certify:smoke`
   - Pass: `git diff --check` (line-ending warnings only)
 - Existing failures observed:

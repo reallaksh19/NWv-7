@@ -31,6 +31,31 @@ const LOCATIONS = Object.fromEntries(
     Object.entries(WEATHER_LOCATION_REGISTRY).map(([k, v]) => [k, { lat: v.lat, lon: v.lon }])
 );
 
+export function getLocationLocalHour(locationName, now = new Date()) {
+    const timezone = WEATHER_LOCATION_REGISTRY[locationName]?.timezone;
+
+    if (!timezone) return now.getHours();
+
+    try {
+        const parts = new Intl.DateTimeFormat('en-US', {
+            timeZone: timezone,
+            hour: 'numeric',
+            hour12: false
+        }).formatToParts(now);
+        const hour = Number(parts.find(part => part.type === 'hour')?.value);
+
+        if (Number.isFinite(hour)) return hour % 24;
+    } catch (error) {
+        console.warn('[WeatherService] Failed to resolve location-local hour', {
+            locationName,
+            timezone,
+            message: error?.message || String(error)
+        });
+    }
+
+    return now.getHours();
+}
+
 const WEATHER_CACHE_PREFIX = 'weather_cache_v2_';
 const LEGACY_WEATHER_CACHE_PREFIX = 'weather_cache_';
 const WEATHER_CACHE_TTL_MS = 4 * 60 * 60 * 1000;
@@ -237,7 +262,8 @@ export async function fetchWeather(locationKey) {
 
 function processMultiModelData(modelData, locationName) {
     const currentData = [modelData.ecmwf?.current, modelData.gfs?.current, modelData.icon?.current].filter(Boolean);
-    const getIconForHour = (code, hour) => getWeatherIconId(code, hour ?? new Date().getHours());
+    const currentHourOfDay = getLocationLocalHour(locationName);
+    const getIconForHour = (code, hour) => getWeatherIconId(code, hour ?? currentHourOfDay);
     const getIcon = (code) => { if (code <= 1) return '☀️'; if (code <= 3) return '⛅'; if (code <= 67) return '🌧️'; if (code <= 99) return '⛈️'; return '❓'; };
     const conditionMap = {
         0: 'Clear',
@@ -386,7 +412,6 @@ function processMultiModelData(modelData, locationName) {
     const maxUV = dailyUVMax.length ? Math.round(dailyUVMax.reduce((a, b) => a + b, 0) / dailyUVMax.length) : null;
     const successfulModels = getSuccessfulModels(modelData);
 
-    const currentHourOfDay = new Date().getHours();
     const hourly24 = [];
     const next8Hours = [];
     for (let i = 0; i < 24; i++) {
@@ -431,7 +456,7 @@ function processMultiModelData(modelData, locationName) {
             low: null,
             condition: getCondition(currentWeatherCode),
             icon: getIcon(currentWeatherCode),
-            iconId: getIconForHour(currentWeatherCode, new Date().getHours()),
+            iconId: getIconForHour(currentWeatherCode, currentHourOfDay),
             humidity: currentHumidity,
             windSpeed: currentWindSpeed,
             windDirection: currentWindDirection

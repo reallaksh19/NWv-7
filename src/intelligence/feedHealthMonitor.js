@@ -17,17 +17,12 @@ const MAX_EVENTS    = 50;                     // cap per URL to prevent localSto
 
 function loadStore() {
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
-    catch (e) {
-        if (e) { return {}; }
-        return {};
-    }
+    catch (e) { void e; return {}; }  // DA-8: dead `if (e)` branch removed; void silences unused-var
 }
 
 function saveStore(store) {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); }
-    catch (e) {
-        if (e) { /* Fail silently */ }
-    }
+    catch (e) { void e; /* Fail silently — quota or unavailable storage */ }  // DA-8
 }
 
 /**

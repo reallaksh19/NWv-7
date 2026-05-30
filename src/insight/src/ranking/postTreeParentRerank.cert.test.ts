@@ -6,8 +6,9 @@ function makeStory(id: string, angle: string, sourceGroup: string): InsightStory
   return { id, angle, sourceGroup, title: id, summary: '', source: '', url: '', publishedAt: 0, capturedAtSnapshot: 'now', canonicalUrl: '', canonicalText: '', embedding: [] } as any;
 }
 
+// DA-9 fix: use correct InsightParent field names (parentId, finalParentScore — not id/score)
 function makeParent(id: string, score: number, childIds: string[]): InsightParent {
-  return { id, headline: id, score, childStoryIds: childIds, debug: {} } as any;
+  return { parentId: id, canonicalHeadline: id, finalParentScore: score, childStoryIds: childIds, debug: {} } as any;
 }
 
 const cfg = { ...DEFAULT_CONFIG, weakTreeChildMin: 2, minSourcesPerTree: 2 };
@@ -35,9 +36,10 @@ describe('postTreeParentRerank', () => {
     const s1 = makeStory('s1', 'base_report', 'g1');
     const s2 = makeStory('s2', 'official_response', 'g2');
     const storiesById = new Map([['s1', s1], ['s2', s2]]);
-    const p1 = makeParent('p1', 0.3, ['s1']);          // weak
-    const p2 = makeParent('p2', 0.2, ['s1', 's2']);    // diverse
+    const p1 = makeParent('p1', 0.3, ['s1']);          // weak — fewer diverse children
+    const p2 = makeParent('p2', 0.2, ['s1', 's2']);    // diverse — two angles, two sources
     const reranked = rerankParentsAfterDiversityRepair([p1, p2], storiesById, cfg);
-    expect(reranked[0].id).toBe('p2');
+    // DA-9: access parentId not id; p2 wins because diversity bonus > score difference
+    expect(reranked[0].parentId).toBe('p2');
   });
 });

@@ -25,6 +25,7 @@ const ANGLE_DISPLAY_ORDER: AngleLabel[] = [
   "correction",
   "background_context",
   "reaction_public",
+  "opinion_editorial",  // DA-1: was missing → sorted to front (indexOf=-1 < 0)
   "unknown",
 ];
 

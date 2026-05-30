@@ -102,7 +102,8 @@ export async function fetchHindiEntertainment() {
         }
     }
 
-    return allArticles
+    // DA-10: apply filterNoise to all regions, not just Tamil
+    return filterNoise(allArticles)
         .sort((a, b) => (b.publishedAt || 0) - (a.publishedAt || 0))
         .slice(0, 20);
 }
@@ -128,7 +129,8 @@ export async function fetchHollywoodEntertainment() {
         }
     }
 
-    return allArticles
+    // DA-10: apply filterNoise to all regions
+    return filterNoise(allArticles)
         .sort((a, b) => (b.publishedAt || 0) - (a.publishedAt || 0))
         .slice(0, 20);
 }
@@ -154,7 +156,8 @@ export async function fetchOTTEntertainment() {
         }
     }
 
-    return allArticles
+    // DA-10: apply filterNoise to all regions
+    return filterNoise(allArticles)
         .sort((a, b) => (b.publishedAt || 0) - (a.publishedAt || 0))
         .slice(0, 20);
 }
@@ -209,8 +212,12 @@ export async function fetchAllEntertainment(settings = {}) {
         ...ottArticles.slice(0, distribution.ott)
     ];
 
-    // Shuffle to mix regions
-    const shuffled = mixedArticles.sort(() => Math.random() - 0.5);
+    // Shuffle to mix regions — Fisher-Yates (uniform, unbiased). DA-10: removed Math.random() sort.
+    const shuffled = [...mixedArticles];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
 
     console.log('[EntertainmentService] ✅ Entertainment news fetched:', {
         tamil: distribution.tamil,
@@ -232,38 +239,6 @@ export default {
     fetchAllEntertainment
 };
 
-// ============================================
-// CACHE MANAGEMENT
-// ============================================
-
-export const ENTERTAINMENT_CACHE_KEY = 'entertainment_cache';
-
-export function loadEntertainmentCache() {
-    try {
-        const cached = localStorage.getItem(ENTERTAINMENT_CACHE_KEY);
-        if (cached) {
-            const data = JSON.parse(cached);
-            // Optional: Check age
-            const age = Date.now() - (data.timestamp || 0);
-             if (age > 8 * 60 * 60 * 1000) {
-                 console.log('[EntertainmentService] Cache is older than 8 hours.');
-            }
-            return data.items || [];
-        }
-    } catch (e) {
-        console.warn('Entertainment Cache read error', e);
-    }
-    return null;
-}
-
-export function saveEntertainmentCache(items) {
-    try {
-        const data = {
-            timestamp: Date.now(),
-            items: items
-        };
-        localStorage.setItem(ENTERTAINMENT_CACHE_KEY, JSON.stringify(data));
-    } catch (e) {
-        console.warn('Entertainment Cache write error', e);
-    }
-}
+// DA-10: loadEntertainmentCache / saveEntertainmentCache / ENTERTAINMENT_CACHE_KEY removed —
+// these were exported but never imported anywhere in the codebase. The fetch path
+// (fetchAllEntertainment → rssAggregator.memoryCache) provides the operative 5-min cache.

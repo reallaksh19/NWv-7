@@ -29,11 +29,13 @@ export function computeDiversityAdjustedParentScore(
 
   const diversityBonus = (angles.size > 1 ? 0.1 : 0) + (sources.size > 1 ? 0.1 : 0);
   const weaknessPenalty = (childIds.length < weakTreeChildMin ? 0.3 : 0) + (sources.size < minSources ? 0.2 : 0);
-  const finalScore = Math.max(0, ((parent as any).score ?? 0) + diversityBonus - weaknessPenalty);
+  // DA-9: was `(parent as any).score` which is always undefined — InsightParent exposes `finalParentScore`
+  const baseScore = parent.finalParentScore ?? 0;
+  const finalScore = Math.max(0, baseScore + diversityBonus - weaknessPenalty);
 
   return {
-    parentId: parent.id,
-    baseScore: (parent as any).score ?? 0,
+    parentId: parent.parentId,   // DA-9: InsightParent has parentId not id
+    baseScore,
     diversityBonus,
     weaknessPenalty,
     finalScore,
@@ -49,5 +51,6 @@ export function rerankParentsAfterDiversityRepair(
 ): InsightParent[] {
   const scores = parents.map(p => computeDiversityAdjustedParentScore(p, storiesById, cfg));
   const scoreMap = new Map(scores.map(s => [s.parentId, s.finalScore]));
-  return [...parents].sort((a, b) => (scoreMap.get(b.id) ?? 0) - (scoreMap.get(a.id) ?? 0));
+  // DA-9: key off parentId (same fix as computeDiversityAdjustedParentScore above)
+  return [...parents].sort((a, b) => (scoreMap.get(b.parentId) ?? 0) - (scoreMap.get(a.parentId) ?? 0));
 }

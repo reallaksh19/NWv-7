@@ -3,7 +3,7 @@
 ## A-13 / W8-1 - Weather Snapshot Automation And Freshness
 
 - Branch: `fix/A-13-W8-1-weather-freshness`
-- Commit: `fix(A-13 W8-1): guard stale weather snapshots` (this finding commit)
+- Commit: `c1ada2c` - `fix(A-13 W8-1): guard stale weather snapshots`
 - Added tests:
   - `src/services/weatherSnapshotFreshness.cert.test.js`
   - `scripts/test_public_snapshot_freshness_static.mjs`
@@ -31,7 +31,7 @@
 ## B-1 - Planner Per-Item Calendar Export
 
 - Branch: `fix/B-1-planner-calendar-export`
-- Commit: `fix(B-1): wire planner item calendar export` (this finding commit)
+- Commit: `d3be67a` - `fix(B-1): wire planner item calendar export`
 - Added test:
   - `src/pages/MyPlannerPageCalendarExport.cert.test.jsx`
 - Local verification:
@@ -47,7 +47,7 @@
 ## B-3 - UpAhead Fallback Reload Wiring
 
 - Branch: `fix/B-3-upahead-fallback-reload`
-- Commit: `fix(B-3): simplify upahead fallback reload wiring` (this finding commit)
+- Commit: `935fba5` - `fix(B-3): simplify upahead fallback reload wiring`
 - Added test:
   - `src/pages/UpAheadPageFallbackReload.cert.test.jsx`
 - Updated stale migration cert:
@@ -65,7 +65,7 @@
 ## B-2 - Settings Ranking Hook Boundaries
 
 - Branch: `fix/B-2-settings-hooks`
-- Commit: `fix(B-2): move settings ranking hooks into components` (this finding commit)
+- Commit: `c09e9ba` - `fix(B-2): move settings ranking hooks into components`
 - Added test:
   - `src/pages/SettingsPageHooks.cert.test.jsx`
 - Local verification:
@@ -81,7 +81,7 @@
 ## Lint Gate Cleanup - Unused Bindings
 
 - Branch: `chore/lint-cleanup-unused-bindings`
-- Commit: `chore(lint): remove unused cleanup blockers` (this cleanup commit)
+- Commit: `ea89dc4` - `chore(lint): remove unused cleanup blockers`
 - Scope:
   - Removed stale blanket lint disable from `src/components/ErrorBoundary.jsx`.
   - Removed unused test imports/destructures from `src/data/loadWithPolicy.cert.test.js` and `src/pages/WeatherPage.release6K.cert.test.jsx`.

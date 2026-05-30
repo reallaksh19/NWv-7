@@ -9,9 +9,6 @@ import { shortenSourceLabel } from '../utils/storyMeta';
 import { sanitizeHtmlText } from '../utils/htmlText.js';
 import DataStateBoundary from '../components/DataStateBoundary.jsx';
 import {
-  useUpAheadTabViewModel,
-} from '../viewModels/useUpAheadTabViewModel';
-import {
   useUpAheadPageViewModel,
   __upAheadPageViewModelInternalsForTest,
 } from '../viewModels/useUpAheadPageViewModel';
@@ -423,28 +420,10 @@ function UpAheadPage() {
     isWatched,
   } = useUpAheadPageViewModel();
 
-  // Named refresh wrappers — reload(true) = forceRefresh() = live-only; handleRefresh = cache-friendly
-  const handleRefresh = () => reload(true);
-  const handleForceRefresh = () => {
-    forceRefresh();
-    loadData({ forceRefresh: true, liveOnly: true });
-  };
-
-  // ViewModel reload helpers — used by DataStateBoundary onRetry
-  const { reload, forceRefresh, envelope, error } = (() => {
-    try {
-      // Attempt to get the tab VM's reload/forceRefresh for DataStateBoundary wiring.
-      // Falls back gracefully to loadData when tab VM is not the active path.
-      return {
-        reload: (force) => loadData({ forceRefresh: Boolean(force) }),
-        forceRefresh: () => loadData({ forceRefresh: true, liveOnly: true }),
-        envelope: null,
-        error: null,
-      };
-    } catch {
-      return { reload: () => {}, forceRefresh: () => {}, envelope: null, error: null };
-    }
-  })();
+  const handleRefresh = () => loadData({ forceRefresh: false });
+  const handleForceRefresh = () => loadData({ forceRefresh: true, liveOnly: true });
+  const envelope = null;
+  const error = null;
 
   if (loading && !data) {
     return (

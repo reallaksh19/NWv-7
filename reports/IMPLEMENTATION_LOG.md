@@ -43,3 +43,21 @@
   - Pass: `npm run test:unit` (124 files / 761 tests)
 - Existing failures observed:
   - `npm run lint` still fails, now at 22 errors / 15 warnings. The B-1 `MyPlannerPage.jsx` `no-undef` and unused binding errors are gone; remaining errors are unrelated baseline items.
+
+## B-3 - UpAhead Fallback Reload Wiring
+
+- Branch: `fix/B-3-upahead-fallback-reload`
+- Commit: `fix(B-3): simplify upahead fallback reload wiring` (this finding commit)
+- Added test:
+  - `src/pages/UpAheadPageFallbackReload.cert.test.jsx`
+- Updated stale migration cert:
+  - `src/pages/UpAheadPage.release5E.cert.test.jsx`
+- Local verification:
+  - Red before fix: `npm run test:unit -- src/pages/UpAheadPageFallbackReload.cert.test.jsx` failed because `UpAheadPage.jsx` still imported `useUpAheadTabViewModel` and kept the dead fallback wrapper.
+  - Red before fix: `npx eslint src/pages/UpAheadPage.jsx src/pages/UpAheadPageFallbackReload.cert.test.jsx` reported unused `useUpAheadTabViewModel` and `no-unreachable`.
+  - Pass: `npm run test:unit -- src/pages/UpAheadPageFallbackReload.cert.test.jsx src/pages/UpAheadPage.release5E.cert.test.jsx src/pages/UpAheadPage.release6R.cert.test.jsx`
+  - Pass: touched-file lint via `npx eslint src/pages/UpAheadPage.jsx src/pages/UpAheadPageFallbackReload.cert.test.jsx src/pages/UpAheadPage.release5E.cert.test.jsx src/pages/UpAheadPage.release6R.cert.test.jsx`
+  - Pass: `npm run build`
+  - Pass: `npm run test:unit` (125 files / 762 tests)
+- Existing failures observed:
+  - `npm run lint` still fails, now at 20 errors / 15 warnings. The B-3 `UpAheadPage.jsx` unused import and unreachable-code errors are gone; remaining errors are unrelated baseline items.

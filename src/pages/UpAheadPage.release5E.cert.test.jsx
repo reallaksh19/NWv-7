@@ -5,7 +5,7 @@ describe('UpAheadPage Release 5E migration', () => {
   const src = fs.readFileSync('src/pages/UpAheadPage.jsx', 'utf8');
 
   it('uses Up Ahead ViewModel and DataStateBoundary', () => {
-    expect(src).toContain('useUpAheadTabViewModel');
+    expect(src).toContain('useUpAheadPageViewModel');
     expect(src).toContain('DataStateBoundary');
   });
 
@@ -46,8 +46,8 @@ describe('UpAheadPage Release 5E migration', () => {
   it('routes refresh through ViewModel reload methods', () => {
     expect(src).toContain('handleForceRefresh');
     expect(src).toContain('handleRefresh');
-    expect(src).toContain('forceRefresh()');
-    expect(src).toContain('reload(true)');
+    expect(src).toContain('loadData({ forceRefresh: false })');
+    expect(src).toContain('loadData({ forceRefresh: true, liveOnly: true })');
   });
 
   it('passes dataset error into DataStateBoundary', () => {

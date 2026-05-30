@@ -39,6 +39,16 @@ const calculatePreviewStars = (weights) => {
     return Math.min(5, Math.max(1, Math.round(score)));
 };
 
+function MainRankingContent({ children }) {
+    const [secKwTab, setSecKwTab] = useState('world');
+    return children(secKwTab, setSecKwTab);
+}
+
+function BuzzRankingContent({ children }) {
+    const [buzzRegionSub, setBuzzRegionSub] = useState('tamil');
+    return children(buzzRegionSub, setBuzzRegionSub);
+}
+
 /**
  * Settings Page Component
  */
@@ -663,7 +673,7 @@ const MergedRankingTab = ({ settings, updateNested, updateSettings, addToList, r
     const handleLocalInput = (key, val) => setLocalInputs(prev => ({ ...prev, [key]: val }));
 
     // --- 1. MAIN TAB CONTENT ---
-    const renderMainContent = () => {
+    const renderMainContent = (secKwTab, setSecKwTab) => {
         const stars = calculatePreviewStars(settings.rankingWeights || {});
 
         const sectionList = [
@@ -676,7 +686,6 @@ const MergedRankingTab = ({ settings, updateNested, updateSettings, addToList, r
             { id: 'entertainment', label: 'Entertain', icon: '🎬' },
             { id: 'sports', label: 'Sports', icon: '⚽' },
         ];
-        const [secKwTab, setSecKwTab] = useState('world');
 
         const getSecKw = (section) => {
             const userList = settings.sectionKeywords?.[section];
@@ -783,7 +792,7 @@ const MergedRankingTab = ({ settings, updateNested, updateSettings, addToList, r
     };
 
     // --- 2. BUZZ TAB CONTENT ---
-    const renderBuzzContent = () => {
+    const renderBuzzContent = (buzzRegionSub, setBuzzRegionSub) => {
         const navItems = [
             { id: 'entertainment', label: 'Entertain', icon: '🎬' },
             { id: 'technology', label: 'Tech', icon: '💻' },
@@ -791,7 +800,6 @@ const MergedRankingTab = ({ settings, updateNested, updateSettings, addToList, r
             { id: 'social', label: 'Social', icon: '🔥' },
         ];
 
-        const [buzzRegionSub, setBuzzRegionSub] = useState('tamil');
         const regionTabs = [
             { id: 'tamil', label: 'Tamil', icon: '🎭' },
             { id: 'hindi', label: 'Hindi', icon: '🎪' },
@@ -1222,8 +1230,16 @@ const MergedRankingTab = ({ settings, updateNested, updateSettings, addToList, r
 
             {/* Content Area */}
             <div className="settings-tab-content" style={{flex:1, overflowY:'auto', overflowX:'hidden', padding:'0 15px 15px 15px'}}>
-                {topLevelTab === 'main' && renderMainContent()}
-                {topLevelTab === 'buzz' && renderBuzzContent()}
+                {topLevelTab === 'main' && (
+                    <MainRankingContent>
+                        {(secKwTab, setSecKwTab) => renderMainContent(secKwTab, setSecKwTab)}
+                    </MainRankingContent>
+                )}
+                {topLevelTab === 'buzz' && (
+                    <BuzzRankingContent>
+                        {(buzzRegionSub, setBuzzRegionSub) => renderBuzzContent(buzzRegionSub, setBuzzRegionSub)}
+                    </BuzzRankingContent>
+                )}
                 {topLevelTab === 'upahead' && renderUpAheadContent()}
             </div>
         </div>

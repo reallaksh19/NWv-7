@@ -61,3 +61,19 @@
   - Pass: `npm run test:unit` (125 files / 762 tests)
 - Existing failures observed:
   - `npm run lint` still fails, now at 20 errors / 15 warnings. The B-3 `UpAheadPage.jsx` unused import and unreachable-code errors are gone; remaining errors are unrelated baseline items.
+
+## B-2 - Settings Ranking Hook Boundaries
+
+- Branch: `fix/B-2-settings-hooks`
+- Commit: `fix(B-2): move settings ranking hooks into components` (this finding commit)
+- Added test:
+  - `src/pages/SettingsPageHooks.cert.test.jsx`
+- Local verification:
+  - Red before fix: `npm run test:unit -- src/pages/SettingsPageHooks.cert.test.jsx` failed because `MainRankingContent` and `BuzzRankingContent` did not exist and the stateful sections were nested render functions.
+  - Red before fix: `npx eslint src/pages/SettingsPage.jsx src/pages/SettingsPageHooks.cert.test.jsx` reported two `react-hooks/rules-of-hooks` errors in `renderMainContent` and `renderBuzzContent`.
+  - Pass: `npm run test:unit -- src/pages/SettingsPageHooks.cert.test.jsx src/pages/SettingsPage.release6M.cert.test.jsx`
+  - Pass: touched-file lint via `npx eslint src/pages/SettingsPage.jsx src/pages/SettingsPageHooks.cert.test.jsx src/pages/SettingsPage.release6M.cert.test.jsx`
+  - Pass: `npm run build`
+  - Pass: `npm run test:unit` (126 files / 763 tests)
+- Existing failures observed:
+  - `npm run lint` still fails, now at 18 errors / 15 warnings. The B-2 Settings `rules-of-hooks` errors are gone; remaining errors are unrelated baseline items.

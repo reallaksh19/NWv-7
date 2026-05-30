@@ -1,9 +1,13 @@
 import os
 import json
 import time
+import re
 import requests
 import feedparser
-import google.generativeai as genai
+try:
+    import google.generativeai as genai
+except Exception:
+    genai = None
 from datetime import datetime, timedelta
 import traceback
 
@@ -13,14 +17,80 @@ OUTPUT_FILE = "public/data/up_ahead.json"
 
 # Configure Gemini
 model = None
-if GEMINI_API_KEY:
+if GEMINI_API_KEY and genai:
     try:
         genai.configure(api_key=GEMINI_API_KEY)
         model = genai.GenerativeModel('gemini-1.5-flash')
     except Exception as e:
         print(f"Error configuring Gemini: {e}")
+elif GEMINI_API_KEY:
+    print("WARNING: google-generativeai package not found. Up Ahead generation will use fallback data.")
 else:
     print("WARNING: GEMINI_API_KEY not found. Up Ahead generation will be skipped/mocked.")
+
+FALLBACK_CATEGORY_KEYWORDS = {
+    "movie": [
+        "movie", "film", "cinema", "releasing", "release", "release date",
+        "in theaters", "in theatres", "ott release", "streaming from",
+        "showtimes", "advance booking", "trailer launch", "premiere",
+    ],
+    "event": [
+        "concert", "standup", "comedy", "this weekend", "workshop",
+        "exhibition", "festival", "live music", "venue", "tickets",
+    ],
+    "festival": ["festival", "holiday", "diwali", "pongal", "eid", "christmas"],
+    "sport": ["cricket", "match", "fixture", "final", "playing xi"],
+    "alert": ["alert", "warning", "heavy rain", "rain", "cyclone", "advisory"],
+    "civic": ["road blockage", "road block", "protest", "power cut", "water cut", "traffic advisory"],
+    "shopping": ["discount", "sale", "offer", "deal", "coupon", "cashback"],
+}
+
+FALLBACK_CATEGORY_PRIORITY = ["alert", "civic", "shopping", "movie", "event", "festival", "sport"]
+
+FALLBACK_SUPPRESS_KEYWORDS = {
+    "any": [
+        "you won't believe", "viral", "shocking", "photo gallery",
+        "breaks the internet",
+    ],
+    "movie": [
+        "review", "reviews", "gossip", "rumour", "rumor", "spotted",
+        "dating", "box office collection", "collection", "leaked",
+    ],
+}
+
+
+def _keyword_matches(text, keyword):
+    normalized = (keyword or "").strip().lower()
+    if not normalized:
+        return False
+    if " " in normalized:
+        return normalized in text
+    return re.search(rf"\b{re.escape(normalized)}\b", text) is not None
+
+
+def classify_fallback_category(title):
+    text = (title or "").lower()
+    scores = {}
+
+    for category, keywords in FALLBACK_CATEGORY_KEYWORDS.items():
+        scores[category] = sum(1 for keyword in keywords if _keyword_matches(text, keyword))
+
+    best_category = "event"
+    best_score = 0
+    for category in FALLBACK_CATEGORY_PRIORITY:
+        score = scores.get(category, 0)
+        if score > best_score:
+            best_category = category
+            best_score = score
+
+    return best_category
+
+
+def should_suppress_fallback_item(title, category=None):
+    text = (title or "").lower()
+    effective_category = category or classify_fallback_category(title)
+    keywords = FALLBACK_SUPPRESS_KEYWORDS.get("any", []) + FALLBACK_SUPPRESS_KEYWORDS.get(effective_category, [])
+    return any(_keyword_matches(text, keyword) for keyword in keywords)
 
 def fetch_rss_feeds():
     """
@@ -69,22 +139,9 @@ def generate_fallback_data(headlines_text):
             title = parts[0]
             link = parts[1][:-1] if len(parts) > 1 else ""
 
-            # Simple keyword categorization
-            cat = "event"
-            lower = title.lower()
-            if "movie" in lower or "review" in lower or "release" in lower: cat = "movie"
-            elif "festival" in lower or "holiday" in lower: cat = "festival"
-            elif "cricket" in lower or "match" in lower: cat = "sport"
-            elif "rain" in lower or "alert" in lower: cat = "alert"
+            cat = classify_fallback_category(title)
 
-            # Simple negative filter
-            noise_words = ["review", "gossip", "rumour", "spotted", "dating", "box office",
-                           "collection", "shocking", "viral", "video", "photo", "leaked",
-                           "renamed", "locks release date", "casts", "producer", "court",
-                           "petition", "arrested", "stealing", "sewage", "warns", "talks",
-                           "deal", "financial results", "board meeting", "fog", "mist"]
-
-            if any(w in lower for w in noise_words):
+            if should_suppress_fallback_item(title, cat):
                 continue
 
             items.append({

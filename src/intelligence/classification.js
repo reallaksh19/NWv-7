@@ -42,6 +42,15 @@ function keywordSets(settings) {
   return settings?.upAhead?.keywords || DEFAULT_SETTINGS.upAhead.keywords;
 }
 
+function scheduleSignals(settings) {
+  return settings?.upAhead?.signals || DEFAULT_SETTINGS.upAhead.signals || [];
+}
+
+function removeScheduleSignalNegatives(matches = [], settings) {
+  const signalSet = new Set(scheduleSignals(settings).map(keyword => String(keyword || '').trim().toLowerCase()));
+  return matches.filter(keyword => !signalSet.has(keyword));
+}
+
 function categoryList() {
   return ['movies', 'events', 'festivals', 'alerts', 'sports', 'shopping', 'civic', 'weather_alerts', 'airlines'];
 }
@@ -98,7 +107,10 @@ export function classifyItemCategory(item, options = {}) {
   function scoreCategory(text, category, keywords, itemWithTrust, explicitCategory) {
     const matchedPositive = collectMatches(text, keywords[category] || []);
     const matchedCategoryNegative = collectMatches(text, keywords[`${category}_negative`] || []);
-    const matchedGlobalNegative = collectMatches(text, keywords.negative || []);
+    const matchedGlobalNegative = removeScheduleSignalNegatives(
+      collectMatches(text, keywords.negative || []),
+      settings
+    );
 
     const positive = matchedPositive.length;
     const categoryNegative = matchedCategoryNegative.length;

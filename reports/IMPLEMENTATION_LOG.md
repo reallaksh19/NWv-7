@@ -333,3 +333,31 @@
   - Pass: `git diff --check` (line-ending warnings only)
 - Existing failures observed:
   - None in this phase. Lint remains at 0 errors; the known 14 hook warnings are unchanged for Phase D.
+
+## F2-7 - Categorizer Negative Keyword Reconciliation
+
+- Branch: `fix/F2-7-categorizer-negatives`
+- Commit: this finding commit
+- Added tests:
+  - `src/intelligence/classificationF2Negatives.cert.test.js`
+  - `scripts/test_upahead_fallback_categorization.py`
+- Scope:
+  - Kept JS category matching word-boundary based, while excluding Up Ahead schedule-signal words such as `launches` from global-negative scoring when they appear in persisted/default settings.
+  - Added JS certification coverage for the AUDIT movie/planner cases and a release-date/trailer-launch case that previously collapsed to `general`.
+  - Added explicit Python fallback categorization and suppression helpers for `scripts/up_ahead.py`, including optional `google-generativeai` import handling so fallback helpers can be tested without the AI package installed.
+- Local verification:
+  - Red before fix: `npm.cmd run test:unit -- src/intelligence/classificationF2Negatives.cert.test.js` failed because `Leo locks release date on Oct 25; trailer launches today` classified as `general`.
+  - Red before fix: `python -m pytest scripts/test_upahead_fallback_categorization.py` failed because `scripts/up_ahead.py` had no importable fallback classifier and required missing `google.generativeai`.
+  - Pass: `npm.cmd run test:unit -- src/intelligence/classificationF2Negatives.cert.test.js` (1 file / 2 tests)
+  - Pass: `python -m pytest scripts/test_upahead_fallback_categorization.py` (2 tests)
+  - Pass: touched-file lint via `npx.cmd eslint src/intelligence/classification.js src/intelligence/classificationF2Negatives.cert.test.js`
+  - Pass: `python -m py_compile scripts/up_ahead.py scripts/test_upahead_fallback_categorization.py`
+  - Pass: `npm.cmd run test:upahead-smoke`
+  - Pass: `npm.cmd run test:unit` (139 files / 783 tests)
+  - Pass: `npm.cmd run lint` (0 errors / 14 warnings)
+  - Pass: `npm.cmd run build`
+  - Pass: `npm.cmd run test:certify:smoke`
+  - Pass: `npm.cmd run test:certify:editorial`
+  - Pass: `git diff --check` (line-ending warnings only)
+- Existing failures observed:
+  - None in this phase. Lint remains at 0 errors; the known 14 hook warnings are unchanged for Phase D.

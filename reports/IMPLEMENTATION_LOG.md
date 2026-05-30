@@ -97,3 +97,20 @@
 - Existing failures observed:
   - `npm.cmd run lint` still fails, now at 11 errors / 14 warnings.
   - Remaining errors are unrelated `react-refresh/only-export-components` export-shape issues and `react-hooks/set-state-in-effect` findings in `useDataset`, `useMyPlannerPageViewModel`, and `useWeatherTabViewModel`.
+
+## S-1 - Weather Active City Derived State
+
+- Branch: `fix/S-1-weather-active-city-derived-state`
+- Commit: `fix(S-1): derive weather active city during render` (this finding commit)
+- Added test:
+  - `src/viewModels/useWeatherTabViewModelS1.cert.test.js`
+- Local verification:
+  - Red before fix: `npm.cmd run test:unit -- src/viewModels/useWeatherTabViewModelS1.cert.test.js` failed because `useWeatherTabViewModel.js` repaired invalid active city via `setActiveCityState` inside an effect and did not expose `resolveActiveWeatherCity`.
+  - Pass: `npm.cmd run test:unit -- src/viewModels/useWeatherTabViewModelS1.cert.test.js src/pages/WeatherPage.release6K.cert.test.jsx` (2 files / 13 tests)
+  - Pass: touched-file lint via `npx.cmd eslint src/viewModels/useWeatherTabViewModel.js src/viewModels/useWeatherTabViewModelS1.cert.test.js`
+  - Pass: `npm.cmd run build`
+  - Pass: `npm.cmd run test:unit` (127 files / 765 tests)
+  - Pass: `git diff --check`
+- Existing failures observed:
+  - `npm.cmd run lint` still fails, now at 10 errors / 14 warnings. The `useWeatherTabViewModel.js` `react-hooks/set-state-in-effect` error is gone.
+  - Remaining errors are the two other S-1 sites (`useDataset`, `useMyPlannerPageViewModel`) plus deferred React Refresh export-boundary issues.

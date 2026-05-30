@@ -74,6 +74,17 @@ function getRenderableWeatherData(weatherData) {
     : {};
 }
 
+function resolveActiveWeatherCity(requestedCity, cities) {
+  const safeCities = Array.isArray(cities) ? cities : [];
+  const canonical = resolveRegistryKey(requestedCity) || requestedCity;
+
+  if (canonical && safeCities.includes(canonical)) {
+    return canonical;
+  }
+
+  return safeCities[0] || DEFAULT_WEATHER_CITIES[0];
+}
+
 export function useWeatherTabViewModel() {
   const {
     weatherData,
@@ -94,23 +105,19 @@ export function useWeatherTabViewModel() {
     getWeatherLocationOptions()
   ), []);
 
-  const [activeCity, setActiveCityState] = useState(() => (
-    resolveRegistryKey(safeReadActiveCity()) ||
-    cities[0] ||
-    DEFAULT_WEATHER_CITIES[0]
+  const [requestedActiveCity, setRequestedActiveCity] = useState(() => (
+    resolveRegistryKey(safeReadActiveCity()) || null
   ));
+
+  const activeCity = useMemo(() => (
+    resolveActiveWeatherCity(requestedActiveCity, cities)
+  ), [requestedActiveCity, cities]);
 
   useEffect(() => {
     if (typeof ensureBoot === 'function') {
       ensureBoot();
     }
   }, [ensureBoot]);
-
-  useEffect(() => {
-    if (cities.length > 0 && !cities.includes(activeCity)) {
-      setActiveCityState(cities[0]);
-    }
-  }, [activeCity, cities]);
 
   useEffect(() => {
     safeWriteActiveCity(activeCity);
@@ -120,7 +127,7 @@ export function useWeatherTabViewModel() {
     const canonical = resolveRegistryKey(city) || city;
 
     if (canonical) {
-      setActiveCityState(canonical);
+      setRequestedActiveCity(canonical);
     }
   }, []);
 
@@ -167,7 +174,7 @@ export function useWeatherTabViewModel() {
       }
 
       if (!uniqueCities.includes(activeCity)) {
-        setActiveCityState(uniqueCities[0]);
+        setRequestedActiveCity(uniqueCities[0]);
       }
 
       if (typeof refreshWeather === 'function') {
@@ -362,4 +369,5 @@ export const __weatherTabViewModelInternalsForTest = {
   buildCityLabels,
   buildCityIcons,
   getRenderableWeatherData,
+  resolveActiveWeatherCity,
 };

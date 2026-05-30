@@ -21,6 +21,10 @@ const STORAGE_KEYS = {
 const API_BASE = '/api';
 
 const SETTINGS_SCHEMA_VERSION = 2;
+const ADDITIVE_ARRAY_SETTING_PATHS = new Set([
+    'sources.enabled',
+    'highImpactKeywords',
+]);
 
 function migrateSettings(stored) {
     const version = stored?.schemaVersion || 1;
@@ -315,13 +319,23 @@ export function clearCache() {
     }
 }
 
-function deepMerge(target, source) {
+function mergeAdditiveArray(defaultValues = [], storedValues = []) {
+    return [...new Set([...(Array.isArray(defaultValues) ? defaultValues : []), ...storedValues])];
+}
+
+function deepMerge(target, source, path = []) {
     const result = { ...target };
     for (const key in source) {
         const val = source[key];
+        const nextPath = [...path, key];
+        const pathKey = nextPath.join('.');
         if (val === null || val === undefined) continue;
-        if (typeof val === 'object' && !Array.isArray(val)) {
-            result[key] = deepMerge(target[key] || {}, val);
+        if (Array.isArray(val)) {
+            result[key] = ADDITIVE_ARRAY_SETTING_PATHS.has(pathKey)
+                ? mergeAdditiveArray(target[key], val)
+                : val;
+        } else if (typeof val === 'object') {
+            result[key] = deepMerge(target[key] || {}, val, nextPath);
         } else {
             result[key] = val;
         }

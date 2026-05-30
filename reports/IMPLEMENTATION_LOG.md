@@ -361,3 +361,31 @@
   - Pass: `git diff --check` (line-ending warnings only)
 - Existing failures observed:
   - None in this phase. Lint remains at 0 errors; the known 14 hook warnings are unchanged for Phase D.
+
+## F2-1 / F2-2 - Config Evolution And Market Holiday Guard
+
+- Branch: `fix/F2-1-config-evolution`
+- Commit: this finding commit
+- Added test:
+  - `src/utils/configEvolution.cert.test.js`
+- Scope:
+  - Added path-aware additive array merging for designated settings arrays (`sources.enabled`, `highImpactKeywords`) so existing saved settings receive new shipped defaults without losing user additions.
+  - Reworked market trading holidays into a maintained calendar map that generates `tradingHolidays` and exposes maintained years.
+  - Added an explicit `unknown_year_weekday_rules` market-session status when the active year is outside the maintained holiday calendar, so market state falls back to weekday/session rules with a visible diagnostic.
+  - Updated the Release 3 static cert to recognize the current A-15 stale-visible market dataset contract (`displayable`, non-required SLO envelope, `passed: ok`).
+- Local verification:
+  - Red before fix: `npm.cmd run test:unit -- src/utils/configEvolution.cert.test.js` failed because saved arrays overwrote default arrays and market session returned no unknown-year holiday-calendar status.
+  - Pass: `npm.cmd run test:unit -- src/utils/configEvolution.cert.test.js` (1 file / 2 tests)
+  - Pass: touched-file lint via `npx.cmd eslint src/utils/storage.js src/config/settings_market.js src/utils/marketSession.js src/utils/configEvolution.cert.test.js`
+  - Pass: affected bundle via `npm.cmd run test:unit -- src/utils/configEvolution.cert.test.js src/utils/storageWriteFailures.cert.test.js src/pages/MarketPage.release6J.cert.test.jsx` (3 files / 11 tests)
+  - Pass: `npm.cmd run test:marketpage-binding`
+  - Pass after stale-cert repair: `npm.cmd run test:hardening:release3`
+  - Pass: `npm.cmd run test:unit` (140 files / 785 tests)
+  - Pass: `npm.cmd run lint` (0 errors / 14 warnings)
+  - Pass: `npm.cmd run build`
+  - Pass: `npm.cmd run test:certify:smoke`
+  - Pass: `git diff --check` (line-ending warnings only)
+- Existing failures observed:
+  - `npm.cmd run test:hardening:release6J` is stale for this dirty continuation worktree: it rejects unrelated changed files before behavior checks; `npm.cmd run test:marketpage-binding` passed.
+  - `npm.cmd run test:certify:data-platform` now passes through Release 3 after the cert repair, then fails at stale Release 4 assertions that still forbid later dataset loaders/view-model migrations.
+  - No lint errors. The known 14 hook warnings remain unchanged for Phase D.

@@ -30,11 +30,18 @@ function buildIstDateKey(parts) {
 }
 
 function normalizeHolidayList(tradingHolidays = []) {
-    return new Set(
-        tradingHolidays
-            .map((value) => String(value || '').trim())
-            .filter(Boolean)
-    );
+    const holidays = tradingHolidays
+        .map((value) => String(value || '').trim())
+        .filter(Boolean);
+
+    return {
+        holidaySet: new Set(holidays),
+        holidayYears: new Set(
+            holidays
+                .map((value) => Number(value.slice(0, 4)))
+                .filter(Number.isFinite)
+        ),
+    };
 }
 
 export function getMarketSessionState({
@@ -45,9 +52,10 @@ export function getMarketSessionState({
     const parts = getIstParts(now);
     const currentMinutes = parts.hour * 60 + parts.minute;
     const isWeekend = parts.weekday === 'Sat' || parts.weekday === 'Sun';
-    const holidaySet = normalizeHolidayList(tradingHolidays);
+    const { holidaySet, holidayYears } = normalizeHolidayList(tradingHolidays);
     const todayKey = buildIstDateKey(parts);
-    const isHoliday = holidaySet.has(todayKey);
+    const hasHolidayCalendarForYear = holidayYears.has(parts.year);
+    const isHoliday = hasHolidayCalendarForYear && holidaySet.has(todayKey);
 
     const ageMs = lastUpdated ? Math.max(0, now.getTime() - lastUpdated) : Infinity;
     const ageMinutes = Number.isFinite(ageMs) ? Math.round(ageMs / 60000) : null;
@@ -57,68 +65,71 @@ export function getMarketSessionState({
         : ageMinutes < 60
             ? `${ageMinutes}m ago`
             : `${Math.round(ageMinutes / 60)}h ago`;
+    const holidayCalendarStatus = hasHolidayCalendarForYear
+        ? 'known_year'
+        : 'unknown_year_weekday_rules';
+    const baseState = {
+        ageLabel,
+        ageMinutes,
+        holidayCalendarStatus,
+        holidayCalendarYear: parts.year,
+    };
 
     if (isWeekend || isHoliday) {
         return {
+            ...baseState,
             label: 'Closed',
             tone: 'muted',
             reason: isWeekend ? 'Weekend' : 'Holiday',
             isOpen: false,
-            ageLabel,
-            ageMinutes
         };
     }
 
     if (currentMinutes < MARKET_OPEN_MINUTES || currentMinutes > MARKET_CLOSE_MINUTES) {
         return {
+            ...baseState,
             label: 'After Hours',
             tone: 'warning',
             reason: 'Outside NSE session',
             isOpen: false,
-            ageLabel,
-            ageMinutes
         };
     }
 
     if (!Number.isFinite(ageMs)) {
         return {
+            ...baseState,
             label: 'Delayed',
             tone: 'warning',
             reason: 'No freshness timestamp',
             isOpen: true,
-            ageLabel,
-            ageMinutes
         };
     }
 
     if (ageMs <= 15 * 60 * 1000) {
         return {
+            ...baseState,
             label: 'Live',
             tone: 'success',
             reason: 'Fresh market feed',
             isOpen: true,
-            ageLabel,
-            ageMinutes
         };
     }
 
     if (ageMs <= 4 * 60 * 60 * 1000) {
         return {
+            ...baseState,
             label: 'Delayed',
             tone: 'warning',
             reason: 'Older than 15 minutes',
             isOpen: true,
-            ageLabel,
-            ageMinutes
         };
     }
 
     return {
+        ...baseState,
         label: 'Expired',
         tone: 'danger',
         reason: 'Older than 4 hours',
         isOpen: true,
-        ageLabel,
-        ageMinutes
     };
 }

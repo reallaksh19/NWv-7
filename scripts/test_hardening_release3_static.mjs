@@ -89,7 +89,9 @@ const marketDataset = read('src/data/datasets/marketDataset.js');
 
 pass(marketDataset.includes('evaluateMarketSlo'), 'marketDataset must import and use evaluateMarketSlo');
 pass(marketDataset.includes('makeEnvelope'), 'marketDataset must return makeEnvelope()');
-pass(marketDataset.includes('ok: slo.passed'), 'marketDataset ok must reflect SLO result');
+pass(marketDataset.includes('const ok = displayable'), 'marketDataset ok must reflect displayability for stale-visible data');
+pass(marketDataset.includes('required: false'), 'marketDataset displayable stale data must use a non-required SLO envelope');
+pass(marketDataset.includes('passed: ok'), 'marketDataset SLO envelope must reflect displayability result');
 pass(!marketDataset.includes("ok: hasIndices"), 'marketDataset must not use hasIndices for ok (use slo.passed)');
 
 // ── indianMarketStableService.js MUST NOT be modified in Release 3 ────────────

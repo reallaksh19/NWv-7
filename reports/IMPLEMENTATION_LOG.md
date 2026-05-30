@@ -27,3 +27,19 @@
   - `npm run lint` still reports the repo baseline: 24 errors / 15 warnings.
   - `npm run test:weather-trust` fails because `WeatherPage.jsx` lacks the stale static token `auditWeatherTabQuality`.
   - `npm run test:weather-location-customization` fails because `WeatherPage.jsx` lacks the stale static token `getConfiguredWeatherCities`.
+
+## B-1 - Planner Per-Item Calendar Export
+
+- Branch: `fix/B-1-planner-calendar-export`
+- Commit: `fix(B-1): wire planner item calendar export` (this finding commit)
+- Added test:
+  - `src/pages/MyPlannerPageCalendarExport.cert.test.jsx`
+- Local verification:
+  - Red before fix: `npm run test:unit -- src/pages/MyPlannerPageCalendarExport.cert.test.jsx` failed after clicking `Add to Calendar`; React raised `ReferenceError: exportPlannerItem is not defined`.
+  - Red before fix: `npx eslint src/pages/MyPlannerPage.jsx src/pages/MyPlannerPageCalendarExport.cert.test.jsx` reported `no-undef` for `exportPlannerItem` and unused destructuring at the ViewModel binding.
+  - Pass: `npm run test:unit -- src/pages/MyPlannerPageCalendarExport.cert.test.jsx`
+  - Pass: touched-file lint via `npx eslint src/pages/MyPlannerPage.jsx src/pages/MyPlannerPageCalendarExport.cert.test.jsx`
+  - Pass: `npm run build`
+  - Pass: `npm run test:unit` (124 files / 761 tests)
+- Existing failures observed:
+  - `npm run lint` still fails, now at 22 errors / 15 warnings. The B-1 `MyPlannerPage.jsx` `no-undef` and unused binding errors are gone; remaining errors are unrelated baseline items.

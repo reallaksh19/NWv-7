@@ -355,7 +355,7 @@ function PlannerEvidencePanel({ evidence }) {
     );
 }
 
-function SwipeableItem({ item, dateKey, onRemove, onLongPressAction, selected = false, onSelectionToggle, onInspect }) {
+function SwipeableItem({ item, dateKey, onRemove, onLongPressAction, selected = false, onSelectionToggle, onInspect, onExportCalendar }) {
     const [offset, setOffset] = useState(0);
     const [startX, setStartX] = useState(0);
 
@@ -451,7 +451,7 @@ function SwipeableItem({ item, dateKey, onRemove, onLongPressAction, selected = 
                     </div>
                 </a>
                 <div style={{display:'flex', gap:'8px'}}>
-                    <button className="ua-plan-action-btn" onClick={() => exportPlannerItem(item.raw || item)} title="Add to Calendar" style={{background:'none', border:'none', cursor:'pointer', fontSize:'1.1rem'}}>📅</button>
+                    <button className="ua-plan-action-btn" onClick={() => onExportCalendar?.(item.raw || item)} title="Add to Calendar" style={{background:'none', border:'none', cursor:'pointer', fontSize:'1.1rem'}}>📅</button>
                 </div>
             </div>
         </div>
@@ -604,6 +604,7 @@ function MyPlannerPage() {
                                                 selected={item.plannerSelected}
                                                 onSelectionToggle={togglePlannerSelection}
                                                 onInspect={inspectPlannerItem}
+                                                onExportCalendar={exportPlannerItem}
                                             />
                                         ))}
                                     </div>

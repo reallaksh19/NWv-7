@@ -468,7 +468,7 @@ function getWeakTreeCause(
 /**
  * How much new signal a candidate adds over already-selected children.
  */
-function computeInformationGain(
+export function computeInformationGain(
   candidate: InsightStory,
   selected: InsightStory[],
   parent: InsightParent,
@@ -496,12 +496,14 @@ function computeInformationGain(
   const redundancyPenalty = Math.max(0, (maxSim - 0.70) * 2); // penalty starts at 0.70 sim
 
   // FIX H-2: weights now sum to 1.0 (was 0.9 — newSourceScore was 0.2, raised to 0.3)
-  return Math.max(0,
+  const gain = Math.max(0,
     0.3 * newFactsScore +
     0.4 * newAngleScore +
     0.3 * newSourceScore -
     0.1 * redundancyPenalty
   );
+
+  return Math.round(gain * 1000) / 1000;
 }
 
 // ── Child score ───────────────────────────────────────────────────────────────

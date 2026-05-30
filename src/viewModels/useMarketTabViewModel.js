@@ -122,7 +122,9 @@ export function useMarketTabViewModel() {
   } = useMarket();
 
   const { settings } = useSettings();
-  const marketSettings = settings?.market || {};
+  const marketSettings = useMemo(() => (
+    settings?.market || {}
+  ), [settings]);
 
   useEffect(() => {
     if (typeof ensureBoot === 'function') {

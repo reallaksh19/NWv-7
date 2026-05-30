@@ -232,11 +232,17 @@ export function useUpAheadTabViewModel() {
   } = useDataset('upAhead');
 
   const settingsContext = useSettings();
-  const settings = settingsContext?.settings || {};
+  const rawSettings = settingsContext?.settings;
+  const settings = useMemo(() => (
+    rawSettings || {}
+  ), [rawSettings]);
   const updateSettings = settingsContext?.updateSettings;
 
   const runtimeCapabilities = getRuntimeCapabilities();
-  const data = envelope?.data || {};
+  const envelopeData = envelope?.data;
+  const data = useMemo(() => (
+    envelopeData || {}
+  ), [envelopeData]);
 
   const visible = useMemo(() => deriveVisibleState(data), [data]);
 

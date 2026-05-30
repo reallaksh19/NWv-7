@@ -17,6 +17,7 @@ import logStore from '../utils/logStore.js';
 import { getWeatherIconId } from '../utils/weatherUtils.js';
 import { getRuntimeCapabilities } from "../runtime/runtimeCapabilities.js";
 import { toLocalDateKey } from '../utils/dateKey.js';
+import { fetchWithTimeout } from '../utils/withTimeout.js';
 
 const MODELS = {
     ecmwf: 'https://api.open-meteo.com/v1/ecmwf',
@@ -157,7 +158,7 @@ async function resolveLocation(cityName) {
         throw new Error(`Location not found in static-host mode: ${cityName}`);
     }
 
-    const resp = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=1&language=en&format=json`);
+    const resp = await fetchWithTimeout(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=1&language=en&format=json`, { timeoutMs: 15000 });
     const data = await resp.json();
     if (data.results && data.results.length > 0) {
         const loc = { lat: data.results[0].latitude, lon: data.results[0].longitude };
@@ -185,7 +186,7 @@ async function fetchSingleModel(modelName, lat, lon) {
         forecast_days: '7',
         timezone: 'auto'
     });
-    const response = await fetch(`${baseUrl}?${params}`);
+    const response = await fetchWithTimeout(`${baseUrl}?${params}`, { timeoutMs: 15000 });
     if (!response.ok) throw new Error(`${modelName.toUpperCase()} API request failed: ${response.status}`);
     return response.json();
 }

@@ -66,7 +66,7 @@ export interface RealInsightSnapshotRatchetGate {
 
 export const DEFAULT_REAL_INSIGHT_RATCHET: RealInsightSnapshotRatchetOptions = {
   minParentCount: 3,
-  minAvgAngles: 1.4,
+  minAvgAngles: 1.8,
   minMultiAngleParents: 1,
   minTopParentAngles: 2,
   minTopParentChildren: 2,

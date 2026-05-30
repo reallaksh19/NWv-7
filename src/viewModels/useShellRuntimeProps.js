@@ -15,7 +15,7 @@ export function useShellRuntimeProps() {
 
   return useMemo(() => (
     buildShellRuntimeProps(runtime)
-  ), [runtime?.isStaticHost]);
+  ), [runtime]);
 }
 
 export default useShellRuntimeProps;

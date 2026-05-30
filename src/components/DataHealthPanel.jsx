@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   clearDiagnostics,
   listDiagnostics,
@@ -27,7 +27,7 @@ function getCacheSnapshot() {
 
 export default function DataHealthPanel() {
   const [diagnostics, setDiagnostics] = useState(() => listDiagnostics());
-  const [cacheVersion, setCacheVersion] = useState(0);
+  const [, setCacheVersion] = useState(0);
 
   useEffect(() => {
     const unsubscribe = subscribeDiagnostics(nextDiagnostics => {
@@ -38,7 +38,7 @@ export default function DataHealthPanel() {
     return unsubscribe;
   }, []);
 
-  const cachedEnvelopes = useMemo(() => getCacheSnapshot(), [cacheVersion]);
+  const cachedEnvelopes = getCacheSnapshot();
 
   const exportPayload = () => {
     const payload = {

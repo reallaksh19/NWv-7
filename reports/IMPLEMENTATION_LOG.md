@@ -419,3 +419,42 @@
   - `npm.cmd run test:hardening:release6N` and `npm.cmd run test:hardening:release6O` reject the pre-existing dirty `reports/walkthrough_coverage_addendum.md` before behavior checks.
   - `npm.cmd run test:weather-final-closure` fails on stale `.qw-config-bar input` CSS-token expectations unrelated to route splitting.
   - No lint errors. The known 14 hook warnings remain unchanged for Phase D.
+
+## Deep-Dive A/B/C + Phase D Hygiene
+
+- Branch: local implementation pass from `reports/action_3_deep.md`
+- Commit: pending
+- Added reports:
+  - `reports/MODE_MATRIX.md`
+  - `reports/SOURCE_PROXY_MATRIX.md`
+  - `reports/INSIGHT_ANGLE_RCA.md`
+- Added tests:
+  - `src/services/weatherServiceTimeout.cert.test.js`
+  - `src/services/marketServiceTimeout.cert.test.js`
+  - `src/adapters/embeddingsAdapterVocab.cert.test.js`
+  - `src/adapters/insightSnapshotFetcher.liveVsStatic.cert.test.js`
+  - `src/insight/src/tree/treeBuilderInfoGain.cert.test.ts`
+  - `src/intelligence/feedSourceRegistry.feedDepleted.cert.test.js`
+- Scope:
+  - Added 15 s abort-backed Open-Meteo/geocoding timeouts in `weatherService`.
+  - Certified market stable service direct/proxy abort behavior and exposed `fetchJsonDirectOrProxy` for testability.
+  - Expanded fixed embedding vocabulary and domain token expansions for Indian/local stories.
+  - Lowered Insight angle classifier threshold to `0.9`, expanded regional/official/fact-update signals, and stopped treating collector `base_report` hints as high-confidence overrides.
+  - Lowered default `MIN_CHILD_INFO_GAIN` to `0.10` and rounded gain to stable thousandths.
+  - Updated the real snapshot quality benchmark to use the fixed-vocabulary embedding adapter instead of synthetic one-hot vectors.
+  - Tightened the real snapshot ratchet to `avgAngles >= 1.8` after the measured run reached that target.
+  - Certified snapshot slotting by current story age rather than Python slot metadata.
+  - Cleared all 14 React hook exhaustive-deps lint warnings.
+  - Archived root historical files under `archive/root-cleanup`, removed zero-byte `node` and `news-weather-app@1.0.0`, and ignored `archive/` plus `*.err.log`.
+  - Removed truly unreferenced dead modules `src/services/crawlerService.js` and `src/services/marketService.js`.
+- Notes:
+  - `src/data/loadWithPolicy.js` and `src/services/indianMarketService.js` were not removed because this checkout still references them from package/scripts (`test:slo`, hardening fixtures, benchmark runner). Removing them would break existing verification paths.
+- Local verification:
+  - Pass: focused cert set for weather timeout, market timeout, embeddings vocab, angle classifier, info gain, snapshot slotting, feed depletion, and ratchet tightening (8 files / 23 tests).
+  - Pass: `npm.cmd run lint` (0 errors / 0 warnings).
+  - Pass: `npm.cmd run test:real-insight-snapshot-quality` with post-fix metrics `avgAngles=1.8`, `multiAngleCount=8`, grade `C`.
+  - Pass: `npm.cmd run test:unit` (147 files / 799 tests).
+  - Pass: `npm.cmd run build` (main index chunk `364.28 kB`, under the 365 kB target).
+  - Pass: `npm.cmd run test:certify:smoke`.
+  - Pass: `npm.cmd run test:certify:editorial`.
+  - Pass: `git diff --check` (line-ending warnings only).

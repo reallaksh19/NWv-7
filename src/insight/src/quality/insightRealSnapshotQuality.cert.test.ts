@@ -12,6 +12,7 @@ import { recoverInsightRuntimeQuality } from "../diagnostics/insightRuntimeQuali
 import { getInsightCoreQualityDiagnostics, getVisibleChildAngles } from "../diagnostics/insightCoreQuality";
 import { repairInsightResult } from "../diagnostics/insightResultRepair";
 import { invalidateSlot } from "../cache/cacheManager";
+import { getEmbeddings } from "../../../adapters/embeddingsAdapter.js";
 import {
   buildRealInsightRatchetMarkdown,
   evaluateRealInsightSnapshotQualityRatchet,
@@ -92,7 +93,7 @@ function getStorySlot(story: any, snapshot: any): SnapshotSlot {
   return "now";
 }
 
-function toInsightStory(raw: any, index: number, slot: SnapshotSlot): InsightStory {
+function toInsightStory(raw: any, index: number, slot: SnapshotSlot, embedding: number[]): InsightStory {
   const title = String(raw?.title || raw?.headline || "Untitled");
   const summary = String(raw?.summary || raw?.description || raw?.content || "");
   const source = String(raw?.source || raw?.sourceGroup || "Unknown source");
@@ -141,9 +142,7 @@ function toInsightStory(raw: any, index: number, slot: SnapshotSlot): InsightSto
       symbols: Array.isArray(raw?.entities?.symbols) ? raw.entities.symbols : [],
     },
     keywords,
-    embedding: Array.from({ length: 200 }, (_, vectorIndex) => (
-      vectorIndex === index % 200 ? 1 : vectorIndex === (index + 37) % 200 ? 0.35 : 0
-    )),
+    embedding,
     eventVerbs: Array.isArray(raw?.eventVerbs) ? raw.eventVerbs : [],
     numbers,
     sourceTier: raw?.sourceTier || "B",
@@ -156,11 +155,17 @@ function toInsightStory(raw: any, index: number, slot: SnapshotSlot): InsightSto
   };
 }
 
-function makeFetcher(snapshot: any) {
+async function makeFetcher(snapshot: any) {
   const stories = Array.isArray(snapshot?.stories) ? snapshot.stories : [];
+  const embeddingTexts = stories.map((story: any) => {
+    const title = String(story?.title || story?.headline || "Untitled");
+    const summary = String(story?.summary || story?.description || story?.content || "");
+    return `${title} ${summary}`;
+  });
+  const embeddings = await getEmbeddings(embeddingTexts);
   const normalized = stories.map((story: any, index: number) => {
     const slot = getStorySlot(story, snapshot);
-    return toInsightStory(story, index, slot);
+    return toInsightStory(story, index, slot, embeddings[index] || []);
   });
 
   return async (slot: SnapshotSlot): Promise<InsightStory[]> => (
@@ -266,7 +271,7 @@ describe("Real Insight snapshot quality benchmark", () => {
 
     clearCache();
 
-    const rawResult = await runInsightPipeline(makeFetcher(snapshot), cfg);
+    const rawResult = await runInsightPipeline(await makeFetcher(snapshot), cfg);
     const recovered = recoverInsightRuntimeQuality(
       repairInsightResult(rawResult),
       "real-snapshot",

@@ -75,6 +75,28 @@ describe("Real Insight snapshot quality ratchet certification", () => {
     expect(gate.failed.map(item => item.id)).toContain("top-parent-angle-count");
   });
 
+  it("fails when average visible angles fall below the tightened 1.8 gate", () => {
+    const gate = evaluateRealInsightSnapshotQualityRatchet({
+      status: "PASS",
+      grade: "C",
+      parentCount: 5,
+      avgAngles: 1.7,
+      multiAngleCount: 3,
+      weakParentCount: 0,
+      storyCount: 30,
+      sourceGroupCount: 7,
+      parents: [
+        {
+          childCount: 3,
+          angles: ["base_report", "official_response"],
+        },
+      ],
+    });
+
+    expect(gate.status).toBe("FAIL");
+    expect(gate.failed.map(item => item.id)).toContain("avg-angle-count");
+  });
+
   it("warns for high weak-parent ratio when hard gates pass", () => {
     const gate = evaluateRealInsightSnapshotQualityRatchet({
       status: "PASS",

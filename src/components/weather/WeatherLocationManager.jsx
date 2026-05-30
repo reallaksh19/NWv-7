@@ -36,8 +36,12 @@ export default function WeatherLocationManager({
   const [message, setMessage] = useState('');
   const [open, setOpen] = useState(false);
 
-  const safeCities = Array.isArray(cities) ? cities : [];
-  const safeOptions = Array.isArray(options) ? options : [];
+  const safeCities = useMemo(() => (
+    Array.isArray(cities) ? cities : []
+  ), [cities]);
+  const safeOptions = useMemo(() => (
+    Array.isArray(options) ? options : []
+  ), [options]);
 
   const availableToAdd = useMemo(() => (
     safeOptions

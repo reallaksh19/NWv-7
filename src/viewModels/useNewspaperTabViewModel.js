@@ -263,7 +263,10 @@ export function useNewspaperTabViewModel() {
   const [isTranslatingTitles, setIsTranslatingTitles] = useState(false);
   const [isGeneratingAll, setIsGeneratingAll] = useState(false);
 
-  const data = envelope?.data || {};
+  const envelopeData = envelope?.data;
+  const data = useMemo(() => (
+    envelopeData || {}
+  ), [envelopeData]);
   const hasGeminiKey = Boolean(settings.geminiKey);
 
   const normalizedSources = useMemo(() => {

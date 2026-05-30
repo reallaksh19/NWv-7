@@ -271,7 +271,7 @@ async function fetchWithTimeout(url, timeoutMs = 8000) {
   }
 }
 
-async function fetchJsonDirectOrProxy(url, timeoutMs = 8000) {
+export async function fetchJsonDirectOrProxy(url, timeoutMs = 8000) {
   const candidates = [url, ...PROXIES.map((proxy) => proxy(url))];
 
   for (const candidate of candidates) {

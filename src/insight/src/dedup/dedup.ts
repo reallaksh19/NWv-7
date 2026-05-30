@@ -574,6 +574,9 @@ const OFFICIAL_SIGNALS = [
   /officials? said/i, /authorities said/i, /court said/i, /rbi said/i,
   /sebi said/i, /central bank said/i, /white house said/i,
   /according to the ministry/i, /according to officials/i,
+  /deputy pm/i, /prime minister/i, /\bpm\s+modi\b/i,
+  /\bpm\s+(asks|urges|says|said)\b/i, /ministries/i,
+  /govt departments/i, /cabinet colleagues/i,
 ];
 
 const MARKET_SIGNALS = [
@@ -592,6 +595,8 @@ const FACT_UPDATE_SIGNALS = [
   /latest update/i, /new figures/i, /fresh data/i,
   /according to data/i, /data showed/i, /report showed/i,
   /confirmed cases/i, /death toll/i, /casualty count/i,
+  /\b\d+\s+(children|people|persons|killed|dead|injured|missing)\b/i,
+  /\b(children|people|persons)\s+among\s+\d+\s+(killed|dead|injured|missing)\b/i,
   // NOTE: "correction:" deliberately removed — it belongs in CORRECTION_SIGNALS only
 ];
 
@@ -613,6 +618,9 @@ const REGIONAL_SIGNALS = [
   /chennai/i, /trichy/i, /tamil nadu/i, /tn/i, /muscat/i, /oman/i, /kerala/i,
   /regional/i, /district/i, /municipal/i, /local authorities/i,
   /statewide/i, /in the state/i, /in the city/i,
+  /chennai bureau/i, /trichy correspondent/i, /muscat desk/i,
+  /state government of/i, /tamil nadu government/i, /oman gov/i,
+  /district collector/i,
 ];
 
 const INVESTIGATIVE_SIGNALS = [
@@ -676,6 +684,7 @@ function getAngleCandidateScores(story: InsightStory, text: string): Array<{
   for (const hint of collectorAngleHints) {
     const angle = typeof hint === "string" ? hint : hint?.angle;
     if (!angle || angle === "unknown") continue;
+    if (angle === "base_report") continue;
 
     const rawScore = typeof hint === "string" ? 0.5 : Number(hint?.score || 0.5);
     scores.push({
@@ -696,17 +705,21 @@ function getAngleCandidateScores(story: InsightStory, text: string): Array<{
 
   const factScore = countSignalMatches(FACT_UPDATE_SIGNALS, text);
   const numberScore = Math.min(2, (story.numbers || []).length * 0.35);
-  if (factScore > 0 || numberScore >= 0.7) {
+  const casualtyNumberScore = /\b\d+\b.*\b(killed|dead|injured|missing)\b/i.test(text) ||
+    /\b(killed|dead|injured|missing)\b.*\b\d+\b/i.test(text)
+    ? 0.8
+    : 0;
+  if (factScore > 0 || numberScore >= 0.7 || casualtyNumberScore > 0) {
     scores.push({
       angle: "fact_update",
-      score: normalizeAngleCandidateScore(2.2 + factScore + numberScore),
+      score: normalizeAngleCandidateScore(2.2 + factScore + numberScore + casualtyNumberScore),
       reason: "new numbers or updated facts",
     });
   }
 
   const officialScore = countSignalMatches(OFFICIAL_SIGNALS, text);
   const officialSourceScore = /government|ministry|minister|regulator|police|court|rbi|sebi|official|authority|company|press/.test(sourceAndCategory) ? 0.9 : 0;
-  const saidScore = /\b(said|announced|confirmed|statement|approved|rejected|clarified|warned)\b/i.test(text) ? 0.55 : 0;
+  const saidScore = /\b(said|says|announced|confirmed|statement|approved|rejected|clarified|warned|urged|urges|asked|asks)\b/i.test(text) ? 0.55 : 0;
   if (officialScore > 0 || officialSourceScore > 0 || saidScore > 0) {
     scores.push({
       angle: "official_response",
@@ -804,7 +817,7 @@ export function classifyAngle(story: InsightStory): AngleLabel {
 
   const best = candidates[0];
 
-  if (best && best.score >= 1.3) {
+  if (best && best.score >= 0.9) {
     (story as any).angleReason = best.reason;
     (story as any).angleConfidence = Math.min(1, best.score / 5);
     return best.angle;
@@ -825,7 +838,7 @@ export function classifyAngle(story: InsightStory): AngleLabel {
   if (candidates.length >= 2) {
     const topTwo = candidates.slice(0, 2);
     const composite = topTwo[0].score + topTwo[1].score;
-    if (topTwo[0].score < 1.3 && topTwo[1].score < 1.3 && composite >= 2.2) {
+    if (topTwo[0].score < 0.9 && topTwo[1].score < 0.9 && composite >= 1.6) {
       return topTwo[0].angle;
     }
   }

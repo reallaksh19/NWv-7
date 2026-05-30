@@ -301,8 +301,13 @@ export function useMainTabViewModel() {
   // Persists last non-null topline so it survives data refreshes
   const [toplineContent, setToplineContent] = useState(null);
 
-  const safeSettings = settings || {};
-  const sections = safeSettings.sections || {};
+  const safeSettings = useMemo(() => (
+    settings || {}
+  ), [settings]);
+  const rawSections = safeSettings.sections;
+  const sections = useMemo(() => (
+    rawSections || {}
+  ), [rawSections]);
   const uiMode = safeSettings.uiMode || 'timeline';
 
   const projected = useMemo(() => getProjectedMainData({

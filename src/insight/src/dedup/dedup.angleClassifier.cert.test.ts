@@ -71,6 +71,45 @@ describe('Insight angle classifier enrichment certification', () => {
     expect(classifyAngle(s)).toBe('official_response');
   });
 
+  it('classifies official bureau statement as official_response at the softer threshold', () => {
+    const s = story(
+      'Oman government said new infrastructure plan announced',
+      'The official statement followed a briefing, according to the ministry.'
+    );
+
+    expect(classifyAngle(s)).toBe('official_response');
+  });
+
+  it('classifies expert commentary as expert_analysis', () => {
+    const s = story(
+      'Analysts warn India inflation may hit 6% next quarter',
+      'Economists note the policy implications for household budgets.'
+    );
+
+    expect(classifyAngle(s)).toBe('expert_analysis');
+  });
+
+  it('classifies casualty count headlines as fact_update', () => {
+    const s = story(
+      '2 Children Among 4 Killed After Train Hits School Bus',
+      'Officials said the updated count was released after rescue work.'
+    );
+
+    expect(classifyAngle(s)).toBe('fact_update');
+  });
+
+  it('does not let collector base_report hints suppress stronger runtime signals', () => {
+    const s = {
+      ...story(
+        'PM Modi urges citizens to take precautions amid heatwave',
+        'The prime minister asked ministries to coordinate the official response.'
+      ),
+      angleHints: [{ angle: 'base_report', score: 0.95 }],
+    } as InsightStory & { angleHints: Array<{ angle: string; score: number }> };
+
+    expect(classifyAngle(s)).toBe('official_response');
+  });
+
   it('keeps correction higher priority than fact update', () => {
     const s = story(
       'Correction: latest figures updated',

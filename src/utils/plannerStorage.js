@@ -1,6 +1,11 @@
 import { deduplicatePlanningItems, isLikelyDuplicateStory } from './similarity.js';
 import { getRuntimeCapabilities } from "../runtime/runtimeCapabilities.js";
 import { toLocalDateKey } from './dateKey.js';
+import {
+    makeStorageWriteFailure,
+    safeGetJson,
+    safeSetJson,
+} from '../data/safeStorage.js';
 
 const PLANNER_KEY = 'upAhead_planner';
 const BLACKLIST_KEY = 'upAhead_blacklist';
@@ -72,7 +77,7 @@ function normalizePlanData(planData) {
     if (!planData || typeof planData !== 'object') return {};
     return Object.fromEntries(Object.entries(planData).filter(([, items]) => Array.isArray(items)).map(([date, items]) => [date, deduplicatePlanItems(items.map(item => normalizePlanItem(item, date)).filter(Boolean))]).filter(([, items]) => items.length > 0));
 }
-function readLocalPlan() { try { const data = localStorage.getItem(PLANNER_KEY); return normalizePlanData(data ? JSON.parse(data) : {}); } catch (e) { console.error('Failed to read planner storage', e); return {}; } }
+function readLocalPlan() { return normalizePlanData(safeGetJson(PLANNER_KEY, {})); }
 function pruneStaleEntries(planData, maxAgeMs) {
     const cutoff = toLocalDateKey(new Date(Date.now() - maxAgeMs));
     return Object.fromEntries(Object.entries(planData).filter(([date]) => date >= cutoff));
@@ -80,12 +85,29 @@ function pruneStaleEntries(planData, maxAgeMs) {
 function writeLocalPlan(planData) {
     const normalized = normalizePlanData(planData);
     const pruned = pruneStaleEntries(normalized, 30 * 24 * 60 * 60 * 1000); // drop entries >30 days old
-    localStorage.setItem(PLANNER_KEY, JSON.stringify(pruned));
+    if (!safeSetJson(PLANNER_KEY, pruned)) {
+        return makeStorageWriteFailure(PLANNER_KEY);
+    }
+    return { ok: true, plan: pruned };
 }
-function readLocalBlacklist() { try { return normalizeBlacklistData(JSON.parse(localStorage.getItem(BLACKLIST_KEY) || '[]')); } catch (e) { console.error('Failed to read blacklist storage', e); return []; } }
-function writeLocalBlacklist(list) { localStorage.setItem(BLACKLIST_KEY, JSON.stringify(normalizeBlacklistData(list))); }
+function readLocalBlacklist() { return normalizeBlacklistData(safeGetJson(BLACKLIST_KEY, [])); }
+function writeLocalBlacklist(list) {
+    const normalized = normalizeBlacklistData(list);
+    if (!safeSetJson(BLACKLIST_KEY, normalized)) {
+        return makeStorageWriteFailure(BLACKLIST_KEY);
+    }
+    return { ok: true, list: normalized };
+}
 function pruneBlacklistedFromPlan(planData, blacklist) { const normalizedPlan = normalizePlanData(planData); const blacklistSet = blacklist instanceof Set ? blacklist : new Set(normalizeBlacklistData(blacklist)); return Object.fromEntries(Object.entries(normalizedPlan).map(([date, items]) => [date, items.filter(item => !blacklistSet.has(getItemKey(item)))]).filter(([, items]) => items.length > 0)); }
 function mergePlans(basePlan, incomingPlan) { const merged = { ...normalizePlanData(basePlan) }; Object.entries(normalizePlanData(incomingPlan)).forEach(([date, items]) => { if (!merged[date]) merged[date] = []; items.forEach(item => { const normalizedItem = normalizePlanItem(item, date); if (normalizedItem && !hasSimilarPlanItem(merged[date], normalizedItem)) merged[date].push(normalizedItem); }); merged[date] = deduplicatePlanItems(merged[date]); }); return merged; }
+
+export function isPlannerStorageSuccess(result) {
+    return result === true || result?.ok === true;
+}
+
+export function getPlannerStorageError(result, fallback = 'Planner storage operation failed') {
+    return typeof result?.error === 'string' ? result.error : fallback;
+}
 
 async function fetchRemotePlan() {
     if (!isStaticHostRuntime()) {
@@ -129,19 +151,22 @@ const plannerStorage = {
             const remoteBlacklist = await fetchRemoteBlacklist();
             const localBlacklist = plannerStorage.getBlacklist();
             const mergedBlacklist = new Set([...localBlacklist, ...remoteBlacklist]);
-            writeLocalBlacklist([...mergedBlacklist]);
+            const blacklistWrite = writeLocalBlacklist([...mergedBlacklist]);
+            if (!isPlannerStorageSuccess(blacklistWrite)) return blacklistWrite;
             const remotePlan = await fetchRemotePlan();
             const mergedPlan = pruneBlacklistedFromPlan(mergePlans(remotePlan, readLocalPlan()), mergedBlacklist);
-            writeLocalPlan(mergedPlan);
+            return writeLocalPlan(mergedPlan);
         } catch (e) {
             console.warn('[PlannerStorage] Sync failed', e);
+            return { ok: false, reason: 'sync-failed', error: e?.message || String(e) };
         }
     },
     loadBlacklistFromApi: async () => {
         try {
             const remoteBlacklist = await fetchRemoteBlacklist();
             const mergedBlacklist = new Set([...readLocalBlacklist(), ...remoteBlacklist]);
-            writeLocalBlacklist([...mergedBlacklist]);
+            const result = writeLocalBlacklist([...mergedBlacklist]);
+            if (!isPlannerStorageSuccess(result)) return result;
             return mergedBlacklist;
         } catch (e) {
             console.warn('[PlannerStorage] Blacklist load from API failed', e);
@@ -152,7 +177,8 @@ const plannerStorage = {
         try {
             const remotePlan = await fetchRemotePlan();
             const mergedPlan = pruneBlacklistedFromPlan(mergePlans(remotePlan, readLocalPlan()), plannerStorage.getBlacklist());
-            writeLocalPlan(mergedPlan);
+            const result = writeLocalPlan(mergedPlan);
+            if (!isPlannerStorageSuccess(result)) return result;
             return mergedPlan;
         } catch (e) {
             console.warn('[PlannerStorage] Plan load from API failed', e);
@@ -174,14 +200,15 @@ const plannerStorage = {
         try {
             const parsed = readLocalPlan();
             const normalizedItem = normalizePlanItem({ ...item, planDate: item?.planDate || date, eventDateKey: item?.eventDateKey || date, eventDate: item?.eventDate || date }, date);
-            if (!normalizedItem) return false;
+            if (!normalizedItem) return { ok: false, reason: 'invalid-item', error: 'Planner item is invalid' };
             if (!parsed[date]) parsed[date] = [];
             if (!hasSimilarPlanItem(parsed[date], normalizedItem)) {
                 parsed[date].push(normalizedItem);
                 parsed[date] = deduplicatePlanItems(parsed[date]);
-                writeLocalPlan(parsed);
+                const result = writeLocalPlan(parsed);
+                if (!isPlannerStorageSuccess(result)) return result;
                 plannerStorage.savePlanToApi(parsed);
-                return true;
+                return { ok: true, item: normalizedItem };
             } else if (import.meta.env.DEV) {
                 console.debug('[Planner] dedupe_skip', {
                     date,
@@ -189,8 +216,8 @@ const plannerStorage = {
                     eventDateKey: normalizedItem.eventDateKey
                 });
             }
-            return false;
-        } catch (e) { console.error('Failed to add item to planner', e); return false; }
+            return { ok: false, reason: 'duplicate', error: 'Planner item is already saved' };
+        } catch (e) { console.error('Failed to add item to planner', e); return { ok: false, reason: 'planner-add-failed', error: e?.message || String(e) }; }
     },
     removeItem: (date, itemId) => {
         try {
@@ -199,12 +226,13 @@ const plannerStorage = {
             if (parsed[date]) {
                 parsed[date] = parsed[date].filter(i => getItemKey(i) !== itemKey);
                 if (parsed[date].length === 0) delete parsed[date];
-                writeLocalPlan(parsed);
+                const result = writeLocalPlan(parsed);
+                if (!isPlannerStorageSuccess(result)) return result;
                 plannerStorage.savePlanToApi(parsed);
-                return true;
+                return { ok: true };
             }
-            return false;
-        } catch (e) { console.error('Failed to remove item', e); return false; }
+            return { ok: false, reason: 'not-found', error: 'Planner item was not found' };
+        } catch (e) { console.error('Failed to remove item', e); return { ok: false, reason: 'planner-remove-failed', error: e?.message || String(e) }; }
     },
     merge: (dates, newItems) => {
         try {
@@ -219,15 +247,18 @@ const plannerStorage = {
                 parsed[date] = deduplicatePlanItems(parsed[date]);
             });
             if (changed) {
-                writeLocalPlan(parsed);
+                const result = writeLocalPlan(parsed);
+                if (!isPlannerStorageSuccess(result)) return result;
                 plannerStorage.savePlanToApi(parsed);
             }
-        } catch (e) { console.error('Merge failed', e); }
+            return { ok: true, changed };
+        } catch (e) { console.error('Merge failed', e); return { ok: false, reason: 'planner-merge-failed', error: e?.message || String(e) }; }
     },
     savePlanToApi: async (planData) => {
         try {
             const normalizedPlan = pruneBlacklistedFromPlan(normalizePlanData(planData), plannerStorage.getBlacklist());
-            writeLocalPlan(normalizedPlan);
+            const result = writeLocalPlan(normalizedPlan);
+            if (!isPlannerStorageSuccess(result)) return result;
             if (isStaticHostRuntime()) return true;
             await fetch(`${API_BASE}/user_plan`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(normalizedPlan) });
             return true;
@@ -240,19 +271,24 @@ const plannerStorage = {
             const list = readLocalBlacklist();
             if (!list.includes(key)) {
                 list.push(key);
-                writeLocalBlacklist(list);
+                const blacklistWrite = writeLocalBlacklist(list);
+                if (!isPlannerStorageSuccess(blacklistWrite)) return blacklistWrite;
                 const prunedPlan = pruneBlacklistedFromPlan(readLocalPlan(), new Set(list));
-                writeLocalPlan(prunedPlan);
+                const planWrite = writeLocalPlan(prunedPlan);
+                if (!isPlannerStorageSuccess(planWrite)) return planWrite;
                 plannerStorage.saveBlacklistToApi(list);
                 plannerStorage.savePlanToApi(prunedPlan);
+                return { ok: true };
             }
-        } catch (e) { console.error('Failed to blacklist', e); }
+            return { ok: true, skipped: true };
+        } catch (e) { console.error('Failed to blacklist', e); return { ok: false, reason: 'blacklist-failed', error: e?.message || String(e) }; }
     },
     getBlacklist: () => { try { return new Set(readLocalBlacklist()); } catch { return new Set(); } },
     saveBlacklistToApi: async (list) => {
         try {
             const normalizedList = normalizeBlacklistData(list);
-            writeLocalBlacklist(normalizedList);
+            const result = writeLocalBlacklist(normalizedList);
+            if (!isPlannerStorageSuccess(result)) return result;
             if (isStaticHostRuntime()) return true;
             await fetch(`${API_BASE}/blacklist`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(normalizedList) });
             return true;

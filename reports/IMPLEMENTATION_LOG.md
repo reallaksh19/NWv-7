@@ -251,3 +251,35 @@
 - Existing failures observed:
   - `npm.cmd run test:following` initially failed because the static cert still expected `getTopicStats` and raw `topicNews` access in `FollowingPage.jsx`; that ownership now lives in `useFollowingTabViewModel.js`. The cert now checks the current page/view-model contract and passes.
   - No lint errors. The known 14 hook warnings remain unchanged for Phase D.
+
+## U9-4 / F1-6 - Explicit Storage Write Failures
+
+- Branch: `fix/U9-4-storage-failures`
+- Commit: this finding commit
+- Added tests:
+  - `src/utils/storageWriteFailures.cert.test.js`
+  - `src/hooks/useWatchlistStorageFailure.cert.test.jsx`
+- Scope:
+  - Routed planner, watchlist, followed-topic, and read-history writes through `safeStorage.safeSetJson`.
+  - Added explicit `{ ok: false, reason: 'storage-write-failed' }` outcomes for quota/unavailable storage instead of silent `false`, `undefined`, or thrown watchlist writes.
+  - Made topic/history settings updates copy-on-write so a failed save does not mutate in-memory default arrays.
+  - Surfaced storage failures through `TopicContext` messages, watchlist hook state, Up Ahead save controls, and planner view-model result handling.
+  - Repaired stale static certs whose source-token assumptions predated later view-model migrations or the manifest-v2 workflow state.
+- Local verification:
+  - Red before fix: `npm.cmd run test:unit -- src/utils/storageWriteFailures.cert.test.js src/hooks/useWatchlistStorageFailure.cert.test.jsx` failed because planner returned plain `false`, topic writes returned `undefined`, and watchlist threw `QuotaExceededError`.
+  - Pass: `npm.cmd run test:unit -- src/utils/storageWriteFailures.cert.test.js src/hooks/useWatchlistStorageFailure.cert.test.jsx` (2 files / 3 tests)
+  - Pass: affected cert/unit bundle via `npm.cmd run test:unit -- src/utils/storageWriteFailures.cert.test.js src/hooks/useWatchlistStorageFailure.cert.test.jsx src/data/safeStorage.cert.test.js src/utils/plannerStorageDateKey.cert.test.js src/viewModels/usePlannerTabViewModel.cert.test.js src/pages/UpAheadPage.release6R.cert.test.jsx src/pages/MyPlannerPage.release6S.cert.test.jsx src/viewModels/useUpAheadTabViewModel.cert.test.js src/context/TopicContextNotifications.cert.test.jsx` (9 files / 54 tests)
+  - Pass: touched-file lint via `npx.cmd eslint ...` on changed JS/JSX files (0 errors; existing Up Ahead hook warnings only).
+  - Pass: static certs: `test:hardening:release1B`, `test:hardening:release2`, `test:hardening:release5E`, `test:hardening:release5FB`, `test:hardening:release6R`, `test:hardening:release6S`, `test:hardening:release6T`, `test:lint-hotfix`, `test:upahead-evidence`, `test:upahead-briefing`, `test:following`, `test:certification-manifest`.
+  - Pass: `npm.cmd run test:planner-migration`
+  - Pass: `npm.cmd run test:myplanner-binding`
+  - Pass: `npm.cmd run test:unit` (137 files / 778 tests)
+  - Pass: `npm.cmd run lint` (0 errors / 14 warnings)
+  - Pass: `npm.cmd run build`
+  - Pass: `npm.cmd run test:certify:smoke`
+  - Pass: `npm.cmd run test:certify:workflow` after installing missing local Python `pytest`.
+  - Pass: `git diff --check` (line-ending warnings only)
+- Existing failures observed:
+  - Initial `test:certify:workflow` failed because the local Python environment lacked `pytest`; installing `pytest` allowed the Python workflow certs to run.
+  - Workflow cert then exposed stale validators: benchmark observability is now unconditional by design, while only commits are gated by `should_commit`; certification manifest static/validator expected v1 while the live manifest is v2. These static checks were updated to current repo contracts and now pass.
+  - No lint errors. The known 14 hook warnings remain unchanged for Phase D.

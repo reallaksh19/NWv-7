@@ -3,6 +3,10 @@ import { DEFAULT_NEWS_SETTINGS, DEFAULT_NEWSPAPER_SETTINGS } from '../config/set
 import { DEFAULT_WEATHER_SETTINGS } from '../config/settings_weather.js';
 import { DEFAULT_MARKET_SETTINGS } from '../config/settings_market.js';
 import { DEFAULT_UPAHEAD_SETTINGS } from '../config/settings_upahead.js';
+import {
+    makeStorageWriteFailure,
+    safeSetJson,
+} from '../data/safeStorage.js';
 
 // Local Storage utility for settings persistence
 import { isDevMobileViewForced } from '../hooks/useMediaQuery.js';
@@ -171,7 +175,9 @@ export function getSettings() {
 export function saveSettings(settings) {
     try {
         const settingsToSave = { ...settings, lastUpdated: Date.now() };
-        localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settingsToSave));
+        if (!safeSetJson(STORAGE_KEYS.SETTINGS, settingsToSave)) {
+            return false;
+        }
         if (!isStaticHostRuntime()) {
             saveSettingsToApi(settingsToSave);
         }
@@ -325,24 +331,54 @@ function deepMerge(target, source) {
 
 export function addFollowedTopic(topic) {
     const settings = getSettings();
-    settings.followedTopics = settings.followedTopics || [];
-    settings.followedTopics.push({ ...topic, id: `topic_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`, created: new Date().toISOString(), lastFetched: null });
-    saveSettings(settings);
+    const followedTopics = Array.isArray(settings.followedTopics) ? settings.followedTopics : [];
+    const nextTopic = { ...topic, id: `topic_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`, created: new Date().toISOString(), lastFetched: null };
+    const nextSettings = {
+        ...settings,
+        followedTopics: [...followedTopics, nextTopic],
+    };
+
+    if (!saveSettings(nextSettings)) {
+        return makeStorageWriteFailure(STORAGE_KEYS.SETTINGS);
+    }
+
+    return { ok: true, topic: nextTopic };
 }
 
 export function removeFollowedTopic(topicId) {
     const settings = getSettings();
-    settings.followedTopics = settings.followedTopics.filter(t => t.id !== topicId);
-    saveSettings(settings);
+    const followedTopics = Array.isArray(settings.followedTopics) ? settings.followedTopics : [];
+    const nextSettings = {
+        ...settings,
+        followedTopics: followedTopics.filter(t => t.id !== topicId),
+    };
+
+    if (!saveSettings(nextSettings)) {
+        return makeStorageWriteFailure(STORAGE_KEYS.SETTINGS);
+    }
+    return { ok: true };
 }
 
 export function updateTopicLastFetched(topicId) {
     const settings = getSettings();
-    const topic = settings.followedTopics.find(t => t.id === topicId);
+    const followedTopics = Array.isArray(settings.followedTopics) ? settings.followedTopics : [];
+    const topic = followedTopics.find(t => t.id === topicId);
     if (topic) {
-        topic.lastFetched = new Date().toISOString();
-        saveSettings(settings);
+        const nextSettings = {
+            ...settings,
+            followedTopics: followedTopics.map(item => (
+                item.id === topicId
+                    ? { ...item, lastFetched: new Date().toISOString() }
+                    : item
+            )),
+        };
+
+        if (!saveSettings(nextSettings)) {
+            return makeStorageWriteFailure(STORAGE_KEYS.SETTINGS);
+        }
+        return { ok: true };
     }
+    return { ok: false, reason: 'not-found', error: 'Topic was not found' };
 }
 
 export function incrementViewCount(articleIds) {
@@ -374,14 +410,23 @@ export function isArticleRead(articleId) {
 }
 
 export function addReadArticle(article) {
-    if (!article || !article.title) return;
+    if (!article || !article.title) return { ok: false, reason: 'invalid-article', error: 'Article is invalid' };
     const settings = getSettings();
-    const history = settings.readingHistory || [];
-    if (history.some(h => h.id === article.id)) return;
-    history.unshift({ id: article.id, title: article.title, description: article.description || '', timestamp: Date.now() });
-    if (history.length > 50) history.length = 50;
-    settings.readingHistory = history;
-    saveSettings(settings);
+    const history = Array.isArray(settings.readingHistory) ? settings.readingHistory : [];
+    if (history.some(h => h.id === article.id)) return { ok: true, skipped: true };
+    const nextHistory = [
+        { id: article.id, title: article.title, description: article.description || '', timestamp: Date.now() },
+        ...history,
+    ].slice(0, 50);
+    const nextSettings = {
+        ...settings,
+        readingHistory: nextHistory,
+    };
+
+    if (!saveSettings(nextSettings)) {
+        return makeStorageWriteFailure(STORAGE_KEYS.SETTINGS);
+    }
+    return { ok: true };
 }
 
 export function getSuggestedTopics() {

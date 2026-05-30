@@ -188,7 +188,11 @@ function GridSection({
             <button
               className="ua-cal-btn"
               onClick={(event) => {
-                onAddToPlan(item, item.date || item.releaseDate);
+                const result = onAddToPlan(item, item.date || item.releaseDate);
+                if (result?.ok === false) {
+                  event.currentTarget.innerHTML = 'Save failed';
+                  return;
+                }
                 event.currentTarget.innerHTML = '✅ Saved';
                 event.currentTarget.style.backgroundColor = 'var(--accent-primary)';
                 event.currentTarget.style.color = 'white';
@@ -269,7 +273,11 @@ function TimelineCard({
             <button
               className="ua-cal-btn"
               onClick={(event) => {
-                handleAddToPlan(item, dayDate);
+                const result = handleAddToPlan(item, dayDate);
+                if (result?.ok === false) {
+                  event.currentTarget.innerHTML = 'Save failed';
+                  return;
+                }
                 event.currentTarget.innerHTML = '✅ Saved';
                 event.currentTarget.style.backgroundColor = 'var(--accent-primary)';
                 event.currentTarget.style.color = 'white';
@@ -347,9 +355,9 @@ function TimelineCard({
             </button>
 
             <button className="btn btn--secondary" style={{ textAlign: 'left', padding: '12px' }} onClick={() => {
-              handleAddToPlan(actionSheetItem.item, actionSheetItem.dateKey);
+              const result = handleAddToPlan(actionSheetItem.item, actionSheetItem.dateKey);
               handleActionSheetClose();
-              alert('Saved to Planner');
+              alert(result?.ok === false ? 'Save failed' : 'Saved to Planner');
             }}>
               📌 Save to Planner
             </button>
@@ -417,6 +425,7 @@ function UpAheadPage() {
     removeUpAheadLocation,
     promptAddUpAheadLocation,
     toggleWatchlist,
+    watchlistError,
     isWatched,
   } = useUpAheadPageViewModel();
 
@@ -531,6 +540,12 @@ function UpAheadPage() {
       )}
 
       <main className="main-content">
+        {watchlistError && (
+          <div className="ua-storage-alert" role="status" aria-live="polite">
+            {watchlistError}
+          </div>
+        )}
+
         <div className="ua-view-toggle scrollable-tabs">
           <button className={`ua-toggle-btn ${view === 'plan' ? 'active' : ''}`} onClick={() => setView('plan')} title="Suggested">✨ Suggested</button>
           <button className={`ua-toggle-btn ${view === 'offers' ? 'active' : ''}`} onClick={() => setView('offers')} title="Offers">🏷️ Offers{offerItems.length > 0 && <span className="ua-tab-count">{offerItems.length}</span>}</button>

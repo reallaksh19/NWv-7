@@ -1,7 +1,10 @@
 import { useCallback, useMemo } from 'react';
 import { useDataset } from '../data/orchestrator/useDataset.js';
 import { useSettings } from '../context/SettingsContext';
-import plannerStorage from '../utils/plannerStorage';
+import plannerStorage, {
+  getPlannerStorageError,
+  isPlannerStorageSuccess,
+} from '../utils/plannerStorage';
 import { getRuntimeCapabilities } from '../runtime/runtimeCapabilities';
 
 function toLocalDateKey(date) {
@@ -250,7 +253,7 @@ export function useUpAheadTabViewModel() {
       const hiddenKey = item?.hiddenKey || item?.canonicalId || item?.id;
       const normalizedDate = item?.planDate || normalizePlanDate(dateStr);
 
-      plannerStorage.addItem(normalizedDate, {
+      const addResult = plannerStorage.addItem(normalizedDate, {
         id: hiddenKey || item?.id,
         hiddenKey,
         title: item?.title,
@@ -263,6 +266,13 @@ export function useUpAheadTabViewModel() {
         eventDateKey: normalizedDate,
         eventDate: normalizedDate,
       });
+
+      if (!isPlannerStorageSuccess(addResult)) {
+        return {
+          ok: false,
+          error: getPlannerStorageError(addResult, 'Planner item was not saved'),
+        };
+      }
 
       await reloadDataset(true);
 
@@ -286,7 +296,14 @@ export function useUpAheadTabViewModel() {
         };
       }
 
-      plannerStorage.addToBlacklist(id);
+      const removeResult = plannerStorage.addToBlacklist(id);
+      if (!isPlannerStorageSuccess(removeResult)) {
+        return {
+          ok: false,
+          error: getPlannerStorageError(removeResult, 'Planner item was not removed'),
+        };
+      }
+
       await reloadDataset(true);
 
       return { ok: true };

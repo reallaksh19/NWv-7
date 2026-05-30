@@ -217,7 +217,12 @@ export function TopicProvider({ children }) {
             return { ok: false, reason: 'duplicate-topic' };
         }
 
-        addFollowedTopic(normalizedTopic);
+        const addResult = addFollowedTopic(normalizedTopic);
+
+        if (addResult?.ok === false) {
+            setTopicMessage(addResult.error || 'Could not save topic. Storage may be full.');
+            return addResult;
+        }
 
         const nextSettings = getSettings();
         const nextTopics = nextSettings.followedTopics || [];
@@ -231,7 +236,13 @@ export function TopicProvider({ children }) {
     };
 
     const removeTopic = (topicId) => {
-        removeFollowedTopic(topicId);
+        const removeResult = removeFollowedTopic(topicId);
+
+        if (removeResult?.ok === false) {
+            setTopicMessage(removeResult.error || 'Could not remove topic. Storage may be full.');
+            return removeResult;
+        }
+
         setFollowedTopics(prev => prev.filter(t => t.id !== topicId));
 
         const newTopicNews = { ...topicNewsRef.current };
@@ -239,11 +250,19 @@ export function TopicProvider({ children }) {
         topicNewsRef.current = newTopicNews;
         setTopicNews(newTopicNews);
         setTopicMessage('');
+        return { ok: true };
     };
 
     const addToHistory = (article) => {
-        addReadArticle(article);
+        const result = addReadArticle(article);
+
+        if (result?.ok === false) {
+            setTopicMessage(result.error || 'Could not save reading history. Storage may be full.');
+            return result;
+        }
+
         refreshSuggestions();
+        return result || { ok: true };
     };
 
     const refreshSuggestions = () => {

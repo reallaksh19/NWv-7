@@ -83,7 +83,8 @@ function validateNewsPrefetchWorkflow(workflow) {
   requireStep(workflow, 'Decide whether news data commit is needed');
   requireStep(workflow, 'Commit data');
 
-  // Optional benchmark step still gated on should_commit
+  // The benchmark is intentionally unconditional observability; only the data
+  // commit is gated on meaningful content changes.
   requireStep(workflow, 'Run real Insight snapshot quality benchmark');
 
   requireOrder(workflow, 'Fetch Insight stories', 'Validate Insight prefetch quality');
@@ -97,9 +98,6 @@ function validateNewsPrefetchWorkflow(workflow) {
 
   for (const step of [
     'Commit data',
-    'Setup Node for benchmark',
-    'Install Node dependencies for benchmark',
-    'Run real Insight snapshot quality benchmark',
   ]) {
     const stepIndex = requireStep(workflow, step);
     const nextStepIndex = workflow.indexOf('\n      - name:', stepIndex + 1);
@@ -147,7 +145,7 @@ function validateNewsPrefetchWorkflow(workflow) {
       'Insight quality validation runs after Insight fetch',
       'Sections quality validation runs after Sections fetch',
       'commit decision runs after all quality validators',
-      'benchmark / commit are gated by should_commit=true',
+      'data commit is gated by should_commit=true',
       'benchmark runs before commit so its report joins the commit',
       'workflow does not publish Pages directly — deploy.yml owns publish',
       'required quality and benchmark artifacts are uploaded',

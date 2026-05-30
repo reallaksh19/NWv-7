@@ -15,7 +15,7 @@ const gate = read('scripts/run_certification_gate.mjs');
 const packageJson = read('package.json');
 
 for (const token of [
-  'nw-certification-manifest-v1',
+  'nw-certification-manifest-v2',
   'test:insight-collector-json',
   'test:insight-browser-json-ingestion',
   'test:insight-prefetch-quality-gate',

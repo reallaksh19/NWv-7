@@ -12,7 +12,10 @@ import {
   isActualWeatherAlertText,
   isActualOfferText,
 } from '../services/upAheadService';
-import plannerStorage from '../utils/plannerStorage';
+import plannerStorage, {
+  getPlannerStorageError,
+  isPlannerStorageSuccess,
+} from '../utils/plannerStorage';
 import { getRuntimeCapabilities } from '../runtime/runtimeCapabilities';
 import { getUpAheadEvidence } from '../services/upAheadEvidence';
 import { getUpAheadBriefing } from '../services/upAheadBriefing';
@@ -214,7 +217,7 @@ function getVisibleUpAheadProjection({ data, settings }) {
 
 export function useUpAheadPageViewModel() {
   const { settings, updateSettings } = useSettings();
-  const { toggleWatchlist, isWatched } = useWatchlist();
+  const { toggleWatchlist, isWatched, watchlistError } = useWatchlist();
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -314,7 +317,14 @@ export function useUpAheadPageViewModel() {
     if (!id) return;
 
     if (plannerStorage.addToBlacklist) {
-      plannerStorage.addToBlacklist(id);
+      const result = plannerStorage.addToBlacklist(id);
+      if (!isPlannerStorageSuccess(result)) {
+        if (typeof window !== 'undefined' && typeof window.alert === 'function') {
+          window.alert(getPlannerStorageError(result, 'Planner item was not removed'));
+        }
+        return result;
+      }
+
       setBlacklist(plannerStorage.getBlacklist());
       loadData();
     }
@@ -324,7 +334,7 @@ export function useUpAheadPageViewModel() {
     const hiddenKey = item?.hiddenKey || item?.canonicalId || item?.id;
     const normalizedDate = item?.planDate || normalizePlanDate(dateStr);
 
-    plannerStorage.addItem(normalizedDate, {
+    const result = plannerStorage.addItem(normalizedDate, {
       id: hiddenKey || item?.id,
       hiddenKey,
       title: item?.title,
@@ -338,11 +348,20 @@ export function useUpAheadPageViewModel() {
       eventDate: normalizedDate,
     });
 
+    if (!isPlannerStorageSuccess(result)) {
+      if (typeof window !== 'undefined' && typeof window.alert === 'function') {
+        window.alert(getPlannerStorageError(result, 'Planner item was not saved'));
+      }
+      return result;
+    }
+
     loadData();
 
     if (typeof window !== 'undefined' && typeof window.alert === 'function') {
       window.alert('Added to Plan!');
     }
+
+    return { ok: true };
   }, [loadData]);
 
   const removeUpAheadLocation = useCallback((location) => {
@@ -432,6 +451,7 @@ export function useUpAheadPageViewModel() {
     addUpAheadLocation,
     promptAddUpAheadLocation,
     toggleWatchlist,
+    watchlistError,
     isWatched,
   };
 }

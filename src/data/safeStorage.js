@@ -1,3 +1,16 @@
+export const STORAGE_WRITE_FAILURE_REASON = 'storage-write-failed';
+export const STORAGE_WRITE_FAILURE_MESSAGE = 'Storage is full or unavailable. Free some space and try again.';
+
+export function makeStorageWriteFailure(key, error = null) {
+  return {
+    ok: false,
+    reason: STORAGE_WRITE_FAILURE_REASON,
+    error: STORAGE_WRITE_FAILURE_MESSAGE,
+    key,
+    cause: error?.message || (error ? String(error) : null),
+  };
+}
+
 export function getSafeLocalStorage() {
   try {
     if (typeof window === 'undefined') return null;

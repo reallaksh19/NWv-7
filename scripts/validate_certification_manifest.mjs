@@ -16,8 +16,8 @@ function scriptFromNpmRun(entry) {
   return entry.args[1] || null;
 }
 
-assert(manifest.schemaVersion === 1, 'manifest schemaVersion must be 1');
-assert(manifest.manifestVersion === 'nw-certification-manifest-v1', 'unexpected manifestVersion');
+assert(manifest.schemaVersion === 2, 'manifest schemaVersion must be 2');
+assert(manifest.manifestVersion === 'nw-certification-manifest-v2', 'unexpected manifestVersion');
 assert(Array.isArray(manifest.commands), 'manifest.commands must be an array');
 assert(manifest.commands.length >= 54, `manifest must include full certification command set (found ${manifest.commands.length})`);
 

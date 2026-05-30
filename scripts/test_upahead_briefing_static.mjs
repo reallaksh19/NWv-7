@@ -12,6 +12,7 @@ function read(path) {
 const module = read('src/services/upAheadBriefing.js');
 const moduleTest = read('src/services/upAheadBriefing.cert.test.js');
 const page = read('src/pages/UpAheadPage.jsx');
+const viewModel = read('src/viewModels/useUpAheadPageViewModel.js');
 const css = read('src/pages/UpAhead.css');
 const certGate = read('scripts/run_certification_gate.mjs');
 const packageJson = read('package.json');
@@ -40,14 +41,19 @@ for (const token of [
 }
 
 for (const token of [
-  'getUpAheadBriefing',
   'UpAheadBriefingPanel',
   'data-upahead-briefing',
   'professional-horizon',
-  'const upAheadBriefing = getUpAheadBriefing({',
   '<UpAheadBriefingPanel briefing={upAheadBriefing} />'
 ]) {
   assert(page.includes(token), `UpAheadPage.jsx missing briefing token: ${token}`);
+}
+
+for (const token of [
+  'getUpAheadBriefing',
+  'upAheadBriefing: getUpAheadBriefing({'
+]) {
+  assert(viewModel.includes(token), `useUpAheadPageViewModel.js missing briefing token: ${token}`);
 }
 
 for (const token of [

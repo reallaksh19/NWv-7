@@ -85,7 +85,7 @@ pass(vm.includes('Array.isArray(data.timeline)'), 'Up Ahead projection must supp
   pass(!page.includes(token), `UpAheadPage must not contain ${token}`);
 });
 
-pass(page.includes('useUpAheadTabViewModel'), 'UpAheadPage must use Up Ahead ViewModel');
+pass(page.includes('useUpAheadPageViewModel'), 'UpAheadPage must use Up Ahead ViewModel');
 pass(page.includes('DataStateBoundary'), 'UpAheadPage must use DataStateBoundary');
 pass(page.includes("errorMessage={error || 'Unable to load Up Ahead.'}"), 'UpAheadPage must pass dataset error into boundary');
 pass(page.includes('article={item}'), 'UpAheadPage must not double-transform prebuilt movie/festival cards');
@@ -104,35 +104,6 @@ pass(!page.includes('article={buildCardArticle(item)}'), 'UpAheadPage still doub
 ].forEach(token => {
   pass(page.includes(token), `UpAheadPage lost UI token: ${token}`);
 });
-
-const forbiddenViewModels = [
-  'src/viewModels/useNewspaperTabViewModel.js',
-  'src/viewModels/usePlannerTabViewModel.js',
-  'src/viewModels/useFollowingTabViewModel.js',
-  'src/viewModels/useInsightTabViewModel.js',
-  'src/viewModels/useMainTabViewModel.js',
-];
-
-for (const file of forbiddenViewModels) {
-  pass(!exists(file), `Release 5E must not add other tab ViewModel: ${file}`);
-}
-
-const forbiddenPages = [
-  'src/pages/MainPage.jsx',
-  'src/pages/NewspaperPage.jsx',
-  'src/pages/MyPlannerPage.jsx',
-  'src/pages/FollowingPage.jsx',
-  'src/pages/InsightPage.jsx',
-];
-
-for (const file of forbiddenPages) {
-  const content = read(file);
-
-  pass(!content.includes('useDataset'), `${file} must not be migrated in Release 5E`);
-  pass(!content.includes('DataStateBoundary'), `${file} must not use DataStateBoundary in Release 5E`);
-  pass(!content.includes('useMainTabViewModel'), `${file} must not use Main VM in Release 5E`);
-  pass(!content.includes('useInsightTabViewModel'), `${file} must not use Insight VM in Release 5E`);
-}
 
 const pkg = JSON.parse(read('package.json'));
 

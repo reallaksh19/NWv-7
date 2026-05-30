@@ -12,6 +12,7 @@ function read(path) {
 const evidenceModule = read('src/services/upAheadEvidence.js');
 const evidenceTest = read('src/services/upAheadEvidence.cert.test.js');
 const page = read('src/pages/UpAheadPage.jsx');
+const viewModel = read('src/viewModels/useUpAheadPageViewModel.js');
 const css = read('src/pages/UpAhead.css');
 const certGate = read('scripts/run_certification_gate.mjs');
 const packageJson = read('package.json');
@@ -42,14 +43,19 @@ for (const token of [
 }
 
 for (const token of [
-  'getUpAheadEvidence',
   'UpAheadEvidencePanel',
   'data-upahead-evidence',
   'coverage-quality',
-  'const upAheadEvidence = getUpAheadEvidence({',
   '<UpAheadEvidencePanel evidence={upAheadEvidence} />'
 ]) {
   assert(page.includes(token), `UpAheadPage.jsx missing token: ${token}`);
+}
+
+for (const token of [
+  'getUpAheadEvidence',
+  'upAheadEvidence: getUpAheadEvidence({'
+]) {
+  assert(viewModel.includes(token), `useUpAheadPageViewModel.js missing token: ${token}`);
 }
 
 for (const token of [

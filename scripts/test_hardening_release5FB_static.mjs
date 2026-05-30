@@ -115,31 +115,6 @@ pass(page.includes('treatEmptyAsReady={true}'), 'MyPlannerPage must treat empty 
   pass(page.includes(token), `MyPlannerPage lost UI token: ${token}`);
 });
 
-const forbiddenViewModels = [
-  'src/viewModels/useFollowingTabViewModel.js',
-  'src/viewModels/useInsightTabViewModel.js',
-  'src/viewModels/useMainTabViewModel.js',
-];
-
-for (const file of forbiddenViewModels) {
-  pass(!exists(file), `Release 5F-B must not add other tab ViewModel: ${file}`);
-}
-
-const forbiddenPages = [
-  'src/pages/MainPage.jsx',
-  'src/pages/FollowingPage.jsx',
-  'src/pages/InsightPage.jsx',
-];
-
-for (const file of forbiddenPages) {
-  const content = read(file);
-
-  pass(!content.includes('useDataset'), `${file} must not be migrated in Release 5F-B`);
-  pass(!content.includes('DataStateBoundary'), `${file} must not use DataStateBoundary in Release 5F-B`);
-  pass(!content.includes('useMainTabViewModel'), `${file} must not use Main VM in Release 5F-B`);
-  pass(!content.includes('useInsightTabViewModel'), `${file} must not use Insight VM in Release 5F-B`);
-}
-
 const pkg = JSON.parse(read('package.json'));
 
 pass(

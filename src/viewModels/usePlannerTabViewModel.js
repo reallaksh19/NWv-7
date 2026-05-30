@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDataset } from '../data/orchestrator/useDataset.js';
 import { useMountedRef } from '../hooks/useMountedRef.js';
-import plannerStorage from '../utils/plannerStorage';
+import plannerStorage, {
+  getPlannerStorageError,
+  isPlannerStorageSuccess,
+} from '../utils/plannerStorage';
 import { downloadCalendarEvent, downloadCalendarEvents } from '../utils/calendar';
 import { getPlannerEvidence } from '../services/plannerEvidence';
 import { getPlannerViewModel } from '../services/plannerViewModel';
@@ -252,10 +255,10 @@ export function usePlannerTabViewModel() {
     try {
       const removed = plannerStorage.removeItem(dateKey, id);
 
-      if (!removed) {
+      if (!isPlannerStorageSuccess(removed)) {
         return {
           ok: false,
-          error: 'Planner item was not removed',
+          error: getPlannerStorageError(removed, 'Planner item was not removed'),
         };
       }
 
@@ -287,7 +290,7 @@ export function usePlannerTabViewModel() {
         undoItem.items.forEach(entry => {
           const restored = plannerStorage.addItem?.(entry.date, entry.item);
 
-          if (!restored) {
+          if (!isPlannerStorageSuccess(restored)) {
             failures.push(entry);
           }
         });
@@ -301,10 +304,10 @@ export function usePlannerTabViewModel() {
       } else {
         const restored = plannerStorage.addItem?.(undoItem.date, undoItem.item);
 
-        if (!restored) {
+        if (!isPlannerStorageSuccess(restored)) {
           return {
             ok: false,
-            error: 'Planner item was not restored',
+            error: getPlannerStorageError(restored, 'Planner item was not restored'),
           };
         }
       }

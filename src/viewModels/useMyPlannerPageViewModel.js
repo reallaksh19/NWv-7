@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import plannerStorage from '../utils/plannerStorage';
+import plannerStorage, {
+  isPlannerStorageSuccess,
+} from '../utils/plannerStorage';
 import { downloadCalendarEvent, downloadCalendarEvents } from '../utils/calendar';
 import { getPlannerEvidence } from '../services/plannerEvidence';
 import { getPlannerViewModel } from '../services/plannerViewModel';
@@ -250,7 +252,7 @@ export function useMyPlannerPageViewModel() {
     if (typeof plannerStorage.removeItem === 'function') {
       const removed = plannerStorage.removeItem(dateKey, id);
 
-      if (removed !== false) {
+      if (isPlannerStorageSuccess(removed)) {
         setUndoWithTimeout({
           bulk: false,
           date: dateKey,
@@ -270,10 +272,16 @@ export function useMyPlannerPageViewModel() {
 
     if (undoItem.bulk) {
       undoItem.items.forEach(entry => {
-        plannerStorage.addItem?.(entry.date, entry.item);
+        const restored = plannerStorage.addItem?.(entry.date, entry.item);
+        if (!isPlannerStorageSuccess(restored)) {
+          console.warn('[Planner] Undo restore failed', restored);
+        }
       });
     } else {
-      plannerStorage.addItem?.(undoItem.date, undoItem.item);
+      const restored = plannerStorage.addItem?.(undoItem.date, undoItem.item);
+      if (!isPlannerStorageSuccess(restored)) {
+        console.warn('[Planner] Undo restore failed', restored);
+      }
     }
 
     clearTimer(undoTimerRef);

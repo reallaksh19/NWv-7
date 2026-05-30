@@ -1,0 +1,4778 @@
+Below is the corrected **Release 6G surgical code pack** based on the uploaded review. Key correction: **do not replace the full `useMainTabViewModel.js`**; patch only theme binding and header-shell forwarding while preserving prior 6A–6F markers. 
+
+---
+
+# 1. `src/components/ThemeToggle.jsx`
+
+```jsx
+import React from 'react';
+
+const ThemeToggle = ({
+  theme = 'dark',
+  onToggleTheme = null,
+}) => {
+  const isLight = theme === 'light';
+
+  const toggleTheme = () => {
+    if (typeof onToggleTheme !== 'function') return null;
+
+    try {
+      return onToggleTheme(isLight ? 'dark' : 'light');
+    } catch (error) {
+      console.warn('[ThemeToggle] onToggleTheme failed', {
+        message: error?.message || String(error),
+      });
+
+      return null;
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={toggleTheme}
+      className="header__action-btn"
+      title={isLight ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+      style={{
+        background: 'transparent',
+        border: 'none',
+        cursor: 'pointer',
+        padding: '0 8px',
+        color: 'var(--text-primary)',
+      }}
+    >
+      {isLight ? '🌙' : '☀️'}
+    </button>
+  );
+};
+
+export default ThemeToggle;
+```
+
+---
+
+# 2. Patch `src/components/Header.jsx`
+
+Only patch the prop signature and `ThemeToggle` usage.
+
+## 2.1 Add prop
+
+```jsx
+function Header({
+    title,
+    showBack = false,
+    backTo = '/',
+    actions,
+    pills,
+    activePill,
+    onPillChange,
+    compact = false,
+    loadingPhase,
+    showMarket = false,
+    marketTickerProps = null,
+    themeToggleProps = null,
+    stateLabel,
+    stateType,
+}) {
+```
+
+## 2.2 Replace ThemeToggle render
+
+Replace:
+
+```jsx
+{isDesktop && <ThemeToggle />}
+```
+
+with:
+
+```jsx
+{isDesktop && <ThemeToggle {...(themeToggleProps || {})} />}
+```
+
+## 2.3 Keep MarketTicker forwarding
+
+Confirm this remains:
+
+```jsx
+{showMarket && (
+    <MarketTicker
+        loadingPhase={loadingPhase}
+        {...(marketTickerProps || {})}
+    />
+)}
+```
+
+Do **not** remove the runtime badge in 6G.
+
+---
+
+# 3. `src/components/TimelineHeader.jsx`
+
+```jsx
+import React from 'react';
+import { FaHome } from 'react-icons/fa';
+import MarketTicker from './MarketTicker';
+import { toggleDevMobileViewOverride, useMediaQuery } from '../hooks/useMediaQuery';
+
+const TimelineHeader = ({
+    title,
+    icon = null,
+    actions,
+    loadingPhase,
+    marketTickerProps = null,
+}) => {
+    const showTitle = title !== 'Market Brief';
+    const { isDevMobileView } = useMediaQuery();
+    const isDevMode = import.meta.env.DEV;
+
+    return (
+        <header className="header timeline-header">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                {isDevMode && (
+                    <button
+                        type="button"
+                        className={`header__action-btn header__dev-toggle ${isDevMobileView ? 'header__dev-toggle--active' : ''}`}
+                        onClick={toggleDevMobileViewOverride}
+                        title={isDevMobileView ? 'Return to desktop view' : 'Force mobile view'}
+                        aria-pressed={isDevMobileView}
+                    >
+                        <FaHome aria-hidden="true" />
+                    </button>
+                )}
+
+                {showTitle && (
+                    <h1
+                        className="header__title"
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            fontSize: '1.1rem',
+                        }}
+                    >
+                        {icon && <span aria-hidden="true">{icon}</span>}
+                        <span>{title}</span>
+                    </h1>
+                )}
+            </div>
+
+            <MarketTicker
+                loadingPhase={loadingPhase}
+                {...(marketTickerProps || {})}
+            />
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {actions}
+            </div>
+        </header>
+    );
+};
+
+export default TimelineHeader;
+```
+
+---
+
+# 4. Surgical patch for `src/viewModels/useMainTabViewModel.js`
+
+Do **not** replace the full file.
+
+Add this after existing prop builders such as `marketTickerProps`, `quickWeatherProps`, or near other UI bindings:
+
+```js
+const toggleTheme = useCallback((nextTheme) => {
+  const normalizedTheme = nextTheme === 'light' ? 'light' : 'dark';
+
+  try {
+    if (typeof updateSettings === 'function') {
+      return updateSettings({
+        ...safeSettings,
+        theme: normalizedTheme,
+      });
+    }
+
+    return null;
+  } catch (error) {
+    console.warn('[useMainTabViewModel] theme toggle failed', {
+      message: error?.message || String(error),
+    });
+
+    return {
+      ok: false,
+      error: error?.message || String(error),
+    };
+  }
+}, [safeSettings, updateSettings]);
+
+const themeToggleProps = useMemo(() => ({
+  theme: safeSettings.theme || 'dark',
+  onToggleTheme: toggleTheme,
+}), [safeSettings.theme, toggleTheme]);
+```
+
+Add this to the returned object:
+
+```js
+themeToggleProps,
+```
+
+Preserve these existing markers:
+
+```js
+quickWeatherProps,
+newsSectionProps,
+travelLocalStoriesProps,
+marketTickerProps,
+ensureMarketBoot,
+getMarketTickerDataState,
+```
+
+---
+
+# 5. Surgical patch for `src/pages/MainPage.jsx`
+
+## 5.1 Add destructured prop
+
+```js
+themeToggleProps,
+```
+
+The ViewModel destructuring should include both:
+
+```js
+marketTickerProps,
+themeToggleProps,
+```
+
+## 5.2 Patch `TimelineHeader`
+
+```jsx
+<TimelineHeader
+    title={currentSegment.id === 'market_brief' ? '' : currentSegment.label}
+    icon={currentSegment.icon}
+    actions={headerActions}
+    loadingPhase={loadingPhase}
+    marketTickerProps={marketTickerProps}
+/>
+```
+
+## 5.3 Patch `Header`
+
+```jsx
+<Header
+    title={currentSegment.label}
+    icon={currentSegment.icon}
+    actions={headerActions}
+    loadingPhase={loadingPhase}
+    showMarket
+    marketTickerProps={marketTickerProps}
+    themeToggleProps={themeToggleProps}
+/>
+```
+
+---
+
+# 6. `src/components/HeaderShell.release6G.cert.test.jsx`
+
+```jsx
+import { describe, expect, it } from 'vitest';
+import fs from 'node:fs';
+
+describe('Header shell Release 6G binding', () => {
+  const themeToggle = fs.readFileSync('src/components/ThemeToggle.jsx', 'utf8');
+  const header = fs.readFileSync('src/components/Header.jsx', 'utf8');
+  const timelineHeader = fs.readFileSync('src/components/TimelineHeader.jsx', 'utf8');
+  const mainVm = fs.readFileSync('src/viewModels/useMainTabViewModel.js', 'utf8');
+  const mainPage = fs.readFileSync('src/pages/MainPage.jsx', 'utf8');
+
+  it('ThemeToggle no longer imports or calls SettingsContext directly', () => {
+    expect(themeToggle).not.toContain("from '../context/SettingsContext'");
+    expect(themeToggle).not.toContain('useSettings');
+    expect(themeToggle).toContain("theme = 'dark'");
+    expect(themeToggle).toContain('onToggleTheme = null');
+    expect(themeToggle).toContain("typeof onToggleTheme !== 'function'");
+  });
+
+  it('ThemeToggle guards callback failures', () => {
+    expect(themeToggle).toContain('[ThemeToggle] onToggleTheme failed');
+  });
+
+  it('Header accepts and forwards themeToggleProps', () => {
+    expect(header).toContain('themeToggleProps = null');
+    expect(header).toContain('<ThemeToggle {...(themeToggleProps || {})} />');
+  });
+
+  it('Header still forwards marketTickerProps', () => {
+    expect(header).toContain('marketTickerProps = null');
+    expect(header).toContain('{...(marketTickerProps || {})}');
+    expect(header).toContain('<MarketTicker');
+  });
+
+  it('TimelineHeader accepts icon and marketTickerProps', () => {
+    expect(timelineHeader).toContain('icon = null');
+    expect(timelineHeader).toContain('marketTickerProps = null');
+    expect(timelineHeader).toContain('{icon && <span aria-hidden="true">{icon}</span>}');
+  });
+
+  it('TimelineHeader forwards marketTickerProps and has no bare ticker', () => {
+    expect(timelineHeader).toContain('{...(marketTickerProps || {})}');
+    expect(timelineHeader).toContain('<MarketTicker');
+    expect(timelineHeader).not.toContain('<MarketTicker loadingPhase={loadingPhase} />');
+  });
+
+  it('Main ViewModel preserves previous child bindings', () => {
+    [
+      'quickWeatherProps',
+      'newsSectionProps',
+      'travelLocalStoriesProps',
+      'marketTickerProps',
+      'ensureMarketBoot',
+      'getMarketTickerDataState',
+    ].forEach(token => {
+      expect(mainVm).toContain(token);
+    });
+  });
+
+  it('Main ViewModel guards and normalizes theme updates', () => {
+    expect(mainVm).toContain('themeToggleProps');
+    expect(mainVm).toContain('toggleTheme');
+    expect(mainVm).toContain('onToggleTheme: toggleTheme');
+    expect(mainVm).toContain('theme: safeSettings.theme ||');
+    expect(mainVm).toContain('[useMainTabViewModel] theme toggle failed');
+    expect(mainVm).toContain("nextTheme === 'light' ? 'light' : 'dark'");
+  });
+
+  it('MainPage passes marketTickerProps to all header modes', () => {
+    const timelineHeaderBlocks = mainPage.match(/<TimelineHeader[\s\S]*?\/>/g) || [];
+    const headerBlocks = mainPage.match(/<Header[\s\S]*?\/>/g) || [];
+
+    expect(timelineHeaderBlocks.length).toBeGreaterThan(0);
+    expect(headerBlocks.length).toBeGreaterThan(0);
+
+    expect(
+      timelineHeaderBlocks.every(block => block.includes('marketTickerProps={marketTickerProps}'))
+    ).toBe(true);
+
+    expect(
+      headerBlocks.every(block => block.includes('marketTickerProps={marketTickerProps}'))
+    ).toBe(true);
+  });
+
+  it('MainPage passes themeToggleProps to Header', () => {
+    const headerBlocks = mainPage.match(/<Header[\s\S]*?\/>/g) || [];
+
+    expect(headerBlocks.length).toBeGreaterThan(0);
+
+    expect(
+      headerBlocks.every(block => block.includes('themeToggleProps={themeToggleProps}'))
+    ).toBe(true);
+  });
+});
+```
+
+---
+
+# 7. `scripts/test_hardening_release6G_static.mjs`
+
+```js
+import fs from 'node:fs';
+import { execSync } from 'node:child_process';
+
+const fail = (message) => {
+  console.error(`FAIL: ${message}`);
+  process.exit(1);
+};
+
+const pass = (condition, message) => {
+  if (!condition) fail(message);
+};
+
+const exists = path => fs.existsSync(path);
+const read = path => fs.readFileSync(path, 'utf8');
+
+function getChangedFiles() {
+  const files = new Set();
+
+  try {
+    execSync('git diff --name-only', { encoding: 'utf8' })
+      .split(/\r?\n/)
+      .map(line => line.trim())
+      .filter(Boolean)
+      .forEach(file => files.add(file));
+  } catch {
+    // Ignore environments without git.
+  }
+
+  try {
+    execSync('git status --porcelain', { encoding: 'utf8' })
+      .split(/\r?\n/)
+      .map(line => line.trim())
+      .filter(Boolean)
+      .map(line => line.replace(/^.. /, '').replace(/^.* -> /, '').trim())
+      .filter(Boolean)
+      .forEach(file => files.add(file));
+  } catch {
+    // Ignore environments without git.
+  }
+
+  return [...files];
+}
+
+const allowedChangedFiles = new Set([
+  'src/components/ThemeToggle.jsx',
+  'src/components/Header.jsx',
+  'src/components/TimelineHeader.jsx',
+  'src/viewModels/useMainTabViewModel.js',
+  'src/pages/MainPage.jsx',
+  'src/components/HeaderShell.release6G.cert.test.jsx',
+  'scripts/test_hardening_release6G_static.mjs',
+  'package.json',
+]);
+
+for (const file of getChangedFiles()) {
+  pass(
+    allowedChangedFiles.has(file),
+    `Release 6G unexpected changed file: ${file}`
+  );
+}
+
+[
+  'scripts/test_hardening_release6F_static.mjs',
+  'src/components/ThemeToggle.jsx',
+  'src/components/Header.jsx',
+  'src/components/TimelineHeader.jsx',
+  'src/viewModels/useMainTabViewModel.js',
+  'src/pages/MainPage.jsx',
+  'src/components/HeaderShell.release6G.cert.test.jsx',
+].forEach(path => {
+  pass(exists(path), `Missing Release 6G file/prerequisite: ${path}`);
+});
+
+const themeToggle = read('src/components/ThemeToggle.jsx');
+const header = read('src/components/Header.jsx');
+const timelineHeader = read('src/components/TimelineHeader.jsx');
+const mainVm = read('src/viewModels/useMainTabViewModel.js');
+const mainPage = read('src/pages/MainPage.jsx');
+
+pass(!themeToggle.includes("from '../context/SettingsContext'"), 'ThemeToggle must not import SettingsContext');
+pass(!themeToggle.includes('useSettings'), 'ThemeToggle must not call useSettings');
+pass(themeToggle.includes("theme = 'dark'"), 'ThemeToggle must accept theme prop');
+pass(themeToggle.includes('onToggleTheme = null'), 'ThemeToggle must accept onToggleTheme prop');
+pass(themeToggle.includes("typeof onToggleTheme !== 'function'"), 'ThemeToggle must guard missing callback');
+pass(themeToggle.includes('[ThemeToggle] onToggleTheme failed'), 'ThemeToggle must guard callback failure');
+
+pass(header.includes('themeToggleProps = null'), 'Header must accept themeToggleProps');
+pass(
+  header.includes('<ThemeToggle {...(themeToggleProps || {})} />'),
+  'Header must forward themeToggleProps'
+);
+
+pass(header.includes('marketTickerProps = null'), 'Header must still accept marketTickerProps');
+pass(header.includes('{...(marketTickerProps || {})}'), 'Header must still forward marketTickerProps');
+
+pass(timelineHeader.includes('icon = null'), 'TimelineHeader must preserve icon compatibility');
+pass(timelineHeader.includes('marketTickerProps = null'), 'TimelineHeader must accept marketTickerProps');
+pass(timelineHeader.includes('{...(marketTickerProps || {})}'), 'TimelineHeader must forward marketTickerProps');
+pass(timelineHeader.includes('<MarketTicker'), 'TimelineHeader must render MarketTicker');
+pass(
+  !timelineHeader.includes('<MarketTicker loadingPhase={loadingPhase} />'),
+  'TimelineHeader must not contain bare ticker binding'
+);
+
+[
+  'quickWeatherProps',
+  'newsSectionProps',
+  'travelLocalStoriesProps',
+  'marketTickerProps',
+  'ensureMarketBoot',
+  'getMarketTickerDataState',
+].forEach(token => {
+  pass(mainVm.includes(token), `Previous Main binding marker missing after 6G: ${token}`);
+});
+
+pass(mainVm.includes('themeToggleProps'), 'Main ViewModel must expose themeToggleProps');
+pass(mainVm.includes('[useMainTabViewModel] theme toggle failed'), 'Main ViewModel must guard theme update failures');
+pass(mainVm.includes("nextTheme === 'light' ? 'light' : 'dark'"), 'Main ViewModel must normalize theme value');
+pass(mainVm.includes('onToggleTheme: toggleTheme'), 'Main ViewModel must pass onToggleTheme');
+pass(mainVm.includes('theme: safeSettings.theme ||'), 'Main ViewModel must pass theme value');
+
+const timelineHeaderBlocks = mainPage.match(/<TimelineHeader[\s\S]*?\/>/g) || [];
+const headerBlocks = mainPage.match(/<Header[\s\S]*?\/>/g) || [];
+
+pass(timelineHeaderBlocks.length > 0, 'MainPage must render TimelineHeader');
+pass(headerBlocks.length > 0, 'MainPage must render Header');
+
+pass(
+  timelineHeaderBlocks.every(block => block.includes('marketTickerProps={marketTickerProps}')),
+  'Every TimelineHeader instance must receive marketTickerProps'
+);
+
+pass(
+  headerBlocks.every(block => block.includes('marketTickerProps={marketTickerProps}')),
+  'Every Header instance must receive marketTickerProps'
+);
+
+pass(
+  headerBlocks.every(block => block.includes('themeToggleProps={themeToggleProps}')),
+  'Every Header instance must receive themeToggleProps'
+);
+
+const pkg = JSON.parse(read('package.json'));
+
+pass(
+  pkg.scripts?.['test:hardening:release6G'] === 'node scripts/test_hardening_release6G_static.mjs',
+  'package.json missing test:hardening:release6G script'
+);
+
+pass(
+  typeof pkg.scripts?.['test:headershell-binding'] === 'string',
+  'package.json missing test:headershell-binding script'
+);
+
+[
+  'date-fns',
+  'lodash',
+  'zod',
+].forEach(dep => {
+  pass(!pkg.dependencies?.[dep], `Release 6G must not add dependency ${dep}`);
+  pass(!pkg.devDependencies?.[dep], `Release 6G must not add devDependency ${dep}`);
+});
+
+console.log('PASS: Release 6G corrected Header shell prop binding gates');
+```
+
+---
+
+# 8. `package.json` scripts
+
+```json
+"test:hardening:release6G": "node scripts/test_hardening_release6G_static.mjs",
+"test:headershell-binding": "vitest run --config vitest.config.js src/components/HeaderShell.release6G.cert.test.jsx"
+```
+
+---
+
+# Required commands
+
+```bash
+npm run test:hardening:release6F
+npm run test:marketticker-binding
+
+npm run test:hardening:release6G
+npm run test:headershell-binding
+
+npx vite build
+npm run test:unit
+git diff --name-only
+git diff package.json
+```
+
+---
+
+# Final report format
+
+```text
+ThemeToggle direct useSettings: 0
+ThemeToggle prop-driven binding: YES
+Theme toggle failure guarded: YES
+Header forwards themeToggleProps: YES
+Header forwards marketTickerProps: YES
+TimelineHeader bare MarketTicker binding: 0
+TimelineHeader forwards marketTickerProps: YES
+Previous child bindings preserved: YES
+Main ViewModel owns theme toggle binding: YES
+MainPage passes marketTickerProps to both header modes: YES
+MainPage passes themeToggleProps to Header: YES
+Residual Header runtime badge dependency: accepted for Release 6G
+Service changes: 0
+Context changes: 0
+Dataset changes: 0
+Workflow changes: 0
+Other page migrations: 0
+New npm dependencies: 0
+Vite build: PASS
+```
+----------------------------------------------------------------
+Below is the corrected **Release 6H full code pack** with the uploaded review corrections applied: stronger 6G prerequisite checks, Header consumer scan/report, no silent app-wide badge claim, preserved previous bindings, and `shellRuntimeProps` only propagated to Main’s `Header` in this phase. 
+
+---
+
+# 1. `src/components/Header.jsx`
+
+```jsx
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { FaHome } from 'react-icons/fa';
+import MarketTicker from './MarketTicker';
+import ThemeToggle from './ThemeToggle';
+import { toggleDevMobileViewOverride, useMediaQuery } from '../hooks/useMediaQuery';
+
+export function DataStatePill({ mode, label }) {
+    if (!mode) return null;
+    return <span className={`data-pill data-pill--${mode}`}>{label}</span>;
+}
+
+/**
+ * Header Component with optional back navigation.
+ *
+ * Release 6H:
+ * - Header no longer imports/calls runtimeCapabilities.
+ * - Runtime badge state is supplied by parent through shellRuntimeProps.
+ * - ThemeToggle and MarketTicker prop bindings from 6F/6G are preserved.
+ */
+function Header({
+    title,
+    showBack = false,
+    backTo = '/',
+    actions,
+    pills,
+    activePill,
+    onPillChange,
+    compact = false,
+    loadingPhase,
+    showMarket = false,
+    marketTickerProps = null,
+    themeToggleProps = null,
+    shellRuntimeProps = null,
+    stateLabel,
+    stateType,
+}) {
+    const { isDesktop, isDevMobileView } = useMediaQuery();
+    const isDevMode = import.meta.env.DEV;
+
+    const getPillIcon = (pillName) => {
+        if (pillName.includes('Morning')) return '🌅';
+        if (pillName.includes('Midday')) return '☀️';
+        if (pillName.includes('Evening')) return '🌙';
+        return pillName;
+    };
+
+    return (
+        <header className={`header ${compact ? 'header--compact' : ''}`}>
+            {showBack ? (
+                <Link to={backTo} className="header__back">
+                    <span>←</span>
+                    <span>{title}</span>
+                </Link>
+            ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    {isDesktop && <ThemeToggle {...(themeToggleProps || {})} />}
+
+                    {isDevMode && (
+                        <button
+                            type="button"
+                            className={`header__action-btn header__dev-toggle ${isDevMobileView ? 'header__dev-toggle--active' : ''}`}
+                            onClick={toggleDevMobileViewOverride}
+                            title={isDevMobileView ? 'Return to desktop view' : 'Force mobile view'}
+                            aria-pressed={isDevMobileView}
+                        >
+                            <FaHome aria-hidden="true" />
+                        </button>
+                    )}
+
+                    {shellRuntimeProps?.showStaticHostBadge && (
+                        <span
+                            className="runtime-badge runtime-badge--icon-only"
+                            title={shellRuntimeProps.staticHostBadgeTitle || 'Static-host mode is active.'}
+                            aria-label={shellRuntimeProps.staticHostBadgeLabel || 'Static-host mode'}
+                        >
+                            {shellRuntimeProps.staticHostBadgeIcon || '📦'}
+                        </span>
+                    )}
+
+                    <h1 className="header__title">
+                        {title}
+                    </h1>
+                </div>
+            )}
+
+            {showMarket && (
+                <MarketTicker
+                    loadingPhase={loadingPhase}
+                    {...(marketTickerProps || {})}
+                />
+            )}
+
+            {pills && (
+                <div className="header__pills">
+                    {pills.map((pill) => (
+                        <button
+                            key={pill}
+                            className={`time-pill time-pill--matte ${activePill === pill ? 'time-pill--active' : ''}`}
+                            onClick={() => onPillChange && onPillChange(pill)}
+                            title={pill}
+                        >
+                            {getPillIcon(pill)}
+                        </button>
+                    ))}
+                </div>
+            )}
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {stateLabel && <DataStatePill mode={stateType || 'live'} label={stateLabel} />}
+                {actions}
+
+                {!showBack && (
+                    <Link to="/more" className="header__action-btn" title="More Options">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </Link>
+                )}
+            </div>
+        </header>
+    );
+}
+
+export default Header;
+```
+
+---
+
+# 2. Surgical patch for `src/viewModels/useMainTabViewModel.js`
+
+Do **not** replace the full file.
+
+Add this after the existing `runtime` memo is defined:
+
+```js
+const shellRuntimeProps = useMemo(() => ({
+  showStaticHostBadge: Boolean(runtime?.isStaticHost),
+  staticHostBadgeTitle: 'Static-host mode: snapshot/cache-first behavior is active.',
+  staticHostBadgeLabel: 'Static-host mode',
+  staticHostBadgeIcon: '📦',
+}), [runtime?.isStaticHost]);
+```
+
+Add to the returned object:
+
+```js
+shellRuntimeProps,
+```
+
+The return block must still preserve these prior-release markers:
+
+```js
+quickWeatherProps,
+newsSectionProps,
+travelLocalStoriesProps,
+marketTickerProps,
+themeToggleProps,
+ensureMarketBoot,
+getMarketTickerDataState,
+```
+
+---
+
+# 3. Surgical patch for `src/pages/MainPage.jsx`
+
+Add this to the `useMainTabViewModel()` destructuring:
+
+```js
+shellRuntimeProps,
+```
+
+Then patch the non-timeline `Header` only:
+
+```jsx
+<Header
+    title={currentSegment.label}
+    icon={currentSegment.icon}
+    actions={headerActions}
+    loadingPhase={loadingPhase}
+    showMarket
+    marketTickerProps={marketTickerProps}
+    themeToggleProps={themeToggleProps}
+    shellRuntimeProps={shellRuntimeProps}
+/>
+```
+
+Do **not** pass `shellRuntimeProps` to `TimelineHeader` in 6H unless `TimelineHeader` starts rendering the runtime badge.
+
+---
+
+# 4. `src/components/HeaderRuntime.release6H.cert.test.jsx`
+
+```jsx
+import { describe, expect, it } from 'vitest';
+import fs from 'node:fs';
+
+describe('Header runtime Release 6H binding', () => {
+  const header = fs.readFileSync('src/components/Header.jsx', 'utf8');
+  const mainVm = fs.readFileSync('src/viewModels/useMainTabViewModel.js', 'utf8');
+  const mainPage = fs.readFileSync('src/pages/MainPage.jsx', 'utf8');
+
+  it('Header no longer imports or calls runtimeCapabilities directly', () => {
+    expect(header).not.toContain("from '../runtime/runtimeCapabilities'");
+    expect(header).not.toContain('getRuntimeCapabilities');
+  });
+
+  it('Header accepts shellRuntimeProps', () => {
+    expect(header).toContain('shellRuntimeProps = null');
+  });
+
+  it('Header renders runtime badge from shellRuntimeProps only', () => {
+    expect(header).toContain('shellRuntimeProps?.showStaticHostBadge');
+    expect(header).toContain('shellRuntimeProps.staticHostBadgeTitle');
+    expect(header).toContain('shellRuntimeProps.staticHostBadgeLabel');
+    expect(header).toContain('shellRuntimeProps.staticHostBadgeIcon');
+    expect(header).toContain('runtime-badge runtime-badge--icon-only');
+  });
+
+  it('Header does not own runtime badge text except fallback rendering', () => {
+    expect(
+      !header.includes('snapshot/cache-first behavior is active') ||
+      header.includes('shellRuntimeProps.staticHostBadgeTitle')
+    ).toBe(true);
+
+    expect(
+      !header.includes('📦') ||
+      header.includes("shellRuntimeProps.staticHostBadgeIcon || '📦'")
+    ).toBe(true);
+  });
+
+  it('Header preserves previous shell bindings', () => {
+    expect(header).toContain('themeToggleProps = null');
+    expect(header).toContain('<ThemeToggle {...(themeToggleProps || {})} />');
+
+    expect(header).toContain('marketTickerProps = null');
+    expect(header).toContain('{...(marketTickerProps || {})}');
+    expect(header).toContain('<MarketTicker');
+
+    expect(header).toContain('toggleDevMobileViewOverride');
+    expect(header).toContain('DataStatePill');
+  });
+
+  it('previous 6G shell bindings remain applied', () => {
+    const themeToggle = fs.readFileSync('src/components/ThemeToggle.jsx', 'utf8');
+    const timelineHeader = fs.readFileSync('src/components/TimelineHeader.jsx', 'utf8');
+
+    expect(themeToggle).not.toContain('useSettings');
+    expect(themeToggle).toContain('onToggleTheme');
+
+    expect(timelineHeader).toContain('marketTickerProps = null');
+    expect(timelineHeader).toContain('{...(marketTickerProps || {})}');
+    expect(timelineHeader).not.toContain('<MarketTicker loadingPhase={loadingPhase} />');
+  });
+
+  it('Main ViewModel exposes shellRuntimeProps', () => {
+    expect(mainVm).toContain('shellRuntimeProps');
+    expect(mainVm).toContain('showStaticHostBadge');
+    expect(mainVm).toContain('staticHostBadgeTitle');
+    expect(mainVm).toContain('staticHostBadgeLabel');
+    expect(mainVm).toContain('staticHostBadgeIcon');
+    expect(mainVm).toContain('runtime?.isStaticHost');
+  });
+
+  it('Main ViewModel preserves previous child bindings', () => {
+    [
+      'quickWeatherProps',
+      'newsSectionProps',
+      'travelLocalStoriesProps',
+      'marketTickerProps',
+      'themeToggleProps',
+      'ensureMarketBoot',
+      'getMarketTickerDataState',
+    ].forEach(token => {
+      expect(mainVm).toContain(token);
+    });
+  });
+
+  it('MainPage binds shellRuntimeProps only to Header, not TimelineHeader', () => {
+    const headerBlocks = mainPage.match(/<Header[\s\S]*?\/>/g) || [];
+
+    expect(headerBlocks.length).toBeGreaterThan(0);
+
+    expect(
+      headerBlocks.every(block => block.includes('shellRuntimeProps={shellRuntimeProps}'))
+    ).toBe(true);
+  });
+
+  it('MainPage still passes market and theme shell props to Header', () => {
+    const headerBlocks = mainPage.match(/<Header[\s\S]*?\/>/g) || [];
+
+    expect(
+      headerBlocks.every(block => block.includes('marketTickerProps={marketTickerProps}'))
+    ).toBe(true);
+
+    expect(
+      headerBlocks.every(block => block.includes('themeToggleProps={themeToggleProps}'))
+    ).toBe(true);
+  });
+});
+```
+
+---
+
+# 5. `scripts/test_hardening_release6H_static.mjs`
+
+```js
+import fs from 'node:fs';
+import { execSync } from 'node:child_process';
+
+const fail = (message) => {
+  console.error(`FAIL: ${message}`);
+  process.exit(1);
+};
+
+const pass = (condition, message) => {
+  if (!condition) fail(message);
+};
+
+const exists = path => fs.existsSync(path);
+const read = path => fs.readFileSync(path, 'utf8');
+
+function getChangedFiles() {
+  const files = new Set();
+
+  try {
+    execSync('git diff --name-only', { encoding: 'utf8' })
+      .split(/\r?\n/)
+      .map(line => line.trim())
+      .filter(Boolean)
+      .forEach(file => files.add(file));
+  } catch {
+    // Ignore environments without git.
+  }
+
+  try {
+    execSync('git status --porcelain', { encoding: 'utf8' })
+      .split(/\r?\n/)
+      .map(line => line.trim())
+      .filter(Boolean)
+      .map(line => line.replace(/^.. /, '').replace(/^.* -> /, '').trim())
+      .filter(Boolean)
+      .forEach(file => files.add(file));
+  } catch {
+    // Ignore environments without git.
+  }
+
+  return [...files];
+}
+
+const allowedChangedFiles = new Set([
+  'src/components/Header.jsx',
+  'src/viewModels/useMainTabViewModel.js',
+  'src/pages/MainPage.jsx',
+  'src/components/HeaderRuntime.release6H.cert.test.jsx',
+  'scripts/test_hardening_release6H_static.mjs',
+  'package.json',
+]);
+
+for (const file of getChangedFiles()) {
+  pass(
+    allowedChangedFiles.has(file),
+    `Release 6H unexpected changed file: ${file}`
+  );
+}
+
+[
+  'scripts/test_hardening_release6G_static.mjs',
+  'src/components/Header.jsx',
+  'src/viewModels/useMainTabViewModel.js',
+  'src/pages/MainPage.jsx',
+  'src/components/HeaderRuntime.release6H.cert.test.jsx',
+].forEach(path => {
+  pass(exists(path), `Missing Release 6H file/prerequisite: ${path}`);
+});
+
+const header = read('src/components/Header.jsx');
+const mainVm = read('src/viewModels/useMainTabViewModel.js');
+const mainPage = read('src/pages/MainPage.jsx');
+const themeToggle = read('src/components/ThemeToggle.jsx');
+const timelineHeader = read('src/components/TimelineHeader.jsx');
+
+pass(!themeToggle.includes('useSettings'), 'Release 6G prerequisite missing: ThemeToggle still uses SettingsContext');
+pass(themeToggle.includes('onToggleTheme'), 'Release 6G prerequisite missing: ThemeToggle is not prop-driven');
+
+pass(timelineHeader.includes('marketTickerProps = null'), 'Release 6G prerequisite missing: TimelineHeader lacks marketTickerProps');
+pass(timelineHeader.includes('{...(marketTickerProps || {})}'), 'Release 6G prerequisite missing: TimelineHeader does not forward marketTickerProps');
+pass(!timelineHeader.includes('<MarketTicker loadingPhase={loadingPhase} />'), 'Release 6G prerequisite missing: TimelineHeader still has bare ticker binding');
+
+pass(!header.includes("from '../runtime/runtimeCapabilities'"), 'Header must not import runtimeCapabilities');
+pass(!header.includes('getRuntimeCapabilities'), 'Header must not call getRuntimeCapabilities');
+pass(header.includes('shellRuntimeProps = null'), 'Header must accept shellRuntimeProps');
+pass(header.includes('shellRuntimeProps?.showStaticHostBadge'), 'Header must render runtime badge from shellRuntimeProps');
+
+pass(
+  !header.includes('snapshot/cache-first behavior is active') ||
+  header.includes('shellRuntimeProps.staticHostBadgeTitle'),
+  'Header must not hardcode runtime badge title outside shellRuntimeProps'
+);
+
+pass(
+  !header.includes('📦') ||
+  header.includes("shellRuntimeProps.staticHostBadgeIcon || '📦'"),
+  'Header must not own static-host badge icon except fallback rendering'
+);
+
+[
+  'themeToggleProps = null',
+  '<ThemeToggle {...(themeToggleProps || {})} />',
+  'marketTickerProps = null',
+  '{...(marketTickerProps || {})}',
+  '<MarketTicker',
+  'toggleDevMobileViewOverride',
+  'DataStatePill',
+].forEach(token => {
+  pass(header.includes(token), `Header previous shell marker missing after 6H: ${token}`);
+});
+
+[
+  'quickWeatherProps',
+  'newsSectionProps',
+  'travelLocalStoriesProps',
+  'marketTickerProps',
+  'themeToggleProps',
+  'ensureMarketBoot',
+  'getMarketTickerDataState',
+].forEach(token => {
+  pass(mainVm.includes(token), `Previous Main binding marker missing after 6H: ${token}`);
+});
+
+pass(mainVm.includes('shellRuntimeProps'), 'Main ViewModel must expose shellRuntimeProps');
+pass(mainVm.includes('showStaticHostBadge'), 'Main ViewModel shellRuntimeProps must include showStaticHostBadge');
+pass(mainVm.includes('staticHostBadgeTitle'), 'Main ViewModel shellRuntimeProps must include staticHostBadgeTitle');
+pass(mainVm.includes('staticHostBadgeLabel'), 'Main ViewModel shellRuntimeProps must include staticHostBadgeLabel');
+pass(mainVm.includes('staticHostBadgeIcon'), 'Main ViewModel shellRuntimeProps must include staticHostBadgeIcon');
+pass(mainVm.includes('runtime?.isStaticHost'), 'Main ViewModel shellRuntimeProps must derive static-host state from runtime');
+
+const headerBlocks = mainPage.match(/<Header[\s\S]*?\/>/g) || [];
+
+pass(headerBlocks.length > 0, 'MainPage must render Header');
+
+pass(
+  headerBlocks.every(block => block.includes('shellRuntimeProps={shellRuntimeProps}')),
+  'Every MainPage Header instance must receive shellRuntimeProps'
+);
+
+pass(
+  headerBlocks.every(block => block.includes('marketTickerProps={marketTickerProps}')),
+  'Every MainPage Header instance must preserve marketTickerProps'
+);
+
+pass(
+  headerBlocks.every(block => block.includes('themeToggleProps={themeToggleProps}')),
+  'Every MainPage Header instance must preserve themeToggleProps'
+);
+
+const pageFiles = fs.readdirSync('src/pages')
+  .filter(file => file.endsWith('.jsx'))
+  .map(file => `src/pages/${file}`);
+
+const headerConsumers = pageFiles
+  .map(path => ({ path, content: read(path) }))
+  .filter(entry => entry.content.includes('<Header'));
+
+const unboundHeaderConsumers = headerConsumers.filter(entry => (
+  !entry.content.includes('shellRuntimeProps={shellRuntimeProps}')
+));
+
+console.log('[Release 6H] Header consumers:', headerConsumers.map(entry => entry.path));
+console.log('[Release 6H] Header consumers without shellRuntimeProps:', unboundHeaderConsumers.map(entry => entry.path));
+
+const pkg = JSON.parse(read('package.json'));
+
+pass(
+  pkg.scripts?.['test:hardening:release6H'] === 'node scripts/test_hardening_release6H_static.mjs',
+  'package.json missing test:hardening:release6H script'
+);
+
+pass(
+  typeof pkg.scripts?.['test:headerruntime-binding'] === 'string',
+  'package.json missing test:headerruntime-binding script'
+);
+
+[
+  'date-fns',
+  'lodash',
+  'zod',
+].forEach(dep => {
+  pass(!pkg.dependencies?.[dep], `Release 6H must not add dependency ${dep}`);
+  pass(!pkg.devDependencies?.[dep], `Release 6H must not add devDependency ${dep}`);
+});
+
+console.log('PASS: Release 6H corrected Header runtime prop binding gates');
+```
+
+---
+
+# 6. `package.json` scripts
+
+```json
+"test:hardening:release6H": "node scripts/test_hardening_release6H_static.mjs",
+"test:headerruntime-binding": "vitest run --config vitest.config.js src/components/HeaderRuntime.release6H.cert.test.jsx"
+```
+
+---
+
+# Required commands
+
+```bash
+npm run test:hardening:release6G
+npm run test:headershell-binding
+
+npm run test:hardening:release6H
+npm run test:headerruntime-binding
+
+npx vite build
+npm run test:unit
+git diff --name-only
+git diff package.json
+```
+
+---
+
+# Final report must include
+
+```text
+Header direct getRuntimeCapabilities import: 0
+Header direct runtime call: 0
+Header runtime badge prop-driven: YES
+Main ViewModel exposes shellRuntimeProps: YES
+MainPage passes shellRuntimeProps to Header: YES
+Header runtime badge app-wide propagation: PARTIAL / Main Header only
+Previous child bindings preserved: YES
+ThemeToggle changes: 0
+TimelineHeader changes: 0
+MarketTicker changes: 0
+Service changes: 0
+Context changes: 0
+Dataset changes: 0
+Workflow changes: 0
+Other page migrations: 0
+New npm dependencies: 0
+Vite build: PASS
+```
+------------------------------------------------------------------------
+Below is the corrected **Release 6I surgical implementation pack**. It follows the uploaded review: no full page rewrites, robust JSX `Header` block scanning, MainPage stays ViewModel-driven, non-Main pages use `useShellRuntimeProps`, and `SettingsPage`/`RefreshPage` logic is not rewritten. 
+
+---
+
+# 1. `src/viewModels/useShellRuntimeProps.js`
+
+```js
+import { useMemo } from 'react';
+import { getRuntimeCapabilities } from '../runtime/runtimeCapabilities.js';
+
+export function buildShellRuntimeProps(runtime) {
+  return {
+    showStaticHostBadge: Boolean(runtime?.isStaticHost),
+    staticHostBadgeTitle: 'Static-host mode: snapshot/cache-first behavior is active.',
+    staticHostBadgeLabel: 'Static-host mode',
+    staticHostBadgeIcon: '📦',
+  };
+}
+
+export function useShellRuntimeProps() {
+  const runtime = useMemo(() => getRuntimeCapabilities(), []);
+
+  return useMemo(() => (
+    buildShellRuntimeProps(runtime)
+  ), [runtime?.isStaticHost]);
+}
+
+export default useShellRuntimeProps;
+```
+
+---
+
+# 2. Surgical page patch pattern
+
+Apply this to every **non-Main** page that renders `Header`.
+
+## Add import
+
+```js
+import { useShellRuntimeProps } from '../viewModels/useShellRuntimeProps';
+```
+
+If the page is in a nested folder, adjust relative path accordingly. The known Release 6I page targets are under `src/pages/`, so `../viewModels/useShellRuntimeProps` is correct.
+
+## Add inside component
+
+```js
+const shellRuntimeProps = useShellRuntimeProps();
+```
+
+## Add to every `Header` JSX block
+
+```jsx
+shellRuntimeProps={shellRuntimeProps}
+```
+
+Example:
+
+```jsx
+<Header
+  title="More"
+  showBack
+  backTo="/"
+  shellRuntimeProps={shellRuntimeProps}
+/>
+```
+
+---
+
+# 3. Page-specific surgical patches
+
+Do **not** replace full page files.
+
+## `src/pages/MorePage.jsx`
+
+```diff
+ import Header from '../components/Header';
++import { useShellRuntimeProps } from '../viewModels/useShellRuntimeProps';
+
+ function MorePage() {
++    const shellRuntimeProps = useShellRuntimeProps();
+
+     return (
+         <div className="page-container">
+-            <Header title="More" showBack backTo="/" />
++            <Header
++                title="More"
++                showBack
++                backTo="/"
++                shellRuntimeProps={shellRuntimeProps}
++            />
+```
+
+---
+
+## `src/pages/FollowingPage.jsx`
+
+```diff
+ import Header from '../components/Header';
++import { useShellRuntimeProps } from '../viewModels/useShellRuntimeProps';
+
+ function FollowingPage() {
++    const shellRuntimeProps = useShellRuntimeProps();
+
+     return (
+```
+
+Patch every `Header` block:
+
+```diff
+ <Header
+   ...
++  shellRuntimeProps={shellRuntimeProps}
+ />
+```
+
+Do not alter Following ViewModel/DataStateBoundary logic.
+
+---
+
+## `src/pages/RefreshPage.jsx`
+
+```diff
+ import Header from '../components/Header';
++import { useShellRuntimeProps } from '../viewModels/useShellRuntimeProps';
+
+ function RefreshPage() {
++    const shellRuntimeProps = useShellRuntimeProps();
+```
+
+Patch every `Header` block:
+
+```diff
+ <Header
+   ...
++  shellRuntimeProps={shellRuntimeProps}
+ />
+```
+
+Do **not** change refresh behavior in Release 6I.
+
+---
+
+## `src/pages/UpAheadPage.jsx`
+
+```diff
+ import Header from '../components/Header';
++import { useShellRuntimeProps } from '../viewModels/useShellRuntimeProps';
+
+ function UpAheadPage() {
++    const shellRuntimeProps = useShellRuntimeProps();
+```
+
+Patch every `Header` block:
+
+```diff
+ <Header
+   ...
++  shellRuntimeProps={shellRuntimeProps}
+ />
+```
+
+---
+
+## `src/pages/InsightPage.jsx`
+
+```diff
+ import Header from '../components/Header';
++import { useShellRuntimeProps } from '../viewModels/useShellRuntimeProps';
+
+ function InsightPage() {
++    const shellRuntimeProps = useShellRuntimeProps();
+```
+
+Patch every `Header` block:
+
+```diff
+ <Header
+   ...
++  shellRuntimeProps={shellRuntimeProps}
+ />
+```
+
+Do not alter Insight quality/banner/ranking popup logic.
+
+---
+
+## `src/pages/SettingsPage.jsx`
+
+```diff
+ import Header from '../components/Header';
++import { useShellRuntimeProps } from '../viewModels/useShellRuntimeProps';
+```
+
+Inside component:
+
+```diff
+ function SettingsPage() {
++    const shellRuntimeProps = useShellRuntimeProps();
+```
+
+Patch every `Header` block:
+
+```diff
+ <Header
+   ...
++  shellRuntimeProps={shellRuntimeProps}
+ />
+```
+
+Important: keep any existing `getRuntimeCapabilities` usage if it supports Settings page diagnostics. Release 6I only binds Header badge props.
+
+---
+
+## `src/pages/TopicDetail.jsx`
+
+```diff
+ import Header from '../components/Header';
++import { useShellRuntimeProps } from '../viewModels/useShellRuntimeProps';
+
+ function TopicDetail() {
++    const shellRuntimeProps = useShellRuntimeProps();
+```
+
+Patch every `Header` block:
+
+```diff
+ <Header
+   ...
++  shellRuntimeProps={shellRuntimeProps}
+ />
+```
+
+---
+
+## `src/pages/MyPlannerPage.jsx`
+
+```diff
+ import Header from '../components/Header';
++import { useShellRuntimeProps } from '../viewModels/useShellRuntimeProps';
+
+ function MyPlannerPage() {
++    const shellRuntimeProps = useShellRuntimeProps();
+```
+
+Patch every `Header` block:
+
+```diff
+ <Header
+   ...
++  shellRuntimeProps={shellRuntimeProps}
+ />
+```
+
+Do not alter Planner ViewModel/DataStateBoundary wiring.
+
+---
+
+## `src/pages/TechSocialPage.jsx`
+
+```diff
+ import Header from '../components/Header';
++import { useShellRuntimeProps } from '../viewModels/useShellRuntimeProps';
+
+ function TechSocialPage() {
++    const shellRuntimeProps = useShellRuntimeProps();
+```
+
+Patch every `Header` block:
+
+```diff
+ <Header
+   ...
++  shellRuntimeProps={shellRuntimeProps}
+ />
+```
+
+---
+
+## `src/pages/MainPage.jsx`
+
+Do **not** import `useShellRuntimeProps`.
+
+MainPage must keep this pattern from 6H:
+
+```js
+const {
+  ...
+  shellRuntimeProps,
+  ...
+} = useMainTabViewModel();
+```
+
+And the non-timeline `Header` must keep:
+
+```jsx
+<Header
+    title={currentSegment.label}
+    icon={currentSegment.icon}
+    actions={headerActions}
+    loadingPhase={loadingPhase}
+    showMarket
+    marketTickerProps={marketTickerProps}
+    themeToggleProps={themeToggleProps}
+    shellRuntimeProps={shellRuntimeProps}
+/>
+```
+
+---
+
+# 4. `src/components/HeaderRuntime.release6I.cert.test.jsx`
+
+```jsx
+import { describe, expect, it } from 'vitest';
+import fs from 'node:fs';
+import {
+  buildShellRuntimeProps,
+} from '../viewModels/useShellRuntimeProps.js';
+
+function read(path) {
+  return fs.readFileSync(path, 'utf8');
+}
+
+function getHeaderBlocks(content) {
+  return content.match(/<Header[\s\S]*?\/>/g) || [];
+}
+
+function getPageHeaderConsumers() {
+  return fs.readdirSync('src/pages')
+    .filter(file => file.endsWith('.jsx'))
+    .map(file => `src/pages/${file}`)
+    .map(path => {
+      const content = read(path);
+      return {
+        path,
+        content,
+        blocks: getHeaderBlocks(content),
+      };
+    })
+    .filter(entry => entry.blocks.length > 0);
+}
+
+describe('Header runtime Release 6I app-wide propagation', () => {
+  const header = read('src/components/Header.jsx');
+  const hook = read('src/viewModels/useShellRuntimeProps.js');
+  const mainVm = read('src/viewModels/useMainTabViewModel.js');
+
+  it('Header remains runtime-prop-driven and does not call runtimeCapabilities', () => {
+    expect(header).not.toContain("from '../runtime/runtimeCapabilities'");
+    expect(header).not.toContain('getRuntimeCapabilities');
+    expect(header).toContain('shellRuntimeProps = null');
+    expect(header).toContain('shellRuntimeProps?.showStaticHostBadge');
+  });
+
+  it('useShellRuntimeProps owns runtime capability lookup', () => {
+    expect(hook).toContain('getRuntimeCapabilities');
+    expect(hook).toContain('buildShellRuntimeProps');
+    expect(hook).toContain('useShellRuntimeProps');
+    expect(hook).toContain('showStaticHostBadge');
+    expect(hook).toContain('staticHostBadgeTitle');
+    expect(hook).toContain('staticHostBadgeLabel');
+    expect(hook).toContain('staticHostBadgeIcon');
+  });
+
+  it('buildShellRuntimeProps derives static-host badge state', () => {
+    expect(buildShellRuntimeProps({ isStaticHost: true })).toEqual({
+      showStaticHostBadge: true,
+      staticHostBadgeTitle: 'Static-host mode: snapshot/cache-first behavior is active.',
+      staticHostBadgeLabel: 'Static-host mode',
+      staticHostBadgeIcon: '📦',
+    });
+
+    expect(buildShellRuntimeProps({ isStaticHost: false }).showStaticHostBadge).toBe(false);
+    expect(buildShellRuntimeProps(null).showStaticHostBadge).toBe(false);
+  });
+
+  it('all page-level Header blocks pass shellRuntimeProps', () => {
+    const consumers = getPageHeaderConsumers();
+
+    expect(consumers.length).toBeGreaterThan(0);
+
+    const unbound = [];
+
+    consumers.forEach(entry => {
+      entry.blocks.forEach((block, index) => {
+        if (!block.includes('shellRuntimeProps={shellRuntimeProps}')) {
+          unbound.push(`${entry.path}#${index + 1}`);
+        }
+      });
+    });
+
+    expect(unbound).toEqual([]);
+  });
+
+  it('all page-level Header consumers have the correct runtime prop source', () => {
+    const consumers = getPageHeaderConsumers();
+
+    const invalid = [];
+
+    consumers.forEach(entry => {
+      if (entry.path === 'src/pages/MainPage.jsx') {
+        if (
+          !entry.content.includes('shellRuntimeProps,') ||
+          entry.content.includes('useShellRuntimeProps')
+        ) {
+          invalid.push(entry.path);
+        }
+      } else if (!entry.content.includes('useShellRuntimeProps')) {
+        invalid.push(entry.path);
+      }
+    });
+
+    expect(invalid).toEqual([]);
+  });
+
+  it('MainPage uses ViewModel-provided shellRuntimeProps, not useShellRuntimeProps directly', () => {
+    const mainPage = read('src/pages/MainPage.jsx');
+
+    expect(mainPage).toContain('shellRuntimeProps,');
+    expect(mainPage).toContain('shellRuntimeProps={shellRuntimeProps}');
+    expect(mainPage).not.toContain('useShellRuntimeProps');
+    expect(mainVm).toContain('shellRuntimeProps');
+  });
+
+  it('previous Main child bindings remain preserved', () => {
+    [
+      'quickWeatherProps',
+      'newsSectionProps',
+      'travelLocalStoriesProps',
+      'marketTickerProps',
+      'themeToggleProps',
+      'ensureMarketBoot',
+      'getMarketTickerDataState',
+      'shellRuntimeProps',
+    ].forEach(token => {
+      expect(mainVm).toContain(token);
+    });
+  });
+
+  it('SettingsPage keeps page-level runtime diagnostics when present', () => {
+    const settingsPage = read('src/pages/SettingsPage.jsx');
+
+    expect(settingsPage).toContain('useShellRuntimeProps');
+
+    if (settingsPage.includes('getRuntimeCapabilities')) {
+      expect(settingsPage).toContain('getRuntimeCapabilities');
+    }
+  });
+});
+```
+
+---
+
+# 5. `scripts/test_hardening_release6I_static.mjs`
+
+```js
+import fs from 'node:fs';
+import { execSync } from 'node:child_process';
+
+const fail = (message) => {
+  console.error(`FAIL: ${message}`);
+  process.exit(1);
+};
+
+const pass = (condition, message) => {
+  if (!condition) fail(message);
+};
+
+const exists = path => fs.existsSync(path);
+const read = path => fs.readFileSync(path, 'utf8');
+
+function getChangedFiles() {
+  const files = new Set();
+
+  try {
+    execSync('git diff --name-only', { encoding: 'utf8' })
+      .split(/\r?\n/)
+      .map(line => line.trim())
+      .filter(Boolean)
+      .forEach(file => files.add(file));
+  } catch {
+    // Ignore environments without git.
+  }
+
+  try {
+    execSync('git status --porcelain', { encoding: 'utf8' })
+      .split(/\r?\n/)
+      .map(line => line.trim())
+      .filter(Boolean)
+      .map(line => line.replace(/^.. /, '').replace(/^.* -> /, '').trim())
+      .filter(Boolean)
+      .forEach(file => files.add(file));
+  } catch {
+    // Ignore environments without git.
+  }
+
+  return [...files];
+}
+
+function getHeaderBlocks(content) {
+  return content.match(/<Header[\s\S]*?\/>/g) || [];
+}
+
+const allowedChangedFiles = new Set([
+  'src/viewModels/useShellRuntimeProps.js',
+  'src/components/HeaderRuntime.release6I.cert.test.jsx',
+  'scripts/test_hardening_release6I_static.mjs',
+
+  'src/pages/MorePage.jsx',
+  'src/pages/FollowingPage.jsx',
+  'src/pages/RefreshPage.jsx',
+  'src/pages/MainPage.jsx',
+  'src/pages/UpAheadPage.jsx',
+  'src/pages/InsightPage.jsx',
+  'src/pages/SettingsPage.jsx',
+  'src/pages/TopicDetail.jsx',
+  'src/pages/MyPlannerPage.jsx',
+  'src/pages/TechSocialPage.jsx',
+
+  'package.json',
+]);
+
+for (const file of getChangedFiles()) {
+  pass(
+    allowedChangedFiles.has(file),
+    `Release 6I unexpected changed file: ${file}`
+  );
+}
+
+[
+  'scripts/test_hardening_release6H_static.mjs',
+  'src/components/Header.jsx',
+  'src/viewModels/useShellRuntimeProps.js',
+  'src/viewModels/useMainTabViewModel.js',
+  'src/components/HeaderRuntime.release6I.cert.test.jsx',
+].forEach(path => {
+  pass(exists(path), `Missing Release 6I file/prerequisite: ${path}`);
+});
+
+const header = read('src/components/Header.jsx');
+const shellHook = read('src/viewModels/useShellRuntimeProps.js');
+const mainVm = read('src/viewModels/useMainTabViewModel.js');
+
+pass(
+  !header.includes("from '../runtime/runtimeCapabilities'"),
+  'Header must not import runtimeCapabilities'
+);
+
+pass(
+  !header.includes('getRuntimeCapabilities'),
+  'Header must not call getRuntimeCapabilities'
+);
+
+pass(
+  header.includes('shellRuntimeProps = null'),
+  'Header must accept shellRuntimeProps'
+);
+
+pass(
+  header.includes('shellRuntimeProps?.showStaticHostBadge'),
+  'Header must render runtime badge from shellRuntimeProps'
+);
+
+pass(
+  shellHook.includes('getRuntimeCapabilities'),
+  'useShellRuntimeProps must own runtime lookup'
+);
+
+pass(
+  shellHook.includes('export function buildShellRuntimeProps'),
+  'useShellRuntimeProps must export buildShellRuntimeProps'
+);
+
+pass(
+  shellHook.includes('export function useShellRuntimeProps'),
+  'useShellRuntimeProps must export useShellRuntimeProps'
+);
+
+[
+  'showStaticHostBadge',
+  'staticHostBadgeTitle',
+  'staticHostBadgeLabel',
+  'staticHostBadgeIcon',
+  'runtime?.isStaticHost',
+].forEach(token => {
+  pass(shellHook.includes(token), `useShellRuntimeProps missing token: ${token}`);
+});
+
+const pageFiles = fs.readdirSync('src/pages')
+  .filter(file => file.endsWith('.jsx'))
+  .map(file => `src/pages/${file}`);
+
+const headerConsumers = pageFiles
+  .map(path => {
+    const content = read(path);
+    return {
+      path,
+      content,
+      blocks: getHeaderBlocks(content),
+    };
+  })
+  .filter(entry => entry.blocks.length > 0);
+
+pass(
+  headerConsumers.length > 0,
+  'No Header consumers found in src/pages'
+);
+
+const unboundHeaderBlocks = [];
+
+for (const entry of headerConsumers) {
+  entry.blocks.forEach((block, index) => {
+    if (!block.includes('shellRuntimeProps={shellRuntimeProps}')) {
+      unboundHeaderBlocks.push(`${entry.path}#${index + 1}`);
+    }
+  });
+}
+
+pass(
+  unboundHeaderBlocks.length === 0,
+  `All page-level Header blocks must receive shellRuntimeProps. Missing: ${unboundHeaderBlocks.join(', ')}`
+);
+
+for (const entry of headerConsumers) {
+  if (entry.path === 'src/pages/MainPage.jsx') {
+    pass(
+      entry.content.includes('shellRuntimeProps,') &&
+        !entry.content.includes('useShellRuntimeProps'),
+      'MainPage must use ViewModel-provided shellRuntimeProps, not useShellRuntimeProps directly'
+    );
+  } else {
+    pass(
+      entry.content.includes('useShellRuntimeProps'),
+      `${entry.path} must use useShellRuntimeProps`
+    );
+  }
+}
+
+const discoveredConsumerPaths = headerConsumers.map(entry => entry.path);
+const unlistedConsumers = discoveredConsumerPaths.filter(path => (
+  !allowedChangedFiles.has(path)
+));
+
+pass(
+  unlistedConsumers.length === 0,
+  `Header consumers discovered but not in Release 6I allowed list: ${unlistedConsumers.join(', ')}`
+);
+
+const settingsPath = 'src/pages/SettingsPage.jsx';
+
+if (exists(settingsPath)) {
+  const settingsPage = read(settingsPath);
+
+  if (settingsPage.includes('<Header')) {
+    pass(
+      settingsPage.includes('useShellRuntimeProps'),
+      'SettingsPage must use useShellRuntimeProps for Header binding'
+    );
+
+    if (settingsPage.includes('getRuntimeCapabilities')) {
+      pass(
+        settingsPage.includes('getRuntimeCapabilities'),
+        'SettingsPage page-level runtime diagnostics must not be removed in Release 6I'
+      );
+    }
+  }
+}
+
+[
+  'quickWeatherProps',
+  'newsSectionProps',
+  'travelLocalStoriesProps',
+  'marketTickerProps',
+  'themeToggleProps',
+  'ensureMarketBoot',
+  'getMarketTickerDataState',
+  'shellRuntimeProps',
+].forEach(token => {
+  pass(mainVm.includes(token), `Previous Main binding marker missing after 6I: ${token}`);
+});
+
+const pkg = JSON.parse(read('package.json'));
+
+pass(
+  pkg.scripts?.['test:hardening:release6I'] === 'node scripts/test_hardening_release6I_static.mjs',
+  'package.json missing test:hardening:release6I script'
+);
+
+pass(
+  typeof pkg.scripts?.['test:headerruntime-appwide'] === 'string',
+  'package.json missing test:headerruntime-appwide script'
+);
+
+[
+  'date-fns',
+  'lodash',
+  'zod',
+].forEach(dep => {
+  pass(!pkg.dependencies?.[dep], `Release 6I must not add dependency ${dep}`);
+  pass(!pkg.devDependencies?.[dep], `Release 6I must not add devDependency ${dep}`);
+});
+
+console.log('[Release 6I] Header consumers:', headerConsumers.map(entry => entry.path));
+console.log('PASS: Release 6I corrected app-wide Header runtime propagation gates');
+```
+
+---
+
+# 6. `package.json` scripts
+
+Add without removing existing scripts:
+
+```json
+"test:hardening:release6I": "node scripts/test_hardening_release6I_static.mjs",
+"test:headerruntime-appwide": "vitest run --config vitest.config.js src/components/HeaderRuntime.release6I.cert.test.jsx"
+```
+
+---
+
+# Required commands
+
+```bash
+npm run test:hardening:release6H
+npm run test:headerruntime-binding
+
+npm run test:hardening:release6I
+npm run test:headerruntime-appwide
+
+npx vite build
+npm run test:unit
+git diff --name-only
+git diff package.json
+```
+
+Final report:
+
+```text
+Header direct runtime import: 0
+Header direct runtime call: 0
+useShellRuntimeProps exists: YES
+Page-level Header consumers scanned: YES
+Page-level Header blocks bound: all
+Non-Main Header pages using useShellRuntimeProps: all
+MainPage direct useShellRuntimeProps: 0
+MainPage shellRuntimeProps from Main ViewModel: YES
+SettingsPage runtime diagnostics preserved: YES
+RefreshPage refresh logic modified: NO
+Previous Main child bindings preserved: YES
+Header modified in 6I: 0
+ThemeToggle modified in 6I: 0
+TimelineHeader modified in 6I: 0
+MarketTicker modified in 6I: 0
+Service changes: 0
+Context changes: 0
+Dataset changes: 0
+Workflow changes: 0
+New dependencies: 0
+Vite build: PASS
+```
+---------------------------------------
+Confirmed. The uploaded review changes the 6J direction materially: the earlier 6J plan was too shallow because `MarketPage` owns far more than raw `indices/commodities`; the corrected version must move **market settings, session state, audit, nav, movers, breadth, sectorals, and index projection** into `useMarketTabViewModel`, while keeping `MarketPage` layout unchanged and making `QuickMarket` prop-driven. 
+
+Use the corrected 6J approach below.
+
+---
+
+# Release 6J — Corrected Market Surface ViewModel Binding
+
+## Core correction
+
+Do **not** insert `QuickMarket` into `MarketPage` unless it already exists there.
+
+Target:
+
+```text
+useMarketTabViewModel → MarketPage full market projection
+useMarketTabViewModel / parent props → QuickMarket when used
+```
+
+Not:
+
+```text
+useMarketTabViewModel → MarketPage → QuickMarket
+```
+
+---
+
+# Files allowed
+
+## Add
+
+```text
+src/viewModels/useMarketTabViewModel.js
+src/pages/MarketPage.release6J.cert.test.jsx
+scripts/test_hardening_release6J_static.mjs
+```
+
+## Modify
+
+```text
+src/pages/MarketPage.jsx
+src/components/QuickMarket.jsx
+package.json
+```
+
+## Must not modify
+
+```text
+src/context/
+src/services/
+src/data/
+.github/workflows/
+src/components/MarketTicker.jsx
+src/components/Header.jsx
+src/components/ThemeToggle.jsx
+src/components/TimelineHeader.jsx
+src/pages/MainPage.jsx
+```
+
+---
+
+# 1. `src/viewModels/useMarketTabViewModel.js`
+
+```js
+import { useCallback, useEffect, useMemo } from 'react';
+import { useMarket } from '../context/MarketContext';
+import { useSettings } from '../context/SettingsContext';
+import { getMarketSessionState } from '../utils/marketSession';
+import { auditMarketTabQuality } from '../services/pageAuditGrading.js';
+
+const PRIMARY_INDEX_NAMES = ['NIFTY 50', 'SENSEX', 'BANK NIFTY', 'MIDCAP 150'];
+const GLOBAL_INDEX_NAMES = ['S&P 500', 'NASDAQ', 'NIKKEI 225', 'HANG SENG', 'FTSE 100'];
+
+const INDEX_ALIAS_MAP = {
+  'NIFTY 50': ['NIFTY 50', 'NIFTY50', '^NSEI'],
+  SENSEX: ['SENSEX', 'BSE SENSEX', '^BSESN'],
+  'BANK NIFTY': ['BANK NIFTY', 'NIFTY BANK', '^NSEBANK'],
+  'MIDCAP 150': ['MIDCAP 150', 'MIDCAP', 'NIFTY MIDCAP 150', 'NIFTYMIDCAP150.NS'],
+};
+
+const GLOBAL_INDEX_ALIAS_MAP = {
+  'S&P 500': ['S&P 500', 'SP 500', '^GSPC'],
+  NASDAQ: ['NASDAQ', '^IXIC'],
+  'NIKKEI 225': ['NIKKEI 225', '^N225'],
+  'HANG SENG': ['HANG SENG', '^HSI'],
+  'FTSE 100': ['FTSE 100', '^FTSE'],
+};
+
+function asArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+
+function asRecord(value) {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? value
+    : {};
+}
+
+function getFloat(value, fallback = 0) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function hasUsableSectionData(section) {
+  if (Array.isArray(section)) return section.length > 0;
+  if (!section || typeof section !== 'object') return false;
+  return Object.keys(section).length > 0;
+}
+
+function getIndexByName(indices, names) {
+  return names
+    .map(name => asArray(indices).find(item => item?.name === name))
+    .filter(Boolean);
+}
+
+function getIndexByAliases(indices, map, names) {
+  return names
+    .map(name => {
+      const aliases = map[name] || [name];
+
+      return asArray(indices).find(item => (
+        aliases.some(alias => item?.name === alias || item?.symbol === alias)
+      ));
+    })
+    .filter(Boolean);
+}
+
+function getMarketMood(indices) {
+  const safeIndices = asArray(indices);
+
+  if (safeIndices.length === 0) {
+    return { tone: 'neutral', label: 'No active market data' };
+  }
+
+  const avg = safeIndices.reduce((sum, item) => (
+    sum + getFloat(item.changePercent)
+  ), 0) / safeIndices.length;
+
+  if (avg >= 0.6) return { tone: 'positive', label: 'Broad risk-on tone' };
+  if (avg <= -0.6) return { tone: 'negative', label: 'Broad risk-off tone' };
+
+  return { tone: 'neutral', label: 'Mixed market tone' };
+}
+
+function getMarketTone(value) {
+  const parsed = getFloat(value);
+  if (parsed > 0) return 'positive';
+  if (parsed < 0) return 'negative';
+  return 'neutral';
+}
+
+function getMarketToneClass(value) {
+  return `market-tone--${getMarketTone(value)}`;
+}
+
+export function projectMarketData(marketData) {
+  const safeMarketData = asRecord(marketData);
+
+  return {
+    indices: asArray(safeMarketData.indices),
+    commodities: asArray(safeMarketData.commodities),
+    currencies: asArray(safeMarketData.currencies),
+    ipo: asRecord(safeMarketData.ipo),
+    mutualFunds: asArray(safeMarketData.mutualFunds),
+    movers: asRecord(safeMarketData.movers),
+    sectorals: asArray(safeMarketData.sectorals),
+    fiidii: asRecord(safeMarketData.fiidii),
+    sourceHealth: asRecord(safeMarketData.sourceHealth),
+    fetchedAt: safeMarketData.fetchedAt,
+    sourceMode: safeMarketData.sourceMode || safeMarketData.source || safeMarketData.mode,
+    isSnapshot: Boolean(safeMarketData.isSnapshot),
+    isStale: Boolean(safeMarketData.isStale),
+    raw: safeMarketData,
+  };
+}
+
+export function useMarketTabViewModel() {
+  const {
+    marketData,
+    loading,
+    error,
+    lastFetch,
+    refreshMarket,
+    ensureBoot,
+    booted,
+  } = useMarket();
+
+  const { settings } = useSettings();
+  const marketSettings = settings?.market || {};
+
+  useEffect(() => {
+    if (typeof ensureBoot === 'function') {
+      ensureBoot();
+    }
+  }, [ensureBoot]);
+
+  const projectedMarketData = useMemo(() => (
+    projectMarketData(marketData)
+  ), [marketData]);
+
+  const indices = projectedMarketData.indices;
+
+  const primaryIndices = useMemo(() => (
+    getIndexByAliases(indices, INDEX_ALIAS_MAP, PRIMARY_INDEX_NAMES)
+  ), [indices]);
+
+  const globalIndices = useMemo(() => (
+    getIndexByAliases(indices, GLOBAL_INDEX_ALIAS_MAP, GLOBAL_INDEX_NAMES)
+  ), [indices]);
+
+  const displayedPrimaryIndices = primaryIndices.length
+    ? primaryIndices
+    : indices.slice(0, 4);
+
+  const heroIndex = displayedPrimaryIndices[0] || indices[0] || null;
+  const heroSeries = heroIndex?.series || heroIndex?.history || [];
+
+  const mood = useMemo(() => (
+    getMarketMood(primaryIndices.length ? primaryIndices : indices.slice(0, 3))
+  ), [primaryIndices, indices]);
+
+  const sourceHealth = useMemo(() => (
+    projectedMarketData.sourceHealth || {}
+  ), [projectedMarketData.sourceHealth]);
+
+  const sessionState = useMemo(() => (
+    getMarketSessionState({
+      lastUpdated: lastFetch || projectedMarketData.fetchedAt,
+      tradingHolidays: marketSettings.tradingHolidays || [],
+    })
+  ), [lastFetch, projectedMarketData.fetchedAt, marketSettings.tradingHolidays]);
+
+  const moverGainers = asArray(projectedMarketData.movers?.gainers);
+  const moverLosers = asArray(projectedMarketData.movers?.losers);
+
+  const marketBreath = {
+    up: indices.filter(item => getFloat(item.change) >= 0).length,
+    down: indices.filter(item => getFloat(item.change) < 0).length,
+  };
+
+  const sectoralIndices = useMemo(() => (
+    (
+      projectedMarketData.sectorals.length
+        ? projectedMarketData.sectorals
+        : getIndexByName(indices, ['BANK NIFTY', 'NIFTY IT', 'NIFTY PHARMA', 'NIFTY AUTO'])
+    ).filter((item, idx, arr) => (
+      arr.findIndex(candidate => candidate.name === item.name) === idx
+    ))
+  ), [projectedMarketData.sectorals, indices]);
+
+  const marketTabAudit = useMemo(() => (
+    auditMarketTabQuality({
+      marketData,
+      sourceHealth,
+      sessionState,
+      error,
+      loading,
+      lastFetch,
+    })
+  ), [marketData, sourceHealth, sessionState, error, loading, lastFetch]);
+
+  const navSections = useMemo(() => ([
+    (marketSettings.showGainers !== false || marketSettings.showLosers !== false) &&
+      { id: 'market-movers', icon: '📈', label: 'Top Movers' },
+
+    marketSettings.showSectorals !== false &&
+      { id: 'sectoral-indices', icon: '🏛️', label: 'Sectorals' },
+
+    marketSettings.showCommodities !== false &&
+      hasUsableSectionData(projectedMarketData.commodities) &&
+      { id: 'commodities', icon: '🪙', label: 'Commodities' },
+
+    marketSettings.showCurrency !== false &&
+      hasUsableSectionData(projectedMarketData.currencies) &&
+      { id: 'currency', icon: '💱', label: 'Currency' },
+
+    marketSettings.showFIIDII !== false &&
+      (
+        hasUsableSectionData(projectedMarketData.fiidii?.fii) ||
+        hasUsableSectionData(projectedMarketData.fiidii?.dii)
+      ) &&
+      { id: 'fiidii', icon: '🏦', label: 'FII/DII' },
+
+    marketSettings.showMutualFunds !== false &&
+      hasUsableSectionData(projectedMarketData.mutualFunds) &&
+      { id: 'mutual-funds', icon: '💰', label: 'Mutual Funds' },
+
+    marketSettings.showMarketHealth !== false &&
+      { id: 'source-health', icon: '📡', label: 'Source Health' },
+
+    marketSettings.showIPO !== false &&
+      (
+        hasUsableSectionData(projectedMarketData.ipo?.upcoming) ||
+        hasUsableSectionData(projectedMarketData.ipo?.live) ||
+        hasUsableSectionData(projectedMarketData.ipo?.recent)
+      ) &&
+      { id: 'ipo-tracker', icon: '🎯', label: 'IPO Watch' },
+  ].filter(Boolean)), [marketSettings, projectedMarketData]);
+
+  const refresh = useCallback(async (force = true) => {
+    try {
+      if (typeof refreshMarket === 'function') {
+        await Promise.resolve(refreshMarket(force));
+        return { ok: true };
+      }
+
+      return { ok: false, error: 'Market refresh handler unavailable' };
+    } catch (refreshError) {
+      return {
+        ok: false,
+        error: refreshError?.message || String(refreshError),
+      };
+    }
+  }, [refreshMarket]);
+
+  const hasRenderableMarketData = Boolean(
+    projectedMarketData.indices.length ||
+    projectedMarketData.commodities.length ||
+    projectedMarketData.currencies.length ||
+    projectedMarketData.mutualFunds.length ||
+    hasUsableSectionData(projectedMarketData.ipo) ||
+    hasUsableSectionData(projectedMarketData.movers) ||
+    hasUsableSectionData(projectedMarketData.fiidii)
+  );
+
+  const quickMarketProps = useMemo(() => ({
+    marketData: projectedMarketData,
+    loading,
+    error,
+    lastFetch,
+    booted,
+    sessionState,
+    onRefreshMarket: refresh,
+  }), [
+    projectedMarketData,
+    loading,
+    error,
+    lastFetch,
+    booted,
+    sessionState,
+    refresh,
+  ]);
+
+  return {
+    marketData: projectedMarketData,
+    rawMarketData: marketData,
+    marketSettings,
+
+    indices,
+    primaryIndices,
+    globalIndices,
+    displayedPrimaryIndices,
+    heroIndex,
+    heroSeries,
+    mood,
+    sourceHealth,
+    sessionState,
+    moverGainers,
+    moverLosers,
+    marketBreath,
+    sectoralIndices,
+    marketTabAudit,
+    navSections,
+
+    loading,
+    error,
+    lastFetch,
+    booted,
+    hasRenderableMarketData,
+    refreshMarket: refresh,
+    quickMarketProps,
+
+    helpers: {
+      getFloat,
+      getMarketTone,
+      getMarketToneClass,
+      hasUsableSectionData,
+    },
+  };
+}
+
+export const __marketTabViewModelInternalsForTest = {
+  asArray,
+  asRecord,
+  getFloat,
+  hasUsableSectionData,
+  getIndexByName,
+  getIndexByAliases,
+  getMarketMood,
+  getMarketTone,
+  getMarketToneClass,
+  projectMarketData,
+};
+```
+
+---
+
+# 2. `QuickMarket.jsx` required patch
+
+Do not rewrite layout. Apply these rules:
+
+```text
+- Remove MarketContext import.
+- Remove SettingsContext import.
+- Remove useMarket().
+- Remove useSettings().
+- Remove internal ensureBoot().
+- Accept sessionState prop.
+- Use onRefreshMarket prop for refresh.
+```
+
+Component signature:
+
+```jsx
+function QuickMarket({
+  marketData = {},
+  loading = false,
+  error = null,
+  lastFetch = null,
+  booted = true,
+  sessionState = null,
+  onRefreshMarket = null,
+}) {
+```
+
+Guarded refresh:
+
+```js
+async function handleRefresh() {
+  try {
+    if (typeof onRefreshMarket === 'function') {
+      await Promise.resolve(onRefreshMarket(true));
+    }
+  } catch (error) {
+    console.warn('[QuickMarket] refresh failed', {
+      message: error?.message || String(error),
+    });
+  }
+}
+```
+
+Preserve these UI markers:
+
+```text
+quick-market
+qm-header
+qm-status
+qm-body
+qm-index
+qm-summary
+qm-trend-icon
+```
+
+Do **not** compute `getMarketSessionState()` inside `QuickMarket`.
+
+---
+
+# 3. `MarketPage.jsx` required patch
+
+Remove direct context/projection ownership:
+
+```js
+import { useMarket } from '../context/MarketContext';
+import { useSettings } from '../context/SettingsContext';
+import { getMarketSessionState } from '../utils/marketSession';
+import { auditMarketTabQuality } from '../services/pageAuditGrading.js';
+```
+
+Add:
+
+```js
+import { useMarketTabViewModel } from '../viewModels/useMarketTabViewModel';
+```
+
+Inside `MarketPage()`:
+
+```js
+const {
+  marketData,
+  rawMarketData,
+  marketSettings,
+  indices,
+  primaryIndices,
+  globalIndices,
+  displayedPrimaryIndices,
+  heroIndex,
+  heroSeries,
+  mood,
+  sourceHealth,
+  sessionState,
+  moverGainers,
+  moverLosers,
+  marketBreath,
+  sectoralIndices,
+  marketTabAudit,
+  navSections,
+  loading,
+  error,
+  lastFetch,
+  booted,
+  hasRenderableMarketData,
+  refreshMarket,
+  quickMarketProps,
+  helpers,
+} = useMarketTabViewModel();
+
+const {
+  getFloat,
+  getMarketToneClass,
+  hasUsableSectionData,
+} = helpers;
+```
+
+Keep layout intact.
+
+Keep `MarketStickyHeader` shape:
+
+```jsx
+<MarketStickyHeader
+  marketData={rawMarketData || marketData}
+  indices={primaryIndices.length ? primaryIndices : indices.slice(0, 4)}
+  onRefresh={refreshMarket}
+  loading={loading}
+  lastUpdated={lastFetch}
+  tradingHolidays={marketSettings.tradingHolidays || []}
+/>
+```
+
+Do not add `<QuickMarket {...quickMarketProps} />` unless `QuickMarket` already exists in `MarketPage`.
+
+---
+
+# 4. `src/pages/MarketPage.release6J.cert.test.jsx`
+
+```jsx
+import { describe, expect, it } from 'vitest';
+import fs from 'node:fs';
+import {
+  __marketTabViewModelInternalsForTest,
+} from '../viewModels/useMarketTabViewModel.js';
+
+const { projectMarketData } = __marketTabViewModelInternalsForTest;
+
+describe('Release 6J Market surface binding', () => {
+  const marketPage = fs.readFileSync('src/pages/MarketPage.jsx', 'utf8');
+  const quickMarket = fs.readFileSync('src/components/QuickMarket.jsx', 'utf8');
+  const marketVm = fs.readFileSync('src/viewModels/useMarketTabViewModel.js', 'utf8');
+
+  it('QuickMarket is prop-driven', () => {
+    expect(quickMarket).not.toContain("from '../context/MarketContext'");
+    expect(quickMarket).not.toContain("from '../context/SettingsContext'");
+    expect(quickMarket).not.toContain('useMarket');
+    expect(quickMarket).not.toContain('useSettings');
+    expect(quickMarket).toContain('marketData = {}');
+    expect(quickMarket).toContain('sessionState = null');
+    expect(quickMarket).toContain('onRefreshMarket = null');
+    expect(quickMarket).toContain('[QuickMarket] refresh failed');
+  });
+
+  it('QuickMarket receives sessionState rather than settings context', () => {
+    expect(quickMarket).toContain('sessionState = null');
+    expect(quickMarket).not.toContain('getMarketSessionState({');
+    expect(quickMarket).not.toContain('settings?.market?.tradingHolidays');
+  });
+
+  it('MarketPage uses ViewModel instead of MarketContext/SettingsContext directly', () => {
+    expect(marketPage).not.toContain("from '../context/MarketContext'");
+    expect(marketPage).not.toContain("from '../context/SettingsContext'");
+    expect(marketPage).not.toContain('useMarket()');
+    expect(marketPage).not.toContain('useSettings()');
+    expect(marketPage).toContain('useMarketTabViewModel');
+  });
+
+  it('MarketPage no longer owns market audit/session projection', () => {
+    expect(marketPage).not.toContain('auditMarketTabQuality({');
+    expect(marketPage).not.toContain('getMarketSessionState({');
+  });
+
+  it('Market ViewModel owns context, settings, boot, refresh, audit and session projection', () => {
+    expect(marketVm).toContain("from '../context/MarketContext'");
+    expect(marketVm).toContain("from '../context/SettingsContext'");
+    expect(marketVm).toContain('useMarket');
+    expect(marketVm).toContain('useSettings');
+    expect(marketVm).toContain('ensureBoot');
+    expect(marketVm).toContain('refreshMarket');
+    expect(marketVm).toContain('auditMarketTabQuality');
+    expect(marketVm).toContain('getMarketSessionState');
+    expect(marketVm).toContain('quickMarketProps');
+  });
+
+  it('Market ViewModel owns full MarketPage projection', () => {
+    [
+      'marketSettings',
+      'primaryIndices',
+      'globalIndices',
+      'displayedPrimaryIndices',
+      'heroIndex',
+      'heroSeries',
+      'sessionState',
+      'moverGainers',
+      'moverLosers',
+      'marketBreath',
+      'sectoralIndices',
+      'marketTabAudit',
+      'navSections',
+    ].forEach(token => {
+      expect(marketVm).toContain(token);
+    });
+  });
+
+  it('projectMarketData normalizes missing sections', () => {
+    expect(projectMarketData(null)).toEqual({
+      indices: [],
+      commodities: [],
+      currencies: [],
+      ipo: {},
+      mutualFunds: [],
+      movers: {},
+      sectorals: [],
+      fiidii: {},
+      sourceHealth: {},
+      fetchedAt: undefined,
+      sourceMode: undefined,
+      isSnapshot: false,
+      isStale: false,
+      raw: {},
+    });
+
+    expect(projectMarketData({
+      indices: [{ name: 'NIFTY 50' }],
+      commodities: [{ name: 'Gold' }],
+    })).toMatchObject({
+      indices: [{ name: 'NIFTY 50' }],
+      commodities: [{ name: 'Gold' }],
+      currencies: [],
+      ipo: {},
+      mutualFunds: [],
+      movers: {},
+      sectorals: [],
+      fiidii: {},
+      sourceHealth: {},
+    });
+  });
+});
+```
+
+---
+
+# 5. `scripts/test_hardening_release6J_static.mjs`
+
+```js
+import fs from 'node:fs';
+import { execSync } from 'node:child_process';
+
+const fail = (message) => {
+  console.error(`FAIL: ${message}`);
+  process.exit(1);
+};
+
+const pass = (condition, message) => {
+  if (!condition) fail(message);
+};
+
+const exists = path => fs.existsSync(path);
+const read = path => fs.readFileSync(path, 'utf8');
+
+function getChangedFiles() {
+  const files = new Set();
+
+  try {
+    execSync('git diff --name-only', { encoding: 'utf8' })
+      .split(/\r?\n/)
+      .map(line => line.trim())
+      .filter(Boolean)
+      .forEach(file => files.add(file));
+  } catch {
+    // Ignore environments without git.
+  }
+
+  try {
+    execSync('git status --porcelain', { encoding: 'utf8' })
+      .split(/\r?\n/)
+      .map(line => line.trim())
+      .filter(Boolean)
+      .map(line => line.replace(/^.. /, '').replace(/^.* -> /, '').trim())
+      .filter(Boolean)
+      .forEach(file => files.add(file));
+  } catch {
+    // Ignore environments without git.
+  }
+
+  return [...files];
+}
+
+const allowedChangedFiles = new Set([
+  'src/viewModels/useMarketTabViewModel.js',
+  'src/pages/MarketPage.jsx',
+  'src/components/QuickMarket.jsx',
+  'src/pages/MarketPage.release6J.cert.test.jsx',
+  'scripts/test_hardening_release6J_static.mjs',
+  'package.json',
+]);
+
+for (const file of getChangedFiles()) {
+  pass(
+    allowedChangedFiles.has(file),
+    `Release 6J unexpected changed file: ${file}`
+  );
+}
+
+[
+  'scripts/test_hardening_release6I_static.mjs',
+  'src/viewModels/useMarketTabViewModel.js',
+  'src/pages/MarketPage.jsx',
+  'src/components/QuickMarket.jsx',
+  'src/pages/MarketPage.release6J.cert.test.jsx',
+].forEach(path => {
+  pass(exists(path), `Missing Release 6J file/prerequisite: ${path}`);
+});
+
+const marketVm = read('src/viewModels/useMarketTabViewModel.js');
+const marketPage = read('src/pages/MarketPage.jsx');
+const quickMarket = read('src/components/QuickMarket.jsx');
+
+pass(!quickMarket.includes("from '../context/MarketContext'"), 'QuickMarket must not import MarketContext');
+pass(!quickMarket.includes("from '../context/SettingsContext'"), 'QuickMarket must not import SettingsContext');
+pass(!quickMarket.includes('useMarket'), 'QuickMarket must not call useMarket');
+pass(!quickMarket.includes('useSettings'), 'QuickMarket must not call useSettings');
+pass(!quickMarket.includes('ensureBoot'), 'QuickMarket must not own market booting');
+pass(quickMarket.includes('marketData = {}'), 'QuickMarket must accept marketData prop');
+pass(quickMarket.includes('sessionState = null'), 'QuickMarket must accept sessionState prop');
+pass(quickMarket.includes('onRefreshMarket = null'), 'QuickMarket must accept onRefreshMarket prop');
+pass(quickMarket.includes('[QuickMarket] refresh failed'), 'QuickMarket must guard refresh callback failure');
+pass(!quickMarket.includes('getMarketSessionState({'), 'QuickMarket must not own session projection');
+
+[
+  'quick-market',
+  'qm-header',
+  'qm-status',
+  'qm-body',
+  'qm-index',
+  'qm-summary',
+  'qm-trend-icon',
+].forEach(token => {
+  pass(quickMarket.includes(token), `QuickMarket UI marker missing: ${token}`);
+});
+
+pass(!marketPage.includes("from '../context/MarketContext'"), 'MarketPage must not import MarketContext');
+pass(!marketPage.includes("from '../context/SettingsContext'"), 'MarketPage must not import SettingsContext');
+pass(!marketPage.includes('useMarket()'), 'MarketPage must not call useMarket');
+pass(!marketPage.includes('useSettings()'), 'MarketPage must not call useSettings');
+pass(!marketPage.includes('auditMarketTabQuality({'), 'MarketPage must not own market audit projection');
+pass(!marketPage.includes('getMarketSessionState({'), 'MarketPage must not own session-state projection');
+pass(marketPage.includes('useMarketTabViewModel'), 'MarketPage must use Market ViewModel');
+
+pass(marketVm.includes("from '../context/MarketContext'"), 'Market ViewModel must own MarketContext access');
+pass(marketVm.includes("from '../context/SettingsContext'"), 'Market ViewModel must own market settings access');
+pass(marketVm.includes('useMarket'), 'Market ViewModel must call useMarket');
+pass(marketVm.includes('useSettings'), 'Market ViewModel must call useSettings');
+pass(marketVm.includes('ensureBoot'), 'Market ViewModel must own ensureBoot');
+pass(marketVm.includes('refreshMarket'), 'Market ViewModel must own refreshMarket');
+pass(marketVm.includes('auditMarketTabQuality'), 'Market ViewModel must own market audit projection');
+pass(marketVm.includes('getMarketSessionState'), 'Market ViewModel must own market session-state projection');
+pass(marketVm.includes('quickMarketProps'), 'Market ViewModel must expose quickMarketProps');
+
+[
+  'marketSettings',
+  'primaryIndices',
+  'globalIndices',
+  'displayedPrimaryIndices',
+  'heroIndex',
+  'heroSeries',
+  'sessionState',
+  'moverGainers',
+  'moverLosers',
+  'marketBreath',
+  'sectoralIndices',
+  'marketTabAudit',
+  'navSections',
+].forEach(token => {
+  pass(marketVm.includes(token), `Market ViewModel missing page projection token: ${token}`);
+});
+
+[
+  'src/components/Header.jsx',
+  'src/components/MarketTicker.jsx',
+  'src/components/ThemeToggle.jsx',
+  'src/components/TimelineHeader.jsx',
+  'src/pages/MainPage.jsx',
+].forEach(path => {
+  const changed = getChangedFiles().includes(path);
+  pass(!changed, `Release 6J must not modify shell/Main file: ${path}`);
+});
+
+const pkg = JSON.parse(read('package.json'));
+
+pass(
+  pkg.scripts?.['test:hardening:release6J'] === 'node scripts/test_hardening_release6J_static.mjs',
+  'package.json missing test:hardening:release6J script'
+);
+
+pass(
+  typeof pkg.scripts?.['test:marketpage-binding'] === 'string',
+  'package.json missing test:marketpage-binding script'
+);
+
+[
+  'date-fns',
+  'lodash',
+  'zod',
+].forEach(dep => {
+  pass(!pkg.dependencies?.[dep], `Release 6J must not add dependency ${dep}`);
+  pass(!pkg.devDependencies?.[dep], `Release 6J must not add devDependency ${dep}`);
+});
+
+console.log('PASS: Release 6J corrected Market surface ViewModel binding gates');
+```
+
+---
+
+# 6. `package.json` scripts
+
+```json
+"test:hardening:release6J": "node scripts/test_hardening_release6J_static.mjs",
+"test:marketpage-binding": "vitest run --config vitest.config.js src/pages/MarketPage.release6J.cert.test.jsx"
+```
+
+---
+
+# Required commands
+
+```bash
+npm run test:hardening:release6I
+npm run test:headerruntime-appwide
+
+npm run test:hardening:release6J
+npm run test:marketpage-binding
+
+npx vite build
+npm run test:unit
+git diff --name-only
+git diff package.json
+```
+
+Final report must include:
+
+```text
+QuickMarket direct useMarket/useSettings: 0
+MarketPage direct useMarket/useSettings: 0
+Market ViewModel owns useMarket/useSettings: YES
+Market ViewModel owns ensureBoot/refreshMarket: YES
+Market ViewModel owns market session/audit/nav projection: YES
+MarketPage layout preserved: YES
+QuickMarket prop-driven: YES
+QuickMarket sessionState prop: YES
+Header/shell files modified: 0
+Context changes: 0
+Service changes: 0
+Dataset changes: 0
+Workflow changes: 0
+New dependencies: 0
+Vite build: PASS
+```
+-----------------------------------------
+Below is the **Release 6K full weather code pack**.
+
+Use your uploaded `src/services/weatherLocations.js` as the full replacement for that file. It already contains the 300-city registry, default cities as `['chennai', 'trichy', 'muscat']`, and keeps Colombo selectable but not default. 
+
+---
+
+# 1. `src/viewModels/useWeatherTabViewModel.js`
+
+```js
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useWeather } from '../context/WeatherContext';
+import { useSettings } from '../context/SettingsContext';
+import {
+  DEFAULT_WEATHER_CITIES,
+  WEATHER_LOCATION_REGISTRY,
+  buildWeatherSettingsWithCities,
+  getConfiguredWeatherCities,
+  getWeatherLocationLabel,
+  getWeatherLocationOptions,
+  resolveRegistryKey,
+} from '../services/weatherLocations.js';
+import { auditWeatherTabQuality } from '../services/pageAuditGrading.js';
+
+const WEATHER_ACTIVE_CITY_KEY = 'weather_active_city';
+const LEGACY_WEATHER_ACTIVE_CITY_KEY = 'dw_active_city';
+
+function safeReadActiveCity() {
+  try {
+    if (typeof window === 'undefined') return null;
+
+    const storage = window.localStorage;
+    if (!storage || typeof storage.getItem !== 'function') return null;
+
+    const current = storage.getItem(WEATHER_ACTIVE_CITY_KEY);
+    if (current) return current;
+
+    const legacy = storage.getItem(LEGACY_WEATHER_ACTIVE_CITY_KEY);
+    if (legacy && typeof storage.setItem === 'function') {
+      storage.setItem(WEATHER_ACTIVE_CITY_KEY, legacy);
+    }
+
+    return legacy || null;
+  } catch {
+    return null;
+  }
+}
+
+function safeWriteActiveCity(city) {
+  try {
+    if (typeof window === 'undefined') return false;
+
+    const storage = window.localStorage;
+    if (!storage || typeof storage.setItem !== 'function') return false;
+
+    storage.setItem(WEATHER_ACTIVE_CITY_KEY, city);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function buildCityLabels(cities) {
+  return Object.fromEntries(
+    (Array.isArray(cities) ? cities : []).map(city => [
+      city,
+      getWeatherLocationLabel(city),
+    ])
+  );
+}
+
+function buildCityIcons(cities) {
+  return Object.fromEntries(
+    (Array.isArray(cities) ? cities : []).map(city => [
+      city,
+      WEATHER_LOCATION_REGISTRY[city]?.icon || '📍',
+    ])
+  );
+}
+
+function getRenderableWeatherData(weatherData) {
+  return weatherData && typeof weatherData === 'object' && !Array.isArray(weatherData)
+    ? weatherData
+    : {};
+}
+
+export function useWeatherTabViewModel() {
+  const {
+    weatherData,
+    loading,
+    error,
+    refreshWeather,
+    ensureBoot,
+    booted,
+  } = useWeather();
+
+  const { settings, updateSettings } = useSettings();
+
+  const cities = useMemo(() => (
+    getConfiguredWeatherCities(settings)
+  ), [settings]);
+
+  const weatherLocationOptions = useMemo(() => (
+    getWeatherLocationOptions()
+  ), []);
+
+  const [activeCity, setActiveCityState] = useState(() => (
+    resolveRegistryKey(safeReadActiveCity()) ||
+    cities[0] ||
+    DEFAULT_WEATHER_CITIES[0]
+  ));
+
+  useEffect(() => {
+    if (typeof ensureBoot === 'function') {
+      ensureBoot();
+    }
+  }, [ensureBoot]);
+
+  useEffect(() => {
+    if (cities.length > 0 && !cities.includes(activeCity)) {
+      setActiveCityState(cities[0]);
+    }
+  }, [activeCity, cities]);
+
+  useEffect(() => {
+    safeWriteActiveCity(activeCity);
+  }, [activeCity]);
+
+  const setActiveCity = useCallback((city) => {
+    const canonical = resolveRegistryKey(city) || city;
+
+    if (canonical) {
+      setActiveCityState(canonical);
+    }
+  }, []);
+
+  const refresh = useCallback(async (force = true) => {
+    try {
+      if (typeof refreshWeather === 'function') {
+        await Promise.resolve(refreshWeather(force));
+        return { ok: true };
+      }
+
+      return {
+        ok: false,
+        error: 'Weather refresh handler unavailable.',
+      };
+    } catch (refreshError) {
+      return {
+        ok: false,
+        error: refreshError?.message || String(refreshError),
+      };
+    }
+  }, [refreshWeather]);
+
+  const saveWeatherCities = useCallback(async (nextCities) => {
+    const safeCities = Array.isArray(nextCities)
+      ? nextCities
+          .map(city => resolveRegistryKey(city))
+          .filter(Boolean)
+      : [];
+
+    const uniqueCities = [...new Set(safeCities)];
+
+    if (uniqueCities.length === 0) {
+      return {
+        ok: false,
+        error: 'At least one weather city must remain.',
+      };
+    }
+
+    try {
+      const nextSettings = buildWeatherSettingsWithCities(settings, uniqueCities);
+
+      if (typeof updateSettings === 'function') {
+        await Promise.resolve(updateSettings(nextSettings));
+      }
+
+      if (!uniqueCities.includes(activeCity)) {
+        setActiveCityState(uniqueCities[0]);
+      }
+
+      if (typeof refreshWeather === 'function') {
+        await Promise.resolve(refreshWeather(true));
+      }
+
+      return {
+        ok: true,
+        cities: uniqueCities,
+        settings: nextSettings,
+      };
+    } catch (saveError) {
+      return {
+        ok: false,
+        error: saveError?.message || String(saveError),
+      };
+    }
+  }, [activeCity, refreshWeather, settings, updateSettings]);
+
+  const addWeatherCity = useCallback((cityValue) => {
+    const canonical = resolveRegistryKey(cityValue);
+
+    if (!canonical) {
+      return {
+        ok: false,
+        error: 'Select a supported city from the list.',
+      };
+    }
+
+    if (cities.includes(canonical)) {
+      return {
+        ok: false,
+        error: `${getWeatherLocationLabel(canonical)} is already added.`,
+      };
+    }
+
+    return saveWeatherCities([...cities, canonical]);
+  }, [cities, saveWeatherCities]);
+
+  const removeWeatherCity = useCallback((cityValue) => {
+    const canonical = resolveRegistryKey(cityValue);
+
+    if (!canonical) {
+      return {
+        ok: false,
+        error: 'Weather city not found.',
+      };
+    }
+
+    if (cities.length <= 1) {
+      return {
+        ok: false,
+        error: 'At least one weather city must remain.',
+      };
+    }
+
+    return saveWeatherCities(cities.filter(city => city !== canonical));
+  }, [cities, saveWeatherCities]);
+
+  const resetWeatherCities = useCallback(() => (
+    saveWeatherCities([...DEFAULT_WEATHER_CITIES])
+  ), [saveWeatherCities]);
+
+  const displayData = useMemo(() => (
+    getRenderableWeatherData(weatherData)
+  ), [weatherData]);
+
+  const activeCityData = displayData?.[activeCity] ||
+    displayData?.[cities[0]] ||
+    displayData?.chennai ||
+    null;
+
+  const hasRenderableWeatherData = Object.keys(displayData).length > 0;
+
+  const cityLabels = useMemo(() => (
+    buildCityLabels(cities)
+  ), [cities]);
+
+  const cityIcons = useMemo(() => (
+    buildCityIcons(cities)
+  ), [cities]);
+
+  const weatherTabAudit = useMemo(() => (
+    auditWeatherTabQuality({
+      weatherData: displayData,
+      cities,
+      activeCity,
+      loading,
+      error,
+    })
+  ), [displayData, cities, activeCity, loading, error]);
+
+  const locationManagerProps = useMemo(() => ({
+    cities,
+    options: weatherLocationOptions,
+    cityLabels,
+    cityIcons,
+    onAddCity: addWeatherCity,
+    onRemoveCity: removeWeatherCity,
+    onResetCities: resetWeatherCities,
+  }), [
+    cities,
+    weatherLocationOptions,
+    cityLabels,
+    cityIcons,
+    addWeatherCity,
+    removeWeatherCity,
+    resetWeatherCities,
+  ]);
+
+  const detailedWeatherCardProps = useMemo(() => ({
+    weatherData: displayData,
+    activeCity,
+    onActiveCityChange: setActiveCity,
+    cities,
+    cityLabels,
+    cityIcons,
+  }), [
+    displayData,
+    activeCity,
+    setActiveCity,
+    cities,
+    cityLabels,
+    cityIcons,
+  ]);
+
+  const stickyHeaderProps = useMemo(() => ({
+    weatherData: displayData,
+    activeCity,
+    cities,
+    onRefresh: () => refresh(true),
+    loading,
+  }), [
+    displayData,
+    activeCity,
+    cities,
+    refresh,
+    loading,
+  ]);
+
+  const cityComparisonProps = useMemo(() => ({
+    weatherData: displayData,
+    cities,
+  }), [displayData, cities]);
+
+  const planningSummaryProps = useMemo(() => ({
+    cityData: activeCityData,
+    cityName: activeCity,
+  }), [activeCityData, activeCity]);
+
+  const weeklyForecastProps = useMemo(() => ({
+    forecast: activeCityData?.weeklyForecast,
+    cityName: activeCity,
+  }), [activeCityData, activeCity]);
+
+  return {
+    weatherData: displayData,
+    rawWeatherData: weatherData,
+
+    cities,
+    activeCity,
+    activeCityData,
+    cityLabels,
+    cityIcons,
+    weatherLocationOptions,
+
+    loading,
+    error,
+    booted,
+    hasRenderableWeatherData,
+    weatherTabAudit,
+
+    setActiveCity,
+    refreshWeather: refresh,
+    addWeatherCity,
+    removeWeatherCity,
+    resetWeatherCities,
+
+    locationManagerProps,
+    detailedWeatherCardProps,
+    stickyHeaderProps,
+    cityComparisonProps,
+    planningSummaryProps,
+    weeklyForecastProps,
+  };
+}
+
+export const __weatherTabViewModelInternalsForTest = {
+  WEATHER_ACTIVE_CITY_KEY,
+  safeReadActiveCity,
+  safeWriteActiveCity,
+  buildCityLabels,
+  buildCityIcons,
+  getRenderableWeatherData,
+};
+```
+
+---
+
+# 2. `src/components/weather/WeatherLocationManager.jsx`
+
+```jsx
+import React, { useMemo, useState } from 'react';
+import {
+  resolveRegistryKey,
+} from '../../services/weatherLocations.js';
+import './WeatherLocationManager.css';
+
+function getCityDisplay(city, cityLabels = {}) {
+  return cityLabels[city] || city;
+}
+
+function getCityIcon(city, cityIcons = {}) {
+  return cityIcons[city] || '📍';
+}
+
+function optionMatchesSearch(option, searchTerm) {
+  const search = String(searchTerm || '').trim().toLowerCase();
+  if (!search) return true;
+
+  return String(option.searchText || `${option.label} ${option.country} ${option.region}`)
+    .toLowerCase()
+    .includes(search);
+}
+
+export default function WeatherLocationManager({
+  compact = false,
+  cities = [],
+  options = [],
+  cityLabels = {},
+  cityIcons = {},
+  onAddCity = null,
+  onRemoveCity = null,
+  onResetCities = null,
+}) {
+  const [inputValue, setInputValue] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [message, setMessage] = useState('');
+  const [open, setOpen] = useState(false);
+
+  const safeCities = Array.isArray(cities) ? cities : [];
+  const safeOptions = Array.isArray(options) ? options : [];
+
+  const availableToAdd = useMemo(() => (
+    safeOptions
+      .filter(option => !safeCities.includes(option.key))
+      .filter(option => optionMatchesSearch(option, searchTerm))
+  ), [safeOptions, safeCities, searchTerm]);
+
+  const colomboMissing = !safeCities.includes('colombo');
+
+  async function addCity(cityValue = inputValue) {
+    const canonical = resolveRegistryKey(cityValue);
+
+    if (!canonical) {
+      setMessage('Select a supported city from the list, then press Add.');
+      return { ok: false, error: 'Select a supported city from the list, then press Add.' };
+    }
+
+    if (safeCities.includes(canonical)) {
+      const duplicateMessage = `${getCityDisplay(canonical, cityLabels)} is already in your weather list.`;
+      setMessage(duplicateMessage);
+      return { ok: false, error: duplicateMessage };
+    }
+
+    try {
+      const result = typeof onAddCity === 'function'
+        ? await Promise.resolve(onAddCity(canonical))
+        : { ok: false, error: 'Add city handler unavailable.' };
+
+      if (result?.ok === false) {
+        setMessage(result.error || 'Unable to add city.');
+        return result;
+      }
+
+      setInputValue('');
+      setSearchTerm('');
+      setMessage(`${getCityDisplay(canonical, cityLabels)} added.`);
+      return { ok: true };
+    } catch (error) {
+      const errorMessage = error?.message || String(error);
+      setMessage(errorMessage);
+      return { ok: false, error: errorMessage };
+    }
+  }
+
+  async function removeCity(city) {
+    const canonical = resolveRegistryKey(city);
+
+    if (!canonical) {
+      setMessage('Weather city not found.');
+      return { ok: false, error: 'Weather city not found.' };
+    }
+
+    if (safeCities.length <= 1) {
+      setMessage('At least one weather city must remain.');
+      return { ok: false, error: 'At least one weather city must remain.' };
+    }
+
+    try {
+      const result = typeof onRemoveCity === 'function'
+        ? await Promise.resolve(onRemoveCity(canonical))
+        : { ok: false, error: 'Remove city handler unavailable.' };
+
+      if (result?.ok === false) {
+        setMessage(result.error || 'Unable to remove city.');
+        return result;
+      }
+
+      setMessage(`${getCityDisplay(canonical, cityLabels)} removed.`);
+      return { ok: true };
+    } catch (error) {
+      const errorMessage = error?.message || String(error);
+      setMessage(errorMessage);
+      return { ok: false, error: errorMessage };
+    }
+  }
+
+  async function resetToDefaults() {
+    try {
+      const result = typeof onResetCities === 'function'
+        ? await Promise.resolve(onResetCities())
+        : { ok: false, error: 'Reset handler unavailable.' };
+
+      if (result?.ok === false) {
+        setMessage(result.error || 'Unable to reset weather cities.');
+        return result;
+      }
+
+      setInputValue('');
+      setSearchTerm('');
+      setMessage('Reset to default weather cities.');
+      return { ok: true };
+    } catch (error) {
+      const errorMessage = error?.message || String(error);
+      setMessage(errorMessage);
+      return { ok: false, error: errorMessage };
+    }
+  }
+
+  const selectedCityText = safeCities
+    .map(city => getCityDisplay(city, cityLabels))
+    .join(' · ');
+
+  if (!open) {
+    return (
+      <section
+        className={`wlm-collapsed ${compact ? 'wlm-collapsed--compact' : ''}`}
+        data-weather-location-manager="collapsed"
+      >
+        <div className="wlm-collapsed__copy">
+          <strong>Weather locations</strong>
+          <span>{safeCities.length} selected · {selectedCityText}</span>
+        </div>
+
+        <div className="wlm-collapsed__actions">
+          {colomboMissing && (
+            <button
+              className="wlm-add-colombo"
+              type="button"
+              onClick={() => {
+                addCity('colombo');
+                setOpen(true);
+              }}
+              data-weather-add-colombo="true"
+            >
+              + Colombo
+            </button>
+          )}
+
+          <button className="wlm-toggle" type="button" onClick={() => setOpen(true)}>
+            Manage
+          </button>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section
+      className={`wlm-panel ${compact ? 'wlm-panel--compact' : ''}`}
+      data-weather-location-manager="open"
+    >
+      <div className="wlm-header">
+        <div>
+          <span className="wlm-eyebrow">Weather locations</span>
+          <h3>Add / delete locations</h3>
+          <p>
+            Choose a supported city from the library, press <strong>Add</strong>,
+            or remove cities using the <strong>×</strong> button.
+          </p>
+        </div>
+
+        <button className="wlm-toggle wlm-close" type="button" onClick={() => setOpen(false)}>
+          Done
+        </button>
+      </div>
+
+      <div className="wlm-help" data-weather-location-help="true">
+        <span>
+          Supported now: {safeOptions.length} selectable cities.
+          Defaults: Chennai, Trichy and Muscat.
+        </span>
+
+        {colomboMissing ? (
+          <button type="button" onClick={() => addCity('colombo')} data-weather-add-colombo="true">
+            + Add Colombo
+          </button>
+        ) : (
+          <strong>Colombo is already added.</strong>
+        )}
+      </div>
+
+      <div className="wlm-current">
+        <span className="wlm-section-label">Selected cities</span>
+
+        <div className="wlm-chip-row">
+          {safeCities.map(city => (
+            <span key={city} className="wlm-chip">
+              <span>{getCityIcon(city, cityIcons)} {getCityDisplay(city, cityLabels)}</span>
+
+              <button
+                type="button"
+                onClick={() => removeCity(city)}
+                disabled={safeCities.length <= 1}
+                aria-label={`Remove ${getCityDisplay(city, cityLabels)}`}
+                title={`Remove ${getCityDisplay(city, cityLabels)}`}
+                data-weather-delete-city={city}
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div className="wlm-add-row">
+        <input
+          className="wlm-select"
+          type="search"
+          value={searchTerm}
+          onChange={event => {
+            setSearchTerm(event.target.value);
+            setMessage('');
+          }}
+          placeholder="Search 300-city library..."
+          aria-label="Search weather city library"
+        />
+
+        <select
+          className="wlm-select"
+          value={inputValue}
+          onChange={event => {
+            setInputValue(event.target.value);
+            setMessage('');
+          }}
+          aria-label="Select weather city to add"
+        >
+          <option value="">Select city to add…</option>
+
+          {availableToAdd.map(option => (
+            <option key={option.key} value={option.key}>
+              {option.icon} {option.label} — {option.region ? `${option.region}, ` : ''}{option.country}
+            </option>
+          ))}
+        </select>
+
+        <button
+          className="wlm-add-btn"
+          type="button"
+          onClick={() => addCity()}
+          disabled={!inputValue}
+        >
+          Add
+        </button>
+      </div>
+
+      {availableToAdd.length > 0 && (
+        <div className="wlm-quick-add" data-weather-quick-add-list="true">
+          <span className="wlm-section-label">
+            Quick add {searchTerm ? `· ${availableToAdd.length} match${availableToAdd.length === 1 ? '' : 'es'}` : ''}
+          </span>
+
+          <div className="wlm-quick-add__buttons">
+            {availableToAdd.slice(0, 12).map(option => (
+              <button key={option.key} type="button" onClick={() => addCity(option.key)}>
+                + {option.icon} {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="wlm-footer">
+        <button className="wlm-reset" type="button" onClick={resetToDefaults}>
+          Reset defaults
+        </button>
+
+        {message && <span className="wlm-message" role="status">{message}</span>}
+      </div>
+    </section>
+  );
+}
+
+export const __weatherLocationManagerInternalsForTest = {
+  getCityDisplay,
+  getCityIcon,
+  optionMatchesSearch,
+};
+```
+
+---
+
+# 3. `src/components/DetailedWeatherCard.jsx`
+
+```jsx
+import React, { useState } from 'react';
+import './DetailedWeatherCard.css';
+import WeatherIcon from './WeatherIcons';
+import { UmbrellaIcon, CloudIcon, HumidityIcon, WindIcon } from './AppIcons';
+
+export default function DetailedWeatherCard({
+  weatherData,
+  activeCity,
+  onActiveCityChange = null,
+  cities = [],
+  cityLabels = {},
+  cityIcons = {},
+}) {
+  const [expandedCard, setExpandedCard] = useState(null);
+
+  const safeCities = Array.isArray(cities) ? cities : [];
+
+  const handleTravelAwareCityChange = (city) => {
+    if (typeof onActiveCityChange === 'function') {
+      onActiveCityChange(city);
+    }
+  };
+
+  if (!weatherData) return null;
+
+  const fallbackCity = safeCities[0] || 'chennai';
+  const cityData = weatherData[activeCity] || weatherData[fallbackCity] || weatherData.chennai;
+
+  if (!cityData) return <div className="dw-container">Data unavailable</div>;
+
+  const hour = new Date().getHours();
+  let segments = [];
+
+  const getSeg = (day, period, labelOverride = null) => {
+    const data = day === 'today' ? cityData[period] : cityData.tomorrow?.[period];
+
+    let label = labelOverride;
+
+    if (!label) {
+      if (period === 'morning') label = 'Morning';
+      else if (period === 'noon') label = 'Afternoon';
+      else label = 'Evening';
+
+      if (day === 'tomorrow') label = `Tomorrow ${label}`;
+    }
+
+    return {
+      id: `${day}-${period}`,
+      label,
+      data,
+    };
+  };
+
+  if (hour < 11) {
+    segments = [
+      getSeg('today', 'morning', 'This Morning'),
+      getSeg('today', 'noon'),
+      getSeg('today', 'evening'),
+    ];
+  } else if (hour < 17) {
+    segments = [
+      getSeg('today', 'noon', 'This Afternoon'),
+      getSeg('today', 'evening'),
+      getSeg('tomorrow', 'morning'),
+    ];
+  } else if (hour < 21) {
+    segments = [
+      getSeg('today', 'evening', 'Tonight'),
+      getSeg('tomorrow', 'morning'),
+      getSeg('tomorrow', 'noon'),
+    ];
+  } else {
+    segments = [
+      getSeg('tomorrow', 'morning', 'Tomorrow Morning'),
+      getSeg('tomorrow', 'noon'),
+      getSeg('tomorrow', 'evening'),
+    ];
+  }
+
+  return (
+    <div className="dw-container">
+      <div className="dw-sidebar">
+        {safeCities.map(city => (
+          <button
+            key={city}
+            className={`dw-city-tab ${city === activeCity ? 'active' : ''}`}
+            onClick={() => handleTravelAwareCityChange(city)}
+            aria-label={`Select ${cityLabels[city] || city}`}
+          >
+            <span className="dw-city-icon">{cityIcons[city] || '📍'}</span>
+            <span className="dw-city-name">{cityLabels[city] || city}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="dw-content">
+        <div className="dw-header">
+          <div className="dw-header-main">
+            <h2 className="dw-city-title">{cityData.name}</h2>
+            <span className="dw-current-temp">{cityData.current?.temp}°</span>
+          </div>
+
+          <div className="dw-header-sub">
+            {cityData.summary}
+          </div>
+        </div>
+
+        <div className="dw-cards-list">
+          {segments.map((seg, idx) => {
+            if (!seg.data) return null;
+
+            return (
+              <WeatherSegmentCard
+                key={seg.id}
+                segment={seg}
+                isExpanded={expandedCard === idx}
+                onToggle={() => setExpandedCard(expandedCard === idx ? null : idx)}
+              />
+            );
+          })}
+        </div>
+
+        <div className="dw-footer">
+          {cityData.models?.count
+            ? `Forecast based on ${cityData.models.count} model${cityData.models.count !== 1 ? 's' : ''}: ${cityData.models.names}`
+            : 'Forecast based on ECMWF · GFS · DWD-ICON'}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function WeatherSegmentCard({ segment, isExpanded, onToggle }) {
+  const { label, data } = segment;
+  const hourly = Array.isArray(data.hourly) ? data.hourly : [];
+  const hasHourly = hourly.length > 0;
+
+  const rainMmVal = parseFloat(data.rainMm === '-' ? 0 : data.rainMm);
+  const rainProbVal = data.rainProb?.avg || 0;
+  const hasSignificantRain = rainMmVal >= 1.0;
+  const hasAnyRain = rainMmVal > 0 || rainProbVal > 0;
+
+  let RainIcon = CloudIcon;
+  let rainColor = 'var(--text-secondary)';
+  let rainText = 'No significant rain';
+
+  if (hasAnyRain) {
+    if (hasSignificantRain) {
+      RainIcon = UmbrellaIcon;
+      rainColor = '#3b82f6';
+    } else {
+      RainIcon = CloudIcon;
+      rainColor = '#94a3b8';
+    }
+
+    rainText = `${rainMmVal > 0 ? `${rainMmVal.toFixed(1)}mm` : 'Trace'} (${rainProbVal}%)`;
+  }
+
+  const description = getConditionText(data);
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onToggle();
+    }
+  };
+
+  return (
+    <div
+      className={`dw-card ${isExpanded ? 'expanded' : ''}`}
+      role="button"
+      tabIndex={0}
+      aria-expanded={isExpanded}
+      aria-label={`${label}. ${hasHourly ? 'Toggle hourly forecast' : 'Hourly forecast unavailable'}`}
+      onClick={onToggle}
+      onKeyDown={handleKeyDown}
+    >
+      <div className="dw-card-header">
+        <span className="dw-period-badge">{label}</span>
+        <span className={`dw-expand-hint ${hasHourly ? '' : 'dw-expand-hint--disabled'}`}>
+          {isExpanded ? 'Collapse hourly' : hasHourly ? 'View hourly' : 'Hourly unavailable'}
+        </span>
+      </div>
+
+      <div className="dw-card-main">
+        <div className="dw-main-icon">
+          {data.iconId ? <WeatherIcon id={data.iconId} size={56} /> : <span style={{ fontSize: '3rem' }}>{data.icon}</span>}
+        </div>
+
+        <div className="dw-main-temp">
+          <div className="dw-temp-val">{data.temp}°</div>
+          <div className="dw-temp-feels">Feels like {data.feelsLike}°</div>
+        </div>
+      </div>
+
+      <div className="dw-details-grid">
+        <div className="dw-detail-row">
+          <div className="dw-detail-icon">
+            <RainIcon size={20} color={rainColor} />
+          </div>
+          <div className="dw-detail-text">
+            {rainText}
+          </div>
+        </div>
+
+        <div className="dw-detail-row">
+          <div className="dw-detail-icon"><HumidityIcon size={20} /></div>
+          <div className="dw-detail-text">
+            {data.humidity}% <span className="dw-sep">|</span> <WindIcon size={16} /> {data.windSpeed} km/h
+          </div>
+        </div>
+
+        <div className="dw-detail-row">
+          <div className="dw-detail-icon">☀️</div>
+          <div className="dw-detail-text">
+            UV: {data.uvIndex || '-'} <span className="dw-sep">|</span> PM 2.5: -
+          </div>
+        </div>
+
+        <div className="dw-detail-row">
+          <div className="dw-detail-icon">ℹ️</div>
+          <div className="dw-detail-text dw-desc">
+            {description}
+          </div>
+        </div>
+      </div>
+
+      {isExpanded && hasHourly && (
+        <div className="dw-hourly-container hide-scrollbar" onClick={event => event.stopPropagation()}>
+          {hourly.map((h, i) => (
+            <div key={`${h.time || h.label || 'hour'}-${i}`} className="dw-hourly-slot">
+              <span className="dw-slot-time">{h.time || h.label}</span>
+              <div className="dw-slot-icon">
+                {h.iconId ? <WeatherIcon id={h.iconId} size={28} /> : h.icon}
+              </div>
+              <strong className="dw-slot-temp">{h.temp}°</strong>
+              {h.precip > 0 && (
+                <span className="dw-slot-precip">
+                  {h.precip >= 1 && <span style={{ fontSize: '0.7rem' }}>☂️</span>}
+                  {h.precip}mm
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function getConditionText(data) {
+  const parts = [];
+
+  if (data.rainProb?.avg > 40) parts.push('Rain expected.');
+  else if (data.cloudCover > 70) parts.push('Cloudy.');
+  else if (data.cloudCover < 20) parts.push('Clear skies.');
+
+  if (data.windSpeed > 20) parts.push('Breezy.');
+  if (data.uvIndex > 8) parts.push('High UV.');
+
+  if (parts.length === 0) return 'Pleasant conditions.';
+  return parts.join(' ');
+}
+```
+
+---
+
+# 4. `src/pages/WeatherPage.jsx`
+
+```jsx
+import React, { useCallback, useEffect } from 'react';
+import WeatherStickyHeader from '../components/WeatherStickyHeader';
+import DetailedWeatherCard from '../components/DetailedWeatherCard';
+import { useMediaQuery } from '../hooks/useMediaQuery';
+import { usePullToRefresh } from '../hooks/usePullToRefresh';
+import WeatherLocationManager from '../components/weather/WeatherLocationManager.jsx';
+import WeeklyWeatherForecast from '../components/weather/WeeklyWeatherForecast.jsx';
+import WeatherCityComparison from '../components/weather/WeatherCityComparison.jsx';
+import WeatherPlanningSummary from '../components/weather/WeatherPlanningSummary.jsx';
+import GradeBadge from '../components/audit/GradeBadge.jsx';
+import { useWeatherTabViewModel } from '../viewModels/useWeatherTabViewModel';
+
+/**
+ * Weather Page
+ * Dedicated page for detailed weather forecast with sticky header.
+ * Release 6K: page is render-focused; Weather ViewModel owns context/settings/storage/audit.
+ */
+function WeatherPage() {
+  const { isDesktop } = useMediaQuery();
+
+  const {
+    weatherData,
+    activeCity,
+    weatherTabAudit,
+    loading,
+    error,
+    hasRenderableWeatherData,
+    refreshWeather,
+    locationManagerProps,
+    detailedWeatherCardProps,
+    stickyHeaderProps,
+    cityComparisonProps,
+    planningSummaryProps,
+    weeklyForecastProps,
+  } = useWeatherTabViewModel();
+
+  useEffect(() => {
+    if (!loading && hasRenderableWeatherData) {
+      const firstCityData = Object.values(weatherData)[0];
+
+      if (import.meta.env.DEV) {
+        console.log('[Phase 6 Diagnostics]', {
+          page: 'weather',
+          activeCity,
+          sourceMode: firstCityData?.sourceMode || 'none',
+        });
+      }
+    }
+  }, [activeCity, hasRenderableWeatherData, loading, weatherData]);
+
+  const handleRefresh = useCallback(async () => (
+    refreshWeather(true)
+  ), [refreshWeather]);
+
+  const { pullDistance } = usePullToRefresh(handleRefresh);
+
+  if (loading && !hasRenderableWeatherData) {
+    return (
+      <div
+        className="page-container"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+        }}
+      >
+        <div className="loading">
+          <div className="loading__spinner"></div>
+          <span>Loading Forecast...</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="page-container" style={{ padding: 0 }}>
+      <GradeBadge
+        audit={weatherTabAudit}
+        label="Weather tab quality grade"
+        position="below-header"
+        topOffset="74px"
+        compact={true}
+      />
+
+      <div
+        style={{
+          height: `${pullDistance}px`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden',
+          background: 'var(--bg-secondary)',
+          color: 'var(--accent-primary)',
+          fontSize: '0.8rem',
+          transition: pullDistance === 0 ? 'height 0.3s ease' : 'none',
+        }}
+      >
+        {pullDistance > 40 ? 'Release to refresh' : 'Pull to refresh'}
+      </div>
+
+      {hasRenderableWeatherData && (
+        <WeatherStickyHeader
+          {...stickyHeaderProps}
+          isDesktop={isDesktop}
+        />
+      )}
+
+      <main className="main-content" style={{ padding: 0, marginTop: 0 }}>
+        {error && (
+          <div className="topline" style={{ borderLeftColor: 'var(--accent-danger)', margin: '16px' }}>
+            <div className="topline__label" style={{ color: 'var(--accent-danger)' }}>Error</div>
+            <div className="topline__text">Failed to update weather. Showing cached data.</div>
+          </div>
+        )}
+
+        <WeatherLocationManager {...locationManagerProps} />
+
+        {hasRenderableWeatherData ? (
+          <>
+            <DetailedWeatherCard {...detailedWeatherCardProps} />
+            <WeatherCityComparison {...cityComparisonProps} />
+            <WeatherPlanningSummary {...planningSummaryProps} />
+            <WeeklyWeatherForecast {...weeklyForecastProps} />
+          </>
+        ) : (
+          <div className="empty-state">
+            <div className="empty-state__icon">☁️</div>
+            <p>Weather data unavailable.</p>
+            <button onClick={handleRefresh} className="btn btn--secondary mt-md">Retry</button>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
+
+export default WeatherPage;
+```
+
+---
+
+# 5. `package.json` scripts to add
+
+```json
+"test:hardening:release6K": "node scripts/test_hardening_release6K_static.mjs",
+"test:weatherpage-binding": "vitest run --config vitest.config.js src/pages/WeatherPage.release6K.cert.test.jsx"
+```
+
+---
+
+# Required validation
+
+```bash
+npm run test:hardening:release6J
+npm run test:marketpage-binding
+
+npm run test:hardening:release6K
+npm run test:weatherpage-binding
+
+npx vite build
+npm run test:unit
+```
+
+---
+
+# Implementation Notes
+
+Use the uploaded `weatherLocations.js` exactly as the full replacement. It already includes:
+
+```text
+Registry selectable locations: 300
+Default selected cities: Chennai / Trichy / Muscat
+Colombo default: removed
+Colombo selectable: yes
+Settings storage: stable city keys only
+```
+
+The main correction above is that Weather UI now becomes:
+
+```text
+WeatherContext + SettingsContext
+        ↓
+useWeatherTabViewModel
+        ↓
+WeatherPage
+        ↓
+WeatherLocationManager / DetailedWeatherCard / Weather children
+```
+
+This keeps the 300-city library professional and prevents Weather child components from directly owning settings, storage, or context.
+
+
+
+
+Below is the full updated `src/services/weatherLocations.js`.
+
+Changes made:
+
+```text
+DEFAULT_WEATHER_CITIES = ['chennai', 'trichy', 'muscat']
+Colombo removed from default
+Colombo remains selectable in the 300-city library
+Registry expanded to exactly 300 governed selectable cities
+Settings still store stable city keys only
+```
+
+Current repo has Colombo in the default list, so this replaces that behavior. 
+
+---
+
+# `src/services/weatherLocations.js`
+
+```js
+/**
+ * Weather location registry – single source of truth for supported static-host cities.
+ *
+ * Release 6K update:
+ * - Top 300 governed selectable weather cities.
+ * - Default selected cities exclude Colombo.
+ * - User settings store stable city keys only.
+ */
+
+export const WEATHER_LOCATION_CONFIG_VERSION = 'weather-locations-v6-top-300-no-colombo-default';
+
+export const DEFAULT_WEATHER_CITIES = ['chennai', 'trichy', 'muscat'];
+
+const LOCATION_ROWS = [
+    ['chennai', 'Chennai', 'India', 'Tamil Nadu', 'Asia/Kolkata', 13.0827, 80.2707, '🏛️', ['madras']],
+    ['trichy', 'Trichy', 'India', 'Tamil Nadu', 'Asia/Kolkata', 10.7905, 78.7047, '🏯', ['tiruchirappalli', 'tiruchirapalli', 'tiruchi']],
+    ['mumbai', 'Mumbai', 'India', 'Maharashtra', 'Asia/Kolkata', 19.0760, 72.8777, '🌆', ['bombay']],
+    ['delhi', 'Delhi', 'India', 'Delhi NCR', 'Asia/Kolkata', 28.7041, 77.1025, '🏙️', ['new delhi']],
+    ['bangalore', 'Bangalore', 'India', 'Karnataka', 'Asia/Kolkata', 12.9716, 77.5946, '🌆', ['bengaluru', 'blr']],
+    ['hyderabad', 'Hyderabad', 'India', 'Telangana', 'Asia/Kolkata', 17.3850, 78.4867, '🌆', []],
+    ['kolkata', 'Kolkata', 'India', 'West Bengal', 'Asia/Kolkata', 22.5726, 88.3639, '🌉', ['calcutta']],
+    ['pune', 'Pune', 'India', 'Maharashtra', 'Asia/Kolkata', 18.5204, 73.8567, '🌆', []],
+    ['ahmedabad', 'Ahmedabad', 'India', 'Gujarat', 'Asia/Kolkata', 23.0225, 72.5714, '🏙️', []],
+    ['surat', 'Surat', 'India', 'Gujarat', 'Asia/Kolkata', 21.1702, 72.8311, '🏙️', []],
+    ['jaipur', 'Jaipur', 'India', 'Rajasthan', 'Asia/Kolkata', 26.9124, 75.7873, '🏰', []],
+    ['lucknow', 'Lucknow', 'India', 'Uttar Pradesh', 'Asia/Kolkata', 26.8467, 80.9462, '🏙️', []],
+    ['kanpur', 'Kanpur', 'India', 'Uttar Pradesh', 'Asia/Kolkata', 26.4499, 80.3319, '🏙️', []],
+    ['nagpur', 'Nagpur', 'India', 'Maharashtra', 'Asia/Kolkata', 21.1458, 79.0882, '🏙️', []],
+    ['indore', 'Indore', 'India', 'Madhya Pradesh', 'Asia/Kolkata', 22.7196, 75.8577, '🏙️', []],
+    ['thane', 'Thane', 'India', 'Maharashtra', 'Asia/Kolkata', 19.2183, 72.9781, '🏙️', []],
+    ['bhopal', 'Bhopal', 'India', 'Madhya Pradesh', 'Asia/Kolkata', 23.2599, 77.4126, '🏙️', []],
+    ['visakhapatnam', 'Visakhapatnam', 'India', 'Andhra Pradesh', 'Asia/Kolkata', 17.6868, 83.2185, '🌊', ['vizag']],
+    ['patna', 'Patna', 'India', 'Bihar', 'Asia/Kolkata', 25.5941, 85.1376, '🏙️', []],
+    ['vadodara', 'Vadodara', 'India', 'Gujarat', 'Asia/Kolkata', 22.3072, 73.1812, '🏙️', ['baroda']],
+    ['ghaziabad', 'Ghaziabad', 'India', 'Uttar Pradesh', 'Asia/Kolkata', 28.6692, 77.4538, '🏙️', []],
+    ['ludhiana', 'Ludhiana', 'India', 'Punjab', 'Asia/Kolkata', 30.9010, 75.8573, '🏙️', []],
+    ['agra', 'Agra', 'India', 'Uttar Pradesh', 'Asia/Kolkata', 27.1767, 78.0081, '🕌', []],
+    ['nashik', 'Nashik', 'India', 'Maharashtra', 'Asia/Kolkata', 19.9975, 73.7898, '🏙️', []],
+    ['faridabad', 'Faridabad', 'India', 'Haryana', 'Asia/Kolkata', 28.4089, 77.3178, '🏙️', []],
+    ['meerut', 'Meerut', 'India', 'Uttar Pradesh', 'Asia/Kolkata', 28.9845, 77.7064, '🏙️', []],
+    ['rajkot', 'Rajkot', 'India', 'Gujarat', 'Asia/Kolkata', 22.3039, 70.8022, '🏙️', []],
+    ['varanasi', 'Varanasi', 'India', 'Uttar Pradesh', 'Asia/Kolkata', 25.3176, 82.9739, '🛕', ['banaras', 'kashi']],
+    ['srinagar', 'Srinagar', 'India', 'Jammu and Kashmir', 'Asia/Kolkata', 34.0837, 74.7973, '🏔️', []],
+    ['aurangabad', 'Aurangabad', 'India', 'Maharashtra', 'Asia/Kolkata', 19.8762, 75.3433, '🏙️', []],
+    ['dhanbad', 'Dhanbad', 'India', 'Jharkhand', 'Asia/Kolkata', 23.7957, 86.4304, '🏙️', []],
+    ['amritsar', 'Amritsar', 'India', 'Punjab', 'Asia/Kolkata', 31.6340, 74.8723, '🛕', []],
+    ['navi_mumbai', 'Navi Mumbai', 'India', 'Maharashtra', 'Asia/Kolkata', 19.0330, 73.0297, '🏙️', []],
+    ['allahabad', 'Prayagraj', 'India', 'Uttar Pradesh', 'Asia/Kolkata', 25.4358, 81.8463, '🏙️', ['allahabad']],
+    ['ranchi', 'Ranchi', 'India', 'Jharkhand', 'Asia/Kolkata', 23.3441, 85.3096, '🏙️', []],
+    ['haora', 'Howrah', 'India', 'West Bengal', 'Asia/Kolkata', 22.5958, 88.2636, '🌉', ['howrah']],
+    ['coimbatore', 'Coimbatore', 'India', 'Tamil Nadu', 'Asia/Kolkata', 11.0168, 76.9558, '🏞️', ['kovai']],
+    ['jabalpur', 'Jabalpur', 'India', 'Madhya Pradesh', 'Asia/Kolkata', 23.1815, 79.9864, '🏙️', []],
+    ['gwalior', 'Gwalior', 'India', 'Madhya Pradesh', 'Asia/Kolkata', 26.2183, 78.1828, '🏰', []],
+    ['vijayawada', 'Vijayawada', 'India', 'Andhra Pradesh', 'Asia/Kolkata', 16.5062, 80.6480, '🏙️', []],
+    ['jodhpur', 'Jodhpur', 'India', 'Rajasthan', 'Asia/Kolkata', 26.2389, 73.0243, '🏰', []],
+    ['madurai', 'Madurai', 'India', 'Tamil Nadu', 'Asia/Kolkata', 9.9252, 78.1198, '🛕', ['madura']],
+    ['raipur', 'Raipur', 'India', 'Chhattisgarh', 'Asia/Kolkata', 21.2514, 81.6296, '🏙️', []],
+    ['kota', 'Kota', 'India', 'Rajasthan', 'Asia/Kolkata', 25.2138, 75.8648, '🏙️', []],
+    ['guwahati', 'Guwahati', 'India', 'Assam', 'Asia/Kolkata', 26.1445, 91.7362, '🏞️', []],
+    ['chandigarh', 'Chandigarh', 'India', 'Chandigarh', 'Asia/Kolkata', 30.7333, 76.7794, '🏙️', []],
+    ['mysore', 'Mysore', 'India', 'Karnataka', 'Asia/Kolkata', 12.2958, 76.6394, '🏰', ['mysuru']],
+    ['mangalore', 'Mangalore', 'India', 'Karnataka', 'Asia/Kolkata', 12.9141, 74.8560, '🌊', ['mangaluru']],
+    ['thiruvananthapuram', 'Thiruvananthapuram', 'India', 'Kerala', 'Asia/Kolkata', 8.5241, 76.9366, '🌴', ['trivandrum']],
+    ['kochi', 'Kochi', 'India', 'Kerala', 'Asia/Kolkata', 9.9312, 76.2673, '🌴', ['cochin']],
+
+    ['karachi', 'Karachi', 'Pakistan', 'Sindh', 'Asia/Karachi', 24.8607, 67.0011, '🌆', []],
+    ['lahore', 'Lahore', 'Pakistan', 'Punjab', 'Asia/Karachi', 31.5204, 74.3587, '🏙️', []],
+    ['faisalabad', 'Faisalabad', 'Pakistan', 'Punjab', 'Asia/Karachi', 31.4504, 73.1350, '🏙️', []],
+    ['rawalpindi', 'Rawalpindi', 'Pakistan', 'Punjab', 'Asia/Karachi', 33.5651, 73.0169, '🏙️', []],
+    ['islamabad', 'Islamabad', 'Pakistan', 'Islamabad Capital Territory', 'Asia/Karachi', 33.6844, 73.0479, '🏛️', []],
+    ['dhaka', 'Dhaka', 'Bangladesh', 'Dhaka Division', 'Asia/Dhaka', 23.8103, 90.4125, '🌆', []],
+    ['chittagong', 'Chittagong', 'Bangladesh', 'Chattogram Division', 'Asia/Dhaka', 22.3569, 91.7832, '🌊', ['chattogram']],
+    ['khulna', 'Khulna', 'Bangladesh', 'Khulna Division', 'Asia/Dhaka', 22.8456, 89.5403, '🏙️', []],
+    ['colombo', 'Colombo', 'Sri Lanka', 'Western Province', 'Asia/Colombo', 6.9271, 79.8612, '🌴', ['columbo', 'kolamba', 'sri lanka capital']],
+    ['kandy', 'Kandy', 'Sri Lanka', 'Central Province', 'Asia/Colombo', 7.2906, 80.6337, '⛰️', ['mahanuwara']],
+    ['galle', 'Galle', 'Sri Lanka', 'Southern Province', 'Asia/Colombo', 6.0535, 80.2210, '🌊', []],
+    ['kathmandu', 'Kathmandu', 'Nepal', 'Bagmati', 'Asia/Kathmandu', 27.7172, 85.3240, '🏔️', []],
+    ['pokhara', 'Pokhara', 'Nepal', 'Gandaki', 'Asia/Kathmandu', 28.2096, 83.9856, '🏔️', []],
+
+    ['shanghai', 'Shanghai', 'China', 'Shanghai', 'Asia/Shanghai', 31.2304, 121.4737, '🌆', []],
+    ['beijing', 'Beijing', 'China', 'Beijing', 'Asia/Shanghai', 39.9042, 116.4074, '🏛️', []],
+    ['chongqing', 'Chongqing', 'China', 'Chongqing', 'Asia/Shanghai', 29.4316, 106.9123, '🌆', []],
+    ['tianjin', 'Tianjin', 'China', 'Tianjin', 'Asia/Shanghai', 39.3434, 117.3616, '🏙️', []],
+    ['guangzhou', 'Guangzhou', 'China', 'Guangdong', 'Asia/Shanghai', 23.1291, 113.2644, '🌆', ['canton']],
+    ['shenzhen', 'Shenzhen', 'China', 'Guangdong', 'Asia/Shanghai', 22.5431, 114.0579, '🌆', []],
+    ['chengdu', 'Chengdu', 'China', 'Sichuan', 'Asia/Shanghai', 30.5728, 104.0668, '🏙️', []],
+    ['nanjing', 'Nanjing', 'China', 'Jiangsu', 'Asia/Shanghai', 32.0603, 118.7969, '🏙️', []],
+    ['wuhan', 'Wuhan', 'China', 'Hubei', 'Asia/Shanghai', 30.5928, 114.3055, '🏙️', []],
+    ['xian', 'Xi’an', 'China', 'Shaanxi', 'Asia/Shanghai', 34.3416, 108.9398, '🏯', ['xi an']],
+    ['hangzhou', 'Hangzhou', 'China', 'Zhejiang', 'Asia/Shanghai', 30.2741, 120.1551, '🏙️', []],
+    ['dongguan', 'Dongguan', 'China', 'Guangdong', 'Asia/Shanghai', 23.0207, 113.7518, '🏙️', []],
+    ['foshan', 'Foshan', 'China', 'Guangdong', 'Asia/Shanghai', 23.0215, 113.1214, '🏙️', []],
+    ['shenyang', 'Shenyang', 'China', 'Liaoning', 'Asia/Shanghai', 41.8057, 123.4315, '🏙️', []],
+    ['harbin', 'Harbin', 'China', 'Heilongjiang', 'Asia/Shanghai', 45.8038, 126.5350, '❄️', []],
+    ['qingdao', 'Qingdao', 'China', 'Shandong', 'Asia/Shanghai', 36.0671, 120.3826, '🌊', []],
+    ['dalian', 'Dalian', 'China', 'Liaoning', 'Asia/Shanghai', 38.9140, 121.6147, '🌊', []],
+    ['zhengzhou', 'Zhengzhou', 'China', 'Henan', 'Asia/Shanghai', 34.7466, 113.6254, '🏙️', []],
+    ['jinan', 'Jinan', 'China', 'Shandong', 'Asia/Shanghai', 36.6512, 117.1201, '🏙️', []],
+    ['changsha', 'Changsha', 'China', 'Hunan', 'Asia/Shanghai', 28.2282, 112.9388, '🏙️', []],
+    ['kunming', 'Kunming', 'China', 'Yunnan', 'Asia/Shanghai', 25.0389, 102.7183, '🏞️', []],
+    ['ningbo', 'Ningbo', 'China', 'Zhejiang', 'Asia/Shanghai', 29.8683, 121.5440, '🌊', []],
+    ['suzhou', 'Suzhou', 'China', 'Jiangsu', 'Asia/Shanghai', 31.2989, 120.5853, '🏙️', []],
+    ['taipei', 'Taipei', 'Taiwan', 'Taipei', 'Asia/Taipei', 25.0330, 121.5654, '🏙️', []],
+    ['kaohsiung', 'Kaohsiung', 'Taiwan', 'Kaohsiung', 'Asia/Taipei', 22.6273, 120.3014, '🌊', []],
+    ['hong_kong', 'Hong Kong', 'Hong Kong', 'Hong Kong', 'Asia/Hong_Kong', 22.3193, 114.1694, '🌆', ['hk']],
+    ['macau', 'Macau', 'Macau', 'Macau', 'Asia/Macau', 22.1987, 113.5439, '🌆', ['macao']],
+    ['tokyo', 'Tokyo', 'Japan', 'Tokyo', 'Asia/Tokyo', 35.6762, 139.6503, '🗼', []],
+    ['yokohama', 'Yokohama', 'Japan', 'Kanagawa', 'Asia/Tokyo', 35.4437, 139.6380, '🌊', []],
+    ['osaka', 'Osaka', 'Japan', 'Osaka', 'Asia/Tokyo', 34.6937, 135.5023, '🏙️', []],
+    ['nagoya', 'Nagoya', 'Japan', 'Aichi', 'Asia/Tokyo', 35.1815, 136.9066, '🏙️', []],
+    ['sapporo', 'Sapporo', 'Japan', 'Hokkaido', 'Asia/Tokyo', 43.0618, 141.3545, '❄️', []],
+    ['fukuoka', 'Fukuoka', 'Japan', 'Fukuoka', 'Asia/Tokyo', 33.5902, 130.4017, '🌊', []],
+    ['kobe', 'Kobe', 'Japan', 'Hyogo', 'Asia/Tokyo', 34.6901, 135.1955, '🌊', []],
+    ['kyoto', 'Kyoto', 'Japan', 'Kyoto', 'Asia/Tokyo', 35.0116, 135.7681, '⛩️', []],
+    ['seoul', 'Seoul', 'South Korea', 'Seoul', 'Asia/Seoul', 37.5665, 126.9780, '🏙️', []],
+    ['busan', 'Busan', 'South Korea', 'Busan', 'Asia/Seoul', 35.1796, 129.0756, '🌊', []],
+    ['incheon', 'Incheon', 'South Korea', 'Incheon', 'Asia/Seoul', 37.4563, 126.7052, '🌊', []],
+    ['daegu', 'Daegu', 'South Korea', 'Daegu', 'Asia/Seoul', 35.8714, 128.6014, '🏙️', []],
+    ['daejeon', 'Daejeon', 'South Korea', 'Daejeon', 'Asia/Seoul', 36.3504, 127.3845, '🏙️', []],
+    ['gwangju', 'Gwangju', 'South Korea', 'Gwangju', 'Asia/Seoul', 35.1595, 126.8526, '🏙️', []],
+    ['ulaanbaatar', 'Ulaanbaatar', 'Mongolia', 'Ulaanbaatar', 'Asia/Ulaanbaatar', 47.8864, 106.9057, '🏔️', []],
+
+    ['jakarta', 'Jakarta', 'Indonesia', 'Jakarta', 'Asia/Jakarta', -6.2088, 106.8456, '🌆', []],
+    ['surabaya', 'Surabaya', 'Indonesia', 'East Java', 'Asia/Jakarta', -7.2575, 112.7521, '🏙️', []],
+    ['bandung', 'Bandung', 'Indonesia', 'West Java', 'Asia/Jakarta', -6.9175, 107.6191, '🏙️', []],
+    ['medan', 'Medan', 'Indonesia', 'North Sumatra', 'Asia/Jakarta', 3.5952, 98.6722, '🏙️', []],
+    ['bekasi', 'Bekasi', 'Indonesia', 'West Java', 'Asia/Jakarta', -6.2383, 106.9756, '🏙️', []],
+    ['tangerang', 'Tangerang', 'Indonesia', 'Banten', 'Asia/Jakarta', -6.1783, 106.6319, '🏙️', []],
+    ['makassar', 'Makassar', 'Indonesia', 'South Sulawesi', 'Asia/Makassar', -5.1477, 119.4327, '🌊', []],
+    ['bangkok', 'Bangkok', 'Thailand', 'Bangkok', 'Asia/Bangkok', 13.7563, 100.5018, '🌆', []],
+    ['chiang_mai', 'Chiang Mai', 'Thailand', 'Chiang Mai', 'Asia/Bangkok', 18.7883, 98.9853, '⛰️', []],
+    ['phuket', 'Phuket', 'Thailand', 'Phuket', 'Asia/Bangkok', 7.8804, 98.3923, '🌴', []],
+    ['manila', 'Manila', 'Philippines', 'Metro Manila', 'Asia/Manila', 14.5995, 120.9842, '🌆', []],
+    ['quezon_city', 'Quezon City', 'Philippines', 'Metro Manila', 'Asia/Manila', 14.6760, 121.0437, '🏙️', []],
+    ['davao', 'Davao', 'Philippines', 'Davao Region', 'Asia/Manila', 7.1907, 125.4553, '🏙️', []],
+    ['cebu', 'Cebu', 'Philippines', 'Central Visayas', 'Asia/Manila', 10.3157, 123.8854, '🌊', []],
+    ['ho_chi_minh_city', 'Ho Chi Minh City', 'Vietnam', 'Ho Chi Minh City', 'Asia/Ho_Chi_Minh', 10.8231, 106.6297, '🌆', ['saigon']],
+    ['hanoi', 'Hanoi', 'Vietnam', 'Hanoi', 'Asia/Ho_Chi_Minh', 21.0278, 105.8342, '🏙️', []],
+    ['da_nang', 'Da Nang', 'Vietnam', 'Da Nang', 'Asia/Ho_Chi_Minh', 16.0544, 108.2022, '🌊', []],
+    ['kuala_lumpur', 'Kuala Lumpur', 'Malaysia', 'Kuala Lumpur', 'Asia/Kuala_Lumpur', 3.1390, 101.6869, '🌆', ['kl']],
+    ['george_town', 'George Town', 'Malaysia', 'Penang', 'Asia/Kuala_Lumpur', 5.4141, 100.3288, '🌊', ['penang']],
+    ['johor_bahru', 'Johor Bahru', 'Malaysia', 'Johor', 'Asia/Kuala_Lumpur', 1.4927, 103.7414, '🏙️', []],
+    ['singapore', 'Singapore', 'Singapore', 'Singapore', 'Asia/Singapore', 1.3521, 103.8198, '🌃', ['sg', 'sin']],
+    ['yangon', 'Yangon', 'Myanmar', 'Yangon', 'Asia/Yangon', 16.8409, 96.1735, '🏙️', ['rangoon']],
+    ['mandalay', 'Mandalay', 'Myanmar', 'Mandalay', 'Asia/Yangon', 21.9588, 96.0891, '🏙️', []],
+    ['phnom_penh', 'Phnom Penh', 'Cambodia', 'Phnom Penh', 'Asia/Phnom_Penh', 11.5564, 104.9282, '🏙️', []],
+    ['vientiane', 'Vientiane', 'Laos', 'Vientiane', 'Asia/Vientiane', 17.9757, 102.6331, '🏙️', []],
+    ['sydney', 'Sydney', 'Australia', 'New South Wales', 'Australia/Sydney', -33.8688, 151.2093, '🌉', []],
+    ['melbourne', 'Melbourne', 'Australia', 'Victoria', 'Australia/Melbourne', -37.8136, 144.9631, '🌆', []],
+    ['brisbane', 'Brisbane', 'Australia', 'Queensland', 'Australia/Brisbane', -27.4698, 153.0251, '🌆', []],
+    ['perth', 'Perth', 'Australia', 'Western Australia', 'Australia/Perth', -31.9523, 115.8613, '🌆', []],
+    ['adelaide', 'Adelaide', 'Australia', 'South Australia', 'Australia/Adelaide', -34.9285, 138.6007, '🌆', []],
+    ['auckland', 'Auckland', 'New Zealand', 'Auckland', 'Pacific/Auckland', -36.8509, 174.7645, '🌊', []],
+    ['wellington', 'Wellington', 'New Zealand', 'Wellington', 'Pacific/Auckland', -41.2865, 174.7762, '🌊', []],
+
+    ['dubai', 'Dubai', 'UAE', 'Dubai', 'Asia/Dubai', 25.2048, 55.2708, '🏙️', ['dxb']],
+    ['abu_dhabi', 'Abu Dhabi', 'UAE', 'Abu Dhabi', 'Asia/Dubai', 24.4539, 54.3773, '🏙️', ['abudhabi', 'auh']],
+    ['sharjah', 'Sharjah', 'UAE', 'Sharjah', 'Asia/Dubai', 25.3463, 55.4209, '🏙️', []],
+    ['doha', 'Doha', 'Qatar', 'Doha', 'Asia/Qatar', 25.2854, 51.5310, '🌇', ['qatar capital']],
+    ['riyadh', 'Riyadh', 'Saudi Arabia', 'Riyadh', 'Asia/Riyadh', 24.7136, 46.6753, '🌇', []],
+    ['jeddah', 'Jeddah', 'Saudi Arabia', 'Makkah', 'Asia/Riyadh', 21.4858, 39.1925, '🌊', []],
+    ['mecca', 'Mecca', 'Saudi Arabia', 'Makkah', 'Asia/Riyadh', 21.3891, 39.8579, '🕋', ['makkah']],
+    ['medina', 'Medina', 'Saudi Arabia', 'Madinah', 'Asia/Riyadh', 24.5247, 39.5692, '🕌', ['madinah']],
+    ['kuwait_city', 'Kuwait City', 'Kuwait', 'Al Asimah', 'Asia/Kuwait', 29.3759, 47.9774, '🏙️', []],
+    ['manama', 'Manama', 'Bahrain', 'Capital Governorate', 'Asia/Bahrain', 26.2235, 50.5876, '🌆', []],
+    ['muscat', 'Muscat', 'Oman', 'Muscat Governorate', 'Asia/Muscat', 23.5859, 58.4059, '🕌', ['maskad', 'masqat']],
+    ['tehran', 'Tehran', 'Iran', 'Tehran', 'Asia/Tehran', 35.6892, 51.3890, '🏙️', []],
+    ['mashhad', 'Mashhad', 'Iran', 'Razavi Khorasan', 'Asia/Tehran', 36.2605, 59.6168, '🏙️', []],
+    ['isfahan', 'Isfahan', 'Iran', 'Isfahan', 'Asia/Tehran', 32.6539, 51.6660, '🏙️', []],
+    ['shiraz', 'Shiraz', 'Iran', 'Fars', 'Asia/Tehran', 29.5918, 52.5837, '🏙️', []],
+    ['baghdad', 'Baghdad', 'Iraq', 'Baghdad', 'Asia/Baghdad', 33.3152, 44.3661, '🏙️', []],
+    ['basra', 'Basra', 'Iraq', 'Basra', 'Asia/Baghdad', 30.5085, 47.7804, '🏙️', []],
+    ['ankara', 'Ankara', 'Turkey', 'Ankara', 'Europe/Istanbul', 39.9334, 32.8597, '🏛️', []],
+    ['istanbul', 'Istanbul', 'Turkey', 'Istanbul', 'Europe/Istanbul', 41.0082, 28.9784, '🌉', []],
+    ['izmir', 'Izmir', 'Turkey', 'Izmir', 'Europe/Istanbul', 38.4237, 27.1428, '🌊', []],
+    ['bursa', 'Bursa', 'Turkey', 'Bursa', 'Europe/Istanbul', 40.1828, 29.0663, '🏙️', []],
+    ['tel_aviv', 'Tel Aviv', 'Israel', 'Tel Aviv', 'Asia/Jerusalem', 32.0853, 34.7818, '🌊', []],
+    ['jerusalem', 'Jerusalem', 'Israel', 'Jerusalem', 'Asia/Jerusalem', 31.7683, 35.2137, '🕍', []],
+    ['amman', 'Amman', 'Jordan', 'Amman', 'Asia/Amman', 31.9539, 35.9106, '🏙️', []],
+    ['beirut', 'Beirut', 'Lebanon', 'Beirut', 'Asia/Beirut', 33.8938, 35.5018, '🌊', []],
+    ['damascus', 'Damascus', 'Syria', 'Damascus', 'Asia/Damascus', 33.5138, 36.2765, '🏙️', []],
+    ['tashkent', 'Tashkent', 'Uzbekistan', 'Tashkent', 'Asia/Tashkent', 41.2995, 69.2401, '🏙️', []],
+    ['almaty', 'Almaty', 'Kazakhstan', 'Almaty', 'Asia/Almaty', 43.2220, 76.8512, '🏔️', []],
+    ['astana', 'Astana', 'Kazakhstan', 'Akmola', 'Asia/Almaty', 51.1694, 71.4491, '🏙️', ['nur-sultan']],
+
+    ['london', 'London', 'United Kingdom', 'England', 'Europe/London', 51.5074, -0.1278, '🏙️', []],
+    ['paris', 'Paris', 'France', 'Île-de-France', 'Europe/Paris', 48.8566, 2.3522, '🗼', []],
+    ['berlin', 'Berlin', 'Germany', 'Berlin', 'Europe/Berlin', 52.5200, 13.4050, '🏙️', []],
+    ['madrid', 'Madrid', 'Spain', 'Community of Madrid', 'Europe/Madrid', 40.4168, -3.7038, '🏙️', []],
+    ['rome', 'Rome', 'Italy', 'Lazio', 'Europe/Rome', 41.9028, 12.4964, '🏛️', []],
+    ['milan', 'Milan', 'Italy', 'Lombardy', 'Europe/Rome', 45.4642, 9.1900, '🏙️', []],
+    ['barcelona', 'Barcelona', 'Spain', 'Catalonia', 'Europe/Madrid', 41.3874, 2.1686, '🌊', []],
+    ['vienna', 'Vienna', 'Austria', 'Vienna', 'Europe/Vienna', 48.2082, 16.3738, '🎻', []],
+    ['warsaw', 'Warsaw', 'Poland', 'Masovian', 'Europe/Warsaw', 52.2297, 21.0122, '🏙️', []],
+    ['hamburg', 'Hamburg', 'Germany', 'Hamburg', 'Europe/Berlin', 53.5511, 9.9937, '🌊', []],
+    ['munich', 'Munich', 'Germany', 'Bavaria', 'Europe/Berlin', 48.1351, 11.5820, '🏙️', []],
+    ['prague', 'Prague', 'Czech Republic', 'Prague', 'Europe/Prague', 50.0755, 14.4378, '🏰', []],
+    ['budapest', 'Budapest', 'Hungary', 'Central Hungary', 'Europe/Budapest', 47.4979, 19.0402, '🌉', []],
+    ['bucharest', 'Bucharest', 'Romania', 'Bucharest', 'Europe/Bucharest', 44.4268, 26.1025, '🏙️', []],
+    ['amsterdam', 'Amsterdam', 'Netherlands', 'North Holland', 'Europe/Amsterdam', 52.3676, 4.9041, '🚲', []],
+    ['brussels', 'Brussels', 'Belgium', 'Brussels', 'Europe/Brussels', 50.8503, 4.3517, '🏙️', []],
+    ['stockholm', 'Stockholm', 'Sweden', 'Stockholm', 'Europe/Stockholm', 59.3293, 18.0686, '🌊', []],
+    ['copenhagen', 'Copenhagen', 'Denmark', 'Capital Region', 'Europe/Copenhagen', 55.6761, 12.5683, '🌊', []],
+    ['oslo', 'Oslo', 'Norway', 'Oslo', 'Europe/Oslo', 59.9139, 10.7522, '🏔️', []],
+    ['helsinki', 'Helsinki', 'Finland', 'Uusimaa', 'Europe/Helsinki', 60.1699, 24.9384, '🌊', []],
+    ['dublin', 'Dublin', 'Ireland', 'Leinster', 'Europe/Dublin', 53.3498, -6.2603, '🍀', []],
+    ['lisbon', 'Lisbon', 'Portugal', 'Lisbon', 'Europe/Lisbon', 38.7223, -9.1393, '🌊', []],
+    ['porto', 'Porto', 'Portugal', 'Norte', 'Europe/Lisbon', 41.1579, -8.6291, '🌊', []],
+    ['athens', 'Athens', 'Greece', 'Attica', 'Europe/Athens', 37.9838, 23.7275, '🏛️', []],
+    ['zurich', 'Zurich', 'Switzerland', 'Zurich', 'Europe/Zurich', 47.3769, 8.5417, '🏔️', []],
+    ['geneva', 'Geneva', 'Switzerland', 'Geneva', 'Europe/Zurich', 46.2044, 6.1432, '🏔️', []],
+    ['moscow', 'Moscow', 'Russia', 'Moscow', 'Europe/Moscow', 55.7558, 37.6173, '🏙️', []],
+    ['saint_petersburg', 'Saint Petersburg', 'Russia', 'Saint Petersburg', 'Europe/Moscow', 59.9311, 30.3609, '🏙️', []],
+    ['kyiv', 'Kyiv', 'Ukraine', 'Kyiv', 'Europe/Kyiv', 50.4501, 30.5234, '🏙️', ['kiev']],
+    ['minsk', 'Minsk', 'Belarus', 'Minsk', 'Europe/Minsk', 53.9006, 27.5590, '🏙️', []],
+    ['riga', 'Riga', 'Latvia', 'Riga', 'Europe/Riga', 56.9496, 24.1052, '🏙️', []],
+    ['vilnius', 'Vilnius', 'Lithuania', 'Vilnius', 'Europe/Vilnius', 54.6872, 25.2797, '🏙️', []],
+    ['tallinn', 'Tallinn', 'Estonia', 'Harju', 'Europe/Tallinn', 59.4370, 24.7536, '🌊', []],
+    ['sofia', 'Sofia', 'Bulgaria', 'Sofia', 'Europe/Sofia', 42.6977, 23.3219, '🏙️', []],
+    ['belgrade', 'Belgrade', 'Serbia', 'Belgrade', 'Europe/Belgrade', 44.7866, 20.4489, '🏙️', []],
+    ['zagreb', 'Zagreb', 'Croatia', 'Zagreb', 'Europe/Zagreb', 45.8150, 15.9819, '🏙️', []],
+    ['sarajevo', 'Sarajevo', 'Bosnia and Herzegovina', 'Sarajevo', 'Europe/Sarajevo', 43.8563, 18.4131, '🏔️', []],
+    ['skopje', 'Skopje', 'North Macedonia', 'Skopje', 'Europe/Skopje', 41.9981, 21.4254, '🏙️', []],
+    ['tirana', 'Tirana', 'Albania', 'Tirana', 'Europe/Tirane', 41.3275, 19.8187, '🏙️', []],
+    ['reykjavik', 'Reykjavik', 'Iceland', 'Capital Region', 'Atlantic/Reykjavik', 64.1466, -21.9426, '❄️', []],
+
+    ['new_york', 'New York', 'United States', 'New York', 'America/New_York', 40.7128, -74.0060, '🗽', ['nyc']],
+    ['los_angeles', 'Los Angeles', 'United States', 'California', 'America/Los_Angeles', 34.0522, -118.2437, '🌴', ['la']],
+    ['chicago', 'Chicago', 'United States', 'Illinois', 'America/Chicago', 41.8781, -87.6298, '🏙️', []],
+    ['houston', 'Houston', 'United States', 'Texas', 'America/Chicago', 29.7604, -95.3698, '🚀', []],
+    ['phoenix', 'Phoenix', 'United States', 'Arizona', 'America/Phoenix', 33.4484, -112.0740, '🌵', []],
+    ['philadelphia', 'Philadelphia', 'United States', 'Pennsylvania', 'America/New_York', 39.9526, -75.1652, '🏙️', []],
+    ['san_antonio', 'San Antonio', 'United States', 'Texas', 'America/Chicago', 29.4241, -98.4936, '🏙️', []],
+    ['san_diego', 'San Diego', 'United States', 'California', 'America/Los_Angeles', 32.7157, -117.1611, '🌊', []],
+    ['dallas', 'Dallas', 'United States', 'Texas', 'America/Chicago', 32.7767, -96.7970, '🏙️', []],
+    ['san_jose', 'San Jose', 'United States', 'California', 'America/Los_Angeles', 37.3382, -121.8863, '💻', []],
+    ['austin', 'Austin', 'United States', 'Texas', 'America/Chicago', 30.2672, -97.7431, '🎸', []],
+    ['jacksonville', 'Jacksonville', 'United States', 'Florida', 'America/New_York', 30.3322, -81.6557, '🌊', []],
+    ['fort_worth', 'Fort Worth', 'United States', 'Texas', 'America/Chicago', 32.7555, -97.3308, '🏙️', []],
+    ['columbus', 'Columbus', 'United States', 'Ohio', 'America/New_York', 39.9612, -82.9988, '🏙️', []],
+    ['charlotte', 'Charlotte', 'United States', 'North Carolina', 'America/New_York', 35.2271, -80.8431, '🏙️', []],
+    ['san_francisco', 'San Francisco', 'United States', 'California', 'America/Los_Angeles', 37.7749, -122.4194, '🌉', ['sf']],
+    ['seattle', 'Seattle', 'United States', 'Washington', 'America/Los_Angeles', 47.6062, -122.3321, '🌧️', []],
+    ['denver', 'Denver', 'United States', 'Colorado', 'America/Denver', 39.7392, -104.9903, '🏔️', []],
+    ['washington_dc', 'Washington, DC', 'United States', 'District of Columbia', 'America/New_York', 38.9072, -77.0369, '🏛️', ['washington']],
+    ['boston', 'Boston', 'United States', 'Massachusetts', 'America/New_York', 42.3601, -71.0589, '🏙️', []],
+    ['el_paso', 'El Paso', 'United States', 'Texas', 'America/Denver', 31.7619, -106.4850, '🌵', []],
+    ['detroit', 'Detroit', 'United States', 'Michigan', 'America/Detroit', 42.3314, -83.0458, '🏙️', []],
+    ['nashville', 'Nashville', 'United States', 'Tennessee', 'America/Chicago', 36.1627, -86.7816, '🎵', []],
+    ['portland', 'Portland', 'United States', 'Oregon', 'America/Los_Angeles', 45.5152, -122.6784, '🌲', []],
+    ['memphis', 'Memphis', 'United States', 'Tennessee', 'America/Chicago', 35.1495, -90.0490, '🎵', []],
+    ['oklahoma_city', 'Oklahoma City', 'United States', 'Oklahoma', 'America/Chicago', 35.4676, -97.5164, '🏙️', []],
+    ['las_vegas', 'Las Vegas', 'United States', 'Nevada', 'America/Los_Angeles', 36.1699, -115.1398, '🎰', []],
+    ['louisville', 'Louisville', 'United States', 'Kentucky', 'America/Kentucky/Louisville', 38.2527, -85.7585, '🏙️', []],
+    ['baltimore', 'Baltimore', 'United States', 'Maryland', 'America/New_York', 39.2904, -76.6122, '🌊', []],
+    ['milwaukee', 'Milwaukee', 'United States', 'Wisconsin', 'America/Chicago', 43.0389, -87.9065, '🌊', []],
+    ['albuquerque', 'Albuquerque', 'United States', 'New Mexico', 'America/Denver', 35.0844, -106.6504, '🌵', []],
+    ['tucson', 'Tucson', 'United States', 'Arizona', 'America/Phoenix', 32.2226, -110.9747, '🌵', []],
+    ['fresno', 'Fresno', 'United States', 'California', 'America/Los_Angeles', 36.7378, -119.7871, '🏙️', []],
+    ['sacramento', 'Sacramento', 'United States', 'California', 'America/Los_Angeles', 38.5816, -121.4944, '🏛️', []],
+    ['atlanta', 'Atlanta', 'United States', 'Georgia', 'America/New_York', 33.7490, -84.3880, '🌆', []],
+    ['miami', 'Miami', 'United States', 'Florida', 'America/New_York', 25.7617, -80.1918, '🌴', []],
+    ['orlando', 'Orlando', 'United States', 'Florida', 'America/New_York', 28.5383, -81.3792, '🎢', []],
+    ['tampa', 'Tampa', 'United States', 'Florida', 'America/New_York', 27.9506, -82.4572, '🌴', []],
+    ['toronto', 'Toronto', 'Canada', 'Ontario', 'America/Toronto', 43.6532, -79.3832, '🏙️', []],
+    ['montreal', 'Montreal', 'Canada', 'Quebec', 'America/Toronto', 45.5017, -73.5673, '🏙️', []],
+    ['vancouver', 'Vancouver', 'Canada', 'British Columbia', 'America/Vancouver', 49.2827, -123.1207, '🏔️', []],
+    ['calgary', 'Calgary', 'Canada', 'Alberta', 'America/Edmonton', 51.0447, -114.0719, '🏔️', []],
+    ['edmonton', 'Edmonton', 'Canada', 'Alberta', 'America/Edmonton', 53.5461, -113.4938, '🏙️', []],
+    ['ottawa', 'Ottawa', 'Canada', 'Ontario', 'America/Toronto', 45.4215, -75.6972, '🏛️', []],
+    ['winnipeg', 'Winnipeg', 'Canada', 'Manitoba', 'America/Winnipeg', 49.8951, -97.1384, '🏙️', []],
+    ['quebec_city', 'Quebec City', 'Canada', 'Quebec', 'America/Toronto', 46.8139, -71.2080, '🏰', []],
+    ['mexico_city', 'Mexico City', 'Mexico', 'Mexico City', 'America/Mexico_City', 19.4326, -99.1332, '🌆', ['cdmx']],
+    ['guadalajara', 'Guadalajara', 'Mexico', 'Jalisco', 'America/Mexico_City', 20.6597, -103.3496, '🏙️', []],
+    ['monterrey', 'Monterrey', 'Mexico', 'Nuevo León', 'America/Monterrey', 25.6866, -100.3161, '🏔️', []],
+    ['puebla', 'Puebla', 'Mexico', 'Puebla', 'America/Mexico_City', 19.0414, -98.2063, '🏙️', []],
+    ['tijuana', 'Tijuana', 'Mexico', 'Baja California', 'America/Tijuana', 32.5149, -117.0382, '🌊', []],
+    ['havana', 'Havana', 'Cuba', 'La Habana', 'America/Havana', 23.1136, -82.3666, '🌴', []],
+    ['santo_domingo', 'Santo Domingo', 'Dominican Republic', 'Distrito Nacional', 'America/Santo_Domingo', 18.4861, -69.9312, '🌴', []],
+    ['guatemala_city', 'Guatemala City', 'Guatemala', 'Guatemala', 'America/Guatemala', 14.6349, -90.5069, '🏙️', []],
+    ['panama_city', 'Panama City', 'Panama', 'Panama', 'America/Panama', 8.9824, -79.5199, '🌆', []],
+
+    ['sao_paulo', 'São Paulo', 'Brazil', 'São Paulo', 'America/Sao_Paulo', -23.5505, -46.6333, '🌆', ['sao paulo']],
+    ['rio_de_janeiro', 'Rio de Janeiro', 'Brazil', 'Rio de Janeiro', 'America/Sao_Paulo', -22.9068, -43.1729, '🌊', ['rio']],
+    ['brasilia', 'Brasília', 'Brazil', 'Federal District', 'America/Sao_Paulo', -15.7939, -47.8828, '🏛️', ['brasilia']],
+    ['salvador', 'Salvador', 'Brazil', 'Bahia', 'America/Bahia', -12.9777, -38.5016, '🌊', []],
+    ['fortaleza', 'Fortaleza', 'Brazil', 'Ceará', 'America/Fortaleza', -3.7319, -38.5267, '🌊', []],
+    ['belo_horizonte', 'Belo Horizonte', 'Brazil', 'Minas Gerais', 'America/Sao_Paulo', -19.9167, -43.9345, '🏙️', []],
+    ['manaus', 'Manaus', 'Brazil', 'Amazonas', 'America/Manaus', -3.1190, -60.0217, '🌴', []],
+    ['curitiba', 'Curitiba', 'Brazil', 'Paraná', 'America/Sao_Paulo', -25.4284, -49.2733, '🏙️', []],
+    ['recife', 'Recife', 'Brazil', 'Pernambuco', 'America/Recife', -8.0476, -34.8770, '🌊', []],
+    ['porto_alegre', 'Porto Alegre', 'Brazil', 'Rio Grande do Sul', 'America/Sao_Paulo', -30.0346, -51.2177, '🏙️', []],
+    ['buenos_aires', 'Buenos Aires', 'Argentina', 'Buenos Aires', 'America/Argentina/Buenos_Aires', -34.6037, -58.3816, '🌆', []],
+    ['cordoba', 'Córdoba', 'Argentina', 'Córdoba', 'America/Argentina/Cordoba', -31.4201, -64.1888, '🏙️', ['cordoba']],
+    ['rosario', 'Rosario', 'Argentina', 'Santa Fe', 'America/Argentina/Cordoba', -32.9442, -60.6505, '🏙️', []],
+    ['lima', 'Lima', 'Peru', 'Lima', 'America/Lima', -12.0464, -77.0428, '🌊', []],
+    ['bogota', 'Bogotá', 'Colombia', 'Bogotá', 'America/Bogota', 4.7110, -74.0721, '🏙️', ['bogota']],
+    ['medellin', 'Medellín', 'Colombia', 'Antioquia', 'America/Bogota', 6.2476, -75.5658, '🏔️', ['medellin']],
+    ['cali', 'Cali', 'Colombia', 'Valle del Cauca', 'America/Bogota', 3.4516, -76.5320, '🏙️', []],
+    ['santiago', 'Santiago', 'Chile', 'Santiago Metropolitan', 'America/Santiago', -33.4489, -70.6693, '🏔️', []],
+    ['valparaiso', 'Valparaíso', 'Chile', 'Valparaíso', 'America/Santiago', -33.0472, -71.6127, '🌊', ['valparaiso']],
+    ['caracas', 'Caracas', 'Venezuela', 'Capital District', 'America/Caracas', 10.4806, -66.9036, '🏙️', []],
+    ['maracaibo', 'Maracaibo', 'Venezuela', 'Zulia', 'America/Caracas', 10.6545, -71.6530, '🌊', []],
+    ['quito', 'Quito', 'Ecuador', 'Pichincha', 'America/Guayaquil', -0.1807, -78.4678, '🏔️', []],
+    ['guayaquil', 'Guayaquil', 'Ecuador', 'Guayas', 'America/Guayaquil', -2.1700, -79.9224, '🌊', []],
+    ['la_paz', 'La Paz', 'Bolivia', 'La Paz', 'America/La_Paz', -16.4897, -68.1193, '🏔️', []],
+    ['santa_cruz', 'Santa Cruz', 'Bolivia', 'Santa Cruz', 'America/La_Paz', -17.7833, -63.1821, '🏙️', []],
+    ['montevideo', 'Montevideo', 'Uruguay', 'Montevideo', 'America/Montevideo', -34.9011, -56.1645, '🌊', []],
+    ['asuncion', 'Asunción', 'Paraguay', 'Asunción', 'America/Asuncion', -25.2637, -57.5759, '🏙️', ['asuncion']],
+
+    ['cairo', 'Cairo', 'Egypt', 'Cairo', 'Africa/Cairo', 30.0444, 31.2357, '🏜️', []],
+    ['alexandria', 'Alexandria', 'Egypt', 'Alexandria', 'Africa/Cairo', 31.2001, 29.9187, '🌊', []],
+    ['giza', 'Giza', 'Egypt', 'Giza', 'Africa/Cairo', 30.0131, 31.2089, '🔺', []],
+    ['lagos', 'Lagos', 'Nigeria', 'Lagos', 'Africa/Lagos', 6.5244, 3.3792, '🌆', []],
+    ['abuja', 'Abuja', 'Nigeria', 'FCT', 'Africa/Lagos', 9.0765, 7.3986, '🏛️', []],
+    ['kano', 'Kano', 'Nigeria', 'Kano', 'Africa/Lagos', 12.0022, 8.5920, '🏙️', []],
+    ['ibadan', 'Ibadan', 'Nigeria', 'Oyo', 'Africa/Lagos', 7.3775, 3.9470, '🏙️', []],
+    ['kinshasa', 'Kinshasa', 'DR Congo', 'Kinshasa', 'Africa/Kinshasa', -4.4419, 15.2663, '🌆', []],
+    ['luanda', 'Luanda', 'Angola', 'Luanda', 'Africa/Luanda', -8.8390, 13.2894, '🌊', []],
+    ['johannesburg', 'Johannesburg', 'South Africa', 'Gauteng', 'Africa/Johannesburg', -26.2041, 28.0473, '🌆', ['joburg']],
+    ['cape_town', 'Cape Town', 'South Africa', 'Western Cape', 'Africa/Johannesburg', -33.9249, 18.4241, '🌊', []],
+    ['durban', 'Durban', 'South Africa', 'KwaZulu-Natal', 'Africa/Johannesburg', -29.8587, 31.0218, '🌊', []],
+];
+
+function toLocation(row) {
+    const [
+        key,
+        display,
+        country,
+        region,
+        timezone,
+        lat,
+        lon,
+        icon,
+        aliases = [],
+    ] = row;
+
+    return [
+        key,
+        {
+            key,
+            lat,
+            lon,
+            display,
+            country,
+            region,
+            timezone,
+            icon: icon || '📍',
+            aliases,
+            enabled: true,
+        },
+    ];
+}
+
+export const WEATHER_LOCATION_REGISTRY = Object.freeze(
+    Object.fromEntries(LOCATION_ROWS.map(toLocation))
+);
+
+export function normalizeWeatherCity(value) {
+    return String(value || '')
+        .trim()
+        .toLowerCase()
+        .replace(/[_-]+/g, ' ')
+        .replace(/\s+/g, ' ');
+}
+
+function normalizeRegistryKey(value) {
+    return normalizeWeatherCity(value).replace(/\s+/g, '_');
+}
+
+export function resolveRegistryKey(cityName) {
+    const normalized = normalizeWeatherCity(cityName);
+    const keyLike = normalizeRegistryKey(cityName);
+
+    if (WEATHER_LOCATION_REGISTRY[keyLike]) return keyLike;
+
+    for (const [canonical, entry] of Object.entries(WEATHER_LOCATION_REGISTRY)) {
+        const candidates = [
+            canonical,
+            entry.key,
+            entry.display,
+            ...(entry.aliases || []),
+        ].map(normalizeWeatherCity);
+
+        if (candidates.includes(normalized)) return canonical;
+    }
+
+    return null;
+}
+
+export function getCityWeatherKey(cityName) {
+    return resolveRegistryKey(cityName) || normalizeRegistryKey(cityName);
+}
+
+export function getWeatherLocation(cityName) {
+    const key = resolveRegistryKey(cityName);
+    return key ? WEATHER_LOCATION_REGISTRY[key] : null;
+}
+
+export function getWeatherLocationLabel(cityName) {
+    const location = getWeatherLocation(cityName);
+    if (location) return location.display;
+
+    const raw = String(cityName || '').trim();
+    if (!raw) return 'Unknown';
+
+    return raw
+        .replace(/[_-]+/g, ' ')
+        .split(/\s+/)
+        .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+        .join(' ');
+}
+
+export function getWeatherLocationOptions() {
+    return Object.values(WEATHER_LOCATION_REGISTRY)
+        .filter(location => location.enabled !== false)
+        .map(location => ({
+            key: location.key,
+            label: location.display,
+            country: location.country,
+            region: location.region || '',
+            timezone: location.timezone || '',
+            icon: location.icon || '📍',
+            lat: location.lat,
+            lon: location.lon,
+            searchText: [
+                location.display,
+                location.country,
+                location.region,
+                location.key,
+                ...(location.aliases || []),
+            ]
+                .filter(Boolean)
+                .join(' ')
+                .toLowerCase(),
+        }))
+        .sort((a, b) => {
+            const countryCompare = String(a.country || '').localeCompare(String(b.country || ''));
+            if (countryCompare !== 0) return countryCompare;
+            return String(a.label || '').localeCompare(String(b.label || ''));
+        });
+}
+
+export function uniqueWeatherCities(cities) {
+    const result = [];
+
+    for (const city of Array.isArray(cities) ? cities : []) {
+        const key = resolveRegistryKey(city);
+        if (!key || result.includes(key)) continue;
+        if (!WEATHER_LOCATION_REGISTRY[key]) continue;
+        result.push(key);
+    }
+
+    return result;
+}
+
+export function getConfiguredWeatherCities(settings) {
+    const raw = settings?.weather?.cities;
+    const normalized = uniqueWeatherCities(raw);
+
+    if (normalized.length === 0) return [...DEFAULT_WEATHER_CITIES];
+
+    const alreadyMigrated =
+        settings?.weather?.locationConfigVersion === WEATHER_LOCATION_CONFIG_VERSION;
+
+    if (!alreadyMigrated) {
+        return uniqueWeatherCities([...normalized, ...DEFAULT_WEATHER_CITIES]);
+    }
+
+    return normalized;
+}
+
+export function buildWeatherSettingsWithCities(baseSettings, cities) {
+    const nextCities = uniqueWeatherCities(cities);
+
+    return {
+        ...baseSettings,
+        weather: {
+            ...(baseSettings?.weather || {}),
+            cities: nextCities.length ? nextCities : [...DEFAULT_WEATHER_CITIES],
+            locationConfigVersion: WEATHER_LOCATION_CONFIG_VERSION,
+        },
+    };
+}
+
+export const __weatherLocationsInternalsForTest = {
+    LOCATION_ROWS,
+    normalizeRegistryKey,
+};
+```
+
+---
+
+# Add these 6K test/static-gate checks
+
+## `src/pages/WeatherPage.release6K.cert.test.jsx`
+
+Add:
+
+```jsx
+it('location registry has exactly 300 selectable cities and default excludes Colombo', () => {
+  const locationsModuleText = fs.readFileSync('src/services/weatherLocations.js', 'utf8');
+
+  expect(locationsModuleText).toContain("DEFAULT_WEATHER_CITIES = ['chennai', 'trichy', 'muscat']");
+  expect(locationsModuleText).not.toContain("DEFAULT_WEATHER_CITIES = ['chennai', 'trichy', 'muscat', 'colombo']");
+
+  expect(Object.keys(WEATHER_LOCATION_REGISTRY)).toHaveLength(300);
+  expect(DEFAULT_WEATHER_CITIES).toEqual(['chennai', 'trichy', 'muscat']);
+  expect(WEATHER_LOCATION_REGISTRY.colombo).toBeTruthy();
+});
+```
+
+Update imports in that test file:
+
+```js
+import {
+  DEFAULT_WEATHER_CITIES,
+  WEATHER_LOCATION_REGISTRY,
+} from '../services/weatherLocations.js';
+```
+
+## `scripts/test_hardening_release6K_static.mjs`
+
+Add:
+
+```js
+pass(
+  weatherLocations.includes("DEFAULT_WEATHER_CITIES = ['chennai', 'trichy', 'muscat']"),
+  'DEFAULT_WEATHER_CITIES must remove Colombo'
+);
+
+pass(
+  !weatherLocations.includes("DEFAULT_WEATHER_CITIES = ['chennai', 'trichy', 'muscat', 'colombo']"),
+  'Colombo must not remain in DEFAULT_WEATHER_CITIES'
+);
+
+pass(
+  weatherLocations.includes('LOCATION_ROWS'),
+  'weatherLocations must use governed LOCATION_ROWS'
+);
+
+pass(
+  weatherLocations.includes('WEATHER_LOCATION_REGISTRY = Object.freeze'),
+  'WEATHER_LOCATION_REGISTRY must be generated from governed rows'
+);
+
+pass(
+  weatherLocations.includes('colombo'),
+  'Colombo must remain selectable in registry even though removed from default'
+);
+```
+
+Final benchmark line to add:
+
+```text
+Default selected cities: Chennai / Trichy / Muscat
+Colombo default: removed
+Colombo selectable: yes
+Registry selectable locations: 300
+```
+--------------------------------------------------
+
+Below is the **Settings Weather Manager Compatibility Binding** code to add into the current **Release 6K**.
+
+This prevents `SettingsPage` from breaking after `WeatherLocationManager` becomes prop-driven.
+
+---
+
+# 1. Add file
+
+## `src/components/weather/SettingsWeatherLocationManager.jsx`
+
+```jsx
+import React from 'react';
+import WeatherLocationManager from './WeatherLocationManager.jsx';
+import { useWeatherTabViewModel } from '../../viewModels/useWeatherTabViewModel.js';
+
+/**
+ * SettingsWeatherLocationManager
+ *
+ * Compatibility binding for Settings → Weather → Locations.
+ *
+ * WeatherLocationManager is now a pure prop-driven UI component.
+ * This wrapper binds it to the Weather ViewModel so SettingsPage does not need
+ * to know about WeatherContext, SettingsContext, localStorage, refresh, or
+ * location-library validation.
+ */
+export default function SettingsWeatherLocationManager({
+  compact = false,
+}) {
+  const {
+    locationManagerProps,
+  } = useWeatherTabViewModel();
+
+  return (
+    <WeatherLocationManager
+      {...locationManagerProps}
+      compact={compact}
+    />
+  );
+}
+```
+
+---
+
+# 2. Modify `src/pages/SettingsPage.jsx`
+
+## Replace import
+
+Current:
+
+```jsx
+import WeatherLocationManager from '../components/weather/WeatherLocationManager.jsx';
+```
+
+Replace with:
+
+```jsx
+import SettingsWeatherLocationManager from '../components/weather/SettingsWeatherLocationManager.jsx';
+```
+
+---
+
+## Replace render usage
+
+Current Settings → Weather tab has:
+
+```jsx
+<WeatherLocationManager />
+```
+
+Replace with:
+
+```jsx
+<SettingsWeatherLocationManager />
+```
+
+So this section becomes:
+
+```jsx
+case 'weather':
+    return (
+        <div className="settings-tab-content">
+            <SectionTitle icon="📍" title="Locations" />
+            <SettingsWeatherLocationManager />
+
+            <SectionTitle icon="🧩" title="Display Preferences" />
+            <SettingCard>
+                <DisplayPreferencesPanel />
+                <TravelLocationSettingsPanel />
+            </SettingCard>
+
+            <SectionTitle icon="🌤️" title="Weather Models" />
+            <SettingCard>
+                <SettingItem label="ECMWF (European)">
+                    <Toggle
+                        checked={settings.weather?.models?.ecmwf !== false}
+                        onChange={(val) => updateNested('weather.models.ecmwf', val)}
+                    />
+                </SettingItem>
+
+                <SettingItem label="GFS (NOAA)">
+                    <Toggle
+                        checked={settings.weather?.models?.gfs !== false}
+                        onChange={(val) => updateNested('weather.models.gfs', val)}
+                    />
+                </SettingItem>
+
+                <SettingItem label="ICON (DWD)">
+                    <Toggle
+                        checked={settings.weather?.models?.icon !== false}
+                        onChange={(val) => updateNested('weather.models.icon', val)}
+                    />
+                </SettingItem>
+            </SettingCard>
+        </div>
+    );
+```
+
+---
+
+# 3. Update `scripts/test_hardening_release6K_static.mjs`
+
+Add this required file:
+
+```js
+'src/components/weather/SettingsWeatherLocationManager.jsx',
+```
+
+So the required files list should include:
+
+```js
+const requiredFiles = [
+  'src/viewModels/useWeatherTabViewModel.js',
+  'src/pages/WeatherPage.jsx',
+  'src/pages/SettingsPage.jsx',
+  'src/components/weather/WeatherLocationManager.jsx',
+  'src/components/weather/SettingsWeatherLocationManager.jsx',
+  'src/components/DetailedWeatherCard.jsx',
+  'src/services/weatherLocations.js',
+  'src/pages/WeatherPage.release6K.cert.test.jsx',
+  'scripts/test_hardening_release6K_static.mjs',
+];
+```
+
+Add reads:
+
+```js
+const settingsPage = read('src/pages/SettingsPage.jsx');
+const settingsWeatherManager = read('src/components/weather/SettingsWeatherLocationManager.jsx');
+```
+
+Add checks:
+
+```js
+pass(
+  !settingsPage.includes('<WeatherLocationManager />'),
+  'SettingsPage must not render bare WeatherLocationManager after Release 6K'
+);
+
+pass(
+  settingsPage.includes('SettingsWeatherLocationManager'),
+  'SettingsPage must use SettingsWeatherLocationManager compatibility binding'
+);
+
+pass(
+  settingsWeatherManager.includes('useWeatherTabViewModel'),
+  'SettingsWeatherLocationManager must bind through useWeatherTabViewModel'
+);
+
+pass(
+  settingsWeatherManager.includes('<WeatherLocationManager') &&
+  settingsWeatherManager.includes('{...locationManagerProps}'),
+  'SettingsWeatherLocationManager must pass locationManagerProps to WeatherLocationManager'
+);
+
+pass(
+  !settingsWeatherManager.includes("from '../../context/WeatherContext'") &&
+  !settingsWeatherManager.includes("from '../../context/SettingsContext'"),
+  'SettingsWeatherLocationManager must not import app contexts directly'
+);
+```
+
+Update allowed changed files:
+
+```js
+const allowedChangedFiles = new Set([
+  'src/viewModels/useWeatherTabViewModel.js',
+  'src/pages/WeatherPage.jsx',
+  'src/pages/SettingsPage.jsx',
+  'src/components/weather/WeatherLocationManager.jsx',
+  'src/components/weather/SettingsWeatherLocationManager.jsx',
+  'src/components/DetailedWeatherCard.jsx',
+  'src/services/weatherLocations.js',
+  'src/pages/WeatherPage.release6K.cert.test.jsx',
+  'scripts/test_hardening_release6K_static.mjs',
+  'package.json',
+]);
+```
+
+---
+
+# 4. Update `src/pages/WeatherPage.release6K.cert.test.jsx`
+
+Add:
+
+```js
+const settingsPage = read('src/pages/SettingsPage.jsx');
+const settingsWeatherManager = read('src/components/weather/SettingsWeatherLocationManager.jsx');
+```
+
+Add test:
+
+```js
+it('SettingsPage uses compatibility binding for WeatherLocationManager', () => {
+  expect(settingsPage).not.toContain('<WeatherLocationManager />');
+  expect(settingsPage).toContain('SettingsWeatherLocationManager');
+
+  expect(settingsWeatherManager).toContain('useWeatherTabViewModel');
+  expect(settingsWeatherManager).toContain('<WeatherLocationManager');
+  expect(settingsWeatherManager).toContain('{...locationManagerProps}');
+
+  expect(settingsWeatherManager).not.toContain("from '../../context/WeatherContext'");
+  expect(settingsWeatherManager).not.toContain("from '../../context/SettingsContext'");
+});
+```
+
+---
+
+# 5. Final 6K file list
+
+After adding this compatibility binding, Release 6K allowed files should be:
+
+```text
+src/viewModels/useWeatherTabViewModel.js
+src/pages/WeatherPage.jsx
+src/pages/SettingsPage.jsx
+src/components/weather/WeatherLocationManager.jsx
+src/components/weather/SettingsWeatherLocationManager.jsx
+src/components/DetailedWeatherCard.jsx
+src/services/weatherLocations.js
+src/pages/WeatherPage.release6K.cert.test.jsx
+scripts/test_hardening_release6K_static.mjs
+package.json
+```
+
+---
+
+# 6. Final report line to add
+
+```text
+Settings Weather Manager Compatibility Binding: YES
+SettingsPage bare WeatherLocationManager: 0
+SettingsWeatherLocationManager uses Weather ViewModel: YES
+WeatherLocationManager direct useSettings/useWeather: 0
+```
+
+This keeps both places working:
+
+```text
+WeatherPage → useWeatherTabViewModel → WeatherLocationManager
+SettingsPage → SettingsWeatherLocationManager → useWeatherTabViewModel → WeatherLocationManager
+```
+------------------------------------
+

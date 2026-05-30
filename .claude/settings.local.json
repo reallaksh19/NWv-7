@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(python3 -c \"import json; d=json.load\\(open\\('/home/user/NWv-7/public/newsdata/insight_quality_report.json'\\)\\); print\\('keys:', list\\(d.keys\\(\\)\\)[:30]\\); print\\('angle related:'\\); [print\\(' ', k,'=',v\\) for k,v in d.items\\(\\) if 'angle' in k.lower\\(\\) or 'grade' in k.lower\\(\\) or 'signal' in k.lower\\(\\)]\")",
+      "Bash(python3 -c ' *)",
+      "Bash(rm /home/user/NWv-7/scripts/insight_angle_inference.py)",
+      "Bash(npx vitest *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Code1\\\\NWv-7\" -Recurse -Filter \"*.js\" -o File)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Sort-Object)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Code1\\\\NWv-7\\\\public\" -Recurse)",
+      "Bash(Select-Object FullName, PSIsContainer)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Code1\\\\NWv-7\" -Directory -ErrorAction SilentlyContinue)",
+      "Bash(Select-Object Name)",
+      "Bash(grep -E \"\\\\.json$\")",
+      "Bash(python3 -c \"import json; d = json.load\\(open\\('C:\\\\\\\\Code1\\\\\\\\NWv-7/public/newsdata/insight_latest.json'\\)\\); print\\(f'Schema: {d.get\\(\\\\\"schemaVersion\\\\\"\\)}'\\); print\\(f'Stories: {len\\(d.get\\(\\\\\"stories\\\\\", []\\)\\)}'\\); print\\(f'SlotMeta keys: {list\\(d.get\\(\\\\\"slotMeta\\\\\", {}\\).keys\\(\\)\\)}'\\); print\\(f'ContentHash: {d.get\\(\\\\\"contentHash\\\\\"\\)}'\\); print\\(f'FetchedAt: {d.get\\(\\\\\"fetchedAt\\\\\"\\)}'\\); s = d['stories'][0] if d.get\\('stories'\\) else {}; print\\(f'\\\\\\\\nSample story keys: {list\\(s.keys\\(\\)\\)[:15]}'\\)\")"
+    ]
+  }
+}

@@ -1,0 +1,6041 @@
+## Phase 1A 
+Below is the final Phase 1A code to paste.
+
+---
+
+# Files to Modify
+
+```text
+src/pages/MainPage.jsx
+src/context/NewsContext.jsx
+src/pages/RefreshPage.jsx
+src/services/rssAggregator.js
+scripts/test_hardening_release1A_static.mjs
+package.json
+```
+
+No Phase 1B / envelope / ViewModel / DataHealth code is included.
+
+---
+
+# 1. `src/pages/MainPage.jsx`
+
+Replace only this block:
+
+```jsx
+const handleRefreshAll = React.useCallback(async () => {
+    await Promise.all([
+        refreshWeather(true),
+        refreshNews(true)
+    ]);
+}, [refreshWeather, refreshNews]);
+```
+
+with:
+
+```jsx
+const handleRefreshAll = React.useCallback(async () => {
+    await Promise.allSettled([
+        refreshWeather(true),
+        refreshNews()
+    ]);
+}, [refreshWeather, refreshNews]);
+```
+
+---
+
+# 2. `src/context/NewsContext.jsx`
+
+Replace:
+
+```jsx
+const sectionsToFetch = specificSections || allSections;
+```
+
+with:
+
+```jsx
+const sectionsToFetch = Array.isArray(specificSections) && specificSections.length > 0
+    ? specificSections.filter(s => typeof s === 'string')
+    : allSections;
+```
+
+This keeps current priority logic unchanged.
+
+---
+
+# 3. `src/pages/RefreshPage.jsx` — Full Revised File
+
+```jsx
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Header from '../components/Header';
+import Toggle from '../components/Toggle';
+import { getTimeSinceRefresh, setLastRefresh } from '../utils/storage';
+import { getCurrentSegment, getRecommendedToggles } from '../utils/timeSegment';
+import { useWeather } from '../context/WeatherContext';
+import { useNews } from '../context/NewsContext';
+import { useMarket } from '../context/MarketContext';
+
+/**
+ * Refresh Page Component
+ * Allows user to:
+ * - Select sections to refresh
+ * - See last refresh time
+ * - Trigger refresh
+ * - View refresh schedule
+ */
+function RefreshPage() {
+    const navigate = useNavigate();
+    const [refreshToggles, setRefreshToggles] = useState(() => getRecommendedToggles(getCurrentSegment()));
+    const [loading, setLoading] = useState(false);
+    const [lastRefresh, setLastRefreshTime] = useState(() => getTimeSinceRefresh());
+    const [recommended] = useState(() => getRecommendedToggles(getCurrentSegment()));
+
+    const { refreshWeather } = useWeather();
+    const { refreshNews } = useNews();
+    const { refreshMarket } = useMarket();
+
+    const handleRefresh = async () => {
+        setLoading(true);
+
+        try {
+            const sectionsToRefresh = Object.keys(refreshToggles).filter(k => refreshToggles[k]);
+
+            const promises = [];
+            const newsSections = [];
+
+            sectionsToRefresh.forEach(key => {
+                if (key === 'weather') {
+                    promises.push(refreshWeather(true));
+                    setLastRefresh('weather');
+                }
+                else if (key === 'market') {
+                    promises.push(refreshMarket(true));
+                    setLastRefresh('market');
+                }
+                else {
+                    newsSections.push(key);
+                    setLastRefresh(key);
+                }
+            });
+
+            if (newsSections.length > 0) {
+                promises.push(refreshNews(newsSections));
+            }
+
+            const results = await Promise.allSettled(promises);
+
+            results.forEach((result, index) => {
+                if (result.status === 'rejected') {
+                    console.error(`[RefreshPage] Refresh task ${index + 1} failed`, result.reason);
+                }
+            });
+        } finally {
+            setLastRefreshTime('Just now');
+            setLoading(false);
+            setTimeout(() => navigate('/'), 500);
+        }
+    };
+
+    const toggleAll = (value) => {
+        setRefreshToggles({
+            world: value,
+            india: value,
+            chennai: value,
+            trichy: value,
+            local: value,
+            social: value,
+            weather: value,
+            market: value
+        });
+    };
+
+    const sectionConfig = [
+        { key: 'world', icon: '🌐', label: 'World News', desc: 'International headlines' },
+        { key: 'india', icon: '🇮🇳', label: 'India News', desc: 'National news' },
+        { key: 'chennai', icon: '🏛️', label: 'Chennai News', desc: 'Chennai city updates' },
+        { key: 'trichy', icon: '🏛️', label: 'Trichy News', desc: 'Trichy local news' },
+        { key: 'local', icon: '📍', label: 'Local (Muscat)', desc: 'Muscat & Oman news' },
+        { key: 'social', icon: '👥', label: 'Social Trends', desc: 'Trending topics' },
+        { key: 'weather', icon: '☁️', label: 'Weather', desc: 'Chennai, Trichy, Muscat' },
+        { key: 'market', icon: '📈', label: 'Market', desc: 'BSE, NSE, Movers' }
+    ];
+
+    const selectedCount = Object.values(refreshToggles).filter(Boolean).length;
+
+    return (
+        <>
+            <Header title="Refresh Content" showBack backTo="/" />
+
+            <div className="refresh-page">
+                <div className="refresh-info">
+                    <span>⏱️</span>
+                    <span>Last refresh: <strong>{lastRefresh}</strong></span>
+                </div>
+
+                <div style={{
+                    display: 'flex',
+                    gap: 'var(--spacing-sm)',
+                    marginBottom: 'var(--spacing-md)'
+                }}>
+                    <button
+                        className="btn btn--secondary"
+                        style={{ flex: 1 }}
+                        onClick={() => toggleAll(true)}
+                    >
+                        Select All
+                    </button>
+                    <button
+                        className="btn btn--secondary"
+                        style={{ flex: 1 }}
+                        onClick={() => toggleAll(false)}
+                    >
+                        Clear All
+                    </button>
+                </div>
+
+                <section className="settings-section">
+                    <h2 className="settings-section__title">
+                        <span>📋</span>
+                        Select Sections to Refresh
+                        <span style={{
+                            marginLeft: 'auto',
+                            fontSize: '0.8rem',
+                            fontWeight: 'normal',
+                            color: 'var(--accent-primary)'
+                        }}>
+                            {selectedCount}/{sectionConfig.length}
+                        </span>
+                    </h2>
+
+                    <div className="modern-card" style={{ padding: '16px', gap: '0' }}>
+                        {sectionConfig.map(({ key, icon, label, desc }) => (
+                            <div key={key} className="settings-item">
+                                <div className="settings-item__label" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
+                                        <span className="settings-item__icon">{icon}</span>
+                                        {label}
+                                        {recommended[key] && (
+                                            <span style={{ color: 'var(--weather-sun)', fontSize: '0.7rem' }}>★</span>
+                                        )}
+                                    </div>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: '28px' }}>
+                                        {desc}
+                                    </div>
+                                </div>
+                                <Toggle
+                                    checked={refreshToggles[key]}
+                                    onChange={(val) => setRefreshToggles(prev => ({ ...prev, [key]: val }))}
+                                    recommended={recommended[key]}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                </section>
+
+                <button
+                    className={`refresh-btn ${loading ? 'refresh-btn--loading' : ''}`}
+                    onClick={handleRefresh}
+                    disabled={loading || selectedCount === 0}
+                >
+                    <span className="refresh-btn__icon">{loading ? '⟳' : '🔄'}</span>
+                    <span>{loading ? 'Refreshing...' : 'Refresh Now'}</span>
+                </button>
+
+                <div className="schedule-card">
+                    <div className="schedule-card__title">
+                        <span>📊</span>
+                        Auto-Refresh Schedule
+                    </div>
+                    <div className="schedule-item">
+                        <span className="schedule-item__label">Weather Forecast</span>
+                        <span className="schedule-item__value">Every 3 hours</span>
+                    </div>
+                    <div className="schedule-item">
+                        <span className="schedule-item__label">Weather Nowcast</span>
+                        <span className="schedule-item__value">Every 1 hour</span>
+                    </div>
+                    <div className="schedule-item">
+                        <span className="schedule-item__label">News Updates</span>
+                        <span className="schedule-item__value">Every 30 minutes</span>
+                    </div>
+                    <div className="schedule-item">
+                        <span className="schedule-item__label">Market Data</span>
+                        <span className="schedule-item__value">Every 5 minutes</span>
+                    </div>
+                    <div className="schedule-item">
+                        <span className="schedule-item__label">Social Trends</span>
+                        <span className="schedule-item__value">Every 15 minutes</span>
+                    </div>
+                </div>
+
+                <div className="card" style={{ marginTop: 'var(--spacing-md)', textAlign: 'center' }}>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                        Current Segment: <strong style={{ color: 'var(--accent-primary)' }}>
+                            {getCurrentSegment()?.name}
+                        </strong>
+                    </div>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                        ★ = Recommended sections for this time
+                    </div>
+                </div>
+            </div>
+        </>
+    );
+}
+
+export default RefreshPage;
+```
+
+---
+
+# 4. `src/services/rssAggregator.js`
+
+Do **not** replace the whole large file. Apply these exact source-level replacements.
+
+## 4.1 Replace existing `cleanSource()` with this full block
+
+```js
+/**
+ * Normalizes RSS source/author fields into a safe display string.
+ * Some RSS feeds return author/source values as objects instead of strings.
+ */
+function normalizeSourceText(value) {
+    if (typeof value === 'string') return value;
+    if (value && typeof value === 'object') {
+        return value.name || value.title || value.label || value.text || value._ || 'Unknown';
+    }
+    return value == null ? 'Unknown' : String(value);
+}
+
+/**
+ * Cleans source name
+ */
+function cleanSource(sourceName) {
+    if (!sourceName) return "Unknown";
+    if (typeof sourceName !== 'string') sourceName = normalizeSourceText(sourceName);
+
+    let cleanName = sourceName;
+
+    // Clean up long SEO-optimized names (e.g. "India News | Latest India News Today...")
+    if (cleanName.includes('|')) {
+        cleanName = cleanName.split('|')[0].trim();
+    }
+    if (cleanName.includes('-')) {
+        // e.g. "Headline - Source"
+        cleanName = cleanName.split('-').pop().trim();
+    }
+
+    // Direct mapping overrides for nicer display names
+    const overrides = {
+        'bbc': 'BBC',
+        'ndtv': 'NDTV',
+        'the hindu': 'The Hindu',
+        'times of india': 'TOI',
+        'india news': 'India News'
+    };
+
+    const lowerName = cleanName.toLowerCase();
+    for (const [key, prettyName] of Object.entries(overrides)) {
+        if (lowerName.includes(key)) {
+            return prettyName;
+        }
+    }
+
+    // Fix for Google News Search feeds where title is "Query - Google News"
+    if (cleanName.includes("Google News")) {
+        return "Google News";
+    }
+
+    // Search for known keys in the source name
+    const foundKey = Object.keys(SOURCE_METRICS).find(key =>
+        key !== 'default' && cleanName.toLowerCase().includes(key.toLowerCase())
+    );
+    return foundKey ? SOURCE_METRICS[foundKey].name : cleanName;
+}
+```
+
+## 4.2 Replace `isSourceAllowed()` with this full function
+
+```js
+function isSourceAllowed(sourceName, allowedSources) {
+    // If allowedSources is passed, we check if the source is enabled.
+    const sourceText = normalizeSourceText(sourceName);
+    let matchedKey = null;
+
+    // Check mapping
+    for (const [key, name] of Object.entries(SETTINGS_MAPPING)) {
+        const mappedName = normalizeSourceText(name);
+        if (sourceText.includes(mappedName) || mappedName.includes(sourceText)) {
+            matchedKey = key;
+            break;
+        }
+    }
+
+    if (matchedKey) {
+        return allowedSources[matchedKey] !== false;
+    }
+    return true;
+}
+```
+
+## 4.3 Replace source normalization inside `normalizeItem()`
+
+Replace:
+
+```js
+let source = feedSource;
+if (item.author) source = item.author;
+source = cleanSource(source);
+```
+
+with:
+
+```js
+let source = feedSource;
+if (item.author) source = item.author;
+source = cleanSource(normalizeSourceText(source));
+```
+
+## 4.4 Replace source filtering block inside `rankAndFilter()`
+
+Replace this block:
+
+```js
+// 2. Filtering Mode (Source vs Keyword)
+if (settings.filteringMode === 'keyword') {
+    // Strict Keyword Mode: Must match high-impact keywords
+    if (!checkKeywords(item.title, item.description)) return false;
+} else if (settings.topWebsitesOnly) {
+     // Phase 8: Top Websites Only Mode
+     const TOP_SOURCES = ['BBC', 'Reuters', 'NDTV', 'The Hindu', 'Times of India', 'Moneycontrol'];
+     if (!TOP_SOURCES.some(s => item.source.includes(s))) return false;
+        } else {
+            // Source Mode (Default): Check allowlist
+            if (allowedSources && !isSourceAllowed(item.source, allowedSources)) return false;
+        }
+```
+
+with:
+
+```js
+// 2. Filtering Mode (Source vs Keyword)
+const src = normalizeSourceText(item.source);
+
+if (settings.filteringMode === 'keyword') {
+    // Strict Keyword Mode: Must match high-impact keywords
+    if (!checkKeywords(item.title, item.description)) return false;
+} else if (settings.topWebsitesOnly) {
+    // Phase 8: Top Websites Only Mode
+    const TOP_SOURCES = ['BBC', 'Reuters', 'NDTV', 'The Hindu', 'Times of India', 'Moneycontrol'];
+    if (!TOP_SOURCES.some(s => src.includes(s))) return false;
+} else {
+    // Source Mode (Default): Check allowlist
+    if (allowedSources && !isSourceAllowed(src, allowedSources)) return false;
+}
+```
+
+---
+
+# 5. `scripts/test_hardening_release1A_static.mjs` — New File
+
+```js
+import fs from 'node:fs';
+
+const fail = (message) => {
+  console.error(`FAIL: ${message}`);
+  process.exit(1);
+};
+
+const pass = (condition, message) => {
+  if (!condition) fail(message);
+};
+
+const read = (path) => fs.readFileSync(path, 'utf8');
+
+function walkFiles(dir, out = []) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = `${dir}/${entry.name}`;
+    if (entry.isDirectory()) {
+      walkFiles(full, out);
+    } else if (/\.(js|jsx|ts|tsx)$/.test(entry.name)) {
+      out.push(full);
+    }
+  }
+  return out;
+}
+
+const main = read('src/pages/MainPage.jsx');
+const news = read('src/context/NewsContext.jsx');
+const refresh = read('src/pages/RefreshPage.jsx');
+const rss = read('src/services/rssAggregator.js');
+
+const srcFiles = walkFiles('src');
+const refreshNewsTrueHits = srcFiles.filter(path => read(path).includes('refreshNews(true)'));
+
+pass(
+  refreshNewsTrueHits.length === 0,
+  `refreshNews(true) remains in: ${refreshNewsTrueHits.join(', ')}`
+);
+
+pass(main.includes('Promise.allSettled'), 'MainPage must use Promise.allSettled');
+
+pass(news.includes('Array.isArray(specificSections)'), 'NewsContext missing Array.isArray guard');
+pass(
+  news.includes("specificSections.filter(s => typeof s === 'string')"),
+  'NewsContext must filter section names safely'
+);
+
+pass(refresh.includes("useMarket"), 'RefreshPage missing useMarket');
+pass(refresh.includes('refreshMarket(true)'), 'RefreshPage missing refreshMarket(true)');
+pass(refresh.includes('Promise.allSettled'), 'RefreshPage must use Promise.allSettled');
+pass(refresh.includes('finally'), 'RefreshPage must use try/finally so loading state cannot get stuck');
+
+pass(rss.includes('function normalizeSourceText'), 'rssAggregator missing normalizeSourceText helper');
+pass(
+  rss.includes('cleanSource(normalizeSourceText(source))'),
+  'normalizeItem must coerce source before cleanSource'
+);
+pass(
+  rss.includes("typeof sourceName !== 'string'"),
+  'cleanSource must defensively coerce non-string input'
+);
+pass(
+  rss.includes('const sourceText = normalizeSourceText(sourceName)'),
+  'isSourceAllowed must normalize sourceName'
+);
+pass(
+  rss.includes('const mappedName = normalizeSourceText(name)'),
+  'isSourceAllowed must normalize SETTINGS_MAPPING values'
+);
+pass(
+  !/item\.source\.includes\s*\(/.test(rss),
+  'unguarded item.source.includes remains'
+);
+pass(
+  rss.includes('const src = normalizeSourceText(item.source)'),
+  'rssAggregator must normalize item.source in rankAndFilter'
+);
+
+console.log('PASS: Release 1A static hardening gates');
+```
+
+---
+
+# 6. `package.json`
+
+Add this inside `"scripts"`:
+
+```json
+"test:hardening:release1A": "node scripts/test_hardening_release1A_static.mjs"
+```
+
+Example tail:
+
+```json
+"test:weather-main-following-buzz-insight-closeout": "node scripts/test_weather_main_following_buzz_insight_closeout_static.mjs",
+"test:weather-closeout-regression-static": "node scripts/test_weather_closeout_regression_static.mjs",
+"report:weather-main-following-buzz-insight-closeout": "node scripts/report_weather_main_following_buzz_insight_closeout.mjs",
+"test:hardening:release1A": "node scripts/test_hardening_release1A_static.mjs"
+```
+
+---
+
+# Commands to Run
+
+```bash
+npm run test:hardening:release1A
+npx vite build
+npm run test:unit
+```
+
+---
+
+# Expected Result
+
+| Benchmark                         | Expected |
+| --------------------------------- | -------: |
+| `refreshNews(true)` in `src/`     |        0 |
+| unguarded `item.source.includes(` |        0 |
+| static gate                       |     PASS |
+| Vite build                        |     PASS |
+| new npm dependencies              |        0 |
+| out-of-scope files modified       |        0 |
+| market refresh no-op              |    fixed |
+| manual refresh crash risk         |  removed |
+
+
+
+
+To be updated in 1A:
+
+# Required Minor Corrections Before Applying
+
+## Correction 1 — Static gate must also reject `refreshNews( true )`
+
+Your gate searches:
+
+```js
+read(path).includes('refreshNews(true)')
+```
+
+This misses variants like:
+
+```js
+refreshNews( true )
+refreshNews(
+  true
+)
+```
+
+Use a regex:
+
+```js
+const refreshNewsTrueHits = srcFiles.filter(path =>
+  /refreshNews\s*\(\s*true\s*\)/.test(read(path))
+);
+```
+
+This makes the gate robust.
+
+---
+
+## Correction 2 — Static gate should reject unguarded `.source.includes`, not only `item.source.includes`
+
+Current gate checks:
+
+```js
+!/item\.source\.includes\s*\(/.test(rss)
+```
+
+But a future bad line could be:
+
+```js
+article.source.includes(...)
+story.source.includes(...)
+```
+
+Use:
+
+```js
+pass(
+  !/\b\w+\.source\.includes\s*\(/.test(rss),
+  'unguarded .source.includes remains'
+);
+```
+
+This is stricter and more useful.
+
+---
+
+# Final Approval
+
+**Approved after the two static-gate improvements.**
+
+Use this final gate logic change:
+
+```js
+const refreshNewsTrueHits = srcFiles.filter(path =>
+  /refreshNews\s*\(\s*true\s*\)/.test(read(path))
+);
+
+pass(
+  refreshNewsTrueHits.length === 0,
+  `refreshNews(true) remains in: ${refreshNewsTrueHits.join(', ')}`
+);
+
+pass(
+  !/\b\w+\.source\.includes\s*\(/.test(rss),
+  'unguarded .source.includes remains'
+);
+```
+
+Everything else in the provided Phase 1A patch is acceptable.
+
+---
+
+# Implementation Decision
+
+| Item                                | Decision                           |
+| ----------------------------------- | ---------------------------------- |
+| MainPage refresh fix                | Approve                            |
+| NewsContext array guard             | Approve, optional trim improvement |
+| RefreshPage market refresh          | Approve                            |
+| RefreshPage try/finally             | Approve                            |
+| rssAggregator `normalizeSourceText` | Approve                            |
+| `isSourceAllowed` hardening         | Approve                            |
+| Static gate                         | Approve after regex strengthening  |
+| Scope control                       | Good                               |
+| New dependencies                    | None                               |
+
+Expected result after applying:
+
+```text
+refreshNews(true) in src/: 0
+unguarded .source.includes: 0
+market refresh no-op: fixed
+manual refresh crash risk: removed
+```
+
+
+---------------------------------------
+
+
+The attached review is correct. Below is the **fixed Release 1B full code**, with all blockers addressed: functional `TopicContext` preservation, malformed topic envelope, guarded `getSettings()`, `Promise.allSettled`, TopicDetail preserving old articles on retry failure, and real Vitest behavior tests. 
+
+Before applying locally, reconcile the earlier accidental repo write:
+
+```bash
+git checkout -- src/data/dataEnvelope.js
+```
+
+If the file was already committed remotely, revert that commit first, then apply the full code below.
+
+---
+
+# 1. `src/data/dataEnvelope.js`
+
+```js
+export const ENVELOPE_SOURCES = Object.freeze({
+  LIVE: 'live',
+  SNAPSHOT: 'snapshot',
+  CACHE: 'cache',
+  SEED: 'seed',
+  FAILED: 'failed',
+});
+
+export const ENVELOPE_FRESHNESS = Object.freeze({
+  FRESH: 'fresh',
+  STALE: 'stale',
+  EXPIRED: 'expired',
+  EMPTY: 'empty',
+  UNKNOWN: 'unknown',
+});
+
+export function stableStringify(value) {
+  if (value === null || typeof value !== 'object') return JSON.stringify(value);
+
+  if (Array.isArray(value)) {
+    return `[${value.map(stableStringify).join(',')}]`;
+  }
+
+  return `{${Object.keys(value)
+    .sort()
+    .map(key => `${JSON.stringify(key)}:${stableStringify(value[key])}`)
+    .join(',')}}`;
+}
+
+export function fnv1aHex(input) {
+  const text = String(input ?? '');
+  let hash = 0x811c9dc5;
+
+  for (let i = 0; i < text.length; i += 1) {
+    hash ^= text.charCodeAt(i);
+    hash = (hash + ((hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24))) >>> 0;
+  }
+
+  return hash.toString(16).padStart(8, '0');
+}
+
+export function makeEnvelope(partial = {}) {
+  const now = Date.now();
+  const ok = partial.ok ?? true;
+  const data = partial.data ?? null;
+  const source = partial.source || ENVELOPE_SOURCES.LIVE;
+
+  return Object.freeze({
+    ok,
+    datasetId: partial.datasetId || 'unknown',
+    data,
+    payloadHash: partial.payloadHash || fnv1aHex(stableStringify(data)),
+    source,
+    freshness: partial.freshness || ENVELOPE_FRESHNESS.FRESH,
+    generatedAt: partial.generatedAt ?? null,
+    fetchedAt: partial.fetchedAt ?? now,
+    lastGoodAt: partial.lastGoodAt ?? (ok ? now : null),
+    schemaVersion: partial.schemaVersion || '1.0.0',
+    fallbackUsed: source !== ENVELOPE_SOURCES.LIVE,
+    validation: partial.validation || { passed: true, errors: [], warnings: [] },
+    slo: partial.slo || { passed: true, score: 100, reasons: [] },
+    diagnostics: partial.diagnostics || [],
+    error: partial.error ?? null,
+  });
+}
+
+export function isUsableEnvelope(env) {
+  return Boolean(env && env.ok === true && env.data != null);
+}
+```
+
+---
+
+# 2. `src/utils/withTimeout.js`
+
+```js
+export class TimeoutError extends Error {
+  constructor(message = 'Operation timed out') {
+    super(message);
+    this.name = 'TimeoutError';
+  }
+}
+
+export function withTimeout(promise, timeoutMs = 12000, options = {}) {
+  const message = options.message || `Operation timed out after ${timeoutMs}ms`;
+
+  let timeoutId;
+
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new TimeoutError(message));
+    }, timeoutMs);
+  });
+
+  return Promise.race([promise, timeoutPromise]).finally(() => {
+    clearTimeout(timeoutId);
+  });
+}
+
+export async function fetchWithTimeout(url, options = {}) {
+  const { timeoutMs = 12000, ...fetchOptions } = options;
+
+  return withTimeout(fetch(url, fetchOptions), timeoutMs, {
+    message: `Fetch timed out after ${timeoutMs}ms: ${url}`,
+  });
+}
+```
+
+---
+
+# 3. `src/hooks/useMountedRef.js`
+
+```js
+import { useEffect, useRef } from 'react';
+
+export function useMountedRef() {
+  const mountedRef = useRef(false);
+
+  useEffect(() => {
+    mountedRef.current = true;
+
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  return mountedRef;
+}
+```
+
+---
+
+# 4. `src/services/topicService.js`
+
+```js
+import { buildTopicQuery } from '../utils/topicQueryBuilder.js';
+import { fetchAndParseFeed } from './rssAggregator.js';
+import { updateTopicLastFetched, getSettings } from '../utils/storage.js';
+import { makeEnvelope } from '../data/dataEnvelope.js';
+
+function getTopicDatasetId(topic) {
+    return `topic:${topic?.id || topic?.query || topic?.name || 'unknown'}`;
+}
+
+function getTopicDisplayName(topic) {
+    return topic?.name || topic?.query || topic?.id || 'unknown';
+}
+
+function failedTopicEnvelope(topic, message, diagnosticsEvent = 'topic_fetch_failed') {
+    return makeEnvelope({
+        ok: false,
+        datasetId: getTopicDatasetId(topic),
+        data: [],
+        source: 'failed',
+        freshness: 'unknown',
+        error: message,
+        validation: {
+            passed: false,
+            errors: [message],
+            warnings: [],
+        },
+        diagnostics: [
+            {
+                event: diagnosticsEvent,
+                severity: 'error',
+                message,
+            },
+        ],
+    });
+}
+
+function safeGetSettings() {
+    try {
+        return getSettings() || {};
+    } catch (error) {
+        console.warn('[TopicService] Failed to read settings. Using defaults.', error);
+        return {};
+    }
+}
+
+/**
+ * Fetches news articles for a specific followed topic.
+ * Returns a canonical DataEnvelope.
+ */
+export async function fetchTopicNews(topic) {
+    const datasetId = getTopicDatasetId(topic);
+    const topicName = getTopicDisplayName(topic);
+    const query = topic?.query || topic?.name;
+
+    if (!query) {
+        return failedTopicEnvelope(
+            topic,
+            'Invalid topic: missing query/name',
+            'topic_fetch_invalid'
+        );
+    }
+
+    try {
+        const feedUrl = buildTopicQuery(query, topic?.options || {});
+
+        console.log(`[TopicService] Fetching news for "${topicName}"`);
+
+        const articles = await fetchAndParseFeed(feedUrl, 'following');
+
+        if (topic?.id) {
+            updateTopicLastFetched(topic.id);
+        }
+
+        const settings = safeGetSettings();
+        const limitHours = settings.hideOlderThanHours || 60;
+        const now = Date.now();
+        const maxAge = limitHours * 60 * 60 * 1000;
+        const strictFreshness = settings.strictFreshness !== false;
+
+        let filteredArticles = Array.isArray(articles) ? articles : [];
+
+        if (strictFreshness) {
+            filteredArticles = filteredArticles.filter(article => {
+                if (!article.publishedAt) return false;
+                const age = now - article.publishedAt;
+                return age <= maxAge;
+            });
+
+            console.log(
+                `[TopicService] Filtered ${(Array.isArray(articles) ? articles.length : 0) - filteredArticles.length} old articles for "${topicName}" (Limit: ${limitHours}h)`
+            );
+        }
+
+        const articlesWithTopic = filteredArticles.map(article => ({
+            ...article,
+            topicId: topic?.id,
+            topicName: topic?.name || topicName,
+            context: 'following'
+        }));
+
+        return makeEnvelope({
+            ok: true,
+            datasetId,
+            data: articlesWithTopic,
+            source: 'live',
+            freshness: articlesWithTopic.length > 0 ? 'fresh' : 'empty',
+            generatedAt: Date.now(),
+            validation: {
+                passed: true,
+                errors: [],
+                warnings: articlesWithTopic.length === 0 ? ['topic_returned_no_articles'] : [],
+            },
+            diagnostics: [
+                {
+                    event: 'topic_fetch_success',
+                    severity: 'info',
+                    message: `${articlesWithTopic.length} article(s) loaded`,
+                },
+            ],
+        });
+
+    } catch (error) {
+        const message = error?.name === 'TimeoutError'
+            ? 'TimeoutError'
+            : (error?.message || String(error));
+
+        console.error(`[TopicService] Failed to fetch topic "${topicName}":`, error);
+
+        return failedTopicEnvelope(topic, message);
+    }
+}
+
+/**
+ * Fetches news for all followed topics in parallel.
+ * Preserves compatibility by returning { [topicId]: Article[] | DataEnvelope }.
+ */
+export async function fetchAllTopicsNews(followedTopics) {
+    if (!followedTopics || followedTopics.length === 0) return {};
+
+    const results = await Promise.allSettled(
+        followedTopics.map(topic => fetchTopicNews(topic))
+    );
+
+    const byTopic = {};
+
+    results.forEach((result, index) => {
+        const topic = followedTopics[index];
+        const topicId = topic?.id;
+
+        if (!topicId) return;
+
+        if (result.status === 'fulfilled') {
+            const env = result.value;
+
+            if (Array.isArray(env)) {
+                byTopic[topicId] = env;
+                return;
+            }
+
+            if (env?.ok === true && Array.isArray(env.data)) {
+                byTopic[topicId] = env.data;
+                return;
+            }
+
+            byTopic[topicId] = env;
+            return;
+        }
+
+        const message = result.reason?.message || String(result.reason);
+
+        byTopic[topicId] = failedTopicEnvelope(topic, message);
+    });
+
+    return byTopic;
+}
+```
+
+---
+
+# 5. `src/context/TopicContext.jsx`
+
+```jsx
+/* eslint-disable react-refresh/only-export-components */
+import React, { createContext, useState, useEffect, useContext, useRef } from 'react';
+import {
+    getSettings,
+    addFollowedTopic,
+    removeFollowedTopic,
+    addReadArticle,
+    getSuggestedTopics
+} from '../utils/storage.js';
+import { fetchAllTopicsNews } from '../services/topicService.js';
+import { sendNotification } from '../utils/notifications.js';
+
+const TopicContext = createContext();
+
+function canonicalTopicText(value) {
+    return String(value || '')
+        .trim()
+        .toLowerCase()
+        .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+        .replace(/\s+/g, ' ');
+}
+
+function getTopicKey(topic) {
+    return canonicalTopicText(topic?.query || topic?.name);
+}
+
+function isDuplicateTopic(existingTopics, topic) {
+    const nextKey = getTopicKey(topic);
+    if (!nextKey) return false;
+
+    return existingTopics.some(existing => getTopicKey(existing) === nextKey);
+}
+
+function normalizeTopic(topic) {
+    const name = String(topic?.name || topic?.query || '').trim();
+    const query = String(topic?.query || topic?.name || '').trim();
+
+    return {
+        ...topic,
+        name,
+        query,
+        icon: topic?.icon || '📰',
+        options: {
+            country: 'IN',
+            lang: 'en',
+            timeRange: '30d',
+            ...(topic?.options || {})
+        }
+    };
+}
+
+function unwrapTopicEnvelope(value, previousArticles = []) {
+    if (Array.isArray(value)) {
+        return {
+            articles: value,
+            error: null,
+        };
+    }
+
+    if (value && value.ok === true && Array.isArray(value.data)) {
+        return {
+            articles: value.data,
+            error: null,
+        };
+    }
+
+    return {
+        articles: previousArticles,
+        error: value?.error || 'Topic refresh failed',
+    };
+}
+
+export function TopicProvider({ children }) {
+    const [followedTopics, setFollowedTopics] = useState([]);
+    const [topicNews, setTopicNews] = useState({});
+    const topicNewsRef = useRef({});
+    const [loading, setLoading] = useState(false);
+    const [suggestions, setSuggestions] = useState([]);
+    const [topicMessage, setTopicMessage] = useState('');
+
+    useEffect(() => {
+        topicNewsRef.current = topicNews;
+    }, [topicNews]);
+
+    useEffect(() => {
+        const settings = getSettings();
+        setFollowedTopics(settings.followedTopics || []);
+        refreshSuggestions();
+    }, []);
+
+    useEffect(() => {
+        if (followedTopics.length === 0) return;
+
+        refreshTopics(false);
+
+        const interval = setInterval(() => {
+            console.log('[TopicContext] Auto-refreshing topics...');
+            refreshTopics(true);
+        }, 15 * 60 * 1000);
+
+        return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [followedTopics.length]);
+
+    const refreshTopics = async (shouldNotify = false) => {
+        if (followedTopics.length === 0) return;
+
+        if (!shouldNotify) setLoading(true);
+
+        try {
+            const newsByTopic = await fetchAllTopicsNews(followedTopics);
+
+            let hasFailure = false;
+            let notificationPayload = null;
+
+            setTopicNews(prevTopicNews => {
+                const nextTopicNews = { ...prevTopicNews };
+
+                followedTopics.forEach(topic => {
+                    const previousArticles = prevTopicNews[topic.id] || [];
+                    const value = newsByTopic[topic.id];
+                    const { articles, error } = unwrapTopicEnvelope(value, previousArticles);
+
+                    nextTopicNews[topic.id] = articles;
+
+                    if (error) {
+                        hasFailure = true;
+                        console.warn(`[TopicContext] ${topic.name}: ${error}`);
+                    }
+                });
+
+                if (shouldNotify) {
+                    notificationPayload = {
+                        previous: prevTopicNews,
+                        next: nextTopicNews,
+                    };
+                }
+
+                topicNewsRef.current = nextTopicNews;
+                return nextTopicNews;
+            });
+
+            if (shouldNotify && notificationPayload) {
+                checkForUpdates(notificationPayload.next, notificationPayload.previous);
+            }
+
+            setTopicMessage(
+                hasFailure
+                    ? 'Some topic refreshes failed. Showing the last available results.'
+                    : ''
+            );
+        } catch (error) {
+            console.error('[TopicContext] Failed to refresh topics:', error);
+            setTopicMessage('Topic refresh failed. Showing the last available results.');
+        } finally {
+            if (!shouldNotify) setLoading(false);
+        }
+    };
+
+    const checkForUpdates = (newNews, oldNews = topicNewsRef.current) => {
+        let newCount = 0;
+        let topicName = '';
+
+        Object.entries(newNews).forEach(([topicId, articles]) => {
+            const oldArticles = oldNews[topicId] || [];
+
+            if (articles.length > 0 && oldArticles.length > 0) {
+                if (articles[0].id !== oldArticles[0].id) {
+                    newCount++;
+                    const topic = followedTopics.find(t => t.id === topicId);
+                    if (topic) topicName = topic.name;
+                }
+            }
+        });
+
+        if (newCount > 0) {
+            const title = newCount === 1
+                ? `New update for ${topicName}`
+                : `Updates in ${newCount} followed topics`;
+
+            sendNotification(title, {
+                body: 'Click to see the latest stories.',
+                tag: 'topic-update'
+            });
+        }
+    };
+
+    const addTopic = (topic) => {
+        const normalizedTopic = normalizeTopic(topic);
+
+        if (!normalizedTopic.name || !normalizedTopic.query) {
+            setTopicMessage('Enter a valid topic name.');
+            return { ok: false, reason: 'invalid-topic' };
+        }
+
+        const settings = getSettings();
+        const existingTopics = settings.followedTopics || [];
+
+        if (isDuplicateTopic(existingTopics, normalizedTopic)) {
+            setTopicMessage(`Already following "${normalizedTopic.name}".`);
+            setFollowedTopics(existingTopics);
+            return { ok: false, reason: 'duplicate-topic' };
+        }
+
+        addFollowedTopic(normalizedTopic);
+
+        const nextSettings = getSettings();
+        const nextTopics = nextSettings.followedTopics || [];
+
+        setFollowedTopics(nextTopics);
+        setTopicMessage(`Now following "${normalizedTopic.name}".`);
+
+        setTimeout(() => refreshTopics(false), 50);
+
+        return { ok: true };
+    };
+
+    const removeTopic = (topicId) => {
+        removeFollowedTopic(topicId);
+        setFollowedTopics(prev => prev.filter(t => t.id !== topicId));
+
+        const newTopicNews = { ...topicNewsRef.current };
+        delete newTopicNews[topicId];
+        topicNewsRef.current = newTopicNews;
+        setTopicNews(newTopicNews);
+        setTopicMessage('');
+    };
+
+    const addToHistory = (article) => {
+        addReadArticle(article);
+        refreshSuggestions();
+    };
+
+    const refreshSuggestions = () => {
+        const sugs = getSuggestedTopics();
+        setSuggestions(sugs);
+    };
+
+    const clearTopicMessage = () => {
+        setTopicMessage('');
+    };
+
+    const value = {
+        followedTopics,
+        topicNews,
+        loading,
+        suggestions,
+        topicMessage,
+        addTopic,
+        removeTopic,
+        refreshTopics,
+        addToHistory,
+        clearTopicMessage
+    };
+
+    return (
+        <TopicContext.Provider value={value}>
+            {children}
+        </TopicContext.Provider>
+    );
+}
+
+export function useTopics() {
+    return useContext(TopicContext);
+}
+```
+
+---
+
+# 6. `src/pages/TopicDetail.jsx`
+
+```jsx
+import React, { useCallback, useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useTopics } from '../context/TopicContext.jsx';
+import NewsSection from '../components/NewsSection.jsx';
+import { fetchTopicNews } from '../services/topicService.js';
+import { withTimeout } from '../utils/withTimeout.js';
+import { useMountedRef } from '../hooks/useMountedRef.js';
+import './FollowingPage.css';
+
+export default function TopicDetail() {
+    const { topicId } = useParams();
+    const navigate = useNavigate();
+    const { followedTopics, addToHistory } = useTopics();
+
+    const [topicEnvelope, setTopicEnvelope] = useState(null);
+    const [articles, setArticles] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [notFoundTimeout, setNotFoundTimeout] = useState(false);
+
+    const mountedRef = useMountedRef();
+
+    const topic = followedTopics.find(t => t.id === topicId);
+
+    useEffect(() => {
+        if (topic) return;
+
+        const timeoutId = setTimeout(() => setNotFoundTimeout(true), 5000);
+
+        return () => clearTimeout(timeoutId);
+    }, [topic]);
+
+    const loadTopic = useCallback(async () => {
+        if (!topic) return;
+
+        setLoading(true);
+        setError(null);
+
+        try {
+            const env = await withTimeout(fetchTopicNews(topic), 12000, {
+                message: 'Topic fetch timed out',
+            });
+
+            if (!mountedRef.current) return;
+
+            setTopicEnvelope(env);
+
+            if (env.ok) {
+                setArticles(Array.isArray(env.data) ? env.data : []);
+            } else {
+                setError(env.error || 'Topic refresh failed');
+            }
+        } catch (err) {
+            if (!mountedRef.current) return;
+
+            setTopicEnvelope(null);
+            setError(err?.name === 'TimeoutError'
+                ? 'Topic fetch timed out'
+                : (err?.message || String(err))
+            );
+        } finally {
+            if (mountedRef.current) {
+                setLoading(false);
+            }
+        }
+    }, [topic, mountedRef]);
+
+    useEffect(() => {
+        loadTopic();
+    }, [loadTopic]);
+
+    if (!topic) {
+        return (
+             <div className="page-container">
+                 <div className="loading" style={{padding: '20px'}}>
+                     {notFoundTimeout ? (
+                         <>
+                             <p>Topic not found.</p>
+                             <button onClick={() => navigate('/following')}>Back to List</button>
+                         </>
+                     ) : (
+                         <p>Loading topic…</p>
+                     )}
+                 </div>
+             </div>
+        );
+    }
+
+    return (
+        <div className="page-container">
+            <header
+                className="header"
+                style={{
+                    position: 'sticky',
+                    top: 0,
+                    zIndex: 100,
+                    background: 'var(--bg-secondary)',
+                    borderBottom: '1px solid var(--border-color)',
+                    padding: '10px 15px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '15px'
+                }}
+            >
+                <button
+                    onClick={() => navigate('/following')}
+                    style={{
+                        background: 'none',
+                        border: 'none',
+                        fontSize: '1.5rem',
+                        cursor: 'pointer',
+                        color: 'var(--text-primary)'
+                    }}
+                >
+                    ←
+                </button>
+                <h1 style={{margin: 0, fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '8px'}}>
+                    <span>{topic?.icon}</span>
+                    {topic?.name}
+                </h1>
+            </header>
+
+            <main className="main-content" style={{paddingTop: '0'}}>
+                {loading ? (
+                    <div className="loading" style={{padding: '20px', textAlign: 'center'}}>
+                        <div className="loading__spinner"></div>
+                        <p>Fetching latest news...</p>
+                    </div>
+                ) : (
+                    <>
+                        {error && (
+                            <div className="modern-card empty-state" role="alert" style={{margin: '20px', padding: '30px', textAlign: 'center', borderStyle: 'dashed'}}>
+                                <span style={{fontSize: '2rem', display: 'block', marginBottom: '12px'}}>📡</span>
+                                <h3>Unable to load this topic</h3>
+                                <p style={{color: 'var(--text-secondary)', marginBottom: '16px'}}>{error}</p>
+                                {articles.length > 0 && (
+                                    <p style={{color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '16px'}}>
+                                        Showing the last available results below.
+                                    </p>
+                                )}
+                                {topicEnvelope?.diagnostics?.length > 0 && (
+                                    <p style={{color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '16px'}}>
+                                        {topicEnvelope.diagnostics[0]?.message}
+                                    </p>
+                                )}
+                                <button type="button" className="btn btn--primary" onClick={loadTopic}>
+                                    Retry
+                                </button>
+                            </div>
+                        )}
+
+                        {(articles.length > 0 || !error) && (
+                            <div style={{padding: '10px'}}>
+                                <NewsSection
+                                    id={`topic-${topicId}`}
+                                    title={`Latest on ${topic?.name}`}
+                                    icon={topic?.icon}
+                                    news={articles}
+                                    maxDisplay={50}
+                                    showExpand={false}
+                                    colorClass="news-section__title--world"
+                                    onArticleClick={(article) => addToHistory(article)}
+                                />
+                            </div>
+                        )}
+                    </>
+                )}
+            </main>
+        </div>
+    );
+}
+```
+
+---
+
+# 7. `src/data/dataEnvelope.cert.test.js`
+
+```js
+import { describe, it, expect } from 'vitest';
+import {
+  ENVELOPE_SOURCES,
+  makeEnvelope,
+  isUsableEnvelope,
+  stableStringify,
+  fnv1aHex,
+} from './dataEnvelope.js';
+
+describe('dataEnvelope', () => {
+  it('creates a frozen default envelope', () => {
+    const env = makeEnvelope({
+      datasetId: 'test',
+      data: { a: 1 },
+    });
+
+    expect(Object.isFrozen(env)).toBe(true);
+    expect(env.ok).toBe(true);
+    expect(env.datasetId).toBe('test');
+    expect(env.source).toBe('live');
+    expect(env.fallbackUsed).toBe(false);
+  });
+
+  it('marks fallbackUsed when source is not live', () => {
+    const snapshot = makeEnvelope({ source: ENVELOPE_SOURCES.SNAPSHOT, data: [] });
+    const cache = makeEnvelope({ source: ENVELOPE_SOURCES.CACHE, data: [] });
+    const seed = makeEnvelope({ source: ENVELOPE_SOURCES.SEED, data: [] });
+    const failed = makeEnvelope({ ok: false, source: ENVELOPE_SOURCES.FAILED, data: [] });
+
+    expect(snapshot.fallbackUsed).toBe(true);
+    expect(cache.fallbackUsed).toBe(true);
+    expect(seed.fallbackUsed).toBe(true);
+    expect(failed.fallbackUsed).toBe(true);
+  });
+
+  it('uses null lastGoodAt for failed envelopes unless supplied', () => {
+    const env = makeEnvelope({
+      ok: false,
+      source: ENVELOPE_SOURCES.FAILED,
+      data: [],
+    });
+
+    expect(env.lastGoodAt).toBe(null);
+  });
+
+  it('hashes objects by stable key order', () => {
+    const a = makeEnvelope({ data: { a: 1, b: 2 } });
+    const b = makeEnvelope({ data: { b: 2, a: 1 } });
+
+    expect(a.payloadHash).toBe(b.payloadHash);
+  });
+
+  it('changes payloadHash when data changes', () => {
+    const a = makeEnvelope({ data: { a: 1, b: 2 } });
+    const b = makeEnvelope({ data: { a: 1, b: 3 } });
+
+    expect(a.payloadHash).not.toBe(b.payloadHash);
+  });
+
+  it('stableStringify recursively sorts object keys', () => {
+    expect(stableStringify({ z: 1, a: { y: 2, b: 3 } }))
+      .toBe(stableStringify({ a: { b: 3, y: 2 }, z: 1 }));
+  });
+
+  it('fnv1aHex returns stable 8-char hex', () => {
+    const hash = fnv1aHex('abc');
+
+    expect(hash).toMatch(/^[0-9a-f]{8}$/);
+    expect(hash).toBe(fnv1aHex('abc'));
+  });
+
+  it('isUsableEnvelope returns true only for ok true and non-null data', () => {
+    expect(isUsableEnvelope(makeEnvelope({ ok: true, data: [] }))).toBe(true);
+    expect(isUsableEnvelope(makeEnvelope({ ok: true, data: null }))).toBe(false);
+    expect(isUsableEnvelope(makeEnvelope({ ok: false, data: [] }))).toBe(false);
+    expect(isUsableEnvelope(null)).toBe(false);
+  });
+});
+```
+
+---
+
+# 8. `src/services/topicServiceEnvelope.cert.test.js`
+
+```js
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('../utils/topicQueryBuilder.js', () => ({
+  buildTopicQuery: vi.fn(() => 'mock-feed-url'),
+}));
+
+vi.mock('./rssAggregator.js', () => ({
+  fetchAndParseFeed: vi.fn(),
+}));
+
+vi.mock('../utils/storage.js', () => ({
+  updateTopicLastFetched: vi.fn(),
+  getSettings: vi.fn(() => ({
+    hideOlderThanHours: 60,
+    strictFreshness: true,
+  })),
+}));
+
+import { buildTopicQuery } from '../utils/topicQueryBuilder.js';
+import { fetchAndParseFeed } from './rssAggregator.js';
+import { getSettings, updateTopicLastFetched } from '../utils/storage.js';
+import { fetchAllTopicsNews, fetchTopicNews } from './topicService.js';
+
+describe('fetchTopicNews envelope behavior', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    buildTopicQuery.mockReturnValue('mock-feed-url');
+    getSettings.mockReturnValue({
+      hideOlderThanHours: 60,
+      strictFreshness: true,
+    });
+  });
+
+  it('returns ok:true envelope on success', async () => {
+    fetchAndParseFeed.mockResolvedValue([
+      {
+        id: 'a1',
+        title: 'Story',
+        publishedAt: Date.now(),
+      },
+    ]);
+
+    const env = await fetchTopicNews({
+      id: 'topic-1',
+      name: 'AI',
+      query: 'AI',
+    });
+
+    expect(env.ok).toBe(true);
+    expect(env.datasetId).toBe('topic:topic-1');
+    expect(env.source).toBe('live');
+    expect(env.freshness).toBe('fresh');
+    expect(env.data).toHaveLength(1);
+    expect(env.data[0].topicId).toBe('topic-1');
+    expect(updateTopicLastFetched).toHaveBeenCalledWith('topic-1');
+  });
+
+  it('returns ok:true empty envelope when success has no articles', async () => {
+    fetchAndParseFeed.mockResolvedValue([]);
+
+    const env = await fetchTopicNews({
+      id: 'topic-1',
+      name: 'AI',
+      query: 'AI',
+    });
+
+    expect(env.ok).toBe(true);
+    expect(env.source).toBe('live');
+    expect(env.freshness).toBe('empty');
+    expect(env.validation.warnings).toContain('topic_returned_no_articles');
+  });
+
+  it('returns ok:false envelope on RSS failure', async () => {
+    fetchAndParseFeed.mockRejectedValue(new Error('RSS down'));
+
+    const env = await fetchTopicNews({
+      id: 'topic-1',
+      name: 'AI',
+      query: 'AI',
+    });
+
+    expect(env.ok).toBe(false);
+    expect(env.source).toBe('failed');
+    expect(env.error).toContain('RSS down');
+    expect(env.validation.passed).toBe(false);
+    expect(env.diagnostics[0].event).toBe('topic_fetch_failed');
+  });
+
+  it('returns ok:false envelope for malformed topic instead of throwing', async () => {
+    const env = await fetchTopicNews(undefined);
+
+    expect(env.ok).toBe(false);
+    expect(env.datasetId).toBe('topic:unknown');
+    expect(env.source).toBe('failed');
+    expect(env.error).toBe('Invalid topic: missing query/name');
+    expect(fetchAndParseFeed).not.toHaveBeenCalled();
+  });
+
+  it('falls back to default settings if getSettings returns null', async () => {
+    getSettings.mockReturnValue(null);
+    fetchAndParseFeed.mockResolvedValue([
+      {
+        id: 'a1',
+        title: 'Story',
+        publishedAt: Date.now(),
+      },
+    ]);
+
+    const env = await fetchTopicNews({
+      id: 'topic-1',
+      name: 'AI',
+      query: 'AI',
+    });
+
+    expect(env.ok).toBe(true);
+    expect(env.data).toHaveLength(1);
+  });
+
+  it('fetchAllTopicsNews uses allSettled-compatible behavior and preserves failed envelopes', async () => {
+    fetchAndParseFeed
+      .mockResolvedValueOnce([
+        {
+          id: 'a1',
+          title: 'Story',
+          publishedAt: Date.now(),
+        },
+      ])
+      .mockRejectedValueOnce(new Error('RSS down'));
+
+    const result = await fetchAllTopicsNews([
+      { id: 'topic-1', name: 'AI', query: 'AI' },
+      { id: 'topic-2', name: 'Markets', query: 'Markets' },
+    ]);
+
+    expect(Array.isArray(result['topic-1'])).toBe(true);
+    expect(result['topic-1']).toHaveLength(1);
+
+    expect(result['topic-2'].ok).toBe(false);
+    expect(result['topic-2'].source).toBe('failed');
+    expect(result['topic-2'].error).toContain('RSS down');
+  });
+});
+```
+
+---
+
+# 9. `scripts/test_hardening_release1B_static.mjs`
+
+```js
+import fs from 'node:fs';
+
+const fail = (message) => {
+  console.error(`FAIL: ${message}`);
+  process.exit(1);
+};
+
+const pass = (condition, message) => {
+  if (!condition) fail(message);
+};
+
+const read = (path) => fs.readFileSync(path, 'utf8');
+
+const envelope = read('src/data/dataEnvelope.js');
+const timeout = read('src/utils/withTimeout.js');
+const mounted = read('src/hooks/useMountedRef.js');
+const topicService = read('src/services/topicService.js');
+const topicContext = read('src/context/TopicContext.jsx');
+const topicDetail = read('src/pages/TopicDetail.jsx');
+
+pass(envelope.includes('export function makeEnvelope'), 'dataEnvelope missing makeEnvelope');
+pass(envelope.includes('export function stableStringify'), 'dataEnvelope missing stableStringify');
+pass(envelope.includes('export function fnv1aHex'), 'dataEnvelope missing fnv1aHex');
+pass(envelope.includes('payloadHash'), 'dataEnvelope missing payloadHash');
+pass(envelope.includes('Object.freeze'), 'dataEnvelope must freeze envelopes');
+
+pass(timeout.includes('class TimeoutError'), 'withTimeout missing TimeoutError');
+pass(timeout.includes('export function withTimeout'), 'withTimeout missing withTimeout');
+pass(timeout.includes('finally'), 'withTimeout must clear timeout in finally');
+
+pass(mounted.includes('export function useMountedRef'), 'useMountedRef hook missing');
+pass(mounted.includes('mountedRef.current = false'), 'useMountedRef must clear mounted ref on unmount');
+
+pass(topicService.includes('makeEnvelope'), 'topicService must import/use makeEnvelope');
+pass(topicService.includes('Invalid topic: missing query/name'), 'topicService must handle malformed topics');
+pass(topicService.includes('const settings = safeGetSettings()'), 'topicService must guard getSettings');
+pass(topicService.includes('Promise.allSettled'), 'fetchAllTopicsNews must use Promise.allSettled');
+pass(
+  topicService.includes("source: 'live'") || topicService.includes('source: "live"'),
+  'topicService missing live envelope source'
+);
+pass(
+  topicService.includes("source: 'failed'") || topicService.includes('source: "failed"'),
+  'topicService missing failed envelope source'
+);
+pass(
+  !/catch\s*\([^)]*\)\s*{[^}]*return\s+\[\s*\]/s.test(topicService),
+  'topicService still silently returns [] in catch'
+);
+pass(topicService.includes('topic_returned_no_articles'), 'topicService missing empty-success warning');
+pass(topicService.includes('topic_fetch_failed'), 'topicService missing failed diagnostics');
+
+pass(topicContext.includes('function unwrapTopicEnvelope'), 'TopicContext missing unwrapTopicEnvelope helper');
+pass(topicContext.includes('setTopicNews(prevTopicNews =>'), 'TopicContext must use functional setTopicNews update');
+pass(topicContext.includes('previousArticles'), 'TopicContext must preserve previous topic articles on failure');
+pass(topicContext.includes('checkForUpdates(notificationPayload.next, notificationPayload.previous)'), 'TopicContext must compare against previous state for notifications');
+pass(topicContext.includes('topicMessage'), 'TopicContext must surface topic failure message');
+
+pass(topicDetail.includes('withTimeout'), 'TopicDetail must use withTimeout');
+pass(topicDetail.includes('useMountedRef'), 'TopicDetail must use useMountedRef');
+pass(topicDetail.includes('env.ok'), 'TopicDetail must inspect env.ok');
+pass(topicDetail.includes('Retry'), 'TopicDetail must render Retry UI');
+pass(topicDetail.includes('role="alert"'), 'TopicDetail error UI must be visible to users');
+pass(topicDetail.includes('Showing the last available results below'), 'TopicDetail should preserve old articles on retry failure');
+
+console.log('PASS: Release 1B static hardening gates');
+```
+
+---
+
+# 10. `package.json` script additions
+
+Add these inside `"scripts"`:
+
+```json
+"test:hardening:release1B": "node scripts/test_hardening_release1B_static.mjs",
+"test:envelope": "vitest run --config vitest.config.js src/data/dataEnvelope.cert.test.js src/services/topicServiceEnvelope.cert.test.js"
+```
+
+Example tail:
+
+```json
+"ensure:weather-grade-manifest": "node scripts/ensure_weather_grade_manifest.mjs",
+"test:weather-main-following-buzz-insight-closeout": "node scripts/test_weather_main_following_buzz_insight_closeout_static.mjs",
+"test:weather-closeout-regression-static": "node scripts/test_weather_closeout_regression_static.mjs",
+"report:weather-main-following-buzz-insight-closeout": "node scripts/report_weather_main_following_buzz_insight_closeout.mjs",
+"test:hardening:release1B": "node scripts/test_hardening_release1B_static.mjs",
+"test:envelope": "vitest run --config vitest.config.js src/data/dataEnvelope.cert.test.js src/services/topicServiceEnvelope.cert.test.js"
+```
+
+---
+
+# Commands to Run
+
+```bash
+npm run test:hardening:release1B
+npm run test:envelope
+npx vite build
+npm run test:unit
+```
+
+---
+
+# Expected Benchmarks
+
+| Benchmark                                          | Expected |
+| -------------------------------------------------- | -------: |
+| `fetchTopicNews()` silent `return []`              |        0 |
+| malformed topic returns failed envelope            |      yes |
+| failed refresh preserves old topic data            |      yes |
+| TopicDetail retry UI                               |      yes |
+| TopicDetail keeps old articles after retry failure |      yes |
+| setState-after-unmount guard                       |      yes |
+| deterministic `payloadHash`                        |      yes |
+| real behavior test for success/failure envelope    |      yes |
+| Release 1B static gate                             |     PASS |
+| envelope Vitest suite                              |     PASS |
+| new npm dependencies                               |        0 |
+| out-of-scope files modified                        |        0 |
+
+
+
+-----------------------------------------------------------------------------------
+
+Below is the **updated Release 1C code pack**, corrected per the attached review: surgical `SettingsContext` patch, `hostname` preserved, env-aware backend detection, Release 1A guard protected in `NewsContext`, stronger static gate, and App route/provider preservation checks. 
+
+No repo write. Code in chat only.
+
+---
+
+# 1. `src/components/ErrorBoundary.jsx`
+
+Replace full file:
+
+```jsx
+/* eslint-disable */
+import React from 'react';
+
+function areArraysDifferent(a = [], b = []) {
+  if (a.length !== b.length) return true;
+  return a.some((value, index) => !Object.is(value, b[index]));
+}
+
+export default class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      hasError: false,
+      error: null,
+      errorInfo: null,
+    };
+  }
+
+  static getDerivedStateFromError(error) {
+    return {
+      hasError: true,
+      error,
+    };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    const label = this.props.label || 'unknown';
+
+    this.setState({ errorInfo });
+
+    console.error('[ErrorBoundary]', {
+      label,
+      message: error?.message || String(error),
+      stack: error?.stack,
+      componentStack: errorInfo?.componentStack,
+    });
+  }
+
+  componentDidUpdate(prevProps) {
+    if (
+      this.state.hasError &&
+      areArraysDifferent(prevProps.resetKeys || [], this.props.resetKeys || [])
+    ) {
+      this.reset();
+    }
+  }
+
+  reset = () => {
+    this.setState({
+      hasError: false,
+      error: null,
+      errorInfo: null,
+    });
+
+    if (typeof this.props.onReset === 'function') {
+      this.props.onReset();
+    }
+  };
+
+  render() {
+    if (!this.state.hasError) {
+      return this.props.children;
+    }
+
+    const label = this.props.label || 'Page';
+    const errorMessage = this.state.error?.message || 'Unknown error';
+
+    return (
+      <div
+        className="error-boundary"
+        role="alert"
+        style={{
+          padding: '24px 16px',
+          textAlign: 'center',
+          color: '#9CA5B0',
+          fontFamily: 'system-ui, sans-serif',
+        }}
+      >
+        <div style={{ fontSize: '2rem', marginBottom: '8px' }}>⚠️</div>
+
+        <strong style={{ color: '#D0D7DE' }}>
+          {label} encountered an error
+        </strong>
+
+        <p style={{ fontSize: '0.82rem', marginTop: '8px' }}>
+          {errorMessage}
+        </p>
+
+        <button
+          type="button"
+          onClick={this.reset}
+          style={{
+            marginTop: '12px',
+            padding: '6px 16px',
+            borderRadius: '8px',
+            border: '1px solid rgba(48,54,61,0.65)',
+            background: 'rgba(18,23,30,0.6)',
+            color: '#D0D7DE',
+            cursor: 'pointer',
+            fontSize: '0.82rem',
+          }}
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+}
+```
+
+---
+
+# 2. `src/App.jsx`
+
+Replace full file:
+
+```jsx
+/* eslint-disable */
+import React, { useState, useEffect } from 'react';
+import { HashRouter, Routes, Route } from 'react-router-dom';
+import ErrorBoundary from './components/ErrorBoundary';
+import MainPage from './pages/MainPage';
+import UpAheadPage from './pages/UpAheadPage';
+import MyPlannerPage from './pages/MyPlannerPage';
+import WeatherPage from './pages/WeatherPage';
+import MarketPage from './pages/MarketPage';
+import TechSocialPage from './pages/TechSocialPage';
+import NewspaperPage from './pages/NewspaperPage';
+import SettingsPage from './pages/SettingsPage';
+import RefreshPage from './pages/RefreshPage';
+import FollowingPage from './pages/FollowingPage';
+import TopicDetail from './pages/TopicDetail';
+import MorePage from './pages/MorePage';
+import InsightPage from './pages/InsightPage';
+import BottomNav from './components/BottomNav';
+import ScrollToTop from './components/ScrollToTop';
+import DebugConsole from './components/DebugConsole';
+import OnThisDayVisibilityController from './components/settings/OnThisDayVisibilityController.jsx';
+import { WeatherProvider, useWeather } from './context/WeatherContext';
+import { NewsProvider, useNews } from './context/NewsContext';
+import { MarketProvider } from './context/MarketContext';
+import { SettingsProvider } from './context/SettingsContext';
+import { SegmentProvider } from './context/SegmentContext';
+import { TopicProvider } from './context/TopicContext';
+import './index.css';
+import './styles/desktopRevamp.css';
+import './styles/desktopPolish.css';
+import './styles/weatherProfessionalTheme.css';
+
+/**
+ * Global Progress Bar
+ * "Deep Architect Mode" - High visibility, smooth animation, top of screen.
+ */
+const GlobalLoader = () => {
+  const { loading: newsLoading } = useNews();
+  const { loading: weatherLoading } = useWeather();
+  const isLoading = newsLoading || weatherLoading;
+  const [progress, setProgress] = useState(0);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    let timer;
+
+    if (isLoading) {
+      setTimeout(() => setVisible(true), 0);
+      setProgress(10);
+
+      timer = setInterval(() => {
+        setProgress(prev => {
+          if (prev >= 90) return prev;
+          const increment = Math.max(1, (90 - prev) / 10);
+          return prev + increment;
+        });
+      }, 200);
+    } else {
+      setProgress(100);
+
+      setTimeout(() => {
+        setVisible(false);
+        setProgress(0);
+      }, 400);
+    }
+
+    return () => clearInterval(timer);
+  }, [isLoading]);
+
+  if (!visible) return null;
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      height: '3px',
+      zIndex: 100000,
+      pointerEvents: 'none'
+    }}>
+      <div style={{
+        height: '100%',
+        width: `${progress}%`,
+        background: 'linear-gradient(90deg, #00D4AA, #58A6FF, #F0883E)',
+        boxShadow: '0 0 10px rgba(0, 212, 170, 0.5)',
+        transition: 'width 0.2s ease-out',
+        borderRadius: '0 2px 2px 0'
+      }} />
+    </div>
+  );
+};
+
+function App() {
+  console.log('[App] Rendering root component...');
+
+  return (
+    <SettingsProvider>
+      <SegmentProvider>
+        <WeatherProvider lazy={true}>
+          <NewsProvider>
+            <MarketProvider>
+              <TopicProvider>
+                <HashRouter>
+                  <ScrollToTop />
+                  <GlobalLoader />
+                  <DebugConsole />
+                  <OnThisDayVisibilityController />
+
+                  <div className="app app-shell">
+                    <Routes>
+                      <Route
+                        path="/"
+                        element={
+                          <ErrorBoundary label="Main">
+                            <MainPage />
+                          </ErrorBoundary>
+                        }
+                      />
+
+                      <Route
+                        path="/insight"
+                        element={
+                          <ErrorBoundary label="Insight">
+                            <InsightPage />
+                          </ErrorBoundary>
+                        }
+                      />
+
+                      <Route
+                        path="/markets"
+                        element={
+                          <ErrorBoundary label="Markets">
+                            <MarketPage />
+                          </ErrorBoundary>
+                        }
+                      />
+
+                      <Route
+                        path="/up-ahead"
+                        element={
+                          <ErrorBoundary label="Up Ahead">
+                            <UpAheadPage />
+                          </ErrorBoundary>
+                        }
+                      />
+
+                      <Route
+                        path="/my-planner"
+                        element={
+                          <ErrorBoundary label="My Planner">
+                            <MyPlannerPage />
+                          </ErrorBoundary>
+                        }
+                      />
+
+                      <Route
+                        path="/more"
+                        element={
+                          <ErrorBoundary label="More">
+                            <MorePage />
+                          </ErrorBoundary>
+                        }
+                      />
+
+                      <Route
+                        path="/weather"
+                        element={
+                          <ErrorBoundary label="Weather">
+                            <WeatherPage />
+                          </ErrorBoundary>
+                        }
+                      />
+
+                      <Route
+                        path="/tech-social"
+                        element={
+                          <ErrorBoundary label="Buzz Hub">
+                            <TechSocialPage />
+                          </ErrorBoundary>
+                        }
+                      />
+
+                      <Route
+                        path="/newspaper"
+                        element={
+                          <ErrorBoundary label="Newspaper">
+                            <NewspaperPage />
+                          </ErrorBoundary>
+                        }
+                      />
+
+                      <Route
+                        path="/settings"
+                        element={
+                          <ErrorBoundary label="Settings">
+                            <SettingsPage />
+                          </ErrorBoundary>
+                        }
+                      />
+
+                      <Route
+                        path="/refresh"
+                        element={
+                          <ErrorBoundary label="Refresh">
+                            <RefreshPage />
+                          </ErrorBoundary>
+                        }
+                      />
+
+                      <Route
+                        path="/following"
+                        element={
+                          <ErrorBoundary label="Following">
+                            <FollowingPage />
+                          </ErrorBoundary>
+                        }
+                      />
+
+                      <Route
+                        path="/following/:topicId"
+                        element={
+                          <ErrorBoundary label="Topic Detail">
+                            <TopicDetail />
+                          </ErrorBoundary>
+                        }
+                      />
+                    </Routes>
+
+                    <BottomNav />
+                  </div>
+                </HashRouter>
+              </TopicProvider>
+            </MarketProvider>
+          </NewsProvider>
+        </WeatherProvider>
+      </SegmentProvider>
+    </SettingsProvider>
+  );
+}
+
+export default App;
+```
+
+---
+
+# 3. `src/runtime/runtimeCapabilities.js`
+
+Replace full file:
+
+```js
+// src/runtime/runtimeCapabilities.js
+
+const STATIC_HOST_PATTERNS = [
+  /github\.io$/i,
+  /\.netlify\.app$/i,
+  /\.vercel\.app$/i,
+  /\.pages\.dev$/i,
+];
+
+function isKnownStaticHost(hostname) {
+  return STATIC_HOST_PATTERNS.some(pattern => pattern.test(hostname || ''));
+}
+
+function getConfiguredBackendUrl() {
+  return (
+    import.meta.env?.VITE_API_BASE_URL ||
+    import.meta.env?.VITE_BACKEND_URL ||
+    ''
+  );
+}
+
+export function getRuntimeCapabilities() {
+  const isBrowser = typeof window !== 'undefined';
+  const hostname = isBrowser ? window.location.hostname : '';
+  const isStaticHost = isKnownStaticHost(hostname);
+  const configuredBackendUrl = getConfiguredBackendUrl();
+
+  const backendConfigured = Boolean(
+    configuredBackendUrl ||
+    (!isStaticHost && isBrowser)
+  );
+
+  return {
+    isBrowser,
+    hostname,
+    isStaticHost,
+    backendConfigured,
+
+    // Existing compatibility fields.
+    canUseBackendApi: backendConfigured,
+    preferSnapshots: isStaticHost,
+    allowWideFeedFetch: !isStaticHost,
+
+    // Release 1C compatibility + future runtime fields.
+    allowRemoteSettingsSync: backendConfigured,
+    canUseApi: backendConfigured,
+    canUseRemoteStorage: backendConfigured,
+    canUseLocalStorage: isBrowser,
+
+    weatherMode: isStaticHost ? 'cache-or-snapshot' : 'live',
+    marketMode: isStaticHost ? 'snapshot-first' : 'live',
+    upAheadMode: isStaticHost ? 'limited-live' : 'full-live',
+    plannerSyncMode: isStaticHost ? 'local-only' : 'remote-capable',
+
+    featureStatus: {
+      settings: isStaticHost ? 'local-only' : 'remote-capable',
+      planner: isStaticHost ? 'local-only' : 'remote-capable',
+      weather: isStaticHost ? 'snapshot-or-cache' : 'live',
+      market: isStaticHost ? 'snapshot-or-cache' : 'live',
+      upAhead: isStaticHost ? 'limited-live' : 'full-live'
+    },
+
+    runtimeLabel: isStaticHost ? 'static-host' : 'full-runtime'
+  };
+}
+```
+
+---
+
+# 4. `src/context/SettingsContext.jsx`
+
+Use **surgical patch**, not full replacement.
+
+## 4.1 Add helper after `canUseRemoteSettingsSync()`
+
+Find:
+
+```jsx
+function canUseRemoteSettingsSync() { return getRuntimeCapabilities().allowRemoteSettingsSync; }
+```
+
+Replace with:
+
+```jsx
+function canUseRemoteSettingsSync() {
+    return getRuntimeCapabilities().allowRemoteSettingsSync;
+}
+
+function safeSetLocalStorage(key, value) {
+    try {
+        localStorage.setItem(key, value);
+        return true;
+    } catch (error) {
+        console.warn('[SettingsContext] localStorage write failed', {
+            key,
+            message: error?.message || String(error),
+        });
+        return false;
+    }
+}
+```
+
+## 4.2 Replace first direct write
+
+Find:
+
+```jsx
+localStorage.setItem('dailyEventAI_settings', JSON.stringify(remoteSettings));
+reloadSettings();
+```
+
+Replace with:
+
+```jsx
+if (safeSetLocalStorage('dailyEventAI_settings', JSON.stringify(remoteSettings))) {
+    reloadSettings();
+}
+```
+
+## 4.3 Replace second direct write
+
+Find:
+
+```jsx
+localStorage.setItem('dailyEventAI_settings', JSON.stringify(merged));
+reloadSettings();
+```
+
+Replace with:
+
+```jsx
+if (safeSetLocalStorage('dailyEventAI_settings', JSON.stringify(merged))) {
+    reloadSettings();
+}
+```
+
+Expected remaining `localStorage.setItem(` count in this file: **1**, only inside `safeSetLocalStorage()`.
+
+---
+
+# 5. `src/pages/InsightPage.jsx`
+
+Use surgical patch only.
+
+## 5.1 Add import
+
+Find:
+
+```js
+import { createInsightFetcher } from '../adapters/insightFetcher.js';
+import '../styles/InsightPage.css';
+```
+
+Replace with:
+
+```js
+import { createInsightFetcher } from '../adapters/insightFetcher.js';
+import { getRuntimeCapabilities } from '../runtime/runtimeCapabilities';
+import '../styles/InsightPage.css';
+```
+
+## 5.2 Replace cache constants
+
+Find:
+
+```js
+// ── Cache config ──────────────────────────────────────────────────────────────
+const CACHE_KEY      = 'insight_pipeline_cache';
+const CACHE_SCHEMA_VERSION = INSIGHT_OUTPUT_CONTRACT_VERSION;
+const CACHE_MAX_AGE  = 3 * 3_600_000;   // 3 h — aligned to snapshot freshness
+const REFRESH_EVERY  = 5 * 60_000;      // background poll interval (5 min)
+const HIDDEN_REFRESH = 5 * 60_000;      // re-run if tab was hidden for >5 min
+```
+
+Replace with:
+
+```js
+// ── Cache config ──────────────────────────────────────────────────────────────
+const CACHE_KEY      = 'insight_pipeline_cache';
+const CACHE_SCHEMA_VERSION = INSIGHT_OUTPUT_CONTRACT_VERSION;
+const { isStaticHost } = getRuntimeCapabilities();
+const CACHE_MAX_AGE  = (isStaticHost ? 6 : 3) * 60 * 60 * 1000; // 6 h for static-host snapshots, 3 h for full runtime
+const REFRESH_EVERY  = 5 * 60_000;      // background poll interval (5 min)
+const HIDDEN_REFRESH = 5 * 60_000;      // re-run if tab was hidden for >5 min
+```
+
+## 5.3 Add age helper
+
+After:
+
+```js
+function getInsightSourceLabel(source) {
+  if (source === 'stale-snapshot') return 'Stale snapshot';
+  if (source === 'snapshot') return 'Snapshot';
+  if (source === 'cached') return 'Cached';
+  return 'Live';
+}
+```
+
+Add:
+
+```js
+function formatInsightAge(timestamp) {
+  if (!timestamp) return 'unknown age';
+
+  const ageMs = Date.now() - Number(timestamp);
+  if (!Number.isFinite(ageMs) || ageMs < 0) return 'unknown age';
+
+  const hours = Math.max(0, Math.round(ageMs / (60 * 60 * 1000)));
+  return `${hours}h ago`;
+}
+```
+
+## 5.4 Replace stale label
+
+Find:
+
+```js
+const staleLabel = source === 'stale-snapshot' && fetcherRef.current?.snapshotTs
+  ? `Cached · ${Math.round((Date.now() - Number(fetcherRef.current.snapshotTs)) / 3_600_000)}h old`
+  : null;
+```
+
+Replace with:
+
+```js
+const staleLabel = source === 'stale-snapshot' && fetcherRef.current?.snapshotTs
+  ? `Pre-generated · ${formatInsightAge(fetcherRef.current.snapshotTs)}`
+  : source === 'snapshot' && fetcherRef.current?.snapshotTs
+    ? `Pre-generated · ${formatInsightAge(fetcherRef.current.snapshotTs)}`
+    : null;
+```
+
+---
+
+# 6. `src/context/NewsContext.jsx`
+
+Use surgical patch only. This must **not** overwrite the Release 1A `Array.isArray(specificSections)` guard.
+
+## 6.1 Add import
+
+Find:
+
+```js
+import { deduplicateAndCluster } from '../utils/similarity';
+```
+
+Replace with:
+
+```js
+import { deduplicateAndCluster } from '../utils/similarity';
+import { getRuntimeCapabilities } from '../runtime/runtimeCapabilities';
+```
+
+## 6.2 Replace interval block only
+
+Find:
+
+```js
+const interval = setInterval(() => {
+    console.log('[NewsContext] Auto-refresh (5min cycle)');
+    // Auto refresh: Update what we have loaded, or just priority?
+    // Safer to refresh priority + currently loaded
+    refreshNews(PRIORITY_SECTIONS);
+}, 5 * 60 * 1000);
+```
+
+Replace with:
+
+```js
+const { isStaticHost } = getRuntimeCapabilities();
+const refreshIntervalMs = isStaticHost ? 15 * 60 * 1000 : 5 * 60 * 1000;
+
+const interval = setInterval(() => {
+    console.log(`[NewsContext] Auto-refresh (${isStaticHost ? '15min' : '5min'} cycle)`);
+    // Auto refresh: Update what we have loaded, or just priority?
+    // Safer to refresh priority + currently loaded
+    refreshNews(PRIORITY_SECTIONS);
+}, refreshIntervalMs);
+```
+
+Also verify this still exists in `refreshNews()`:
+
+```js
+const sectionsToFetch = Array.isArray(specificSections) && specificSections.length > 0
+    ? specificSections.filter(s => typeof s === 'string')
+    : allSections;
+```
+
+---
+
+# 7. `scripts/test_hardening_release1C_static.mjs`
+
+Create full file:
+
+```js
+import fs from 'node:fs';
+
+const fail = (message) => {
+  console.error(`FAIL: ${message}`);
+  process.exit(1);
+};
+
+const pass = (condition, message) => {
+  if (!condition) fail(message);
+};
+
+const read = (path) => fs.readFileSync(path, 'utf8');
+
+const app = read('src/App.jsx');
+const boundary = read('src/components/ErrorBoundary.jsx');
+const runtime = read('src/runtime/runtimeCapabilities.js');
+const settings = read('src/context/SettingsContext.jsx');
+const insight = read('src/pages/InsightPage.jsx');
+const news = read('src/context/NewsContext.jsx');
+
+pass(!app.includes('class ErrorBoundary'), 'App.jsx still defines inline ErrorBoundary');
+pass(
+  app.includes("import ErrorBoundary from './components/ErrorBoundary'") ||
+  app.includes('from "./components/ErrorBoundary"'),
+  'App.jsx must import shared ErrorBoundary'
+);
+
+[
+  'path="/"',
+  'path="/insight"',
+  'path="/markets"',
+  'path="/up-ahead"',
+  'path="/my-planner"',
+  'path="/more"',
+  'path="/weather"',
+  'path="/tech-social"',
+  'path="/newspaper"',
+  'path="/settings"',
+  'path="/refresh"',
+  'path="/following"',
+  'path="/following/:topicId"',
+].forEach(route => {
+  pass(app.includes(route), `App.jsx missing route ${route}`);
+});
+
+[
+  '<SettingsProvider>',
+  '<SegmentProvider>',
+  '<WeatherProvider lazy={true}>',
+  '<NewsProvider>',
+  '<MarketProvider>',
+  '<TopicProvider>',
+  '<HashRouter>',
+].forEach(provider => {
+  pass(app.includes(provider), `App.jsx missing provider ${provider}`);
+});
+
+pass((app.match(/<ErrorBoundary/g) || []).length >= 13, 'Every route should remain wrapped in ErrorBoundary');
+pass(app.includes('label="Main"'), 'Main route missing ErrorBoundary label');
+pass(app.includes('label="Insight"'), 'Insight route missing ErrorBoundary label');
+pass(app.includes('label="Markets"'), 'Markets route missing ErrorBoundary label');
+pass(app.includes('label="Up Ahead"'), 'Up Ahead route missing ErrorBoundary label');
+pass(app.includes('label="My Planner"'), 'My Planner route missing ErrorBoundary label');
+pass(app.includes('label="More"'), 'More route missing ErrorBoundary label');
+pass(app.includes('label="Weather"'), 'Weather route missing ErrorBoundary label');
+pass(app.includes('label="Buzz Hub"'), 'TechSocial/Buzz route missing ErrorBoundary label');
+pass(app.includes('label="Newspaper"'), 'Newspaper route missing ErrorBoundary label');
+pass(app.includes('label="Settings"'), 'Settings route missing ErrorBoundary label');
+pass(app.includes('label="Refresh"'), 'Refresh route missing ErrorBoundary label');
+pass(app.includes('label="Following"'), 'Following route missing ErrorBoundary label');
+pass(app.includes('label="Topic Detail"'), 'TopicDetail route missing ErrorBoundary label');
+
+pass(boundary.includes('componentDidCatch'), 'shared ErrorBoundary must implement componentDidCatch');
+pass(boundary.includes('resetKeys'), 'shared ErrorBoundary missing resetKeys support');
+pass(boundary.includes('onReset'), 'shared ErrorBoundary missing onReset support');
+pass(boundary.includes('role="alert"'), 'shared ErrorBoundary fallback must use role="alert"');
+pass(boundary.includes('label'), 'shared ErrorBoundary must support label prop');
+pass(boundary.includes('console.error'), 'shared ErrorBoundary must log structured diagnostics');
+pass(boundary.includes('componentStack'), 'shared ErrorBoundary must log componentStack');
+
+pass(runtime.includes('STATIC_HOST_PATTERNS'), 'runtimeCapabilities missing STATIC_HOST_PATTERNS');
+pass(runtime.includes('github.io'), 'runtimeCapabilities missing github.io static host pattern');
+pass(runtime.includes('netlify.app'), 'runtimeCapabilities missing netlify.app static host pattern');
+pass(runtime.includes('vercel.app'), 'runtimeCapabilities missing vercel.app static host pattern');
+pass(runtime.includes('pages.dev'), 'runtimeCapabilities missing pages.dev static host pattern');
+pass(runtime.includes('hostname'), 'runtimeCapabilities must expose hostname');
+pass(runtime.includes('VITE_API_BASE_URL'), 'runtimeCapabilities missing env-based API URL detection');
+pass(runtime.includes('VITE_BACKEND_URL'), 'runtimeCapabilities missing env-based backend URL detection');
+pass(runtime.includes('allowRemoteSettingsSync'), 'runtimeCapabilities missing allowRemoteSettingsSync');
+pass(runtime.includes('canUseApi'), 'runtimeCapabilities missing canUseApi');
+pass(runtime.includes('canUseRemoteStorage'), 'runtimeCapabilities missing canUseRemoteStorage');
+pass(runtime.includes('canUseLocalStorage'), 'runtimeCapabilities missing canUseLocalStorage');
+
+pass(settings.includes('function safeSetLocalStorage'), 'SettingsContext missing safeSetLocalStorage helper');
+
+const setItemMatches = settings.match(/localStorage\.setItem\s*\(/g) || [];
+pass(
+  setItemMatches.length === 1,
+  'SettingsContext should only call localStorage.setItem inside safeSetLocalStorage'
+);
+
+pass(
+  (settings.match(/safeSetLocalStorage\('dailyEventAI_settings'/g) || []).length >= 2,
+  'SettingsContext remote sync writes must use safeSetLocalStorage'
+);
+
+pass(insight.includes('getRuntimeCapabilities'), 'InsightPage must use getRuntimeCapabilities');
+pass(insight.includes('Pre-generated'), 'InsightPage missing Pre-generated stale label');
+pass(insight.includes('formatInsightAge'), 'InsightPage missing formatInsightAge helper');
+pass(
+  insight.includes('(isStaticHost ? 6 : 3) * 60 * 60 * 1000'),
+  'InsightPage missing dynamic 6h/3h cache TTL'
+);
+
+pass(news.includes('getRuntimeCapabilities'), 'NewsContext must use getRuntimeCapabilities');
+pass(news.includes('15 * 60 * 1000'), 'NewsContext missing static-host 15min refresh interval');
+pass(news.includes('5 * 60 * 1000'), 'NewsContext missing non-static 5min refresh interval');
+pass(news.includes('refreshIntervalMs'), 'NewsContext missing refreshIntervalMs');
+
+// Protect Release 1A fix.
+pass(
+  news.includes('Array.isArray(specificSections)'),
+  'NewsContext Release 1A guard was lost'
+);
+
+console.log('PASS: Release 1C static hardening gates');
+```
+
+---
+
+# 8. `package.json`
+
+Add:
+
+```json
+"test:hardening:release1C": "node scripts/test_hardening_release1C_static.mjs"
+```
+
+Example tail:
+
+```json
+"ensure:weather-grade-manifest": "node scripts/ensure_weather_grade_manifest.mjs",
+"test:weather-main-following-buzz-insight-closeout": "node scripts/test_weather_main_following_buzz_insight_closeout_static.mjs",
+"test:weather-closeout-regression-static": "node scripts/test_weather_closeout_regression_static.mjs",
+"report:weather-main-following-buzz-insight-closeout": "node scripts/report_weather_main_following_buzz_insight_closeout.mjs",
+"test:hardening:release1C": "node scripts/test_hardening_release1C_static.mjs"
+```
+
+---
+
+# Commands to Run
+
+```bash
+npm run test:hardening:release1C
+npx vite build
+npm run test:unit
+```
+
+---
+
+# Expected Benchmarks
+
+| Benchmark                                                    |   Expected |
+| ------------------------------------------------------------ | ---------: |
+| inline ErrorBoundary in `App.jsx`                            |          0 |
+| shared ErrorBoundary route labels                            | all routes |
+| static host patterns                                         |          4 |
+| runtime hostname exposed                                     |        yes |
+| env-based backend detection                                  |        yes |
+| `allowRemoteSettingsSync` exposed                            |        yes |
+| unguarded `SettingsContext localStorage.setItem`             |          0 |
+| Insight static-host cache TTL                                |         6h |
+| Insight non-static cache TTL                                 |         3h |
+| News static-host interval                                    |      15min |
+| News non-static interval                                     |       5min |
+| Release 1A `Array.isArray(specificSections)` guard preserved |        yes |
+| new npm dependencies                                         |          0 |
+| out-of-scope files modified                                  |          0 |
+----------------------------------------------------------------------
+Below is the **corrected full Release 2 code pack**. It follows the uploaded corrected Release 2 spec: **do not recreate Release 1B files**, stop if prerequisites are missing, harden storage, guard `useDataset` unmounts, improve dashboard metric extraction, add real dedupe/cache tests, and prevent page/UI migration. 
+
+---
+
+# 0. Mandatory Release 2 Pre-Check
+
+Run before coding:
+
+```bash
+test -f src/data/dataEnvelope.js
+test -f src/utils/withTimeout.js
+```
+
+If either file is missing:
+
+```text
+Release 1B prerequisite missing.
+Run Release 1B first.
+Do not continue Release 2.
+```
+
+Do **not** create or overwrite these files in Release 2:
+
+```text
+src/data/dataEnvelope.js
+src/utils/withTimeout.js
+```
+
+---
+
+# 1. `src/data/fetchClient.js`
+
+```js
+import {
+  makeEnvelope,
+  ENVELOPE_SOURCES,
+  ENVELOPE_FRESHNESS,
+} from './dataEnvelope.js';
+import { withTimeout } from '../utils/withTimeout.js';
+
+export function publicDataUrl(path) {
+  const base = (import.meta.env.BASE_URL || './').replace(/\/?$/, '/');
+  return `${base}${String(path).replace(/^\//, '')}`;
+}
+
+function numericTimestamp(value) {
+  const numeric = Number(value);
+
+  if (Number.isFinite(numeric) && numeric > 0) {
+    return numeric;
+  }
+
+  const parsed = Date.parse(value);
+
+  if (Number.isFinite(parsed) && parsed > 0) {
+    return parsed;
+  }
+
+  return null;
+}
+
+export async function fetchJson(url, options = {}) {
+  const {
+    datasetId = `fetch:${url}`,
+    timeoutMs = 12000,
+    cache = 'no-cache',
+    headers = {},
+    source = ENVELOPE_SOURCES.LIVE,
+    signal,
+  } = options;
+
+  const startedAt = Date.now();
+
+  try {
+    const response = await withTimeout(
+      fetch(url, {
+        cache,
+        signal,
+        headers: {
+          Accept: 'application/json',
+          ...headers,
+        },
+      }),
+      timeoutMs,
+      { message: `Fetch timed out after ${timeoutMs}ms: ${url}` }
+    );
+
+    const durationMs = Date.now() - startedAt;
+
+    if (!response.ok) {
+      return makeEnvelope({
+        ok: false,
+        datasetId,
+        data: null,
+        source: ENVELOPE_SOURCES.FAILED,
+        freshness: ENVELOPE_FRESHNESS.UNKNOWN,
+        error: `HTTP ${response.status}`,
+        diagnostics: [
+          {
+            event: 'fetch_json_http_error',
+            severity: 'error',
+            message: `HTTP ${response.status} while fetching ${url}`,
+            ms: durationMs,
+          },
+        ],
+        validation: {
+          passed: false,
+          errors: [`HTTP ${response.status}`],
+          warnings: [],
+        },
+      });
+    }
+
+    const data = await response.json();
+
+    const generatedAt =
+      numericTimestamp(data?.generatedAt) ||
+      numericTimestamp(data?.generated_at) ||
+      numericTimestamp(data?.fetchedAt) ||
+      numericTimestamp(data?.timestamp) ||
+      Date.now();
+
+    return makeEnvelope({
+      ok: true,
+      datasetId,
+      data,
+      source,
+      freshness: ENVELOPE_FRESHNESS.FRESH,
+      fetchedAt: Date.now(),
+      generatedAt,
+      diagnostics: [
+        {
+          event: 'fetch_json_success',
+          severity: 'info',
+          message: `Fetched ${url}`,
+          ms: durationMs,
+        },
+      ],
+    });
+  } catch (error) {
+    const durationMs = Date.now() - startedAt;
+    const message = error?.message || String(error);
+
+    return makeEnvelope({
+      ok: false,
+      datasetId,
+      data: null,
+      source: ENVELOPE_SOURCES.FAILED,
+      freshness: ENVELOPE_FRESHNESS.UNKNOWN,
+      error: error?.name === 'TimeoutError' ? 'TimeoutError' : message,
+      diagnostics: [
+        {
+          event: 'fetch_json_failed',
+          severity: 'error',
+          message,
+          ms: durationMs,
+        },
+      ],
+      validation: {
+        passed: false,
+        errors: [message],
+        warnings: [],
+      },
+    });
+  }
+}
+```
+
+---
+
+# 2. `src/data/safeStorage.js`
+
+```js
+export function getSafeLocalStorage() {
+  try {
+    if (typeof window === 'undefined') return null;
+    return window.localStorage || null;
+  } catch (error) {
+    console.warn('[safeStorage] localStorage unavailable', {
+      message: error?.message || String(error),
+    });
+    return null;
+  }
+}
+
+export function safeGetJson(key, fallback = null) {
+  try {
+    const storage = getSafeLocalStorage();
+    if (!storage) return fallback;
+
+    const raw = storage.getItem(key);
+    if (!raw) return fallback;
+
+    return JSON.parse(raw);
+  } catch (error) {
+    console.warn('[safeStorage] read failed', {
+      key,
+      message: error?.message || String(error),
+    });
+    return fallback;
+  }
+}
+
+export function safeSetJson(key, value) {
+  try {
+    const storage = getSafeLocalStorage();
+    if (!storage) return false;
+
+    storage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch (error) {
+    console.warn('[safeStorage] write failed', {
+      key,
+      message: error?.message || String(error),
+    });
+    return false;
+  }
+}
+
+export function safeRemove(key) {
+  try {
+    const storage = getSafeLocalStorage();
+    if (!storage) return false;
+
+    storage.removeItem(key);
+    return true;
+  } catch (error) {
+    console.warn('[safeStorage] remove failed', {
+      key,
+      message: error?.message || String(error),
+    });
+    return false;
+  }
+}
+```
+
+---
+
+# 3. `src/data/diagnosticsStore.js`
+
+```js
+const MAX_DIAGNOSTICS = 500;
+
+let diagnostics = [];
+const listeners = new Set();
+
+function emit() {
+  const snapshot = diagnostics.slice();
+
+  listeners.forEach(listener => {
+    try {
+      listener(snapshot);
+    } catch (error) {
+      console.warn('[diagnosticsStore] listener failed', error);
+    }
+  });
+}
+
+export function recordDiagnostic(event = {}) {
+  const normalized = {
+    id: event.id || `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    ts: event.ts || Date.now(),
+    severity: event.severity || 'info',
+    datasetId: event.datasetId || 'unknown',
+    event: event.event || 'diagnostic',
+    message: event.message || '',
+    details: event.details || null,
+  };
+
+  diagnostics = [...diagnostics, normalized].slice(-MAX_DIAGNOSTICS);
+  emit();
+
+  return normalized;
+}
+
+export function listDiagnostics() {
+  return diagnostics.slice();
+}
+
+export function clearDiagnostics() {
+  diagnostics = [];
+  emit();
+}
+
+export function subscribeDiagnostics(listener) {
+  if (typeof listener !== 'function') {
+    return () => {};
+  }
+
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+export function __getMaxDiagnosticsForTest() {
+  return MAX_DIAGNOSTICS;
+}
+```
+
+---
+
+# 4. `src/data/datasets/qualityDashboardDataset.js`
+
+```js
+import {
+  makeEnvelope,
+  ENVELOPE_SOURCES,
+  ENVELOPE_FRESHNESS,
+} from '../dataEnvelope.js';
+import { fetchJson, publicDataUrl } from '../fetchClient.js';
+
+function getStoryCountFromReport(report) {
+  return Number(
+    report?.storyCount ??
+    report?.stories ??
+    report?.totalStories ??
+    report?.latest?.storyCount ??
+    report?.latest?.totalStories ??
+    report?.summary?.storyCount ??
+    report?.summary?.totalStories ??
+    report?.metrics?.storyCount ??
+    report?.metrics?.totalStories ??
+    report?.quality?.storyCount ??
+    report?.quality?.totalStories ??
+    0
+  );
+}
+
+function getSourceGroupCountFromReport(report) {
+  return Number(
+    report?.sourceGroupCount ??
+    report?.sourceGroups ??
+    report?.latest?.sourceGroupCount ??
+    report?.latest?.sourceGroups ??
+    report?.summary?.sourceGroupCount ??
+    report?.summary?.sourceGroups ??
+    report?.metrics?.sourceGroupCount ??
+    report?.metrics?.sourceGroups ??
+    report?.quality?.sourceGroupCount ??
+    report?.quality?.sourceGroups ??
+    0
+  );
+}
+
+function getDashboardTotalStories(dashboard) {
+  return Number(
+    dashboard?.latest?.totalStories ??
+    dashboard?.latest?.storyCount ??
+    dashboard?.totalStories ??
+    dashboard?.storyCount ??
+    dashboard?.summary?.totalStories ??
+    dashboard?.summary?.storyCount ??
+    dashboard?.metrics?.totalStories ??
+    dashboard?.metrics?.storyCount ??
+    0
+  );
+}
+
+function getDashboardSourceGroups(dashboard) {
+  return Number(
+    dashboard?.latest?.sourceGroups ??
+    dashboard?.latest?.sourceGroupCount ??
+    dashboard?.sourceGroups ??
+    dashboard?.sourceGroupCount ??
+    dashboard?.summary?.sourceGroups ??
+    dashboard?.summary?.sourceGroupCount ??
+    dashboard?.metrics?.sourceGroups ??
+    dashboard?.metrics?.sourceGroupCount ??
+    0
+  );
+}
+
+function mergeDiagnostics(...diagnosticSets) {
+  return diagnosticSets.flat().filter(Boolean);
+}
+
+export async function load() {
+  const [dashboardEnv, reportEnv] = await Promise.all([
+    fetchJson(publicDataUrl('newsdata/quality_dashboard.json'), {
+      datasetId: 'qualityDashboard',
+      source: ENVELOPE_SOURCES.SNAPSHOT,
+    }),
+    fetchJson(publicDataUrl('newsdata/insight_quality_report.json'), {
+      datasetId: 'insightQualityReport',
+      source: ENVELOPE_SOURCES.SNAPSHOT,
+    }),
+  ]);
+
+  const dashboard = dashboardEnv.data;
+  const report = reportEnv.data;
+
+  const reportStoryCount = getStoryCountFromReport(report);
+  const reportSourceGroupCount = getSourceGroupCountFromReport(report);
+  const dashboardTotalStories = getDashboardTotalStories(dashboard);
+  const dashboardSourceGroups = getDashboardSourceGroups(dashboard);
+
+  const errors = [];
+
+  if (!dashboardEnv.ok) {
+    errors.push(dashboardEnv.error || 'quality_dashboard_unavailable');
+  }
+
+  if (!reportEnv.ok) {
+    errors.push(reportEnv.error || 'insight_quality_report_unavailable');
+  }
+
+  const inconsistent =
+    reportStoryCount > 0 &&
+    dashboardTotalStories === 0;
+
+  if (inconsistent) {
+    errors.push('quality_dashboard_inconsistent');
+  }
+
+  const ok = errors.length === 0;
+
+  const diagnostics = mergeDiagnostics(
+    dashboardEnv.diagnostics,
+    reportEnv.diagnostics,
+    inconsistent
+      ? [
+          {
+            event: 'quality_dashboard_inconsistent',
+            severity: 'error',
+            message: 'quality_dashboard latest.totalStories is zero while insight_quality_report story count is positive',
+            details: {
+              reportStoryCount,
+              reportSourceGroupCount,
+              dashboardTotalStories,
+              dashboardSourceGroups,
+            },
+          },
+        ]
+      : []
+  );
+
+  return makeEnvelope({
+    ok,
+    datasetId: 'qualityDashboard',
+    data: {
+      dashboard,
+      report,
+      metrics: {
+        reportStoryCount,
+        reportSourceGroupCount,
+        dashboardTotalStories,
+        dashboardSourceGroups,
+      },
+    },
+    source: ENVELOPE_SOURCES.SNAPSHOT,
+    freshness: ok ? ENVELOPE_FRESHNESS.FRESH : ENVELOPE_FRESHNESS.UNKNOWN,
+    error: ok ? null : errors.join('; '),
+    validation: {
+      passed: ok,
+      errors,
+      warnings: [],
+    },
+    diagnostics,
+  });
+}
+
+export const __qualityDashboardInternalsForTest = {
+  getStoryCountFromReport,
+  getSourceGroupCountFromReport,
+  getDashboardTotalStories,
+  getDashboardSourceGroups,
+};
+```
+
+---
+
+# 5. `src/data/datasets/sourceHealthDataset.js`
+
+```js
+import {
+  makeEnvelope,
+  ENVELOPE_SOURCES,
+  ENVELOPE_FRESHNESS,
+} from '../dataEnvelope.js';
+import { fetchJson, publicDataUrl } from '../fetchClient.js';
+
+const SOURCE_HEALTH_CANDIDATES = [
+  'newsdata/source_health.json',
+  'newsdata/source-health.json',
+  'newsdata/quality_dashboard.json',
+];
+
+function toSourceArray(raw) {
+  if (!raw) return [];
+
+  if (Array.isArray(raw.sources)) return raw.sources;
+  if (Array.isArray(raw.sourceHealth)) return raw.sourceHealth;
+  if (Array.isArray(raw.latest?.sources)) return raw.latest.sources;
+  if (Array.isArray(raw.latest?.sourceHealth)) return raw.latest.sourceHealth;
+
+  const objectShape =
+    raw.sourceHealth ||
+    raw.latest?.sourceHealth ||
+    raw.sources ||
+    raw.latest?.sources;
+
+  if (objectShape && typeof objectShape === 'object') {
+    return Object.entries(objectShape).map(([id, value]) => ({
+      id,
+      ...(typeof value === 'object' && value !== null
+        ? value
+        : { status: String(value) }),
+    }));
+  }
+
+  return [];
+}
+
+function normalizeSource(source, index) {
+  const id = String(source?.id || source?.key || source?.name || `source-${index}`);
+
+  const status = String(
+    source?.status ||
+    source?.health ||
+    source?.state ||
+    (Number(source?.itemCount || source?.count || 0) > 0 ? 'ok' : 'unknown')
+  );
+
+  const itemCount = Number(source?.itemCount ?? source?.count ?? source?.items ?? 0);
+
+  const severity =
+    source?.severity ||
+    (status === 'ok' || status === 'healthy' ? 'info' : 'warn');
+
+  return {
+    id,
+    name: String(source?.name || source?.label || id),
+    status,
+    itemCount: Number.isFinite(itemCount) ? itemCount : 0,
+    lastSuccessAt: source?.lastSuccessAt || source?.last_success_at || source?.lastOkAt || null,
+    lastItemAt: source?.lastItemAt || source?.last_item_at || source?.latestItemAt || null,
+    message: source?.message || source?.reason || '',
+    severity,
+  };
+}
+
+function normalizeSourceHealth(raw) {
+  const sources = toSourceArray(raw).map(normalizeSource);
+
+  return {
+    sources,
+    raw,
+  };
+}
+
+export async function load() {
+  const attempts = [];
+
+  for (const path of SOURCE_HEALTH_CANDIDATES) {
+    const env = await fetchJson(publicDataUrl(path), {
+      datasetId: `sourceHealth:${path}`,
+      source: ENVELOPE_SOURCES.SNAPSHOT,
+    });
+
+    attempts.push(env);
+
+    if (env.ok) {
+      const normalized = normalizeSourceHealth(env.data);
+
+      if (normalized.sources.length > 0) {
+        return makeEnvelope({
+          ok: true,
+          datasetId: 'sourceHealth',
+          data: normalized,
+          source: ENVELOPE_SOURCES.SNAPSHOT,
+          freshness: ENVELOPE_FRESHNESS.FRESH,
+          generatedAt: env.generatedAt,
+          fetchedAt: env.fetchedAt,
+          validation: {
+            passed: true,
+            errors: [],
+            warnings: [],
+          },
+          diagnostics: [
+            ...env.diagnostics,
+            {
+              event: 'source_health_loaded',
+              severity: 'info',
+              message: `${normalized.sources.length} source health row(s) normalized`,
+              details: { path },
+            },
+          ],
+        });
+      }
+
+      if (path === 'newsdata/quality_dashboard.json') {
+        attempts.push(makeEnvelope({
+          ok: false,
+          datasetId: 'sourceHealth:qualityDashboardNoSourceHealth',
+          data: null,
+          source: ENVELOPE_SOURCES.SNAPSHOT,
+          freshness: ENVELOPE_FRESHNESS.UNKNOWN,
+          error: 'quality_dashboard_loaded_but_no_source_health',
+          diagnostics: [
+            {
+              event: 'quality_dashboard_loaded_but_no_source_health',
+              severity: 'warn',
+              message: 'quality_dashboard.json loaded but did not contain usable source health',
+              details: { path },
+            },
+          ],
+          validation: {
+            passed: false,
+            errors: ['quality_dashboard_loaded_but_no_source_health'],
+            warnings: [],
+          },
+        }));
+      }
+    }
+  }
+
+  return makeEnvelope({
+    ok: false,
+    datasetId: 'sourceHealth',
+    data: {
+      sources: [],
+      raw: null,
+    },
+    source: ENVELOPE_SOURCES.FAILED,
+    freshness: ENVELOPE_FRESHNESS.UNKNOWN,
+    error: 'source health unavailable',
+    validation: {
+      passed: false,
+      errors: ['source health unavailable'],
+      warnings: [],
+    },
+    diagnostics: [
+      ...attempts.flatMap(env => env.diagnostics || []),
+      {
+        event: 'source_health_unavailable',
+        severity: 'warn',
+        message: 'No usable source health file found',
+        details: {
+          candidates: SOURCE_HEALTH_CANDIDATES,
+        },
+      },
+    ],
+  });
+}
+
+export const __sourceHealthInternalsForTest = {
+  normalizeSourceHealth,
+};
+```
+
+---
+
+# 6. `src/data/datasets/marketDataset.js`
+
+```js
+import {
+  makeEnvelope,
+  ENVELOPE_SOURCES,
+  ENVELOPE_FRESHNESS,
+} from '../dataEnvelope.js';
+import { fetchAllMarketData } from '../../services/indianMarketStableService.js';
+
+function normalizeMarketSource(sourceMode) {
+  if (!sourceMode) return ENVELOPE_SOURCES.LIVE;
+
+  if (sourceMode === 'seed') return ENVELOPE_SOURCES.SEED;
+  if (sourceMode === 'cache' || sourceMode === 'stale-cache') return ENVELOPE_SOURCES.CACHE;
+  if (sourceMode === 'snapshot' || sourceMode === 'stale-snapshot') return ENVELOPE_SOURCES.SNAPSHOT;
+
+  return ENVELOPE_SOURCES.LIVE;
+}
+
+function getMarketSourceMode(data) {
+  return (
+    data?.sourceMode ||
+    data?.providerPlan?.mode ||
+    data?.sourceHealth?.mode ||
+    'live'
+  );
+}
+
+function getMarketTimestamp(data) {
+  const numericFetchedAt = Number(data?.fetchedAt);
+
+  if (Number.isFinite(numericFetchedAt) && numericFetchedAt > 0) {
+    return numericFetchedAt;
+  }
+
+  const generatedAt = Date.parse(data?.generatedAt || data?.generated_at || '');
+
+  if (Number.isFinite(generatedAt) && generatedAt > 0) {
+    return generatedAt;
+  }
+
+  return Date.now();
+}
+
+export async function load() {
+  try {
+    const data = await fetchAllMarketData();
+    const hasIndices = Array.isArray(data?.indices) && data.indices.length > 0;
+    const timestamp = getMarketTimestamp(data);
+    const sourceMode = getMarketSourceMode(data);
+
+    return makeEnvelope({
+      ok: hasIndices,
+      datasetId: 'market',
+      data,
+      source: normalizeMarketSource(sourceMode),
+      freshness: hasIndices ? ENVELOPE_FRESHNESS.FRESH : ENVELOPE_FRESHNESS.EMPTY,
+      generatedAt: timestamp,
+      fetchedAt: Number(data?.fetchedAt || timestamp) || timestamp,
+      validation: {
+        passed: hasIndices,
+        errors: hasIndices ? [] : ['market_indices_empty'],
+        warnings: [],
+      },
+      diagnostics: [
+        {
+          event: hasIndices ? 'market_dataset_loaded' : 'market_dataset_empty',
+          severity: hasIndices ? 'info' : 'warn',
+          message: hasIndices
+            ? `${data.indices.length} market index row(s) loaded`
+            : 'Market indices are empty',
+          details: {
+            sourceMode,
+          },
+        },
+      ],
+    });
+  } catch (error) {
+    const message = error?.message || String(error);
+
+    return makeEnvelope({
+      ok: false,
+      datasetId: 'market',
+      data: null,
+      source: ENVELOPE_SOURCES.FAILED,
+      freshness: ENVELOPE_FRESHNESS.UNKNOWN,
+      error: message,
+      validation: {
+        passed: false,
+        errors: [message],
+        warnings: [],
+      },
+      diagnostics: [
+        {
+          event: 'market_dataset_failed',
+          severity: 'error',
+          message,
+        },
+      ],
+    });
+  }
+}
+```
+
+---
+
+# 7. `src/data/datasets/index.js`
+
+```js
+import * as marketDataset from './marketDataset.js';
+import * as qualityDashboardDataset from './qualityDashboardDataset.js';
+import * as sourceHealthDataset from './sourceHealthDataset.js';
+
+export const DATASET_LOADERS = Object.freeze({
+  market: marketDataset,
+  qualityDashboard: qualityDashboardDataset,
+  sourceHealth: sourceHealthDataset,
+});
+
+export function getDatasetLoader(datasetId) {
+  return DATASET_LOADERS[datasetId] || null;
+}
+
+export function __getDatasetLoadersForTest() {
+  return DATASET_LOADERS;
+}
+```
+
+---
+
+# 8. `src/data/orchestrator/useDataset.js`
+
+```jsx
+import { useCallback, useEffect, useState } from 'react';
+import { getDatasetLoader } from '../datasets/index.js';
+import { recordDiagnostic } from '../diagnosticsStore.js';
+import { useMountedRef } from '../../hooks/useMountedRef.js';
+
+const envelopeCache = new Map();
+const inFlight = new Map();
+
+export async function loadDataset(datasetId, force = false) {
+  const loader = getDatasetLoader(datasetId);
+
+  if (!loader?.load) {
+    throw new Error(`Unknown dataset: ${datasetId}`);
+  }
+
+  if (!force && envelopeCache.has(datasetId)) {
+    return envelopeCache.get(datasetId);
+  }
+
+  if (!force && inFlight.has(datasetId)) {
+    return inFlight.get(datasetId);
+  }
+
+  const promise = loader.load()
+    .then(env => {
+      envelopeCache.set(datasetId, env);
+
+      recordDiagnostic({
+        datasetId,
+        severity: env.ok ? 'info' : 'warn',
+        event: 'dataset_loaded',
+        message: env.ok ? 'Dataset loaded' : (env.error || 'Dataset degraded'),
+        details: {
+          freshness: env.freshness,
+          source: env.source,
+          payloadHash: env.payloadHash,
+        },
+      });
+
+      return env;
+    })
+    .finally(() => {
+      inFlight.delete(datasetId);
+    });
+
+  inFlight.set(datasetId, promise);
+  return promise;
+}
+
+export function useDataset(datasetId, options = {}) {
+  const { auto = true } = options;
+  const mountedRef = useMountedRef();
+
+  const [state, setState] = useState(() => ({
+    envelope: envelopeCache.get(datasetId) || null,
+    loading: auto && !envelopeCache.has(datasetId),
+    error: null,
+  }));
+
+  const reload = useCallback(async (force = true) => {
+    if (mountedRef.current) {
+      setState(prev => ({
+        ...prev,
+        loading: true,
+        error: null,
+      }));
+    }
+
+    try {
+      const envelope = await loadDataset(datasetId, force);
+
+      if (mountedRef.current) {
+        setState({
+          envelope,
+          loading: false,
+          error: envelope.ok ? null : envelope.error,
+        });
+      }
+
+      return envelope;
+    } catch (error) {
+      const message = error?.message || String(error);
+
+      if (mountedRef.current) {
+        setState(prev => ({
+          ...prev,
+          loading: false,
+          error: message,
+        }));
+      }
+
+      throw error;
+    }
+  }, [datasetId, mountedRef]);
+
+  useEffect(() => {
+    if (!auto) return;
+    reload(false).catch(() => {});
+  }, [auto, reload]);
+
+  return {
+    ...state,
+    reload,
+  };
+}
+
+export function __getDatasetCacheForTest() {
+  return envelopeCache;
+}
+
+export function __clearDatasetCacheForTest() {
+  envelopeCache.clear();
+  inFlight.clear();
+}
+```
+
+---
+
+# 9. `src/data/fetchClient.cert.test.js`
+
+```js
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { fetchJson, publicDataUrl } from './fetchClient.js';
+
+describe('fetchClient', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('publicDataUrl strips leading slash', () => {
+    expect(publicDataUrl('/newsdata/test.json')).toContain('newsdata/test.json');
+    expect(publicDataUrl('newsdata/test.json')).toContain('newsdata/test.json');
+  });
+
+  it('fetchJson returns ok:true envelope for 200 JSON', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        generatedAt: Date.now(),
+        value: 42,
+      }),
+    })));
+
+    const env = await fetchJson('/mock.json', {
+      datasetId: 'mock',
+    });
+
+    expect(env.ok).toBe(true);
+    expect(env.datasetId).toBe('mock');
+    expect(env.data.value).toBe(42);
+    expect(env.diagnostics[0].event).toBe('fetch_json_success');
+  });
+
+  it('fetchJson returns ok:false envelope for HTTP error', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: false,
+      status: 500,
+      json: async () => ({}),
+    })));
+
+    const env = await fetchJson('/mock.json', {
+      datasetId: 'mock',
+    });
+
+    expect(env.ok).toBe(false);
+    expect(env.error).toBe('HTTP 500');
+    expect(env.validation.passed).toBe(false);
+  });
+
+  it('fetchJson returns ok:false envelope for thrown fetch error', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => {
+      throw new Error('network down');
+    }));
+
+    const env = await fetchJson('/mock.json', {
+      datasetId: 'mock',
+    });
+
+    expect(env.ok).toBe(false);
+    expect(env.error).toContain('network down');
+    expect(env.diagnostics[0].event).toBe('fetch_json_failed');
+  });
+
+  it('passes optional signal into fetch', async () => {
+    const controller = new AbortController();
+
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({ timestamp: Date.now() }),
+    }));
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    await fetchJson('/mock.json', {
+      datasetId: 'mock',
+      signal: controller.signal,
+    });
+
+    expect(fetchMock.mock.calls[0][1].signal).toBe(controller.signal);
+  });
+});
+```
+
+---
+
+# 10. `src/data/safeStorage.cert.test.js`
+
+```js
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  getSafeLocalStorage,
+  safeGetJson,
+  safeRemove,
+  safeSetJson,
+} from './safeStorage.js';
+
+describe('safeStorage', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    window.localStorage.clear();
+  });
+
+  it('getSafeLocalStorage returns localStorage when available', () => {
+    expect(getSafeLocalStorage()).toBe(window.localStorage);
+  });
+
+  it('safeGetJson returns fallback on missing key', () => {
+    expect(safeGetJson('missing-key', { fallback: true })).toEqual({ fallback: true });
+  });
+
+  it('safeGetJson returns fallback on invalid JSON', () => {
+    window.localStorage.setItem('bad-json', '{bad');
+
+    expect(safeGetJson('bad-json', { fallback: true })).toEqual({ fallback: true });
+  });
+
+  it('safeSetJson returns true on success', () => {
+    expect(safeSetJson('ok-json', { a: 1 })).toBe(true);
+    expect(JSON.parse(window.localStorage.getItem('ok-json'))).toEqual({ a: 1 });
+  });
+
+  it('safeSetJson returns false when storage throws', () => {
+    const spy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('quota exceeded');
+    });
+
+    expect(safeSetJson('bad-write', { a: 1 })).toBe(false);
+
+    spy.mockRestore();
+  });
+
+  it('safeRemove returns false when storage throws', () => {
+    const spy = vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => {
+      throw new Error('remove failed');
+    });
+
+    expect(safeRemove('bad-remove')).toBe(false);
+
+    spy.mockRestore();
+  });
+
+  it('getSafeLocalStorage returns null if accessing localStorage throws', () => {
+    const descriptor = Object.getOwnPropertyDescriptor(window, 'localStorage');
+
+    Object.defineProperty(window, 'localStorage', {
+      configurable: true,
+      get() {
+        throw new Error('blocked');
+      },
+    });
+
+    expect(getSafeLocalStorage()).toBe(null);
+    expect(safeGetJson('x', 'fallback')).toBe('fallback');
+    expect(safeSetJson('x', { a: 1 })).toBe(false);
+    expect(safeRemove('x')).toBe(false);
+
+    Object.defineProperty(window, 'localStorage', descriptor);
+  });
+});
+```
+
+---
+
+# 11. `src/data/diagnosticsStore.cert.test.js`
+
+```js
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  __getMaxDiagnosticsForTest,
+  clearDiagnostics,
+  listDiagnostics,
+  recordDiagnostic,
+  subscribeDiagnostics,
+} from './diagnosticsStore.js';
+
+describe('diagnosticsStore', () => {
+  beforeEach(() => {
+    clearDiagnostics();
+  });
+
+  it('recordDiagnostic stores normalized event', () => {
+    const event = recordDiagnostic({
+      datasetId: 'market',
+      event: 'loaded',
+      message: 'ok',
+    });
+
+    expect(event.id).toBeTruthy();
+    expect(event.datasetId).toBe('market');
+    expect(event.severity).toBe('info');
+    expect(listDiagnostics()).toHaveLength(1);
+  });
+
+  it('listDiagnostics returns a copy', () => {
+    recordDiagnostic({ datasetId: 'a' });
+
+    const list = listDiagnostics();
+    list.push({ datasetId: 'mutated' });
+
+    expect(listDiagnostics()).toHaveLength(1);
+  });
+
+  it('clearDiagnostics empties store', () => {
+    recordDiagnostic({ datasetId: 'a' });
+    clearDiagnostics();
+
+    expect(listDiagnostics()).toHaveLength(0);
+  });
+
+  it('subscribeDiagnostics receives updates', () => {
+    const listener = vi.fn();
+    const unsubscribe = subscribeDiagnostics(listener);
+
+    recordDiagnostic({ datasetId: 'a' });
+
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(listener.mock.calls[0][0]).toHaveLength(1);
+
+    unsubscribe();
+    recordDiagnostic({ datasetId: 'b' });
+
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+
+  it('subscribeDiagnostics ignores non-function listener safely', () => {
+    const unsubscribe = subscribeDiagnostics(null);
+
+    expect(typeof unsubscribe).toBe('function');
+    expect(() => unsubscribe()).not.toThrow();
+  });
+
+  it('caps retained records at 500', () => {
+    const max = __getMaxDiagnosticsForTest();
+
+    for (let i = 0; i < max + 25; i += 1) {
+      recordDiagnostic({
+        datasetId: 'cap-test',
+        event: `event-${i}`,
+      });
+    }
+
+    const list = listDiagnostics();
+
+    expect(list).toHaveLength(max);
+    expect(list[0].event).toBe('event-25');
+  });
+});
+```
+
+---
+
+# 12. `src/data/datasets/qualityDashboardDataset.cert.test.js`
+
+```js
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('../fetchClient.js', () => ({
+  publicDataUrl: vi.fn(path => `/mock/${path}`),
+  fetchJson: vi.fn(),
+}));
+
+import { fetchJson, publicDataUrl } from '../fetchClient.js';
+import {
+  __qualityDashboardInternalsForTest,
+  load,
+} from './qualityDashboardDataset.js';
+
+describe('qualityDashboardDataset', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('loads quality dashboard and insight quality report', async () => {
+    fetchJson
+      .mockResolvedValueOnce({
+        ok: true,
+        data: {
+          latest: {
+            totalStories: 12,
+            sourceGroups: 4,
+          },
+        },
+        diagnostics: [],
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        data: {
+          storyCount: 12,
+          sourceGroupCount: 4,
+        },
+        diagnostics: [],
+      });
+
+    const env = await load();
+
+    expect(publicDataUrl).toHaveBeenCalledWith('newsdata/quality_dashboard.json');
+    expect(publicDataUrl).toHaveBeenCalledWith('newsdata/insight_quality_report.json');
+    expect(env.ok).toBe(true);
+    expect(env.datasetId).toBe('qualityDashboard');
+    expect(env.data.metrics.reportStoryCount).toBe(12);
+    expect(env.data.metrics.reportSourceGroupCount).toBe(4);
+  });
+
+  it('detects quality_dashboard_inconsistent', async () => {
+    fetchJson
+      .mockResolvedValueOnce({
+        ok: true,
+        data: {
+          latest: {
+            totalStories: 0,
+            sourceGroups: 0,
+          },
+        },
+        diagnostics: [],
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        data: {
+          storyCount: 877,
+          sourceGroupCount: 8,
+        },
+        diagnostics: [],
+      });
+
+    const env = await load();
+
+    expect(env.ok).toBe(false);
+    expect(env.validation.passed).toBe(false);
+    expect(env.error).toContain('quality_dashboard_inconsistent');
+    expect(env.data.metrics.reportStoryCount).toBe(877);
+    expect(env.data.metrics.reportSourceGroupCount).toBe(8);
+    expect(env.diagnostics.some(d => d.event === 'quality_dashboard_inconsistent')).toBe(true);
+  });
+
+  it('extracts tolerant story and source-group counts', () => {
+    const internals = __qualityDashboardInternalsForTest;
+
+    expect(internals.getStoryCountFromReport({ stories: 10 })).toBe(10);
+    expect(internals.getStoryCountFromReport({ totalStories: 11 })).toBe(11);
+    expect(internals.getStoryCountFromReport({ latest: { totalStories: 12 } })).toBe(12);
+    expect(internals.getStoryCountFromReport({ metrics: { storyCount: 13 } })).toBe(13);
+    expect(internals.getStoryCountFromReport({ quality: { storyCount: 14 } })).toBe(14);
+
+    expect(internals.getSourceGroupCountFromReport({ sourceGroupCount: 4 })).toBe(4);
+    expect(internals.getSourceGroupCountFromReport({ sourceGroups: 5 })).toBe(5);
+    expect(internals.getSourceGroupCountFromReport({ latest: { sourceGroups: 6 } })).toBe(6);
+    expect(internals.getSourceGroupCountFromReport({ metrics: { sourceGroupCount: 7 } })).toBe(7);
+  });
+});
+```
+
+---
+
+# 13. `src/data/datasets/sourceHealthDataset.cert.test.js`
+
+```js
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('../fetchClient.js', () => ({
+  publicDataUrl: vi.fn(path => `/mock/${path}`),
+  fetchJson: vi.fn(),
+}));
+
+import { fetchJson } from '../fetchClient.js';
+import { __sourceHealthInternalsForTest, load } from './sourceHealthDataset.js';
+
+describe('sourceHealthDataset', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('normalizes source health object shape', () => {
+    const normalized = __sourceHealthInternalsForTest.normalizeSourceHealth({
+      sourceHealth: {
+        reuters: {
+          status: 'silent',
+          itemCount: 0,
+          message: 'no items',
+        },
+      },
+    });
+
+    expect(normalized.sources).toHaveLength(1);
+    expect(normalized.sources[0].id).toBe('reuters');
+    expect(normalized.sources[0].status).toBe('silent');
+    expect(normalized.sources[0].itemCount).toBe(0);
+  });
+
+  it('returns envelope when source health file is usable', async () => {
+    fetchJson.mockResolvedValueOnce({
+      ok: true,
+      data: {
+        sourceHealth: {
+          reuters: {
+            status: 'ok',
+            itemCount: 10,
+          },
+        },
+      },
+      diagnostics: [],
+      generatedAt: Date.now(),
+      fetchedAt: Date.now(),
+    });
+
+    const env = await load();
+
+    expect(env.ok).toBe(true);
+    expect(env.datasetId).toBe('sourceHealth');
+    expect(env.data.sources).toHaveLength(1);
+  });
+
+  it('records quality_dashboard_loaded_but_no_source_health when fallback dashboard lacks source health', async () => {
+    fetchJson
+      .mockResolvedValueOnce({
+        ok: false,
+        data: null,
+        error: '404',
+        diagnostics: [],
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        data: null,
+        error: '404',
+        diagnostics: [],
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        data: {
+          latest: {
+            totalStories: 10,
+          },
+        },
+        diagnostics: [],
+      });
+
+    const env = await load();
+
+    expect(env.ok).toBe(false);
+    expect(env.diagnostics.some(d => d.event === 'quality_dashboard_loaded_but_no_source_health')).toBe(true);
+  });
+
+  it('returns failed envelope when source health unavailable', async () => {
+    fetchJson.mockResolvedValue({
+      ok: false,
+      data: null,
+      error: '404',
+      diagnostics: [],
+    });
+
+    const env = await load();
+
+    expect(env.ok).toBe(false);
+    expect(env.error).toBe('source health unavailable');
+    expect(env.data.sources).toEqual([]);
+  });
+});
+```
+
+---
+
+# 14. `src/data/datasets/marketDataset.cert.test.js`
+
+```js
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('../../services/indianMarketStableService.js', () => ({
+  fetchAllMarketData: vi.fn(),
+}));
+
+import { fetchAllMarketData } from '../../services/indianMarketStableService.js';
+import { load } from './marketDataset.js';
+
+describe('marketDataset', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('wraps market payload into envelope', async () => {
+    fetchAllMarketData.mockResolvedValue({
+      indices: [
+        {
+          name: 'NIFTY 50',
+          value: '22000',
+        },
+      ],
+      sourceMode: 'live',
+      fetchedAt: Date.now(),
+      generatedAt: new Date().toISOString(),
+      sourceHealth: {
+        indices: 'live',
+      },
+    });
+
+    const env = await load();
+
+    expect(fetchAllMarketData).toHaveBeenCalledTimes(1);
+    expect(env.ok).toBe(true);
+    expect(env.datasetId).toBe('market');
+    expect(env.data.indices).toHaveLength(1);
+    expect(env.validation.passed).toBe(true);
+  });
+
+  it('marks empty market indices as invalid envelope', async () => {
+    fetchAllMarketData.mockResolvedValue({
+      indices: [],
+      sourceMode: 'snapshot',
+    });
+
+    const env = await load();
+
+    expect(env.ok).toBe(false);
+    expect(env.validation.errors).toContain('market_indices_empty');
+    expect(env.freshness).toBe('empty');
+  });
+
+  it('returns failed envelope on service error', async () => {
+    fetchAllMarketData.mockRejectedValue(new Error('market down'));
+
+    const env = await load();
+
+    expect(env.ok).toBe(false);
+    expect(env.source).toBe('failed');
+    expect(env.error).toContain('market down');
+  });
+});
+```
+
+---
+
+# 15. `src/data/orchestrator/useDataset.cert.test.js`
+
+```js
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('../../services/indianMarketStableService.js', () => ({
+  fetchAllMarketData: vi.fn(),
+}));
+
+import { fetchAllMarketData } from '../../services/indianMarketStableService.js';
+import {
+  __clearDatasetCacheForTest,
+  __getDatasetCacheForTest,
+  loadDataset,
+} from './useDataset.js';
+import { DATASET_LOADERS, getDatasetLoader } from '../datasets/index.js';
+
+function mockMarketPayload(value = 22000) {
+  return {
+    indices: [
+      {
+        name: 'NIFTY 50',
+        value,
+      },
+    ],
+    sourceMode: 'live',
+    fetchedAt: Date.now(),
+    generatedAt: new Date().toISOString(),
+    sourceHealth: {
+      indices: 'live',
+    },
+  };
+}
+
+describe('useDataset foundation loader behavior', () => {
+  beforeEach(() => {
+    __clearDatasetCacheForTest();
+    vi.clearAllMocks();
+  });
+
+  it('DATASET_LOADERS resolves exactly Release 2 datasets', () => {
+    expect(Object.keys(DATASET_LOADERS).sort()).toEqual([
+      'market',
+      'qualityDashboard',
+      'sourceHealth',
+    ]);
+
+    expect(getDatasetLoader('market')).toBeTruthy();
+    expect(getDatasetLoader('qualityDashboard')).toBeTruthy();
+    expect(getDatasetLoader('sourceHealth')).toBeTruthy();
+
+    expect(getDatasetLoader('weather')).toBe(null);
+    expect(getDatasetLoader('insight')).toBe(null);
+    expect(getDatasetLoader('sections')).toBe(null);
+    expect(getDatasetLoader('upAhead')).toBe(null);
+    expect(getDatasetLoader('buzz')).toBe(null);
+    expect(getDatasetLoader('planner')).toBe(null);
+    expect(getDatasetLoader('newspaper')).toBe(null);
+  });
+
+  it('unknown dataset id throws', async () => {
+    await expect(loadDataset('missing-dataset')).rejects.toThrow('Unknown dataset');
+  });
+
+  it('dedupes concurrent loadDataset calls', async () => {
+    fetchAllMarketData.mockResolvedValue(mockMarketPayload(22000));
+
+    const [a, b] = await Promise.all([
+      loadDataset('market', false),
+      loadDataset('market', false),
+    ]);
+
+    expect(fetchAllMarketData).toHaveBeenCalledTimes(1);
+    expect(a.payloadHash).toBe(b.payloadHash);
+    expect(a.datasetId).toBe('market');
+    expect(b.datasetId).toBe('market');
+  });
+
+  it('reuses cache when force=false and reloads when force=true', async () => {
+    fetchAllMarketData.mockResolvedValue(mockMarketPayload(22000));
+
+    await loadDataset('market', false);
+    await loadDataset('market', false);
+
+    expect(fetchAllMarketData).toHaveBeenCalledTimes(1);
+
+    fetchAllMarketData.mockResolvedValue(mockMarketPayload(22100));
+
+    await loadDataset('market', true);
+
+    expect(fetchAllMarketData).toHaveBeenCalledTimes(2);
+  });
+
+  it('cache helpers are available for tests', () => {
+    expect(__getDatasetCacheForTest().size).toBe(0);
+  });
+});
+```
+
+---
+
+# 16. `scripts/test_hardening_release2_static.mjs`
+
+```js
+import fs from 'node:fs';
+
+const fail = (message) => {
+  console.error(`FAIL: ${message}`);
+  process.exit(1);
+};
+
+const pass = (condition, message) => {
+  if (!condition) fail(message);
+};
+
+const read = (path) => fs.readFileSync(path, 'utf8');
+const exists = (path) => fs.existsSync(path);
+
+const requiredPrerequisites = [
+  'src/data/dataEnvelope.js',
+  'src/utils/withTimeout.js',
+];
+
+requiredPrerequisites.forEach(path => {
+  pass(exists(path), `Missing Release 1B prerequisite. Do not continue Release 2: ${path}`);
+});
+
+const requiredFiles = [
+  'src/data/fetchClient.js',
+  'src/data/safeStorage.js',
+  'src/data/diagnosticsStore.js',
+  'src/data/datasets/index.js',
+  'src/data/datasets/qualityDashboardDataset.js',
+  'src/data/datasets/sourceHealthDataset.js',
+  'src/data/datasets/marketDataset.js',
+  'src/data/orchestrator/useDataset.js',
+];
+
+requiredFiles.forEach(path => {
+  pass(exists(path), `Missing required Release 2 file: ${path}`);
+});
+
+const envelope = read('src/data/dataEnvelope.js');
+const timeout = read('src/utils/withTimeout.js');
+const fetchClient = read('src/data/fetchClient.js');
+const safeStorage = read('src/data/safeStorage.js');
+const diagnostics = read('src/data/diagnosticsStore.js');
+const registry = read('src/data/datasets/index.js');
+const quality = read('src/data/datasets/qualityDashboardDataset.js');
+const sourceHealth = read('src/data/datasets/sourceHealthDataset.js');
+const market = read('src/data/datasets/marketDataset.js');
+const useDataset = read('src/data/orchestrator/useDataset.js');
+
+pass(envelope.includes('export function makeEnvelope'), 'dataEnvelope missing makeEnvelope');
+pass(timeout.includes('export function withTimeout'), 'withTimeout missing withTimeout');
+
+pass(fetchClient.includes('export async function fetchJson'), 'fetchClient missing fetchJson');
+pass(fetchClient.includes('makeEnvelope'), 'fetchClient must return envelopes');
+pass(fetchClient.includes('withTimeout'), 'fetchClient must use withTimeout');
+pass(fetchClient.includes('signal'), 'fetchClient should accept optional signal');
+
+pass(safeStorage.includes('function getSafeLocalStorage'), 'safeStorage missing getSafeLocalStorage');
+pass(safeStorage.includes('safeGetJson'), 'safeStorage missing safeGetJson');
+pass(safeStorage.includes('safeSetJson'), 'safeStorage missing safeSetJson');
+pass(safeStorage.includes('safeRemove'), 'safeStorage missing safeRemove');
+pass(safeStorage.includes("typeof window === 'undefined'"), 'safeStorage must guard SSR');
+pass(safeStorage.includes('window.localStorage'), 'safeStorage must access localStorage inside guard');
+pass(safeStorage.includes('[safeStorage] localStorage unavailable'), 'safeStorage must catch localStorage access failures');
+
+pass(diagnostics.includes('MAX_DIAGNOSTICS = 500'), 'diagnosticsStore must cap at 500');
+pass(diagnostics.includes('recordDiagnostic'), 'diagnosticsStore missing recordDiagnostic');
+pass(diagnostics.includes('subscribeDiagnostics'), 'diagnosticsStore missing subscribeDiagnostics');
+
+pass(registry.includes('market'), 'DATASET_LOADERS missing market');
+pass(registry.includes('qualityDashboard'), 'DATASET_LOADERS missing qualityDashboard');
+pass(registry.includes('sourceHealth'), 'DATASET_LOADERS missing sourceHealth');
+pass(registry.includes('Object.freeze'), 'DATASET_LOADERS must be frozen');
+
+[
+  'weather',
+  'insight',
+  'sections',
+  'upAhead',
+  'buzz',
+  'planner',
+  'newspaper',
+].forEach(name => {
+  pass(!registry.includes(name), `Release 2 must not register ${name}`);
+});
+
+pass(quality.includes('quality_dashboard.json'), 'qualityDashboardDataset must load quality_dashboard.json');
+pass(quality.includes('insight_quality_report.json'), 'qualityDashboardDataset must load insight_quality_report.json');
+pass(quality.includes('quality_dashboard_inconsistent'), 'qualityDashboardDataset must detect inconsistency');
+pass(quality.includes('getSourceGroupCountFromReport'), 'qualityDashboardDataset must extract source group count');
+
+pass(sourceHealth.includes('export async function load'), 'sourceHealthDataset missing load');
+pass(sourceHealth.includes('sources'), 'sourceHealthDataset must normalize sources');
+pass(sourceHealth.includes('quality_dashboard_loaded_but_no_source_health'), 'sourceHealthDataset must warn if dashboard has no source health');
+
+pass(market.includes('fetchAllMarketData'), 'marketDataset must wrap fetchAllMarketData');
+pass(market.includes('indices'), 'marketDataset must validate indices');
+pass(market.includes('makeEnvelope'), 'marketDataset must return envelope');
+
+pass(
+  useDataset.includes('DATASET_LOADERS') || useDataset.includes('getDatasetLoader'),
+  'useDataset must resolve loaders'
+);
+pass(useDataset.includes('inFlight'), 'useDataset must dedupe in-flight loads');
+pass(useDataset.includes('envelopeCache'), 'useDataset must cache envelopes');
+pass(useDataset.includes('reload'), 'useDataset must expose reload');
+pass(useDataset.includes('useMountedRef'), 'useDataset must guard setState after unmount');
+
+const pageDir = 'src/pages';
+if (fs.existsSync(pageDir)) {
+  const pageFiles = fs.readdirSync(pageDir).filter(file => /\.(js|jsx|ts|tsx)$/.test(file));
+
+  pageFiles.forEach(file => {
+    const content = read(`${pageDir}/${file}`);
+    pass(!content.includes('useDataset'), `Release 2 must not migrate pages yet: ${file}`);
+  });
+}
+
+console.log('PASS: Release 2 static data foundation gates');
+```
+
+---
+
+# 17. `package.json` script additions
+
+Add these inside `"scripts"`:
+
+```json
+"test:hardening:release2": "node scripts/test_hardening_release2_static.mjs",
+"test:data-foundation": "vitest run --config vitest.config.js src/data/fetchClient.cert.test.js src/data/safeStorage.cert.test.js src/data/diagnosticsStore.cert.test.js src/data/datasets/qualityDashboardDataset.cert.test.js src/data/datasets/sourceHealthDataset.cert.test.js src/data/datasets/marketDataset.cert.test.js src/data/orchestrator/useDataset.cert.test.js"
+```
+
+---
+
+# Required Commands
+
+```bash
+npm run test:hardening:release2
+npm run test:data-foundation
+npx vite build
+npm run test:unit
+```
+
+---
+
+# Expected Release 2 Benchmarks
+
+| Benchmark                                 |               Expected |
+| ----------------------------------------- | ---------------------: |
+| Release 1B prerequisite handling          | checked, not recreated |
+| Dataset loaders added                     |                      3 |
+| Loader envelope compliance                |                   100% |
+| safeStorage throw safety                  |                   full |
+| diagnostics cap                           |                    500 |
+| quality dashboard inconsistency detection |                 robust |
+| sourceGroupCount extraction               |                    yes |
+| market raw service untouched              |                    yes |
+| `DATASET_LOADERS` entries                 |              exactly 3 |
+| extra datasets registered                 |                      0 |
+| `useDataset` concurrent dedupe test       |     real behavior test |
+| cache reuse with `force=false`            |                   pass |
+| reload with `force=true`                  |                   pass |
+| page/UI migration in Release 2            |                      0 |
+| new npm deps                              |                      0 |
+----------------------------------------------------------------------------------
+## Review Verdict
+
+**Release 3 pack is directionally correct, but not approved as final.**
+It targets the right next layer: `loadWithPolicy`, first SLO evaluators, market-dataset evaluation, dashboard validation, and workflow ordering. It also correctly preserves the rule that `fetchAllMarketData()` must not be rewritten because the current market service already owns the mature fallback cascade: fresh cache → live → snapshot → stale cache → stale snapshot → seed. 
+
+However, there are **six blockers** before this Release 3 code pack should be executed. The uploaded pack itself states the correct high-level scope and assumptions, but a few code details undercut those goals. 
+
+---
+
+# Approved Direction
+
+## 1. Keeping `indianMarketStableService.js` untouched is correct
+
+The current service already contains the actual fallback cascade and preserves the raw payload consumed by existing market UI/context code. 
+
+So Release 3 should **wrap and evaluate** the market output, not rewrite the service.
+
+Approved:
+
+```text
+src/services/indianMarketStableService.js must remain untouched
+```
+
+---
+
+## 2. Fixing quality dashboard generation is correct
+
+The current generator can write misleading zero values because it primarily reads simple top-level fields from `insight_quality_report.json`. 
+
+Adding tolerant field extraction and refusing false-zero dashboard output is the right direction.
+
+---
+
+## 3. Workflow ordering fix is necessary
+
+The current workflow generates the quality dashboard **before** the real Insight snapshot benchmark. 
+
+The current workflow also conditionally runs Node setup, `npm ci`, and the real Insight benchmark only when `should_commit == 'true'`. 
+
+Release 3 is correct to make benchmark/dashboard generation unconditional and keep only the actual commit conditional.
+
+---
+
+# Blockers
+
+## Blocker 1 — `marketDataset.js` returns a non-envelope object after SLO mutation
+
+Proposed code:
+
+```js
+return {
+  ...env,
+  source: normalizeMarketSource(sourceMode),
+  freshness: slo.passed ? ENVELOPE_FRESHNESS.FRESH : ENVELOPE_FRESHNESS.EMPTY,
+  generatedAt: timestamp,
+  fetchedAt: Number(data?.fetchedAt || timestamp) || timestamp,
+  validation: {
+    passed: slo.passed,
+    errors: slo.reasons || [],
+    warnings: slo.warnings || [],
+  },
+  slo,
+  diagnostics: [...]
+};
+```
+
+This breaks the Release 2 envelope contract because:
+
+```text
+- the returned object is no longer frozen
+- ok remains whatever loadWithPolicy returned
+- ok can remain true even if required marketSlo failed
+```
+
+That is a real correctness bug.
+
+### Required correction
+
+Import `makeEnvelope` and return a canonical envelope:
+
+```js
+import {
+  makeEnvelope,
+  ENVELOPE_SOURCES,
+  ENVELOPE_FRESHNESS,
+} from '../dataEnvelope.js';
+```
+
+Then:
+
+```js
+return makeEnvelope({
+  ...env,
+  ok: slo.passed,
+  datasetId: 'market',
+  data,
+  source: normalizeMarketSource(sourceMode),
+  freshness: slo.passed ? ENVELOPE_FRESHNESS.FRESH : ENVELOPE_FRESHNESS.EMPTY,
+  generatedAt: timestamp,
+  fetchedAt: Number(data?.fetchedAt || timestamp) || timestamp,
+  validation: {
+    passed: slo.passed,
+    errors: slo.reasons || [],
+    warnings: slo.warnings || [],
+  },
+  slo,
+  diagnostics: [
+    ...(env.diagnostics || []),
+    {
+      event: slo.passed ? 'market_slo_passed' : 'market_slo_failed',
+      severity: slo.passed ? 'info' : 'warn',
+      message: slo.passed ? 'Market dataset passed first SLO' : 'Market dataset failed first SLO',
+      details: {
+        sourceMode,
+        score: slo.score,
+        reasons: slo.reasons,
+        warnings: slo.warnings,
+      },
+    },
+  ],
+});
+```
+
+This keeps the canonical envelope contract intact.
+
+---
+
+## Blocker 2 — `loadWithPolicy` in `marketDataset` does not actually extract market cascade
+
+The pack title says:
+
+```text
+SWR Extraction, Market-Only Policy Wrapper
+```
+
+But the proposed `marketDataset` uses only one step:
+
+```js
+steps: [
+  {
+    id: 'raw-market-service',
+    load: fetchAllMarketData,
+    validate: isUsableMarketDataset,
+  },
+]
+```
+
+That is acceptable **only if the wording is changed**.
+
+This does **not** extract the market cascade from `indianMarketStableService.js`. It wraps the existing service as one policy step. The real cascade remains inside `fetchAllMarketData()`. That is actually safer for Release 3, but the benchmark claim must not overstate it.
+
+### Required correction
+
+Rename the scope wording:
+
+```text
+Release 3 — Policy Wrapper + First SLOs
+```
+
+or:
+
+```text
+Release 3 — Market Dataset Policy Wrapper, not cascade extraction
+```
+
+And change benchmark wording:
+
+```text
+loadWithPolicy fixture paths: 6/6
+market service cascade preserved: yes
+marketDataset wraps raw market service as one policy step: yes
+```
+
+Do not claim that marketDataset itself covers six real market fallback paths.
+
+---
+
+## Blocker 3 — Workflow artifact upload becomes wrong after moving dashboard generation
+
+Current workflow uploads `quality_dashboard.json` and `quality_dashboard_history.json` in the **Sections quality report** artifact before the real benchmark step. 
+
+The Release 3 pack says to remove early dashboard generation and regenerate dashboard after the real Insight benchmark. Good.
+
+But then the existing artifact upload step will happen **before** the updated dashboard exists.
+
+### Required correction
+
+Add one of these:
+
+## Option A — Move Sections artifact upload after dashboard generation
+
+Move the existing `Upload Sections quality report` step after:
+
+```yaml
+- name: Generate quality dashboard
+- name: Validate quality dashboard
+```
+
+## Option B — Add a new dashboard artifact upload step after validation
+
+```yaml
+      - name: Upload quality dashboard
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: quality-dashboard
+          path: |
+            public/newsdata/quality_dashboard.json
+            public/newsdata/quality_dashboard_history.json
+          if-no-files-found: warn
+```
+
+My recommendation: **Option B**. It is safer and does not disturb the sections report artifact.
+
+Also update the static gate to check dashboard upload occurs after validation.
+
+---
+
+## Blocker 4 — `healthScore` can return `status: degraded` while `passed: false`
+
+Current logic:
+
+```js
+passed: bounded >= 70 && !normalized.some(result => result?.required === true && result?.passed === false),
+status: bounded >= 85 ? 'healthy' : bounded >= 70 ? 'degraded' : 'failed',
+```
+
+If a required SLO fails but penalty is small enough to keep score above 70, `passed` becomes false but `status` can be `"degraded"`.
+
+That is inconsistent.
+
+### Required correction
+
+Compute required failure first:
+
+```js
+const hasRequiredFailure = normalized.some(
+  result => result?.required === true && result?.passed === false
+);
+
+return {
+  passed: bounded >= 70 && !hasRequiredFailure,
+  score: bounded,
+  status: hasRequiredFailure || bounded < 70
+    ? 'failed'
+    : bounded >= 85
+      ? 'healthy'
+      : 'degraded',
+  reasons: [...new Set(reasons)],
+};
+```
+
+Also update the cert test to include:
+
+```js
+it('marks status failed when required check fails even if score remains high', () => {
+  const result = computeHealthScore([
+    { passed: false, required: true, penalty: 10, reasons: ['required_failed'] },
+  ]);
+
+  expect(result.passed).toBe(false);
+  expect(result.status).toBe('failed');
+});
+```
+
+---
+
+## Blocker 5 — `test_market_cascade_fixture.mjs` source labels are inaccurate
+
+The fixture uses:
+
+```js
+source: index === 5 ? SEED : CACHE
+```
+
+for all non-seed steps, including the `"live"` step.
+
+That is misleading.
+
+### Required correction
+
+Use a per-step source mapping:
+
+```js
+const stepMeta = [
+  { id: 'fresh-cache', source: ENVELOPE_SOURCES.CACHE, freshness: ENVELOPE_FRESHNESS.FRESH },
+  { id: 'live', source: ENVELOPE_SOURCES.LIVE, freshness: ENVELOPE_FRESHNESS.FRESH },
+  { id: 'fresh-snapshot', source: ENVELOPE_SOURCES.SNAPSHOT, freshness: ENVELOPE_FRESHNESS.FRESH },
+  { id: 'stale-cache', source: ENVELOPE_SOURCES.CACHE, freshness: ENVELOPE_FRESHNESS.STALE },
+  { id: 'stale-snapshot', source: ENVELOPE_SOURCES.SNAPSHOT, freshness: ENVELOPE_FRESHNESS.STALE },
+  { id: 'seed', source: ENVELOPE_SOURCES.SEED, freshness: ENVELOPE_FRESHNESS.STALE },
+];
+```
+
+This makes the fixture actually represent the intended policy cascade.
+
+---
+
+## Blocker 6 — Release 3 needs an explicit prerequisite gate
+
+The uploaded pack says it assumes corrected Release 2 is applied. 
+
+That is good, but the execution prompt/static gate should enforce it.
+
+### Required correction
+
+Before coding Release 3, verify:
+
+```bash
+test -f src/data/fetchClient.js
+test -f src/data/datasets/marketDataset.js
+test -f src/data/datasets/qualityDashboardDataset.js
+test -f src/data/datasets/sourceHealthDataset.js
+test -f src/data/orchestrator/useDataset.js
+```
+
+If missing:
+
+```text
+Stop. Release 2 prerequisite missing.
+Do not continue Release 3.
+```
+
+Also add static gate checks that Release 3 does not create/register new datasets.
+
+---
+
+# Other Required Improvements
+
+## 1. `qualityDashboardSlo` should accept `dashboardSourceGroups`
+
+The SLO already checks:
+
+```js
+dashboardSourceGroups
+```
+
+Good.
+
+But `scripts/validate_quality_dashboard.mjs` currently checks only stories. Add source group warning or failure logic.
+
+Recommended:
+
+```js
+const dashboardSourceGroups = numberFrom(...);
+const reportSourceGroups = numberFrom(...);
+
+if (reportSourceGroups > 0 && dashboardSourceGroups === 0) {
+  console.warn('[validate_quality_dashboard] WARN: dashboard has zero source groups while report has nonzero source groups', {
+    reportSourceGroups,
+    dashboardSourceGroups,
+  });
+}
+```
+
+Do not fail on this yet unless you want a stricter Release 3. The SLO currently treats it as warning, not reason.
+
+---
+
+## 2. `sourceHealthDataset` should not set `ok: false` for warning-only silent sources
+
+The proposed `sourceHealthSlo` passes when sources are non-empty and only warnings exist. That means sourceHealthDataset remains `ok: true` for silent-source warnings. Good.
+
+Do not change this to hard failure yet.
+
+---
+
+## 3. `loadWithPolicy` should record rejected envelope diagnostics
+
+When a step returns an envelope that is rejected by `validate`, the returned `env.diagnostics` are not included unless selected.
+
+This limits observability.
+
+Add on rejection:
+
+```js
+if (!usable) {
+  attemptedDiagnostics.push(...(env.diagnostics || []));
+}
+```
+
+This will help later DataHealth.
+
+---
+
+## 4. `loadWithPolicy.cert.test.js` should verify diagnostics
+
+Add:
+
+```js
+expect(env.diagnostics.some(d => d.event === 'loadWithPolicy.step_selected')).toBe(true);
+```
+
+and for all-fail:
+
+```js
+expect(env.diagnostics.some(d => d.event === 'loadWithPolicy.all_steps_failed')).toBe(true);
+```
+
+---
+
+# Static Gate Review
+
+The static gate is good, but add these checks.
+
+## Add Release 2 prerequisite check
+
+```js
+[
+  'src/data/fetchClient.js',
+  'src/data/datasets/marketDataset.js',
+  'src/data/datasets/qualityDashboardDataset.js',
+  'src/data/datasets/sourceHealthDataset.js',
+  'src/data/orchestrator/useDataset.js',
+].forEach(path => {
+  pass(exists(path), `Missing Release 2 prerequisite: ${path}`);
+});
+```
+
+## Ensure no page/UI migration
+
+```js
+const pageFiles = fs.readdirSync('src/pages').filter(f => /\.(jsx|js)$/.test(f));
+for (const file of pageFiles) {
+  const content = read(`src/pages/${file}`);
+  pass(!content.includes('useDataset'), `Release 3 must not migrate pages yet: ${file}`);
+}
+```
+
+## Ensure `indianMarketStableService` untouched in final report
+
+This is better done by final report:
+
+```bash
+git diff --name-only
+```
+
+Expected: no `src/services/indianMarketStableService.js`.
+
+## Add dashboard artifact check
+
+```js
+pass(workflow.includes('Upload quality dashboard') || workflow.includes('quality_dashboard.json'), 'workflow must upload generated dashboard after validation');
+```
+
+Better:
+
+```js
+const validateIndex = workflow.indexOf('Validate quality dashboard');
+const dashboardUploadIndex = workflow.indexOf('Upload quality dashboard');
+pass(dashboardUploadIndex > validateIndex, 'quality dashboard artifact upload must occur after validation');
+```
+
+---
+
+# Review by File
+
+## `src/data/loadWithPolicy.js`
+
+**Approved after rejected diagnostics improvement.**
+
+Good abstraction for Release 3. It is generic enough and does not alter existing service code.
+
+---
+
+## `src/data/healthScore.js`
+
+**Not approved until required-failure status bug is fixed.**
+
+---
+
+## `src/data/slo/qualityDashboardSlo.js`
+
+**Approved.**
+
+Good first SLO. It distinguishes required failure from source-group warning.
+
+---
+
+## `src/data/slo/marketSlo.js`
+
+**Approved.**
+
+Good first market SLO. It catches empty indices, invalid values, missing timestamp/source mode, and extreme movement.
+
+---
+
+## `src/data/slo/sourceHealthSlo.js`
+
+**Approved.**
+
+Non-empty source health passes with warnings for silent sources. That is appropriate for Release 3.
+
+---
+
+## `src/data/datasets/marketDataset.js`
+
+**Not approved until it returns `makeEnvelope()` and sets `ok: slo.passed`.**
+
+---
+
+## `src/data/datasets/qualityDashboardDataset.js`
+
+**Approved.**
+
+It uses the SLO and preserves tolerant metric extraction.
+
+---
+
+## `src/data/datasets/sourceHealthDataset.js`
+
+**Approved.**
+
+It uses source health SLO without making silent sources fatal.
+
+---
+
+## `scripts/generate_quality_dashboard.mjs`
+
+**Mostly approved.**
+
+It is a clear improvement over current generator. It reads more report fields and refuses false-zero dashboard output. Current generator writes dashboard without that protection. 
+
+Add source-group warning in validator if desired.
+
+---
+
+## `.github/workflows/news_prefetch.yml`
+
+**Not approved until dashboard artifact upload timing is fixed.**
+
+The current workflow uploads dashboard files before the real benchmark. 
+
+After moving dashboard generation, add a post-validation dashboard artifact upload.
+
+---
+
+# Final Decision
+
+**Not approved as final. Approved after corrections.**
+
+Required before execution:
+
+```text
+1. marketDataset must return makeEnvelope() after SLO mutation.
+2. marketDataset ok must reflect required marketSlo result.
+3. Rename/clarify Release 3 wording: market service cascade is preserved, not extracted.
+4. Add dashboard artifact upload after Generate + Validate quality dashboard.
+5. Fix healthScore required-failure status logic.
+6. Fix test_market_cascade_fixture source/freshness mapping.
+7. Add rejected-step diagnostics to loadWithPolicy.
+8. Add Release 2 prerequisite gate.
+9. Add static gate against page/UI migration.
+```
+
+After these fixes, Release 3 will be strong.
+
+---
+
+# Expected Corrected Benchmarks
+
+| Benchmark                                       |      Expected |
+| ----------------------------------------------- | ------------: |
+| Release 2 prerequisites present                 |           yes |
+| `loadWithPolicy` fixture paths                  |           6/6 |
+| market raw service modified                     |            no |
+| marketDataset wraps raw market service          |           yes |
+| marketDataset returns canonical frozen envelope |           yes |
+| marketDataset `ok` reflects market SLO          |           yes |
+| quality dashboard false-zero validator          |          pass |
+| workflow Node setup/npm ci/benchmark            | unconditional |
+| dashboard generated after real benchmark        |           yes |
+| dashboard artifact uploaded after validation    |           yes |
+| commit step remains conditional                 |           yes |
+| page/UI migration                               |             0 |
+| new npm deps                                    |             0 |
+
+
+---------------------------------------------------
+Agreed. The Release 4 pack needs the five blocker fixes before implementation: weather first-load state, production cache reader, browser-global guards, MarketPage helper preservation, and stronger tests/static gates. 
+
+Below is the **corrected Release 4 delta pack**. Replace the affected files/sections from the previous Release 4 pack with these.
+
+---
+
+# 1. Update `src/data/orchestrator/useDataset.js`
+
+Add this public production-safe cache reader near the existing test helpers:
+
+```js
+export function listDatasetCache() {
+  return Array.from(envelopeCache.entries()).map(([datasetId, envelope]) => ({
+    datasetId,
+    envelope,
+  }));
+}
+
+export function __getDatasetCacheForTest() {
+  return envelopeCache;
+}
+
+export function __clearDatasetCacheForTest() {
+  envelopeCache.clear();
+  inFlight.clear();
+}
+```
+
+Do **not** remove `__getDatasetCacheForTest()` yet, because existing tests may still use it. `DataHealthPanel` must use `listDatasetCache()`.
+
+---
+
+# 2. Replace `src/data/datasets/weatherDataset.js`
+
+```js
+import {
+  makeEnvelope,
+  ENVELOPE_SOURCES,
+  ENVELOPE_FRESHNESS,
+} from '../dataEnvelope.js';
+import { fetchWeather } from '../../services/weatherService.js';
+import { getConfiguredWeatherCities } from '../../services/weatherLocations.js';
+import { getSettings } from '../../utils/storage.js';
+
+function hasUsableCityWeather(value) {
+  return Boolean(
+    value &&
+    typeof value === 'object' &&
+    (
+      Number.isFinite(Number(value.temperature)) ||
+      Number.isFinite(Number(value.temp)) ||
+      value.current ||
+      value.weeklyForecast ||
+      value.today ||
+      value.tomorrow
+    )
+  );
+}
+
+function getWeatherSourceMode(cityDataMap) {
+  const values = Object.values(cityDataMap || {});
+
+  if (values.some(v => v?.sourceMode === 'live')) return ENVELOPE_SOURCES.LIVE;
+  if (values.some(v => v?.sourceMode === 'snapshot')) return ENVELOPE_SOURCES.SNAPSHOT;
+  if (values.some(v => v?.sourceMode === 'cache')) return ENVELOPE_SOURCES.CACHE;
+  if (values.some(v => v?.sourceMode === 'seed')) return ENVELOPE_SOURCES.SEED;
+
+  return ENVELOPE_SOURCES.LIVE;
+}
+
+function safeGetSettings() {
+  try {
+    return getSettings?.() || {};
+  } catch {
+    return {};
+  }
+}
+
+function getConfiguredCities(settings) {
+  const configuredCities = getConfiguredWeatherCities(settings);
+  return Array.isArray(configuredCities) ? configuredCities : [];
+}
+
+export async function load() {
+  const settings = safeGetSettings();
+  const cities = getConfiguredCities(settings);
+  const data = {};
+  const errors = [];
+  const diagnostics = [];
+
+  for (const city of cities) {
+    try {
+      const cityData = await fetchWeather(city);
+      data[city] = cityData;
+
+      diagnostics.push({
+        event: 'weather_city_loaded',
+        severity: hasUsableCityWeather(cityData) ? 'info' : 'warn',
+        message: `Weather loaded for ${city}`,
+        details: {
+          city,
+          sourceMode: cityData?.sourceMode || 'unknown',
+        },
+      });
+    } catch (error) {
+      const message = error?.message || String(error);
+      errors.push(`${city}: ${message}`);
+
+      diagnostics.push({
+        event: 'weather_city_failed',
+        severity: 'error',
+        message,
+        details: { city },
+      });
+    }
+  }
+
+  const usableCities = Object.entries(data)
+    .filter(([, value]) => hasUsableCityWeather(value))
+    .map(([city]) => city);
+
+  const missingCities = cities.filter(city => !usableCities.includes(city));
+  const ok = usableCities.length > 0;
+
+  return makeEnvelope({
+    ok,
+    datasetId: 'weather',
+    data: {
+      cities,
+      weatherData: data,
+      usableCities,
+      missingCities,
+    },
+    source: getWeatherSourceMode(data),
+    freshness: ok ? ENVELOPE_FRESHNESS.FRESH : ENVELOPE_FRESHNESS.UNKNOWN,
+    error: ok ? null : (errors.join('; ') || 'weather unavailable'),
+    validation: {
+      passed: ok,
+      errors: ok ? [] : ['weather_unavailable', ...errors],
+      warnings: missingCities.length ? [`weather_missing_cities:${missingCities.join(',')}`] : [],
+    },
+    slo: {
+      id: 'weatherDatasetBasicValidation',
+      required: false,
+      passed: ok,
+      score: ok ? Math.max(60, 100 - missingCities.length * 10) : 0,
+      reasons: ok ? [] : ['weather_unavailable'],
+      warnings: missingCities.length ? [`weather_missing_cities:${missingCities.join(',')}`] : [],
+      metrics: {
+        configuredCityCount: cities.length,
+        usableCityCount: usableCities.length,
+        missingCityCount: missingCities.length,
+      },
+    },
+    diagnostics,
+  });
+}
+
+export const __weatherDatasetInternalsForTest = {
+  hasUsableCityWeather,
+  getConfiguredCities,
+};
+```
+
+---
+
+# 3. Replace `src/viewModels/useMarketTabViewModel.js`
+
+```js
+import { useMemo, useCallback } from 'react';
+import { useDataset } from '../data/orchestrator/useDataset.js';
+import { useSettings } from '../context/SettingsContext.jsx';
+import { getMarketSessionState } from '../utils/marketSession.js';
+import { auditMarketTabQuality } from '../services/pageAuditGrading.js';
+
+const PRIMARY_INDEX_NAMES = ['NIFTY 50', 'SENSEX', 'BANK NIFTY', 'MIDCAP 150'];
+const GLOBAL_INDEX_NAMES = ['S&P 500', 'NASDAQ', 'NIKKEI 225', 'HANG SENG', 'FTSE 100'];
+
+const INDEX_ALIAS_MAP = {
+  'NIFTY 50': ['NIFTY 50', 'NIFTY50', '^NSEI'],
+  SENSEX: ['SENSEX', 'BSE SENSEX', '^BSESN'],
+  'BANK NIFTY': ['BANK NIFTY', 'NIFTY BANK', '^NSEBANK'],
+  'MIDCAP 150': ['MIDCAP 150', 'MIDCAP', 'NIFTY MIDCAP 150', 'NIFTYMIDCAP150.NS'],
+};
+
+const GLOBAL_INDEX_ALIAS_MAP = {
+  'S&P 500': ['S&P 500', 'SP 500', '^GSPC'],
+  NASDAQ: ['NASDAQ', '^IXIC'],
+  'NIKKEI 225': ['NIKKEI 225', '^N225'],
+  'HANG SENG': ['HANG SENG', '^HSI'],
+  'FTSE 100': ['FTSE 100', '^FTSE'],
+};
+
+function getIndexByName(indices, names) {
+  return names
+    .map(name => indices?.find(item => item.name === name))
+    .filter(Boolean);
+}
+
+function getIndexByAliases(indices, map, names) {
+  return names
+    .map(name => {
+      const aliases = map[name] || [name];
+      return indices?.find(item => aliases.some(alias => item.name === alias || item.symbol === alias));
+    })
+    .filter(Boolean);
+}
+
+function getFloat(value, fallback = 0) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function getMarketMood(indices) {
+  if (!indices || indices.length === 0) {
+    return { tone: 'neutral', label: 'No active market data' };
+  }
+
+  const avg = indices.reduce((sum, item) => sum + getFloat(item.changePercent), 0) / indices.length;
+
+  if (avg >= 0.6) return { tone: 'positive', label: 'Broad risk-on tone' };
+  if (avg <= -0.6) return { tone: 'negative', label: 'Broad risk-off tone' };
+
+  return { tone: 'neutral', label: 'Mixed market tone' };
+}
+
+function hasUsableSectionData(section) {
+  if (Array.isArray(section)) return section.length > 0;
+  if (!section || typeof section !== 'object') return false;
+  return Object.keys(section).length > 0;
+}
+
+export function useMarketTabViewModel() {
+  const {
+    envelope,
+    loading,
+    error: datasetError,
+    reload: reloadDataset,
+  } = useDataset('market');
+
+  const { settings } = useSettings();
+  const marketSettings = settings?.market || {};
+
+  const marketData = envelope?.data || null;
+  const error = datasetError || envelope?.error || null;
+  const lastUpdated = envelope?.fetchedAt || marketData?.fetchedAt || marketData?.generatedAt || null;
+
+  const reload = useCallback((force = true) => reloadDataset(force), [reloadDataset]);
+
+  const computed = useMemo(() => {
+    const indices = marketData?.indices || [];
+    const primaryIndices = getIndexByAliases(indices, INDEX_ALIAS_MAP, PRIMARY_INDEX_NAMES);
+    const globalIndices = getIndexByAliases(indices, GLOBAL_INDEX_ALIAS_MAP, GLOBAL_INDEX_NAMES);
+    const displayedPrimaryIndices = primaryIndices.length ? primaryIndices : indices.slice(0, 4);
+    const heroIndex = displayedPrimaryIndices[0] || indices[0] || null;
+    const heroSeries = heroIndex?.series || heroIndex?.history || [];
+    const sourceHealth = marketData?.sourceHealth || {};
+
+    const sessionState = getMarketSessionState({
+      lastUpdated,
+      tradingHolidays: marketSettings.tradingHolidays || [],
+    });
+
+    const moverGainers = marketData?.movers?.gainers || [];
+    const moverLosers = marketData?.movers?.losers || [];
+
+    const marketBreath = {
+      up: indices.filter(item => getFloat(item.change) >= 0).length,
+      down: indices.filter(item => getFloat(item.change) < 0).length,
+    };
+
+    const sectoralIndices = (
+      marketData?.sectorals?.length
+        ? marketData.sectorals
+        : getIndexByName(indices, ['BANK NIFTY', 'NIFTY IT', 'NIFTY PHARMA', 'NIFTY AUTO'])
+    ).filter((item, idx, arr) => arr.findIndex(candidate => candidate.name === item.name) === idx);
+
+    const mood = getMarketMood(primaryIndices.length ? primaryIndices : indices.slice(0, 3));
+
+    const navSections = [
+      (marketSettings.showGainers !== false || marketSettings.showLosers !== false) && { id: 'market-movers', icon: '📈', label: 'Top Movers' },
+      marketSettings.showSectorals !== false && { id: 'sectoral-indices', icon: '🏛️', label: 'Sectorals' },
+      marketSettings.showCommodities !== false && hasUsableSectionData(marketData?.commodities) && { id: 'commodities', icon: '🪙', label: 'Commodities' },
+      marketSettings.showCurrency !== false && hasUsableSectionData(marketData?.currencies) && { id: 'currency', icon: '💱', label: 'Currency' },
+      marketSettings.showFIIDII !== false && (hasUsableSectionData(marketData?.fiidii?.fii) || hasUsableSectionData(marketData?.fiidii?.dii)) && { id: 'fiidii', icon: '🏦', label: 'FII/DII' },
+      marketSettings.showMutualFunds !== false && hasUsableSectionData(marketData?.mutualFunds) && { id: 'mutual-funds', icon: '💰', label: 'Mutual Funds' },
+      marketSettings.showMarketHealth !== false && { id: 'source-health', icon: '📡', label: 'Source Health' },
+      marketSettings.showIPO !== false && (hasUsableSectionData(marketData?.ipo?.upcoming) || hasUsableSectionData(marketData?.ipo?.live) || hasUsableSectionData(marketData?.ipo?.recent)) && { id: 'ipo-tracker', icon: '🎯', label: 'IPO Watch' },
+    ].filter(Boolean);
+
+    const audit = auditMarketTabQuality({
+      marketData,
+      sourceHealth,
+      sessionState,
+      error,
+      loading,
+      lastFetch: lastUpdated,
+    });
+
+    return {
+      indices,
+      primaryIndices,
+      globalIndices,
+      displayedPrimaryIndices,
+      heroIndex,
+      heroSeries,
+      sectoralIndices,
+      sourceHealth,
+      sessionState,
+      moverGainers,
+      moverLosers,
+      marketBreath,
+      mood,
+      navSections,
+      audit,
+    };
+  }, [marketData, marketSettings, lastUpdated, error, loading]);
+
+  const warnings = [
+    ...(envelope?.validation?.warnings || []),
+    ...(envelope?.slo?.warnings || []),
+  ];
+
+  return {
+    envelope,
+    marketData,
+    loading,
+    error,
+    reload,
+    lastUpdated,
+    healthScore: envelope?.slo?.score ?? null,
+    warnings,
+    diagnostics: envelope?.diagnostics || [],
+    marketSettings,
+    ...computed,
+  };
+}
+
+export const __marketViewModelInternalsForTest = {
+  getFloat,
+  getMarketMood,
+  hasUsableSectionData,
+};
+```
+
+---
+
+# 4. Replace `src/viewModels/useWeatherTabViewModel.js`
+
+```js
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useDataset } from '../data/orchestrator/useDataset.js';
+import { useSettings } from '../context/SettingsContext.jsx';
+import { getConfiguredWeatherCities } from '../services/weatherLocations.js';
+import { auditWeatherTabQuality } from '../services/pageAuditGrading.js';
+import { getSafeLocalStorage, safeGetJson, safeSetJson } from '../data/safeStorage.js';
+
+const ACTIVE_CITY_KEY = 'weather_active_city_v2';
+const LEGACY_ACTIVE_CITY_KEY = 'dw_active_city';
+
+function readInitialActiveCity(cities) {
+  const saved = safeGetJson(ACTIVE_CITY_KEY, null);
+
+  if (saved && typeof saved === 'string') {
+    return saved;
+  }
+
+  try {
+    const storage = getSafeLocalStorage();
+    const legacy = storage?.getItem(LEGACY_ACTIVE_CITY_KEY);
+
+    if (legacy) {
+      safeSetJson(ACTIVE_CITY_KEY, legacy);
+      return legacy;
+    }
+  } catch {
+    // safe fallback below
+  }
+
+  return cities[0] || 'chennai';
+}
+
+export function useWeatherTabViewModel() {
+  const {
+    envelope,
+    loading,
+    error: datasetError,
+    reload: reloadDataset,
+  } = useDataset('weather');
+
+  const { settings } = useSettings();
+
+  const cities = useMemo(() => {
+    const configured = getConfiguredWeatherCities(settings);
+    return Array.isArray(configured) ? configured : [];
+  }, [settings]);
+
+  const [activeCity, setActiveCityState] = useState(() => readInitialActiveCity(cities));
+
+  const weatherData = envelope?.data?.weatherData || null;
+  const displayData = weatherData;
+  const hasWeatherData = Boolean(displayData && Object.keys(displayData).length > 0);
+  const error = datasetError || envelope?.error || null;
+
+  const setActiveCity = useCallback((city) => {
+    setActiveCityState(city);
+    safeSetJson(ACTIVE_CITY_KEY, city);
+  }, []);
+
+  useEffect(() => {
+    if (cities.length > 0 && !cities.includes(activeCity)) {
+      setActiveCity(cities[0]);
+    }
+  }, [activeCity, cities, setActiveCity]);
+
+  const reload = useCallback((force = true) => reloadDataset(force), [reloadDataset]);
+
+  const audit = useMemo(() => auditWeatherTabQuality({
+    weatherData: displayData || {},
+    cities,
+    activeCity,
+    error,
+    loading,
+  }), [displayData, cities, activeCity, error, loading]);
+
+  const warnings = [
+    ...(envelope?.validation?.warnings || []),
+    ...(envelope?.slo?.warnings || []),
+  ];
+
+  return {
+    envelope,
+    weatherData,
+    displayData,
+    hasWeatherData,
+    loading,
+    error,
+    reload,
+    activeCity,
+    setActiveCity,
+    cities,
+    isDesktopReadyData: hasWeatherData,
+    audit,
+    warnings,
+    diagnostics: envelope?.diagnostics || [],
+  };
+}
+```
+
+---
+
+# 5. Replace `src/components/DataHealthPanel.jsx`
+
+```jsx
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+  clearDiagnostics,
+  listDiagnostics,
+  subscribeDiagnostics,
+} from '../data/diagnosticsStore.js';
+import { listDatasetCache } from '../data/orchestrator/useDataset.js';
+
+function formatTime(value) {
+  if (!value) return '--';
+
+  try {
+    return new Date(value).toLocaleString('en-IN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      day: '2-digit',
+      month: 'short',
+    });
+  } catch {
+    return '--';
+  }
+}
+
+function getCacheSnapshot() {
+  return listDatasetCache();
+}
+
+export default function DataHealthPanel() {
+  const [diagnostics, setDiagnostics] = useState(() => listDiagnostics());
+  const [cacheVersion, setCacheVersion] = useState(0);
+
+  useEffect(() => {
+    const unsubscribe = subscribeDiagnostics(nextDiagnostics => {
+      setDiagnostics(nextDiagnostics);
+      setCacheVersion(v => v + 1);
+    });
+
+    return unsubscribe;
+  }, []);
+
+  const cachedEnvelopes = useMemo(() => getCacheSnapshot(), [cacheVersion]);
+
+  const exportPayload = () => {
+    const payload = {
+      exportedAt: Date.now(),
+      diagnostics,
+      datasets: cachedEnvelopes.map(({ datasetId, envelope }) => ({
+        datasetId,
+        ok: envelope?.ok,
+        source: envelope?.source,
+        freshness: envelope?.freshness,
+        fallbackUsed: envelope?.fallbackUsed,
+        payloadHash: envelope?.payloadHash,
+        fetchedAt: envelope?.fetchedAt,
+        lastGoodAt: envelope?.lastGoodAt,
+        validation: envelope?.validation,
+        slo: envelope?.slo,
+        error: envelope?.error,
+      })),
+    };
+
+    const text = JSON.stringify(payload, null, 2);
+
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(text).catch(() => {});
+    }
+
+    if (
+      typeof document !== 'undefined' &&
+      typeof Blob !== 'undefined' &&
+      typeof URL !== 'undefined'
+    ) {
+      const blob = new Blob([text], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+
+      anchor.href = url;
+      anchor.download = `data-health-${Date.now()}.json`;
+      anchor.click();
+
+      URL.revokeObjectURL(url);
+    }
+  };
+
+  return (
+    <section className="modern-card" data-testid="data-health-panel" style={{ padding: '16px' }}>
+      <div className="modern-card__header">
+        <div>
+          <div className="topline__label">Runtime diagnostics</div>
+          <h2 className="modern-card__title">Data Health</h2>
+        </div>
+
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            type="button"
+            className="btn btn--secondary"
+            onClick={() => clearDiagnostics()}
+          >
+            Clear diagnostics
+          </button>
+          <button
+            type="button"
+            className="btn btn--primary"
+            onClick={exportPayload}
+          >
+            Export JSON
+          </button>
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gap: '12px', marginTop: '16px' }}>
+        {cachedEnvelopes.length === 0 ? (
+          <div className="empty-state" style={{ padding: '16px' }}>
+            No cached dataset envelopes yet. Open a migrated tab to populate this panel.
+          </div>
+        ) : cachedEnvelopes.map(({ datasetId, envelope }) => (
+          <div key={datasetId} className="modern-card" style={{ padding: '12px', background: 'var(--bg-secondary)' }}>
+            <h3 style={{ margin: '0 0 8px' }}>{datasetId}</h3>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '8px' }}>
+              <div><strong>Status:</strong> {envelope?.ok ? 'ok' : 'degraded'}</div>
+              <div><strong>Source:</strong> {envelope?.source || '--'}</div>
+              <div><strong>Freshness:</strong> {envelope?.freshness || '--'}</div>
+              <div><strong>Fallback:</strong> {envelope?.fallbackUsed ? 'yes' : 'no'}</div>
+              <div><strong>Payload hash:</strong> {envelope?.payloadHash || '--'}</div>
+              <div><strong>Last good:</strong> {formatTime(envelope?.lastGoodAt)}</div>
+              <div><strong>Validation:</strong> {envelope?.validation?.passed === false ? 'failed' : 'passed'}</div>
+              <div><strong>SLO score:</strong> {envelope?.slo?.score ?? '--'}</div>
+            </div>
+
+            {envelope?.error && (
+              <div style={{ marginTop: '8px', color: 'var(--accent-danger)' }}>
+                {envelope.error}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div style={{ marginTop: '20px' }}>
+        <h3>Recent diagnostics ({diagnostics.length})</h3>
+
+        <div style={{ display: 'grid', gap: '8px' }}>
+          {diagnostics.slice(-20).reverse().map(item => (
+            <div
+              key={item.id}
+              className="modern-card"
+              style={{ padding: '10px', background: 'rgba(255,255,255,0.03)' }}
+            >
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                {formatTime(item.ts)} · {item.datasetId} · {item.severity}
+              </div>
+              <div style={{ fontWeight: 600 }}>{item.event}</div>
+              {item.message && <div style={{ fontSize: '0.85rem' }}>{item.message}</div>}
+            </div>
+          ))}
+
+          {diagnostics.length === 0 && (
+            <div className="empty-state" style={{ padding: '12px' }}>
+              No diagnostics recorded.
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+```
+
+---
+
+# 6. Replace `src/pages/WeatherPage.jsx`
+
+```jsx
+import React, { useCallback } from 'react';
+import WeatherStickyHeader from '../components/WeatherStickyHeader';
+import DetailedWeatherCard from '../components/DetailedWeatherCard';
+import { useMediaQuery } from '../hooks/useMediaQuery';
+import { usePullToRefresh } from '../hooks/usePullToRefresh';
+import WeatherLocationManager from '../components/weather/WeatherLocationManager.jsx';
+import WeeklyWeatherForecast from '../components/weather/WeeklyWeatherForecast.jsx';
+import WeatherCityComparison from '../components/weather/WeatherCityComparison.jsx';
+import WeatherPlanningSummary from '../components/weather/WeatherPlanningSummary.jsx';
+import GradeBadge from '../components/audit/GradeBadge.jsx';
+import { useWeatherTabViewModel } from '../viewModels/useWeatherTabViewModel.js';
+
+function WeatherPage() {
+    const { isDesktop } = useMediaQuery();
+
+    const {
+        weatherData,
+        displayData,
+        hasWeatherData,
+        loading,
+        error,
+        reload,
+        activeCity,
+        setActiveCity,
+        cities,
+        audit: weatherTabAudit,
+    } = useWeatherTabViewModel();
+
+    const handleRefresh = useCallback(async () => {
+        return reload(true);
+    }, [reload]);
+
+    const { pullDistance } = usePullToRefresh(handleRefresh);
+
+    if (loading && !hasWeatherData) {
+        return (
+            <div className="page-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+                <div className="loading">
+                    <div className="loading__spinner"></div>
+                    <span>Loading Forecast...</span>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="page-container" style={{ padding: 0 }}>
+            <GradeBadge
+                audit={weatherTabAudit}
+                label="Weather tab quality grade"
+                position="below-header"
+                topOffset="74px"
+                compact={true}
+            />
+
+            <div style={{
+                height: `${pullDistance}px`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden',
+                background: 'var(--bg-secondary)',
+                color: 'var(--accent-primary)',
+                fontSize: '0.8rem',
+                transition: pullDistance === 0 ? 'height 0.3s ease' : 'none'
+            }}>
+                {pullDistance > 40 ? 'Release to refresh' : 'Pull to refresh'}
+            </div>
+
+            {hasWeatherData && (
+                <WeatherStickyHeader
+                    weatherData={displayData}
+                    activeCity={activeCity}
+                    cities={cities}
+                    onRefresh={handleRefresh}
+                    loading={loading}
+                    isDesktop={isDesktop}
+                />
+            )}
+
+            <main className="main-content" style={{ padding: 0, marginTop: 0 }}>
+                {error && (
+                    <div className="topline" style={{ borderLeftColor: 'var(--accent-danger)', margin: '16px' }}>
+                        <div className="topline__label" style={{ color: 'var(--accent-danger)' }}>Error</div>
+                        <div className="topline__text">Failed to update weather. Showing cached data.</div>
+                    </div>
+                )}
+
+                <WeatherLocationManager />
+
+                {hasWeatherData ? (
+                    <>
+                        <DetailedWeatherCard
+                            weatherData={displayData}
+                            activeCity={activeCity}
+                            setActiveCity={setActiveCity}
+                        />
+                        <WeatherCityComparison weatherData={displayData} cities={cities} />
+                        <WeatherPlanningSummary
+                            cityData={displayData[activeCity]}
+                            cityName={activeCity}
+                        />
+                        <WeeklyWeatherForecast
+                            forecast={displayData[activeCity]?.weeklyForecast}
+                            cityName={activeCity}
+                        />
+                    </>
+                ) : (
+                    <div className="empty-state">
+                        <div className="empty-state__icon">☁️</div>
+                        <p>Weather data unavailable.</p>
+                        <button onClick={handleRefresh} className="btn btn--secondary mt-md">Retry</button>
+                    </div>
+                )}
+            </main>
+        </div>
+    );
+}
+
+export default WeatherPage;
+```
+
+---
+
+# 7. MarketPage patch correction
+
+Keep the earlier MarketPage migration, but change the instruction:
+
+```text
+Remove only the component-body derived state block that duplicates ViewModel outputs.
+Do not remove top-level helper functions unless grep proves they are unused after migration.
+```
+
+Specifically, keep these top-level helpers unless unused:
+
+```js
+formatUpdated
+getFloat
+getMarketTone
+getMarketToneClass
+hasUsableSectionData
+MarketStat
+```
+
+Add this static guard to prevent accidental helper removal:
+
+```js
+if (marketPage.includes('getMarketToneClass(')) {
+  pass(marketPage.includes('function getMarketToneClass'), 'getMarketToneClass used but not defined');
+}
+
+if (marketPage.includes('getFloat(')) {
+  pass(marketPage.includes('function getFloat'), 'getFloat used but not defined');
+}
+
+if (marketPage.includes('hasUsableSectionData(')) {
+  pass(marketPage.includes('function hasUsableSectionData'), 'hasUsableSectionData used but not defined');
+}
+```
+
+---
+
+# 8. Replace `src/data/datasets/weatherDataset.cert.test.js`
+
+```js
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('../../services/weatherService.js', () => ({
+  fetchWeather: vi.fn(),
+}));
+
+vi.mock('../../services/weatherLocations.js', () => ({
+  getConfiguredWeatherCities: vi.fn(),
+}));
+
+vi.mock('../../utils/storage.js', () => ({
+  getSettings: vi.fn(),
+}));
+
+import { fetchWeather } from '../../services/weatherService.js';
+import { getConfiguredWeatherCities } from '../../services/weatherLocations.js';
+import { getSettings } from '../../utils/storage.js';
+import { load } from './weatherDataset.js';
+
+describe('weatherDataset', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    getSettings.mockReturnValue({
+      weather: {},
+    });
+  });
+
+  it('returns ok:true when at least one city succeeds and one city fails', async () => {
+    getConfiguredWeatherCities.mockReturnValue(['chennai', 'muscat']);
+
+    fetchWeather.mockImplementation(async city => {
+      if (city === 'muscat') throw new Error('muscat failed');
+
+      return {
+        temperature: 31,
+        sourceMode: 'live',
+        weeklyForecast: [{ day: 'Today' }],
+      };
+    });
+
+    const env = await load();
+
+    expect(env.ok).toBe(true);
+    expect(env.datasetId).toBe('weather');
+    expect(env.data.usableCities).toEqual(['chennai']);
+    expect(env.data.missingCities).toEqual(['muscat']);
+    expect(env.validation.warnings[0]).toContain('weather_missing_cities:muscat');
+    expect(env.diagnostics.some(d => d.event === 'weather_city_failed')).toBe(true);
+  });
+
+  it('returns ok:false when all configured cities fail', async () => {
+    getConfiguredWeatherCities.mockReturnValue(['chennai', 'muscat']);
+    fetchWeather.mockRejectedValue(new Error('network down'));
+
+    const env = await load();
+
+    expect(env.ok).toBe(false);
+    expect(env.error).toContain('network down');
+    expect(env.validation.errors).toContain('weather_unavailable');
+    expect(env.data.usableCities).toEqual([]);
+    expect(env.data.missingCities).toEqual(['chennai', 'muscat']);
+  });
+
+  it('handles non-array configured cities safely', async () => {
+    getConfiguredWeatherCities.mockReturnValue(null);
+
+    const env = await load();
+
+    expect(env.ok).toBe(false);
+    expect(env.data.cities).toEqual([]);
+    expect(env.error).toBe('weather unavailable');
+  });
+});
+```
+
+---
+
+# 9. Replace `src/components/DataHealthPanel.cert.test.jsx`
+
+```jsx
+import { describe, expect, it } from 'vitest';
+import fs from 'node:fs';
+
+describe('DataHealthPanel', () => {
+  const src = fs.readFileSync('src/components/DataHealthPanel.jsx', 'utf8');
+
+  it('uses production dataset cache reader', () => {
+    expect(src).toContain('listDatasetCache');
+    expect(src).not.toContain('__getDatasetCacheForTest');
+  });
+
+  it('subscribes to diagnostics store', () => {
+    expect(src).toContain('subscribeDiagnostics');
+    expect(src).toContain('listDiagnostics');
+    expect(src).toContain('clearDiagnostics');
+  });
+
+  it('guards browser globals for export', () => {
+    expect(src).toContain("typeof navigator !== 'undefined'");
+    expect(src).toContain("typeof document !== 'undefined'");
+    expect(src).toContain("typeof Blob !== 'undefined'");
+    expect(src).toContain("typeof URL !== 'undefined'");
+  });
+
+  it('shows envelope fields and export controls', () => {
+    expect(src).toContain('payloadHash');
+    expect(src).toContain('freshness');
+    expect(src).toContain('fallbackUsed');
+    expect(src).toContain('Clear diagnostics');
+    expect(src).toContain('Export JSON');
+  });
+});
+```
+
+---
+
+# 10. Replace `scripts/test_hardening_release4_static.mjs`
+
+```js
+import fs from 'node:fs';
+
+const fail = (message) => {
+  console.error(`FAIL: ${message}`);
+  process.exit(1);
+};
+
+const pass = (condition, message) => {
+  if (!condition) fail(message);
+};
+
+const read = path => fs.readFileSync(path, 'utf8');
+const exists = path => fs.existsSync(path);
+
+[
+  'src/data/loadWithPolicy.js',
+  'src/data/healthScore.js',
+  'src/data/slo/marketSlo.js',
+  'src/data/slo/qualityDashboardSlo.js',
+  'src/data/slo/sourceHealthSlo.js',
+  'src/data/datasets/marketDataset.js',
+  'src/data/datasets/qualityDashboardDataset.js',
+  'src/data/datasets/sourceHealthDataset.js',
+  'src/data/orchestrator/useDataset.js',
+  'src/data/diagnosticsStore.js',
+].forEach(path => {
+  pass(exists(path), `Missing Release 3 prerequisite: ${path}`);
+});
+
+const marketDataset = read('src/data/datasets/marketDataset.js');
+pass(marketDataset.includes('makeEnvelope'), 'Corrected Release 3 marketDataset must return makeEnvelope');
+pass(marketDataset.includes('evaluateMarketSlo'), 'Corrected Release 3 marketDataset must use evaluateMarketSlo');
+
+[
+  'src/data/datasets/weatherDataset.js',
+  'src/viewModels/useMarketTabViewModel.js',
+  'src/viewModels/useWeatherTabViewModel.js',
+  'src/viewModels/useTopicDetailViewModel.js',
+  'src/components/DataHealthPanel.jsx',
+  'src/pages/DataHealthPage.jsx',
+].forEach(path => {
+  pass(exists(path), `Missing Release 4 file: ${path}`);
+});
+
+const useDataset = read('src/data/orchestrator/useDataset.js');
+const registry = read('src/data/datasets/index.js');
+const weatherDataset = read('src/data/datasets/weatherDataset.js');
+const weatherVm = read('src/viewModels/useWeatherTabViewModel.js');
+const marketPage = read('src/pages/MarketPage.jsx');
+const weatherPage = read('src/pages/WeatherPage.jsx');
+const topicDetail = read('src/pages/TopicDetail.jsx');
+const panel = read('src/components/DataHealthPanel.jsx');
+const app = read('src/App.jsx');
+const debugConsole = read('src/components/DebugConsole.jsx');
+
+pass(useDataset.includes('export function listDatasetCache'), 'useDataset must expose production listDatasetCache() for DataHealthPanel');
+
+pass(registry.includes('weather'), 'DATASET_LOADERS missing weather');
+['insight', 'sections', 'upAhead', 'buzz', 'planner', 'newspaper'].forEach(name => {
+  pass(!registry.includes(name), `Release 4 must not register ${name}`);
+});
+
+pass(!weatherDataset.includes('useWeather'), 'weatherDataset must not import/use useWeather');
+pass(!weatherDataset.includes('WeatherContext'), 'weatherDataset must not import WeatherContext');
+pass(!weatherDataset.includes('WeatherProvider'), 'weatherDataset must not import WeatherProvider');
+pass(weatherDataset.includes('fetchWeather'), 'weatherDataset must use fetchWeather');
+pass(weatherDataset.includes('getConfiguredWeatherCities'), 'weatherDataset must use configured cities');
+pass(weatherDataset.includes('Array.isArray(configuredCities)'), 'weatherDataset must guard configured cities array');
+
+pass(weatherVm.includes('hasWeatherData'), 'Weather ViewModel must expose hasWeatherData');
+pass(!weatherVm.includes('weatherData = envelope?.data?.weatherData || {}'), 'Weather ViewModel must not default weatherData to {} because it hides loading state');
+pass(weatherVm.includes('weatherData = envelope?.data?.weatherData || null'), 'Weather ViewModel must default weatherData to null');
+
+pass(marketPage.includes('useMarketTabViewModel'), 'MarketPage must use market ViewModel');
+pass(!marketPage.includes("from '../context/MarketContext'"), 'MarketPage must not import useMarket');
+pass(!marketPage.includes('ensureBoot'), 'MarketPage must not call ensureBoot after migration');
+
+if (marketPage.includes('getMarketToneClass(')) {
+  pass(marketPage.includes('function getMarketToneClass'), 'getMarketToneClass used but not defined');
+}
+
+if (marketPage.includes('getFloat(')) {
+  pass(marketPage.includes('function getFloat'), 'getFloat used but not defined');
+}
+
+if (marketPage.includes('hasUsableSectionData(')) {
+  pass(marketPage.includes('function hasUsableSectionData'), 'hasUsableSectionData used but not defined');
+}
+
+pass(weatherPage.includes('useWeatherTabViewModel'), 'WeatherPage must use weather ViewModel');
+pass(!weatherPage.includes("from '../context/WeatherContext'"), 'WeatherPage must not import useWeather');
+pass(!weatherPage.includes('ensureBoot'), 'WeatherPage must not call ensureBoot after migration');
+pass(!weatherPage.includes('localStorage'), 'WeatherPage active city storage must move to ViewModel');
+pass(weatherPage.includes('hasWeatherData'), 'WeatherPage must branch on hasWeatherData');
+
+pass(topicDetail.includes('useTopicDetailViewModel'), 'TopicDetail must use topic ViewModel');
+pass(!topicDetail.includes('withTimeout'), 'TopicDetail should not directly use withTimeout after VM migration');
+pass(!topicDetail.includes('useMountedRef'), 'TopicDetail should not directly use useMountedRef after VM migration');
+
+pass(!panel.includes('__getDatasetCacheForTest'), 'DataHealthPanel must not use test-only cache export');
+pass(panel.includes('listDatasetCache'), 'DataHealthPanel must use production listDatasetCache()');
+pass(panel.includes("typeof navigator !== 'undefined'"), 'DataHealthPanel must guard navigator access');
+pass(panel.includes("typeof document !== 'undefined'"), 'DataHealthPanel must guard document access');
+pass(panel.includes("typeof Blob !== 'undefined'"), 'DataHealthPanel must guard Blob access');
+pass(panel.includes("typeof URL !== 'undefined'"), 'DataHealthPanel must guard URL access');
+
+pass(app.includes('path="/data-health"'), 'App missing /data-health route');
+pass(app.includes('label="Data Health"'), 'Data Health route must use ErrorBoundary label');
+
+pass(debugConsole.includes("removeEventListener('unhandledrejection'") || debugConsole.includes('removeEventListener("unhandledrejection"'), 'DebugConsole must remove unhandledrejection listener');
+pass(!debugConsole.includes('}, [isOpen])'), 'DebugConsole interception effect must not depend on isOpen');
+pass(debugConsole.includes('const isOpenRef = useRef(isOpen)'), 'DebugConsole must use isOpenRef');
+
+const forbiddenPages = [
+  'src/pages/MainPage.jsx',
+  'src/pages/InsightPage.jsx',
+  'src/pages/TechSocialPage.jsx',
+  'src/pages/UpAheadPage.jsx',
+  'src/pages/NewspaperPage.jsx',
+  'src/pages/MyPlannerPage.jsx',
+  'src/pages/FollowingPage.jsx',
+];
+
+for (const file of forbiddenPages) {
+  const content = read(file);
+  pass(!content.includes('useDataset'), `${file} must not import useDataset in Release 4`);
+  pass(!content.includes('useMainTabViewModel'), `${file} must not migrate Main VM in Release 4`);
+  pass(!content.includes('useInsightTabViewModel'), `${file} must not migrate Insight VM in Release 4`);
+  pass(!content.includes('useBuzzTabViewModel'), `${file} must not migrate Buzz VM in Release 4`);
+  pass(!content.includes('useUpAheadTabViewModel'), `${file} must not migrate UpAhead VM in Release 4`);
+}
+
+console.log('PASS: Release 4 corrected first ViewModel + DataHealth gates');
+```
+
+---
+
+# 11. Note for Release 5
+
+Do not modify `DetailedWeatherCard` in Release 4 unless you explicitly expand the manifest. Record this for Release 5:
+
+```text
+Weather active-city persistence is still duplicated in DetailedWeatherCard via legacy key `weather_active_city`.
+Move active-city persistence fully to useWeatherTabViewModel in Release 5 or a focused weather cleanup.
+```
+
+---
+
+# Corrected Release 4 benchmarks
+
+| Benchmark                               |                    Expected |
+| --------------------------------------- | --------------------------: |
+| New dataset registered                  |                weather only |
+| Total `DATASET_LOADERS` entries         |                           4 |
+| `weatherDataset` context imports        |                           0 |
+| Weather first-load spinner              |                   preserved |
+| Weather empty render during loading     |                           0 |
+| DataHealth production cache reader      |                         yes |
+| DataHealth test-only cache reader usage |                           0 |
+| DataHealth browser global guards        |                         yes |
+| MarketPage helper regressions           |                     guarded |
+| Weather behavior test                   | partial/all failure covered |
+| broad tab migration                     |                           0 |
+| new npm dependencies                    |                           0 |
+
+

@@ -17,8 +17,10 @@ const manifest = read('scripts/certification_manifest.json');
 const packageJson = read('package.json');
 const onThisDayPolicy = read('src/services/onThisDayPolicy.js');
 const mainPage = read('src/pages/MainPage.jsx');
+const mainTabViewModel = maybeRead('src/viewModels/useMainTabViewModel.js');
 const topline = read('src/utils/toplineGenerator.js');
 const detailedWeather = read('src/components/DetailedWeatherCard.jsx');
+const weatherTabViewModel = maybeRead('src/viewModels/useWeatherTabViewModel.js');
 const weatherManager = read('src/components/weather/WeatherLocationManager.jsx');
 const topicInference = read('src/utils/topicCountryInference.js');
 const topicBuilder = read('src/utils/topicQueryBuilder.js');
@@ -49,16 +51,23 @@ for (const token of [
   assert(onThisDayPolicy.includes(token), 'onThisDayPolicy missing ' + token);
 }
 
+const mainPageOrViewModel = mainPage + (mainTabViewModel || '');
 assert(!mainPage.includes('showOnThisDay(document)'), 'MainPage/controller still contains boolean/function naming bug');
-assert(mainPage.includes('shouldShowOnThisDay'), 'MainPage must check On This Day policy');
+assert(mainPageOrViewModel.includes('shouldShowOnThisDay'), 'MainPage must check On This Day policy');
 assert(topline.includes('includeOnThisDay'), 'toplineGenerator must support includeOnThisDay option');
 
-assert(detailedWeather.includes('getConfiguredWeatherCities'), 'DetailedWeatherCard must use getConfiguredWeatherCities');
+// getConfiguredWeatherCities may live in DetailedWeatherCard or its view model
+assert(
+  detailedWeather.includes('getConfiguredWeatherCities') || (weatherTabViewModel || '').includes('getConfiguredWeatherCities'),
+  'DetailedWeatherCard or useWeatherTabViewModel must use getConfiguredWeatherCities'
+);
 assert(read('src/services/weatherLocations.js').toLowerCase().includes('colombo'), 'Colombo missing from weather city source');
 
+// refreshWeather(true) may live in WeatherLocationManager or its view model
 assert(
-  weatherManager.includes('refreshWeather(true)') || weatherManager.includes('refreshWeather?.(true)'),
-  'WeatherLocationManager must force refresh after city save'
+  weatherManager.includes('refreshWeather(true)') || weatherManager.includes('refreshWeather?.(true)') ||
+  (weatherTabViewModel || '').includes('refreshWeather(true)') || (weatherTabViewModel || '').includes('refreshWeather(force)'),
+  'WeatherLocationManager or useWeatherTabViewModel must force refresh after city save'
 );
 
 assert(topicInference.includes('Sri Lanka'), 'topicCountryInference must include Sri Lanka');

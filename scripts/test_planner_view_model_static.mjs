@@ -12,6 +12,8 @@ function read(path) {
 const module = read('src/services/plannerViewModel.js');
 const moduleTest = read('src/services/plannerViewModel.cert.test.js');
 const page = read('src/pages/MyPlannerPage.jsx');
+// getPlannerViewModel is called and the result is used inside the view model, not directly in the page.
+const viewModel = read('src/viewModels/useMyPlannerPageViewModel.js');
 const css = read('src/pages/MyPlanner.css');
 const certGate = read('scripts/run_certification_gate.mjs');
 const packageJson = read('package.json');
@@ -41,16 +43,23 @@ for (const token of [
   assert(moduleTest.includes(token), `plannerViewModel.cert.test.js missing token: ${token}`);
 }
 
+// View model aggregation and derived data live in the hook layer.
 for (const token of [
   'getPlannerViewModel',
+  'const plannerViewModel = useMemo',
+  'plannerViewModel.groupedDates',
+]) {
+  assert(viewModel.includes(token), `useMyPlannerPageViewModel.js missing planner controls token: ${token}`);
+}
+
+// UI controls rendering lives in the page component.
+for (const token of [
   'PlannerControlsPanel',
   'data-planner-controls',
   'filter-search-sort',
   'plannerControls',
   'setPlannerControls',
-  'const plannerViewModel = useMemo',
   '<PlannerControlsPanel',
-  'plannerViewModel.groupedDates'
 ]) {
   assert(page.includes(token), `MyPlannerPage.jsx missing planner controls token: ${token}`);
 }

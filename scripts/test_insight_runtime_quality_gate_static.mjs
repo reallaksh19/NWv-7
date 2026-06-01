@@ -12,6 +12,8 @@ function read(path) {
 const gate = read('src/insight/src/diagnostics/insightRuntimeQualityGate.ts');
 const gateTest = read('src/insight/src/diagnostics/insightRuntimeQualityGate.cert.test.ts');
 const page = read('src/pages/InsightPage.jsx');
+// Runtime gate invocation lives in the view model, not the page component.
+const viewModel = read('src/viewModels/useInsightTabViewModel.js');
 const css = read('src/styles/InsightPage.css');
 const certGate = read('scripts/run_certification_gate.mjs');
 const packageJson = read('package.json');
@@ -31,11 +33,18 @@ for (const token of [
   assert(gateTest.includes(token), `insightRuntimeQualityGate.cert.test.ts missing token: ${token}`);
 }
 
+// Gate invocation + result plumbing is in the view model.
 for (const token of [
   'recoverInsightRuntimeQuality', 'runtimeQuality.result',
+]) {
+  assert(viewModel.includes(token), `useInsightTabViewModel.js missing runtime gate token: ${token}`);
+}
+
+// UI rendering of the gate output is in the page component.
+for (const token of [
   'data-insight-runtime-quality-gate', 'post-pipeline-recovery', 'Runtime quality gate'
 ]) {
-  assert(page.includes(token), `InsightPage.jsx missing runtime gate token: ${token}`);
+  assert(page.includes(token), `InsightPage.jsx missing runtime gate UI token: ${token}`);
 }
 
 for (const token of [

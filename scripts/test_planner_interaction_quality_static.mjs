@@ -12,6 +12,8 @@ function read(path) {
 const module = read('src/services/plannerInteractionQuality.js');
 const moduleTest = read('src/services/plannerInteractionQuality.cert.test.js');
 const page = read('src/pages/MyPlannerPage.jsx');
+// getPlannerInteractionQuality call and handlePlannerEscape live in the view model.
+const viewModel = read('src/viewModels/useMyPlannerPageViewModel.js');
 const css = read('src/pages/MyPlanner.css');
 const certGate = read('scripts/run_certification_gate.mjs');
 const packageJson = read('package.json');
@@ -38,17 +40,20 @@ for (const token of [
 }
 
 for (const token of [
-  'getPlannerInteractionQuality',
   'PlannerInteractionQualityPanel',
   'data-planner-interaction-quality',
   'accessibility-readiness',
   'plannerInteractionQuality',
-  'handlePlannerEscape',
   'aria-modal="true"',
   'aria-live="polite"',
   'role="status"'
 ]) {
   assert(page.includes(token), `MyPlannerPage.jsx missing interaction quality token: ${token}`);
+}
+
+// Service call and keyboard handler live in the view model.
+for (const token of ['getPlannerInteractionQuality', 'handlePlannerEscape']) {
+  assert(viewModel.includes(token), `useMyPlannerPageViewModel.js missing interaction quality token: ${token}`);
 }
 
 for (const token of [

@@ -12,6 +12,8 @@ function read(path) {
 const module = read('src/services/plannerEvidence.js');
 const moduleTest = read('src/services/plannerEvidence.cert.test.js');
 const page = read('src/pages/MyPlannerPage.jsx');
+// getPlannerEvidence is called from the view model, not directly from the page.
+const viewModel = read('src/viewModels/useMyPlannerPageViewModel.js');
 const css = read('src/pages/MyPlanner.css');
 const certGate = read('scripts/run_certification_gate.mjs');
 const packageJson = read('package.json');
@@ -39,12 +41,19 @@ for (const token of [
   assert(moduleTest.includes(token), `plannerEvidence.cert.test.js missing token: ${token}`);
 }
 
+// Evidence aggregation is called from the view model layer.
 for (const token of [
   'getPlannerEvidence',
+  'getPlannerEvidence(planData)',
+]) {
+  assert(viewModel.includes(token), `useMyPlannerPageViewModel.js missing token: ${token}`);
+}
+
+// UI integration lives in the page component.
+for (const token of [
   'PlannerEvidencePanel',
   'data-planner-evidence',
   'planner-readiness',
-  'const plannerEvidence = getPlannerEvidence(planData);',
   '<PlannerEvidencePanel evidence={plannerEvidence} />',
   "import './MyPlanner.css';"
 ]) {

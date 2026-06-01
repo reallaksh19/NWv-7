@@ -27,12 +27,17 @@ for (const token of [
   'weatherData?.[city]',
   'updateSettings(nextSettings)',
   'handleAddCity',
-  'handleRemoveCity',
-  'Remove ${row.label}',
   'Add city'
 ]) {
   assert(quickWeather.includes(token), `QuickWeather missing required token: ${token}`);
 }
+
+// City removal is managed exclusively by WeatherLocationManager ("weather central"),
+// not by inline × buttons in the QuickWeather row list.
+assert(
+  !quickWeather.includes('handleRemoveCity'),
+  'QuickWeather must NOT contain handleRemoveCity — removal is managed by WeatherLocationManager'
+);
 
 assert(
   !quickWeather.includes('cities.filter(city => weatherData?.[city]?.current)'),
@@ -55,7 +60,7 @@ console.log(JSON.stringify({
   guarantees: [
     'configured cities are rendered',
     'cities can be added',
-    'cities can be removed with cross button',
+    'city removal is managed only by WeatherLocationManager',
     'at least one city remains',
     'current/hourly/day/tomorrow fallback supported',
     'invalid saved active city is corrected',

@@ -12,6 +12,8 @@ function read(path) {
 const module = read('src/services/plannerItemInspector.js');
 const moduleTest = read('src/services/plannerItemInspector.cert.test.js');
 const page = read('src/pages/MyPlannerPage.jsx');
+// getPlannerItemInspector call and inspectedPlannerItem state live in the view model hook.
+const viewModel = read('src/viewModels/useMyPlannerPageViewModel.js');
 const css = read('src/pages/MyPlanner.css');
 const certGate = read('scripts/run_certification_gate.mjs');
 const packageJson = read('package.json');
@@ -36,12 +38,16 @@ for (const token of [
   assert(moduleTest.includes(token), `plannerItemInspector.cert.test.js missing token: ${token}`);
 }
 
+// Inspector service call and item state managed in the view model.
+for (const token of ['getPlannerItemInspector', 'inspectedPlannerItem']) {
+  assert(viewModel.includes(token), `useMyPlannerPageViewModel.js missing inspector token: ${token}`);
+}
+
+// UI rendering lives in the page component.
 for (const token of [
-  'getPlannerItemInspector',
   'PlannerItemInspectorPanel',
   'data-planner-item-inspector',
   'metadata-actions',
-  'inspectedPlannerItem',
   'inspectedPlannerDetail',
   'inspectPlannerItem',
   'closePlannerInspector',

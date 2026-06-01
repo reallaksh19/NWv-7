@@ -11,7 +11,8 @@ function read(path) {
 
 const repair = read('src/insight/src/diagnostics/insightResultRepair.ts');
 const repairTest = read('src/insight/src/diagnostics/insightResultRepair.cert.test.ts');
-const page = read('src/pages/InsightPage.jsx');
+// Cache-contract logic lives in the view model, not the page component.
+const viewModel = read('src/viewModels/useInsightTabViewModel.js');
 const certGate = read('scripts/run_certification_gate.mjs');
 const packageJson = read('package.json');
 
@@ -29,12 +30,13 @@ for (const token of [
   assert(repairTest.includes(token), `insightResultRepair.cert.test.ts missing token: ${token}`);
 }
 
+// Contract enforcement lives in useInsightTabViewModel (cache read/write/repair), not InsightPage.
 for (const token of [
   'INSIGHT_OUTPUT_CONTRACT_VERSION', 'repairInsightResult', 'CACHE_SCHEMA_VERSION',
-  'schemaVersion !== CACHE_SCHEMA_VERSION', 'localStorage.removeItem(CACHE_KEY)',
+  'schemaVersion !== CACHE_SCHEMA_VERSION', 'storage.removeItem(CACHE_KEY)',
   'data: repaired', 'repairInsightResult(await runInsightPipeline'
 ]) {
-  assert(page.includes(token), `InsightPage.jsx missing cache contract token: ${token}`);
+  assert(viewModel.includes(token), `useInsightTabViewModel.js missing cache contract token: ${token}`);
 }
 
 assert(packageJson.includes('"test:insight-cache-contract"'), 'package.json must include test:insight-cache-contract');

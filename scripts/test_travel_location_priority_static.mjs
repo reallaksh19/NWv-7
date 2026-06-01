@@ -21,6 +21,7 @@ const banner = read('src/components/travel/TravelLocationBanner.jsx');
 const localStories = read('src/components/travel/TravelLocalStories.jsx');
 const settingsPanel = read('src/components/settings/TravelLocationSettingsPanel.jsx');
 const mainPage = maybeRead('src/pages/MainPage.jsx');
+const mainTabViewModel = maybeRead('src/viewModels/useMainTabViewModel.js');
 const settingsPage = maybeRead('src/pages/SettingsPage.jsx');
 const weatherLocations = maybeRead('src/services/weatherLocations.js');
 const packageJson = read('package.json');
@@ -73,13 +74,20 @@ for (const token of [
 
 if (mainPage) {
   for (const token of [
-    'getTravelLocationProfile',
-    'applyTravelLocationPriority',
     'TravelLocationBanner',
     'TravelLocalStories',
   ]) {
     assert(mainPage.includes(token), 'MainPage.jsx missing travel token: ' + token);
   }
+}
+
+// Logic may live in MainPage or its view model
+const mainPageOrViewModel = (mainPage || '') + (mainTabViewModel || '');
+for (const token of [
+  'getTravelLocationProfile',
+  'applyTravelLocationPriority',
+]) {
+  assert(mainPageOrViewModel.includes(token), 'MainPage or useMainTabViewModel missing travel token: ' + token);
 }
 
 if (settingsPage) {

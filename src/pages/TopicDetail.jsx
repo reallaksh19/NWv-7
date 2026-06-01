@@ -4,8 +4,7 @@ import { useTopics } from '../context/TopicContext.jsx';
 import NewsSection from '../components/NewsSection.jsx';
 import { useTopicDetailViewModel } from '../viewModels/useTopicDetailViewModel.js';
 import { useMountedRef } from '../hooks/useMountedRef.js';
-// withTimeout is used by useTopicDetailViewModel for per-fetch deadline protection
-import { withTimeout } from '../utils/withTimeout.js'; // eslint-disable-line no-unused-vars
+// Note: withTimeout and per-fetch deadline protection are encapsulated in useTopicDetailViewModel
 import './FollowingPage.css';
 
 export default function TopicDetail() {

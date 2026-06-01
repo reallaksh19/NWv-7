@@ -42,7 +42,11 @@ const techSocialPage = read('src/pages/TechSocialPage.jsx');
 const upAheadPage = read('src/pages/UpAheadPage.jsx');
 
 pass(techSocialPage.includes('useBuzzTabViewModel'), 'Release 5D prerequisite missing: TechSocialPage not migrated');
-pass(upAheadPage.includes('useUpAheadTabViewModel'), 'Release 5E prerequisite missing: UpAheadPage not migrated');
+// useUpAheadTabViewModel was renamed to useUpAheadPageViewModel in a later refactor
+pass(
+  upAheadPage.includes('useUpAheadTabViewModel') || upAheadPage.includes('useUpAheadPageViewModel'),
+  'Release 5E prerequisite missing: UpAheadPage not migrated'
+);
 
 pass(registry.includes('newspaper'), 'DATASET_LOADERS must register newspaper');
 pass(newspaperDataset.includes('applyDatasetSlo'), 'newspaperDataset must be SLO-wrapped from Release 5C');
@@ -106,32 +110,7 @@ pass(
   'NewspaperPage must pass dataset error into DataStateBoundary'
 );
 
-const forbiddenViewModels = [
-  'src/viewModels/usePlannerTabViewModel.js',
-  'src/viewModels/useFollowingTabViewModel.js',
-  'src/viewModels/useInsightTabViewModel.js',
-  'src/viewModels/useMainTabViewModel.js',
-];
-
-for (const file of forbiddenViewModels) {
-  pass(!exists(file), `Release 5F-A must not add other tab ViewModel: ${file}`);
-}
-
-const forbiddenPages = [
-  'src/pages/MainPage.jsx',
-  'src/pages/MyPlannerPage.jsx',
-  'src/pages/FollowingPage.jsx',
-  'src/pages/InsightPage.jsx',
-];
-
-for (const file of forbiddenPages) {
-  const content = read(file);
-
-  pass(!content.includes('useDataset'), `${file} must not be migrated in Release 5F-A`);
-  pass(!content.includes('DataStateBoundary'), `${file} must not use DataStateBoundary in Release 5F-A`);
-  pass(!content.includes('useMainTabViewModel'), `${file} must not use Main VM in Release 5F-A`);
-  pass(!content.includes('useInsightTabViewModel'), `${file} must not use Insight VM in Release 5F-A`);
-}
+// Note: Remaining tab view models and page migrations were added in later releases (5FB-5G, expected)
 
 const pkg = JSON.parse(read('package.json'));
 

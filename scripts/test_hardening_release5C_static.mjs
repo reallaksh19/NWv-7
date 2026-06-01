@@ -89,55 +89,36 @@ pass(applySlo.includes('slo_evaluation_failed'), 'applyDatasetSlo must convert e
 });
 
 const boundary = read('src/components/DataStateBoundary.jsx');
+const boundaryInternals = exists('src/components/DataStateBoundary.internals.js')
+  ? read('src/components/DataStateBoundary.internals.js') : '';
 
 pass(boundary.includes('export default function DataStateBoundary'), 'DataStateBoundary missing default export');
 pass(boundary.includes('getBoundaryState'), 'DataStateBoundary missing state helper');
-pass(boundary.includes('hasRenderableValue'), 'DataStateBoundary must use recursive renderability helper');
-pass(boundary.includes("return 'loading'"), 'DataStateBoundary missing loading state');
-pass(boundary.includes("return 'error'"), 'DataStateBoundary missing error state');
-pass(boundary.includes("return 'empty'"), 'DataStateBoundary missing empty state');
-pass(boundary.includes("return 'degraded'"), 'DataStateBoundary missing degraded state');
-pass(boundary.includes("return 'refreshing'"), 'DataStateBoundary missing refreshing state');
-pass(boundary.includes("return 'ready'"), 'DataStateBoundary missing ready state');
+// hasRenderableValue may be in the main file or split into internals
+pass(
+  boundary.includes('hasRenderableValue') || boundaryInternals.includes('hasRenderableValue'),
+  'DataStateBoundary must use recursive renderability helper'
+);
+// State machine may be in the main file or in internals
+const boundaryAll = boundary + boundaryInternals;
+pass(boundaryAll.includes("return 'loading'"), 'DataStateBoundary missing loading state');
+pass(boundaryAll.includes("return 'error'"), 'DataStateBoundary missing error state');
+pass(boundaryAll.includes("return 'empty'"), 'DataStateBoundary missing empty state');
+pass(boundaryAll.includes("return 'degraded'"), 'DataStateBoundary missing degraded state');
+pass(boundaryAll.includes("return 'refreshing'"), 'DataStateBoundary missing refreshing state');
+pass(boundaryAll.includes("return 'ready'"), 'DataStateBoundary missing ready state');
 pass(boundary.includes("typeof children === 'function'"), 'DataStateBoundary must support render prop children');
 
 const meta = read('src/components/data-state/DataStateMeta.jsx');
-pass(meta.includes('function asArray'), 'DataStateMeta must guard warning arrays');
-pass(meta.includes('asArray(envelope?.validation?.warnings)'), 'DataStateMeta must guard validation warnings');
-pass(meta.includes('asArray(envelope?.slo?.warnings)'), 'DataStateMeta must guard SLO warnings');
+const metaInternals = exists('src/components/data-state/DataStateMeta.internals.js')
+  ? read('src/components/data-state/DataStateMeta.internals.js') : '';
+const metaAll = meta + metaInternals;
+// asArray helper and warning guards may be in DataStateMeta.jsx or its internals module
+pass(metaAll.includes('function asArray'), 'DataStateMeta must guard warning arrays');
+pass(metaAll.includes('asArray(envelope?.validation?.warnings)'), 'DataStateMeta must guard validation warnings');
+pass(metaAll.includes('asArray(envelope?.slo?.warnings)'), 'DataStateMeta must guard SLO warnings');
 
-const forbiddenPages = [
-  'src/pages/MainPage.jsx',
-  'src/pages/TechSocialPage.jsx',
-  'src/pages/UpAheadPage.jsx',
-  'src/pages/NewspaperPage.jsx',
-  'src/pages/MyPlannerPage.jsx',
-  'src/pages/FollowingPage.jsx',
-  'src/pages/InsightPage.jsx',
-];
-
-for (const file of forbiddenPages) {
-  const content = read(file);
-
-  pass(!content.includes('useDataset'), `${file} must not be migrated in Release 5C`);
-  pass(!content.includes('DataStateBoundary'), `${file} must not use DataStateBoundary until migration phase`);
-  pass(!content.includes('useMainTabViewModel'), `${file} must not use Main VM in Release 5C`);
-  pass(!content.includes('useInsightTabViewModel'), `${file} must not use Insight VM in Release 5C`);
-}
-
-const forbiddenViewModels = [
-  'src/viewModels/useBuzzTabViewModel.js',
-  'src/viewModels/useUpAheadTabViewModel.js',
-  'src/viewModels/useNewspaperTabViewModel.js',
-  'src/viewModels/usePlannerTabViewModel.js',
-  'src/viewModels/useFollowingTabViewModel.js',
-  'src/viewModels/useInsightTabViewModel.js',
-  'src/viewModels/useMainTabViewModel.js',
-];
-
-for (const file of forbiddenViewModels) {
-  pass(!exists(file), `Release 5C must not add tab ViewModel: ${file}`);
-}
+// Note: Tab page migrations and view models were added in later releases (5D-5G, expected)
 
 const pkg = JSON.parse(read('package.json'));
 

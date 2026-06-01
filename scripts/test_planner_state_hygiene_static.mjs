@@ -12,6 +12,8 @@ function read(path) {
 const module = read('src/services/plannerStateHygiene.js');
 const moduleTest = read('src/services/plannerStateHygiene.cert.test.js');
 const page = read('src/pages/MyPlannerPage.jsx');
+// getPlannerStateHygiene, reconcilePlannerSelection and focus logic live in the view model.
+const viewModel = read('src/viewModels/useMyPlannerPageViewModel.js');
 const css = read('src/pages/MyPlanner.css');
 const certGate = read('scripts/run_certification_gate.mjs');
 const packageJson = read('package.json');
@@ -37,17 +39,24 @@ for (const token of [
   assert(moduleTest.includes(token), `plannerStateHygiene.cert.test.js missing token: ${token}`);
 }
 
+// State management and focus logic live in the view model.
 for (const token of [
   'useRef',
   'getPlannerStateHygiene',
   'reconcilePlannerSelection',
+  'plannerInspectorRef.current.focus()',
+]) {
+  assert(viewModel.includes(token), `useMyPlannerPageViewModel.js missing state hygiene token: ${token}`);
+}
+
+// UI rendering lives in the page component.
+for (const token of [
   'PlannerStateHygienePanel',
   'data-planner-state-hygiene',
   'selection-inspector-sync',
   'plannerInspectorRef',
   'plannerStateHygiene',
   'inspectorRef={plannerInspectorRef}',
-  'plannerInspectorRef.current.focus()'
 ]) {
   assert(page.includes(token), `MyPlannerPage.jsx missing state hygiene token: ${token}`);
 }

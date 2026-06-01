@@ -20,6 +20,7 @@ const ingestionTest = read('src/services/travelNewsIngestion.cert.test.js');
 const sourcePolicy = read('public/data/travel-source-policy.json');
 const generator = read('scripts/generate_travel_source_policy.mjs');
 const mainPage = maybeRead('src/pages/MainPage.jsx');
+const mainTabViewModel = maybeRead('src/viewModels/useMainTabViewModel.js');
 const packageJson = read('package.json');
 const certGate = read('scripts/run_certification_gate.mjs');
 
@@ -75,13 +76,15 @@ for (const token of [
   assert(generator.includes(token), 'generator missing token: ' + token);
 }
 
-if (mainPage) {
+// Logic may live in MainPage or its view model
+const mainPageOrViewModel = (mainPage || '') + (mainTabViewModel || '');
+if (mainPage || mainTabViewModel) {
   for (const token of [
     'fetchTravelNewsPayload',
     'mergeTravelNewsIntoNewsData',
     'travelMergedNewsData',
   ]) {
-    assert(mainPage.includes(token), 'MainPage.jsx missing travel news runtime token: ' + token);
+    assert(mainPageOrViewModel.includes(token), 'MainPage or useMainTabViewModel missing travel news runtime token: ' + token);
   }
 }
 

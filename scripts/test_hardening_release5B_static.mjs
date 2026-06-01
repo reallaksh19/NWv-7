@@ -185,51 +185,7 @@ pass(
   'mainSlo must fail when adapterOnly flag is missing'
 );
 
-const forbiddenViewModels = [
-  'src/viewModels/useBuzzTabViewModel.js',
-  'src/viewModels/useUpAheadTabViewModel.js',
-  'src/viewModels/useNewspaperTabViewModel.js',
-  'src/viewModels/usePlannerTabViewModel.js',
-  'src/viewModels/useFollowingTabViewModel.js',
-  'src/viewModels/useInsightTabViewModel.js',
-  'src/viewModels/useMainTabViewModel.js',
-];
-
-for (const file of forbiddenViewModels) {
-  pass(!exists(file), `Release 5B must not add ViewModel: ${file}`);
-}
-
-const forbiddenPages = [
-  'src/pages/MainPage.jsx',
-  'src/pages/TechSocialPage.jsx',
-  'src/pages/UpAheadPage.jsx',
-  'src/pages/NewspaperPage.jsx',
-  'src/pages/MyPlannerPage.jsx',
-  'src/pages/FollowingPage.jsx',
-  'src/pages/InsightPage.jsx',
-];
-
-for (const file of forbiddenPages) {
-  const content = read(file);
-  pass(!content.includes('useDataset'), `${file} must not be migrated in Release 5B`);
-  pass(!content.includes('useMainTabViewModel'), `${file} must not use Main VM in Release 5B`);
-  pass(!content.includes('useInsightTabViewModel'), `${file} must not use Insight VM in Release 5B`);
-  pass(!content.includes('DataStateBoundary'), `${file} must not use DataStateBoundary in Release 5B`);
-}
-
-const datasetFiles = release5ADatasets.map(path => [path, read(path)]);
-
-for (const [path, content] of datasetFiles) {
-  pass(!content.includes('../slo/sectionsSlo'), `${path} must not integrate Release 5B SLOs yet`);
-  pass(!content.includes('../slo/buzzSlo'), `${path} must not integrate Release 5B SLOs yet`);
-  pass(!content.includes('../slo/upAheadSlo'), `${path} must not integrate Release 5B SLOs yet`);
-  pass(!content.includes('../slo/newspaperSlo'), `${path} must not integrate Release 5B SLOs yet`);
-  pass(!content.includes('../slo/plannerSlo'), `${path} must not integrate Release 5B SLOs yet`);
-  pass(!content.includes('../slo/followingSlo'), `${path} must not integrate Release 5B SLOs yet`);
-  pass(!content.includes('../slo/insightSlo'), `${path} must not integrate Release 5B SLOs yet`);
-  pass(!content.includes('../slo/mainSlo'), `${path} must not integrate Release 5B SLOs yet`);
-  pass(!content.includes('../slo/index'), `${path} must not integrate SLO registry yet`);
-}
+// Note: Tab view models and SLO integrations were added in later releases (5C-5G, expected)
 
 const pkg = JSON.parse(read('package.json'));
 

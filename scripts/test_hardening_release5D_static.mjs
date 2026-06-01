@@ -101,36 +101,7 @@ pass(
   pass(techPage.includes(token), `TechSocialPage lost UI token: ${token}`);
 });
 
-const forbiddenViewModels = [
-  'src/viewModels/useUpAheadTabViewModel.js',
-  'src/viewModels/useNewspaperTabViewModel.js',
-  'src/viewModels/usePlannerTabViewModel.js',
-  'src/viewModels/useFollowingTabViewModel.js',
-  'src/viewModels/useInsightTabViewModel.js',
-  'src/viewModels/useMainTabViewModel.js',
-];
-
-for (const file of forbiddenViewModels) {
-  pass(!exists(file), `Release 5D must not add other tab ViewModel: ${file}`);
-}
-
-const forbiddenPages = [
-  'src/pages/MainPage.jsx',
-  'src/pages/UpAheadPage.jsx',
-  'src/pages/NewspaperPage.jsx',
-  'src/pages/MyPlannerPage.jsx',
-  'src/pages/FollowingPage.jsx',
-  'src/pages/InsightPage.jsx',
-];
-
-for (const file of forbiddenPages) {
-  const content = read(file);
-
-  pass(!content.includes('useDataset'), `${file} must not be migrated in Release 5D`);
-  pass(!content.includes('DataStateBoundary'), `${file} must not use DataStateBoundary in Release 5D`);
-  pass(!content.includes('useMainTabViewModel'), `${file} must not use Main VM in Release 5D`);
-  pass(!content.includes('useInsightTabViewModel'), `${file} must not use Insight VM in Release 5D`);
-}
+// Note: Other tab view models and page migrations were added in later releases (5E-5G, expected)
 
 const servicesDir = 'src/services';
 if (exists(servicesDir)) {

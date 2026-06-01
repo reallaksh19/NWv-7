@@ -12,6 +12,8 @@ function read(path) {
 const module = read('src/services/plannerBulkActions.js');
 const moduleTest = read('src/services/plannerBulkActions.cert.test.js');
 const page = read('src/pages/MyPlannerPage.jsx');
+// selectedPlannerIds state lives in the view model hook.
+const viewModel = read('src/viewModels/useMyPlannerPageViewModel.js');
 const css = read('src/pages/MyPlanner.css');
 const certGate = read('scripts/run_certification_gate.mjs');
 const packageJson = read('package.json');
@@ -39,11 +41,13 @@ for (const token of [
   assert(moduleTest.includes(token), `plannerBulkActions.cert.test.js missing token: ${token}`);
 }
 
+// selectedPlannerIds state is managed in the view model hook.
+assert(viewModel.includes('selectedPlannerIds'), 'useMyPlannerPageViewModel.js missing bulk token: selectedPlannerIds');
+
 for (const token of [
   'PlannerBulkActionBar',
   'data-planner-bulk-actions',
   'select-export-remove',
-  'selectedPlannerIds',
   'plannerBulkSummary',
   'togglePlannerSelection',
   'selectAllFilteredPlannerItems',

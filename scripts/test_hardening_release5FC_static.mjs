@@ -97,28 +97,7 @@ pass(
   pass(page.includes(token), `FollowingPage lost UI token: ${token}`);
 });
 
-const forbiddenViewModels = [
-  'src/viewModels/useInsightTabViewModel.js',
-  'src/viewModels/useMainTabViewModel.js',
-];
-
-for (const file of forbiddenViewModels) {
-  pass(!exists(file), `Release 5F-C must not add later tab ViewModel: ${file}`);
-}
-
-const forbiddenPages = [
-  'src/pages/MainPage.jsx',
-  'src/pages/InsightPage.jsx',
-];
-
-for (const file of forbiddenPages) {
-  const content = read(file);
-
-  pass(!content.includes('useDataset'), `${file} must not be migrated in Release 5F-C`);
-  pass(!content.includes('DataStateBoundary'), `${file} must not use DataStateBoundary in Release 5F-C`);
-  pass(!content.includes('useMainTabViewModel'), `${file} must not use Main VM in Release 5F-C`);
-  pass(!content.includes('useInsightTabViewModel'), `${file} must not use Insight VM in Release 5F-C`);
-}
+// Note: Insight and Main tab view models were added in later releases (5G, expected)
 
 const pkg = JSON.parse(read('package.json'));
 

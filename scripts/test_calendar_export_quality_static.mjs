@@ -12,6 +12,8 @@ function read(path) {
 const calendar = read('src/utils/calendar.js');
 const calendarTest = read('src/utils/calendar.cert.test.js');
 const plannerPage = read('src/pages/MyPlannerPage.jsx');
+// Calendar download calls live in the view model hook, not the page component.
+const viewModel = read('src/viewModels/useMyPlannerPageViewModel.js');
 const certGate = read('scripts/run_certification_gate.mjs');
 const packageJson = read('package.json');
 
@@ -43,14 +45,21 @@ for (const token of [
   assert(calendarTest.includes(token), `calendar.cert.test.js missing token: ${token}`);
 }
 
+// Calendar download calls are invoked from the view model layer.
 for (const token of [
   'downloadCalendarEvent, downloadCalendarEvents',
-  'downloadCalendarEvent(item.raw || item)',
+  'downloadCalendarEvent(',
   'downloadCalendarEvents(',
   'nwv7_planner_selection.ics'
 ]) {
-  assert(plannerPage.includes(token), `MyPlannerPage.jsx missing calendar quality token: ${token}`);
+  assert(viewModel.includes(token), `useMyPlannerPageViewModel.js missing calendar quality token: ${token}`);
 }
+
+// Page wires the export trigger via onExportCalendar callback.
+assert(
+  plannerPage.includes('onExportCalendar'),
+  'MyPlannerPage.jsx must wire onExportCalendar to planner items'
+);
 
 assert(
   packageJson.includes('"test:calendar-export-quality"'),

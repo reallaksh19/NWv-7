@@ -91,11 +91,11 @@ describe('Release 6P TechSocial / Buzz Hub binding', () => {
       entertainment: [
         {
           title: 'New Vijay Tamil cinema update',
-          publishedAt: '2026-05-29T00:00:00Z',
+          publishedAt: new Date(Date.now() - 3_600_000).toISOString(),
         },
         {
           title: 'Netflix launches new web series',
-          publishedAt: '2026-05-29T00:00:00Z',
+          publishedAt: new Date(Date.now() - 3_600_000).toISOString(),
         },
       ],
     });
@@ -107,10 +107,11 @@ describe('Release 6P TechSocial / Buzz Hub binding', () => {
   it('social trend projection preserves regional distribution', () => {
     const { distributeSocialTrends } = __techSocialPageViewModelInternalsForTest;
 
+    const recentTs = new Date(Date.now() - 3_600_000).toISOString();
     const trends = distributeSocialTrends({
       social: [
-        { title: 'Viral Chennai Tamil trend', publishedAt: '2026-05-29T00:00:00Z' },
-        { title: 'Global viral social debate', publishedAt: '2026-05-29T00:00:00Z' },
+        { title: 'Viral Chennai Tamil trend', publishedAt: recentTs },
+        { title: 'Global viral social debate', publishedAt: recentTs },
       ],
     });
 
@@ -125,7 +126,7 @@ describe('Release 6P TechSocial / Buzz Hub binding', () => {
       technology: [
         {
           title: 'OpenAI launches new AI agent',
-          publishedAt: '2026-05-29T00:00:00Z',
+          publishedAt: new Date(Date.now() - 3_600_000).toISOString(),
         },
       ],
     });

@@ -63,9 +63,9 @@ const SECTION_FEEDS = {
         "https://news.google.com/rss/search?q=Trichy+OR+Tiruchirappalli+news&hl=en-IN&gl=IN&ceid=IN:en",
     ],
     local: [
-        "https://timesofoman.com/feed",          // was /rss → 404
+        "https://timesofoman.com/feed",          // was /rss -> 404
         "https://www.muscatdaily.com/feed",
-        "https://www.omanobserver.om/rss",         // was /feed → 404
+        "https://www.omanobserver.om/rss",         // was /feed -> 404
         "https://news.google.com/rss/search?q=Muscat+Oman+news+today&hl=en-OM&gl=OM&ceid=OM:en",
         "https://news.google.com/rss/search?q=Oman+news&hl=en-IN&gl=IN&ceid=IN:en",
     ],
@@ -776,7 +776,7 @@ export async function fetchSectionNews(section, limit = 10, allowedSources = nul
     } finally {
         // Always clear the in-flight marker so future callers are not blocked indefinitely
         inFlightFetches.delete(cacheKey);
-        resolveInFlight?.();
+        if (resolveInFlight) resolveInFlight();
     }
 }
 
@@ -992,7 +992,7 @@ async function rankAndFilter(items, section, limit, allowedSources, overrideSett
                     severity: 'info',
                     datasetId: 'editorial',
                     event: 'editorial.apply',
-                    message: `[${section}] Editorial policies applied: ${clustered.length} → ${editorialFiltered.length} items`,
+                    message: `[${section}] Editorial policies applied: ${clustered.length} -> ${editorialFiltered.length} items`,
                     details: { section, removedCount: clustered.length - editorialFiltered.length },
                 });
             }

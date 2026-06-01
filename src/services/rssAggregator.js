@@ -541,8 +541,6 @@ export async function fetchSectionNews(section, limit = 10, allowedSources = nul
     const inFlightPromise = new Promise(resolve => { resolveInFlight = resolve; });
     inFlightFetches.set(cacheKey, inFlightPromise);
 
-    try {
-
     // Static-host / GitHub Pages path: prefer pre-generated section JSON.
     // This avoids browser RSS/proxy failures and uses workflow-produced quality data.
     if (settings.usePrefetchedSections !== false) {

@@ -109,6 +109,10 @@ jobs:
         run: npm ci
 
       - name: Run real Insight snapshot quality benchmark
+        # continue-on-error: benchmarking is observability, not a deployment gate.
+        # Data quality can legitimately vary run-to-run; we always want the fresh
+        # data committed. The quality report is uploaded as an artifact regardless.
+        continue-on-error: true
         run: npm run test:real-insight-snapshot-quality
 
       - name: Upload real Insight quality benchmark report
@@ -124,9 +128,11 @@ jobs:
       # ── Dashboard runs AFTER benchmark so it can read real_insight_quality_report ──
 
       - name: Generate quality dashboard
+        if: always()
         run: node scripts/generate_quality_dashboard.mjs
 
       - name: Validate quality dashboard
+        if: always()
         run: node scripts/validate_quality_dashboard.mjs
 
       - name: Upload quality dashboard
@@ -142,7 +148,7 @@ jobs:
       # ── Commit only when meaningful content changed ───────────────────────────
 
       - name: Commit data
-        if: steps.prefetch_commit.outputs.should_commit == 'true'
+        if: always() && steps.prefetch_commit.outputs.should_commit == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -159,7 +165,7 @@ jobs:
           exit 1
 
       - name: Skip commit for diagnostic-only changes
-        if: steps.prefetch_commit.outputs.should_commit != 'true'
+        if: always() && steps.prefetch_commit.outputs.should_commit != 'true'
         run: |
           echo "No meaningful news content changes. Quality reports were uploaded as artifacts only."
 

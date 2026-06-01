@@ -9,7 +9,7 @@ export function getBannerTone({ envelope, error, loading }) {
 }
 
 export function getBannerMessage({ envelope, error, loading, label = 'Data' }) {
-  if (loading) return `${label} is loadingâ€¦`;
+  if (loading) return `${label} is loading…`;
   if (error) return `${label} failed to load.`;
   if (envelope?.ok === false) return envelope?.error || `${label} is degraded.`;
   if (envelope?.fallbackUsed) return `${label} is using fallback data.`;

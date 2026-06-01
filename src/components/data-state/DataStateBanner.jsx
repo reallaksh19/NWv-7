@@ -31,7 +31,7 @@ export default function DataStateBanner({
       }}
     >
       <span aria-hidden="true">
-        {tone === 'danger' ? 'âš ï¸' : tone === 'warning' ? 'â–²' : tone === 'positive' ? 'âœ“' : 'â€¢'}
+        {tone === 'danger' ? '⚠️' : tone === 'warning' ? '▲' : tone === 'positive' ? '✓' : '•'}
       </span>
       <span>{message}</span>
     </div>

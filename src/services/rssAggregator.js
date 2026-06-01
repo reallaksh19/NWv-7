@@ -63,9 +63,9 @@ const SECTION_FEEDS = {
         "https://news.google.com/rss/search?q=Trichy+OR+Tiruchirappalli+news&hl=en-IN&gl=IN&ceid=IN:en",
     ],
     local: [
-        "https://timesofoman.com/rss",
+        "https://timesofoman.com/feed",          // was /rss → 404
         "https://www.muscatdaily.com/feed",
-        "https://www.omanobserver.om/feed",
+        "https://www.omanobserver.om/rss",         // was /feed → 404
         "https://news.google.com/rss/search?q=Muscat+Oman+news+today&hl=en-OM&gl=OM&ceid=OM:en",
         "https://news.google.com/rss/search?q=Oman+news&hl=en-IN&gl=IN&ceid=IN:en",
     ],
@@ -137,6 +137,10 @@ const KEYWORDS_REGEX = new RegExp(KEYWORDS.join('|'), 'i');
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 const memoryCache = new Map();
+
+// In-flight deduplication: concurrent callers for the same section share one fetch
+// instead of each spawning a full 5-feed × 4-proxy flood independently.
+const inFlightFetches = new Map();
 
 /* ---------- Utility Functions (Moved to Top) ---------- */
 
@@ -515,6 +519,30 @@ export async function fetchSectionNews(section, limit = 10, allowedSources = nul
         console.log(`[RSS] ℹ️ Cache DISABLED by user settings for ${section}`);
     }
 
+    // In-flight deduplication: if another caller is already fetching this section,
+    // wait for it to complete and use whatever it cached rather than hammering
+    // the same proxies N times simultaneously (thundering herd / cache stampede).
+    if (inFlightFetches.has(cacheKey)) {
+        console.log(`[RSS] ⏳ In-flight fetch already running for ${section} — waiting`);
+        try {
+            await inFlightFetches.get(cacheKey);
+        } catch {
+            // ignore — we'll use the cache or return empty below
+        }
+        const cached = memoryCache.get(cacheKey);
+        if (cached) {
+            return rankAndFilter(cached.data, section, limit, allowedSources);
+        }
+        return [];
+    }
+
+    // Mark this section as in-flight
+    let resolveInFlight;
+    const inFlightPromise = new Promise(resolve => { resolveInFlight = resolve; });
+    inFlightFetches.set(cacheKey, inFlightPromise);
+
+    try {
+
     // Static-host / GitHub Pages path: prefer pre-generated section JSON.
     // This avoids browser RSS/proxy failures and uses workflow-produced quality data.
     if (settings.usePrefetchedSections !== false) {
@@ -747,6 +775,10 @@ export async function fetchSectionNews(section, limit = 10, allowedSources = nul
         recordFetchCount(section, fallbackItems.length);
 
         return fallbackItems;
+    } finally {
+        // Always clear the in-flight marker so future callers are not blocked indefinitely
+        inFlightFetches.delete(cacheKey);
+        resolveInFlight?.();
     }
 }
 

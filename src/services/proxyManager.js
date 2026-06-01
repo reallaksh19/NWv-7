@@ -134,9 +134,11 @@ class ProxyManager {
     }
 
     setCooldown(proxyName, errorMessage) {
-        const duration = isRateLimitError(errorMessage)
-            ? SHORT_COOLDOWN_MS
-            : (isLikelyCorsError(errorMessage) ? LONG_COOLDOWN_MS : SHORT_COOLDOWN_MS);
+        // 429 rate-limit: back off for 1 hour — same as CORS — to stop hammering
+        // free-tier proxy services (rss2json, corsproxy, etc.).
+        const duration = (isRateLimitError(errorMessage) || isLikelyCorsError(errorMessage))
+            ? LONG_COOLDOWN_MS
+            : SHORT_COOLDOWN_MS;
         this.cooldownUntil.set(proxyName, now() + duration);
     }
 

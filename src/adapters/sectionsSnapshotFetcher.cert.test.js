@@ -99,7 +99,7 @@ describe('Sections snapshot browser ingestion certification', () => {
     expect(result.items[0].title).toBe('Tech trend');
   });
 
-  it('marks stale workflow snapshots empty so callers can go live', () => {
+  it('returns stale items with stale marker so callers can show data rather than nothing', () => {
     const staleSnapshot = {
       ...snapshot,
       fetchedAt: Date.now() - SECTION_SNAPSHOT_MAX_AGE_MS - 1000,
@@ -107,9 +107,38 @@ describe('Sections snapshot browser ingestion certification', () => {
 
     const result = selectPrefetchedSectionItems(staleSnapshot, 'chennai', 10);
 
-    expect(result.items).toEqual([]);
+    // Stale snapshot should return available items (not empty) so the UI shows
+    // something rather than "No news available". Caller shows a stale warning.
+    expect(result.items).toHaveLength(2);
+    expect(result.items[0]._prefetchedSection).toBe(true);
     expect(result.stale).toBe(true);
     expect(result.staleReason).toBe('sections_snapshot_stale');
+  });
+
+  it('maps local requests to muscat prefetched section', () => {
+    const muscatSnapshot = {
+      schemaVersion: 2,
+      fetchedAt: Date.now(),
+      sections: {
+        muscat: [
+          {
+            id: 'om1',
+            title: 'Muscat weather update',
+            summary: 'Hot and humid conditions expected.',
+            url: 'https://example.com/om1',
+            source: 'Times of Oman',
+            sourceGroup: 'times_of_oman',
+            publishedAt: Date.now() - 1000,
+          },
+        ],
+      },
+    };
+
+    const result = selectPrefetchedSectionItems(muscatSnapshot, 'local', 10);
+
+    expect(result.sourceSection).toBe('muscat');
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0].section).toBe('local');
   });
 
   it('marks sections stale when every item is older than the item freshness gate', () => {

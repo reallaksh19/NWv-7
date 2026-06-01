@@ -10,12 +10,12 @@ SECTION_SOURCE_POLICY_PATH = Path("config/section_sources.json")
 SECTION_SOURCE_POLICY_REPORT_PATH = Path("public/newsdata/section_source_policy_report.json")
 
 SECTION_ORDER = [
-    "topStories", "india", "tn", "trichy", "world",
+    "topStories", "india", "tn", "trichy", "muscat", "world",
     "business", "technology", "sports", "entertainment",
 ]
 
 DEFAULT_REQUIRED_COVERAGE = {
-    "minSections": 9,
+    "minSections": 10,
     "minFeedsPerSection": 2,
     "minSourceGroups": 10,
     "minTierAFeeds": 8,

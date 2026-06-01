@@ -1,8 +1,8 @@
 """
 fetch_sections_stories.py — news sections pre-fetch.
 
-Populates public/newsdata/sections_latest.json with 9 section keys:
-  topStories, india, tn, trichy, world, business, technology, sports, entertainment
+Populates public/newsdata/sections_latest.json with 10 section keys:
+  topStories, india, tn, trichy, muscat, world, business, technology, sports, entertainment
 
 Runs on the same schedule as fetch_insight_stories.py (news_prefetch.yml).
 """
@@ -121,25 +121,22 @@ def main():
         new_sections[section] = deduped[:MAX_STORIES_PER_SECTION]
         print(f'  [{section}] {len(new_sections[section])} stories')
 
-    # Backfill under-populated city sections from their parent sections
-    existing_ids: set = set()
-    for section_stories in new_sections.values():
-        for s in section_stories:
-            if s.get('id'):
-                existing_ids.add(s['id'])
-
+    # Backfill under-populated city sections from their parent sections.
+    # We only exclude stories already in the CHILD section (not globally) so that
+    # parent-section stories can supplement a thin child section as intended.
     for child_section, parent_section in SECTION_BACKFILL.items():
         current = new_sections.get(child_section, [])
         if len(current) < MIN_STORIES_PER_SECTION and parent_section in new_sections:
             needed = MIN_STORIES_PER_SECTION - len(current)
             parent_pool = new_sections.get(parent_section, [])
+            child_ids = {s.get('id') for s in current if s.get('id')}
             extras = []
             for story in parent_pool:
-                if story.get('id') not in existing_ids:
+                if story.get('id') not in child_ids:
                     tagged = dict(story)
                     tagged['backfilledFrom'] = parent_section
                     extras.append(tagged)
-                    existing_ids.add(story['id'])
+                    child_ids.add(story.get('id'))
                     if len(extras) >= needed:
                         break
             if extras:

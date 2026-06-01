@@ -523,8 +523,24 @@ export async function fetchSectionNews(section, limit = 10, allowedSources = nul
             const runtime = getRuntimeCapabilities();
 
             if (prefetched.stale) {
+                if (prefetched.items.length > 0) {
+                    // Stale but has data — show it with a stale marker rather than nothing.
+                    console.warn(`[RSS] Prefetched sections STALE for ${section} (${prefetched.staleReason}) — serving stale data as fallback`);
+                    const stalePrefetched = await rankAndFilter(prefetched.items, section, limit, allowedSources);
+                    stalePrefetched.prefetched = true;
+                    stalePrefetched.prefetchSourceSection = prefetched.sourceSection;
+                    stalePrefetched.sectionQuality = prefetched.quality;
+                    stalePrefetched.snapshotRuntimeSummary = prefetched.summary;
+                    stalePrefetched.staleReason = prefetched.staleReason;
+                    stalePrefetched.health = getSectionHealth(section, stalePrefetched.length);
+                    stalePrefetched.isSingleSource = checkSingleSource(stalePrefetched);
+                    if (settings.enableCache !== false) {
+                        memoryCache.set(cacheKey, { timestamp: Date.now(), data: stalePrefetched });
+                    }
+                    return stalePrefetched;
+                }
                 if (!runtime.allowWideFeedFetch) {
-                    console.warn(`[RSS] Prefetched sections STALE for ${section}; live RSS disabled for static host (${prefetched.staleReason})`);
+                    console.warn(`[RSS] Prefetched sections STALE+EMPTY for ${section}; live RSS disabled for static host`);
                     const emptyPrefetched = [];
                     emptyPrefetched.prefetched = true;
                     emptyPrefetched.prefetchSourceSection = prefetched.sourceSection;
@@ -534,8 +550,7 @@ export async function fetchSectionNews(section, limit = 10, allowedSources = nul
                     emptyPrefetched.health = getSectionHealth(section, 0);
                     return emptyPrefetched;
                 }
-
-                console.warn(`[RSS] Prefetched sections STALE for ${section}; falling back to live RSS (${prefetched.staleReason})`);
+                console.warn(`[RSS] Prefetched sections STALE+EMPTY for ${section}; falling back to live RSS`);
             } else if (prefetched.items.length > 0) {
                 console.log(`[RSS] ✅ Prefetched sections HIT for ${section} via ${prefetched.sourceSection}: ${prefetched.items.length} items`);
 

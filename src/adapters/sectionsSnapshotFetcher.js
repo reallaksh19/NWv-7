@@ -11,6 +11,8 @@ const SECTION_ALIASES = {
   buzz: 'technology',
   top: 'topStories',
   topstories: 'topStories',
+  local: 'muscat',
+  oman: 'muscat',
 };
 
 let memorySnapshot = null;
@@ -177,14 +179,20 @@ export function selectPrefetchedSectionItems(snapshot, section, limit = 10) {
   const sourceSection = normalizeSectionKey(section);
   const sectionItems = safeArray(snapshot?.sections?.[sourceSection]);
   const snapshotStale = !isSectionsSnapshotFresh(snapshot);
-  const freshSectionItems = snapshotStale ? [] : sectionItems.filter(item => isFreshSectionItem(item));
+  // Always filter per-item freshness; snapshot-level staleness is tracked separately
+  // so callers can decide to show stale data with a warning rather than nothing.
+  const freshSectionItems = sectionItems.filter(item => isFreshSectionItem(item));
   const staleReason = snapshotStale
     ? 'sections_snapshot_stale'
     : sectionItems.length > 0 && freshSectionItems.length === 0
       ? 'section_items_stale'
       : null;
 
-  const items = freshSectionItems
+  // When snapshot is stale, use ALL available items (not just fresh ones) so users
+  // see something rather than an empty section — caller marks them as stale.
+  const candidateItems = snapshotStale ? sectionItems : freshSectionItems;
+
+  const items = candidateItems
     .map(item => normalizePrefetchedSectionItem(item, requestedSection, sourceSection))
     .sort((a, b) => Number(b.publishedAt || 0) - Number(a.publishedAt || 0))
     .slice(0, Math.max(0, Number(limit || 0)));

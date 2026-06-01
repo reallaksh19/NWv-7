@@ -14,7 +14,8 @@
       "Bash(Get-ChildItem -Path \"C:\\\\Code1\\\\NWv-7\" -Directory -ErrorAction SilentlyContinue)",
       "Bash(Select-Object Name)",
       "Bash(grep -E \"\\\\.json$\")",
-      "Bash(python3 -c \"import json; d = json.load\\(open\\('C:\\\\\\\\Code1\\\\\\\\NWv-7/public/newsdata/insight_latest.json'\\)\\); print\\(f'Schema: {d.get\\(\\\\\"schemaVersion\\\\\"\\)}'\\); print\\(f'Stories: {len\\(d.get\\(\\\\\"stories\\\\\", []\\)\\)}'\\); print\\(f'SlotMeta keys: {list\\(d.get\\(\\\\\"slotMeta\\\\\", {}\\).keys\\(\\)\\)}'\\); print\\(f'ContentHash: {d.get\\(\\\\\"contentHash\\\\\"\\)}'\\); print\\(f'FetchedAt: {d.get\\(\\\\\"fetchedAt\\\\\"\\)}'\\); s = d['stories'][0] if d.get\\('stories'\\) else {}; print\\(f'\\\\\\\\nSample story keys: {list\\(s.keys\\(\\)\\)[:15]}'\\)\")"
+      "Bash(python3 -c \"import json; d = json.load\\(open\\('C:\\\\\\\\Code1\\\\\\\\NWv-7/public/newsdata/insight_latest.json'\\)\\); print\\(f'Schema: {d.get\\(\\\\\"schemaVersion\\\\\"\\)}'\\); print\\(f'Stories: {len\\(d.get\\(\\\\\"stories\\\\\", []\\)\\)}'\\); print\\(f'SlotMeta keys: {list\\(d.get\\(\\\\\"slotMeta\\\\\", {}\\).keys\\(\\)\\)}'\\); print\\(f'ContentHash: {d.get\\(\\\\\"contentHash\\\\\"\\)}'\\); print\\(f'FetchedAt: {d.get\\(\\\\\"fetchedAt\\\\\"\\)}'\\); s = d['stories'][0] if d.get\\('stories'\\) else {}; print\\(f'\\\\\\\\nSample story keys: {list\\(s.keys\\(\\)\\)[:15]}'\\)\")",
+      "Bash(git -C \"C:\\\\Code3\\\\NWv-7\" log --oneline -20)"
     ]
   }
 }

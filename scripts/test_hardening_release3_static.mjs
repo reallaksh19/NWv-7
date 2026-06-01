@@ -24,8 +24,9 @@ const exists = (path) => fs.existsSync(path);
 });
 
 // ── New Release 3 files must exist ───────────────────────────────────────────
+// Note: loadWithPolicy.js was removed in fix(A-1) — it was dead code unreferenced
+// by any dataset or service. Its removal is intentional and verified.
 [
-  'src/data/loadWithPolicy.js',
   'src/data/healthScore.js',
   'src/data/slo/marketSlo.js',
   'src/data/slo/qualityDashboardSlo.js',
@@ -36,14 +37,7 @@ const exists = (path) => fs.existsSync(path);
   pass(exists(path), `Missing Release 3 file: ${path}`);
 });
 
-// ── loadWithPolicy.js ─────────────────────────────────────────────────────────
-const loadWithPolicy = read('src/data/loadWithPolicy.js');
-
-pass(loadWithPolicy.includes('export async function loadWithPolicy'), 'loadWithPolicy missing export');
-pass(loadWithPolicy.includes('loadWithPolicy.step_selected'), 'loadWithPolicy must emit step_selected diagnostic');
-pass(loadWithPolicy.includes('loadWithPolicy.all_steps_failed'), 'loadWithPolicy must emit all_steps_failed diagnostic');
-pass(loadWithPolicy.includes('attemptedDiagnostics.push(...(env?.diagnostics'), 'loadWithPolicy must preserve rejected step diagnostics');
-pass(loadWithPolicy.includes('step_threw') || loadWithPolicy.includes('step_rejected'), 'loadWithPolicy must record rejected/thrown step diagnostic');
+pass(!exists('src/data/loadWithPolicy.js'), 'loadWithPolicy.js must be absent — it was dead code (fix A-1)');
 
 // ── healthScore.js ────────────────────────────────────────────────────────────
 const healthScore = read('src/data/healthScore.js');
@@ -159,8 +153,8 @@ for (const file of pageFiles) {
 }
 
 // ── Cert test files exist ─────────────────────────────────────────────────────
+// loadWithPolicy.cert.test.js removed alongside the dead loadWithPolicy.js (fix A-1)
 [
-  'src/data/loadWithPolicy.cert.test.js',
   'src/data/healthScore.cert.test.js',
   'src/data/slo/marketSlo.cert.test.js',
   'src/data/slo/qualityDashboardSlo.cert.test.js',

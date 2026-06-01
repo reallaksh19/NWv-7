@@ -18,6 +18,7 @@ import { getWeatherIconId } from '../utils/weatherUtils.js';
 import { getRuntimeCapabilities } from "../runtime/runtimeCapabilities.js";
 import { toLocalDateKey } from '../utils/dateKey.js';
 import { fetchWithTimeout } from '../utils/withTimeout.js';
+import { isLiveMode } from '../utils/fetchMode.js';
 
 const MODELS = {
     ecmwf: 'https://api.open-meteo.com/v1/ecmwf',
@@ -195,14 +196,16 @@ export async function fetchWeather(locationKey) {
     const _t0 = Date.now();
     const key = String(locationKey || '').toLowerCase();
     const cacheFresh = readCachedWeather(key, false);
+    const liveMode = isLiveMode();
 
     // Fresh, complete cache is OK. Fresh legacy/static cache without hourly data should not
     // block a live refresh for built-in cities, because it causes home QuickWeather to show
     // "No forecast" permanently.
-    if (cacheFresh && hasHourlyForecast(cacheFresh)) return { ...cacheFresh, sourceMode: 'cache' };
-    if (cacheFresh && !LOCATIONS[key]) return { ...cacheFresh, sourceMode: 'cache' };
+    // In Live mode, skip cache/snapshot early-returns and always fetch from Open-Meteo.
+    if (!liveMode && cacheFresh && hasHourlyForecast(cacheFresh)) return { ...cacheFresh, sourceMode: 'cache' };
+    if (!liveMode && cacheFresh && !LOCATIONS[key]) return { ...cacheFresh, sourceMode: 'cache' };
 
-    if (isStaticHostRuntime() && !LOCATIONS[key]) {
+    if (!liveMode && isStaticHostRuntime() && !LOCATIONS[key]) {
         const cached = readCachedWeather(key, true);
         if (cached) return { ...cached, sourceMode: 'cache' };
 

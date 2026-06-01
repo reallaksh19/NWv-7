@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { getDatasetLoader } from '../datasets/index.js';
 import { recordDiagnostic } from '../diagnosticsStore.js';
 import { useMountedRef } from '../../hooks/useMountedRef.js';
+import { isLiveMode } from '../../utils/fetchMode.js';
 
 const envelopeCache = new Map();
 const inFlight = new Map();
@@ -13,11 +14,13 @@ export async function loadDataset(datasetId, force = false) {
     throw new Error(`Unknown dataset: ${datasetId}`);
   }
 
-  if (!force && envelopeCache.has(datasetId)) {
+  const effectiveForce = force || isLiveMode();
+
+  if (!effectiveForce && envelopeCache.has(datasetId)) {
     return envelopeCache.get(datasetId);
   }
 
-  if (!force && inFlight.has(datasetId)) {
+  if (!effectiveForce && inFlight.has(datasetId)) {
     return inFlight.get(datasetId);
   }
 
@@ -115,6 +118,11 @@ export function listDatasetCache() {
 
 export function __getDatasetCacheForTest() {
   return envelopeCache;
+}
+
+export function clearEnvelopeCache() {
+  envelopeCache.clear();
+  inFlight.clear();
 }
 
 export function __clearDatasetCacheForTest() {

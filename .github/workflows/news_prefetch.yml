@@ -153,9 +153,10 @@ jobs:
           fi
           git commit -m "data: news prefetch $(date -u +'%Y-%m-%dT%H:%MZ')"
           for i in 1 2 3 4; do
-            git pull --rebase origin main && git push && break
+            git pull --rebase origin main && git push && exit 0
             sleep $((2 ** i))
           done
+          exit 1
 
       - name: Skip commit for diagnostic-only changes
         if: steps.prefetch_commit.outputs.should_commit != 'true'

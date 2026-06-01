@@ -97,7 +97,7 @@ requireTokens('quickWeather', [
 
 requireTokens('quickWeatherCss', [
   '.quick-weather-card',
-  '.qw-config-bar input',
+  '.qw-config-bar',
   '.qw-highlight-text-container',
   '.qw-city-row--active',
 ]);
@@ -168,10 +168,9 @@ assert(
   'SettingsPage must not keep old hardcoded disabled Chennai/Trichy location rows'
 );
 
-requireTokens('app', [
-  'OnThisDayVisibilityController',
-  '<OnThisDayVisibilityController />',
-]);
+// Component renders with spread props, not as a self-closing tag without props
+assert(files.app.includes('OnThisDayVisibilityController'), 'app must import OnThisDayVisibilityController');
+assert(files.app.includes('<OnThisDayVisibilityController'), 'app must render OnThisDayVisibilityController');
 
 requireTokens('onThisDayController', [
   'MutationObserver',

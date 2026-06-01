@@ -391,6 +391,40 @@ body {
   transform: scale(1.1);
 }
 
+/* ── Fetch-mode toggle (Hybrid / Live) ───────────────────────────────────── */
+.fetch-mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 2px;
+}
+
+.fmt-btn {
+  padding: 2px 9px;
+  border-radius: 16px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted, #94a3b8);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.fmt-btn--active {
+  background: rgba(255,255,255,0.14);
+  color: #f8fafc;
+}
+
+.fmt-btn:not(.fmt-btn--active):hover {
+  color: #e2e8f0;
+}
+
 .header__dev-toggle {
   width: 1.9rem;
   height: 1.9rem;

@@ -281,18 +281,6 @@ const QuickWeather = () => {
         saveCities(nextCities, city);
     }
 
-    function handleRemoveCity(cityToRemove) {
-        const nextCities = cities.filter(city => city !== cityToRemove);
-
-        if (nextCities.length === 0) {
-            setCityEditMessage('At least one city must remain.');
-            return;
-        }
-
-        const nextActive = activeCity === cityToRemove ? nextCities[0] : activeCity;
-        saveCities(nextCities, nextActive);
-    }
-
     if (!booted || loading) {
         return (
             <div className="quick-weather-card qw-bg-day">
@@ -389,19 +377,6 @@ const QuickWeather = () => {
                                     }}
                                 >
                                     <span className="qw-city-row__name">{row.label}</span>
-                                    <button
-                                        type="button"
-                                        aria-label={`Remove ${row.label} from quick weather`}
-                                        title={`Remove ${row.label}`}
-                                        onClick={(event) => {
-                                            event.stopPropagation();
-                                            handleRemoveCity(row.city);
-                                        }}
-                                        className="qw-city-remove-btn"
-                                        style={{ display: 'none' }}
-                                    >
-                                        ×
-                                    </button>
                                 </div>
 
                                 <div className="qw-city-row__current">

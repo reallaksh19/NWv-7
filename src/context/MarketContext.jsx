@@ -1,5 +1,6 @@
 import { getIdbCache, setIdbCache } from '../services/indexedDbCache.js';
 import React, { createContext, useContext, useState, useCallback } from 'react';
+import { isLiveMode } from '../utils/fetchMode.js';
 import { fetchAllMarketData, MARKET_SEED } from '../services/indianMarketStableService';
 import {
     MARKET_CONTEXT_CACHE_KEY,
@@ -36,7 +37,7 @@ export function MarketProvider({ children }) {
     const [booted, setBooted] = useState(false);
 
     const loadMarketData = useCallback(async (forceRefresh = false) => {
-        if (!forceRefresh) {
+        if (!forceRefresh && !isLiveMode()) {
             try {
                 const parsed = await getIdbCache(CACHE_KEY);
                 if (

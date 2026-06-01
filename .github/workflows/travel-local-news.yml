@@ -10,6 +10,10 @@ on:
         required: false
         default: 'colombo'
 
+concurrency:
+  group: travel-local-news-${{ github.event.inputs.location_key || 'all' }}
+  cancel-in-progress: true
+
 jobs:
   collect-travel-news:
     runs-on: ubuntu-latest
@@ -22,15 +26,16 @@ jobs:
         location: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.location_key && fromJSON(format('["{0}"]', github.event.inputs.location_key)) || fromJSON('["colombo","muscat","chennai","trichy"]') }}
     permissions:
       contents: write
+      issues: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
@@ -42,8 +47,39 @@ jobs:
           TRAVEL_LOCATION_KEY: ${{ matrix.location }}
 
       - name: Commit updated travel news JSON
-        uses: stefanzweifel/git-auto-commit-action@v6
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "public/data/travel-local-${{ matrix.location }}.json"
+          if git diff --staged --quiet; then
+            echo "No travel news changes for ${{ matrix.location }} — skipping commit"
+            exit 0
+          fi
+          git commit -m "chore: update travel-local ${{ matrix.location }} news JSON [skip ci]"
+          for i in 1 2 3 4; do
+            git pull --rebase origin main && git push && exit 0
+            sleep $((2 ** i))
+          done
+          exit 1
+
+      - name: Open issue on workflow failure
+        if: failure()
+        uses: actions/github-script@v7
         with:
-          commit_message: 'chore: update travel-local news JSON [skip ci]'
-          file_pattern: 'public/data/travel-local-*.json'
-          branch: ${{ github.ref_name }}
+          script: |
+            const title = `travel-local-news failure (${{ matrix.location }}): ${new Date().toISOString()}`;
+            const body = [
+              'Automated alert from `travel-local-news.yml`.',
+              '',
+              `- Location: ${{ matrix.location }}`,
+              `- Workflow run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              `- Ref: ${context.ref}`,
+              `- Commit: ${context.sha}`
+            ].join('\n');
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['automation', 'travel-news-failure']
+            });

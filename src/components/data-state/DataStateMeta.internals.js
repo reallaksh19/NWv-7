@@ -27,6 +27,13 @@ export function getWarningCount(envelope) {
   ].length;
 }
 
+export function getWarningMessages(envelope) {
+  return [
+    ...asArray(envelope?.validation?.warnings),
+    ...asArray(envelope?.slo?.warnings),
+  ];
+}
+
 export const __dataStateMetaInternalsForTest = {
   asArray,
   formatTimestamp,

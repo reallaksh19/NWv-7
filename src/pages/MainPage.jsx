@@ -76,8 +76,7 @@ const MainPage = () => {
             <GradeBadge
                 audit={mainTabAudit}
                 label="Main tab quality grade"
-                position="top-right"
-                topOffset="12px"
+                position="below-header"
                 compact={false}
             />
 

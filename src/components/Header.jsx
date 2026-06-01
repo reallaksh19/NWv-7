@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { FaHome } from 'react-icons/fa';
 import MarketTicker from './MarketTicker';
 import ThemeToggle from './ThemeToggle';
+import FetchModeToggle from './FetchModeToggle';
 import { toggleDevMobileViewOverride, useMediaQuery } from '../hooks/useMediaQuery';
 
 export function DataStatePill({ mode, label }) {
@@ -107,6 +108,7 @@ function Header({
             )}
 
             <div className="header__right">
+                <FetchModeToggle />
                 {stateLabel && <DataStatePill mode={stateType || 'live'} label={stateLabel} />}
                 {actions}
 

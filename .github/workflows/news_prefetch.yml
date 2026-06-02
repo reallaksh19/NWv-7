@@ -160,6 +160,13 @@ jobs:
             exit 0
           fi
           git commit -m "data: news prefetch $(date -u +'%Y-%m-%dT%H:%MZ')"
+          # Benchmark/dashboard steps write quality reports AFTER the commit-decision
+          # step, leaving them unstaged in the working tree. git rebase refuses to run
+          # with a dirty tree ("cannot rebase: You have unstaged changes"), so discard
+          # these leftover diagnostics — they are uploaded as artifacts and are
+          # intentionally never committed. This keeps the rebase/push loop clean.
+          git checkout -- . 2>/dev/null || true
+          git clean -fd public/newsdata/ 2>/dev/null || true
           for i in 1 2 3 4; do
             git fetch origin main
             git rebase origin/main && git push && exit 0

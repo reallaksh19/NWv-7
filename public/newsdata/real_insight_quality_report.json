@@ -1,0 +1,262 @@
+{
+  "status": "PASS",
+  "benchmarkVersion": "real-insight-snapshot-quality-v1",
+  "generatedAt": 1780413135945,
+  "contentHash": "823f8f9f7c775c82",
+  "schemaVersion": 3,
+  "collectorVersion": "insight-collector-json-v3",
+  "storyCount": 261,
+  "sourceGroupCount": 10,
+  "grade": "C",
+  "parentCount": 5,
+  "avgAngles": 1.4,
+  "avgTemporalTiers": 1.8,
+  "avgEvolutionRoles": 1.8,
+  "baseReportShare": 0.2727272727272727,
+  "multiAngleCount": 2,
+  "weakParentCount": 0,
+  "runtimeQualityGate": {
+    "attempted": false,
+    "recovered": false,
+    "reason": "first-pass acceptable",
+    "before": {
+      "grade": "C",
+      "tone": "warn",
+      "title": "Thin but usable signal",
+      "signalScore": 53,
+      "sourceLabel": "Live",
+      "rankedCount": 5,
+      "storyCount": 246,
+      "risingCount": 0,
+      "thinCount": 0,
+      "multiAngleCount": 2,
+      "lowAngleCount": 3,
+      "strongAngleCount": 0,
+      "avgAngles": 1.4,
+      "avgChildren": 2.2,
+      "avgScore": 0.5757547763443307,
+      "sourceDiversityCoverage": 5,
+      "snapshotCoverage": 3,
+      "coverageLabel": "2/5",
+      "warnings": [
+        "3 cluster(s) have fewer than two visible child angles.",
+        "No cluster currently exposes three or more visible child angles.",
+        "2 cluster(s) have weak snapshot coverage.",
+        "75 duplicate/near-duplicate item(s) were hidden or downgraded."
+      ]
+    },
+    "after": {
+      "grade": "C",
+      "tone": "warn",
+      "title": "Thin but usable signal",
+      "signalScore": 53,
+      "sourceLabel": "Live",
+      "rankedCount": 5,
+      "storyCount": 246,
+      "risingCount": 0,
+      "thinCount": 0,
+      "multiAngleCount": 2,
+      "lowAngleCount": 3,
+      "strongAngleCount": 0,
+      "avgAngles": 1.4,
+      "avgChildren": 2.2,
+      "avgScore": 0.5757547763443307,
+      "sourceDiversityCoverage": 5,
+      "snapshotCoverage": 3,
+      "coverageLabel": "2/5",
+      "warnings": [
+        "3 cluster(s) have fewer than two visible child angles.",
+        "No cluster currently exposes three or more visible child angles.",
+        "2 cluster(s) have weak snapshot coverage.",
+        "75 duplicate/near-duplicate item(s) were hidden or downgraded."
+      ]
+    }
+  },
+  "parents": [
+    {
+      "parentId": "cluster_55_d1469fdaf11fae78",
+      "headline": "CBSE re-evaluation portal goes live after delays; students report glitches",
+      "score": 0.6209573212916498,
+      "postTreeScore": 1.061,
+      "childCount": 3,
+      "angles": [
+        "official_response",
+        "market_reaction"
+      ],
+      "temporalTiers": [
+        "breaking",
+        "developing"
+      ],
+      "evolutionRoles": [
+        "first_report",
+        "corroboration"
+      ],
+      "baseReportShare": 0,
+      "weakTree": false
+    },
+    {
+      "parentId": "cluster_159_3b74f475355e286f",
+      "headline": "Pentagon bars journalists from its press office, saying it has become a ’classified space’",
+      "score": 0.5365232802150017,
+      "postTreeScore": 0.9365,
+      "childCount": 2,
+      "angles": [
+        "base_report",
+        "official_response"
+      ],
+      "temporalTiers": [
+        "breaking"
+      ],
+      "evolutionRoles": [
+        "first_report",
+        "cause_confirmed"
+      ],
+      "baseReportShare": 0.5,
+      "weakTree": false
+    },
+    {
+      "parentId": "cluster_72_e49ba0836c087840",
+      "headline": "Massive Russian attack on cities across Ukraine kills at least 13 people",
+      "score": 0.5302732802150018,
+      "postTreeScore": 0.6003,
+      "childCount": 2,
+      "angles": [
+        "fact_update"
+      ],
+      "temporalTiers": [
+        "breaking",
+        "developing"
+      ],
+      "evolutionRoles": [
+        "first_report",
+        "corroboration"
+      ],
+      "baseReportShare": 0,
+      "weakTree": false
+    },
+    {
+      "parentId": "cluster_158_19c480d2e3473381",
+      "headline": "Looming fears of a forever war",
+      "score": 0.5197732802150018,
+      "postTreeScore": 0.5898,
+      "childCount": 2,
+      "angles": [
+        "base_report"
+      ],
+      "temporalTiers": [
+        "breaking",
+        "established"
+      ],
+      "evolutionRoles": [
+        "first_report",
+        "corroboration"
+      ],
+      "baseReportShare": 1,
+      "weakTree": false
+    },
+    {
+      "parentId": "cluster_36_6932317a50485923",
+      "headline": "US To Deport 30 Indians Working Illegally As Truck Drivers",
+      "score": 0.6712467197849983,
+      "postTreeScore": 0.7612,
+      "childCount": 2,
+      "angles": [
+        "investigative_detail"
+      ],
+      "temporalTiers": [
+        "breaking",
+        "established"
+      ],
+      "evolutionRoles": [
+        "legal_or_regulatory"
+      ],
+      "baseReportShare": 0,
+      "weakTree": false
+    }
+  ],
+  "warnings": [],
+  "errors": [],
+  "ratchetGate": {
+    "status": "PASS",
+    "gateVersion": "real-insight-snapshot-ratchet-v1",
+    "grade": "C",
+    "score": 100,
+    "passed": [
+      {
+        "id": "grade-floor",
+        "label": "Real snapshot grade floor",
+        "actual": "C",
+        "required": "A/B/C"
+      },
+      {
+        "id": "parent-count",
+        "label": "Parent cluster count",
+        "actual": 5,
+        "required": ">= 3"
+      },
+      {
+        "id": "avg-angle-count",
+        "label": "Average visible angle count",
+        "actual": 1.4,
+        "required": ">= 1.4"
+      },
+      {
+        "id": "avg-temporal-tier-count",
+        "label": "Average temporal tier count",
+        "actual": 1.8,
+        "required": ">= 1.8"
+      },
+      {
+        "id": "avg-evolution-role-count",
+        "label": "Average evolution role count",
+        "actual": 1.8,
+        "required": ">= 1.6"
+      },
+      {
+        "id": "base-report-share",
+        "label": "Base report share",
+        "actual": 0.273,
+        "required": "<= 0.55"
+      },
+      {
+        "id": "multi-angle-parent-count",
+        "label": "Multi-angle parent count",
+        "actual": 2,
+        "required": ">= 1"
+      },
+      {
+        "id": "top-parent-angle-count",
+        "label": "Top parent angle count",
+        "actual": 2,
+        "required": ">= 2"
+      },
+      {
+        "id": "top-parent-child-depth",
+        "label": "Top parent child depth",
+        "actual": 3,
+        "required": ">= 2"
+      },
+      {
+        "id": "weak-parent-ratio",
+        "label": "Weak parent ratio",
+        "actual": 0,
+        "required": "<= 0.5"
+      }
+    ],
+    "failed": [],
+    "summary": {
+      "parentCount": 5,
+      "avgAngles": 1.4,
+      "avgTemporalTiers": 1.8,
+      "avgEvolutionRoles": 1.8,
+      "baseReportShare": 0.273,
+      "multiAngleCount": 2,
+      "weakParentCount": 0,
+      "weakParentRatio": 0,
+      "topParentAngles": 2,
+      "topParentChildren": 3,
+      "storyCount": 261,
+      "sourceGroupCount": 10
+    }
+  }
+}

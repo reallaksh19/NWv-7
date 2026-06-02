@@ -15,6 +15,7 @@ import { clusterIntoParentEvents, createCanonicalParent } from "../cluster/clust
 import { scoreAndRankParents } from "../ranking/ranking";
 import { buildChildTree, isWeakTree, tryReplaceWeakestChild } from "../tree/treeBuilder";
 import { enforceSourceDiverseChildSelection } from "../tree/sourceDiverseChildSelection";
+import { rescueUsefulVariantsBeforeDuplicateFreeze } from "../tree/usefulVariantRescue";
 import { applyTierCFallback } from "../pipeline/normalize";
 
 // ── Types for external interfaces ─────────────────────────────────────────────
@@ -258,19 +259,31 @@ export function selectTopParentsWithWeakTreeCheck(
       hiddenIds
     );
 
-    parent.childStoryIds = sourceDiversityChildren.map(c => c.id);
+    // Angle-diversity rescue: if the selected children have only one visible
+    // angle, pull in cluster stories with different angles that were left out.
+    const selectedIds = new Set(sourceDiversityChildren.map(c => c.id));
+    const remainingForRescue = clusterStories.filter(s => !selectedIds.has(s.id));
+    const rescue = rescueUsefulVariantsBeforeDuplicateFreeze(
+      remainingForRescue,
+      sourceDiversityChildren.map(c => c.id),
+      storiesById,
+      cfg
+    );
+    const finalChildren = [...sourceDiversityChildren, ...rescue.rescued];
+
+    parent.childStoryIds = finalChildren.map(c => c.id);
 
     // Persist selected child objects back into storiesById so UI-visible child
     // records keep the angle, childScore, informationGain and admission reasons
     // assigned during tree construction and source-diversity repair.
-    for (const child of sourceDiversityChildren) {
+    for (const child of finalChildren) {
       storiesById.set(child.id, child);
     }
 
     const clusterIdSet = new Set(parent.clusterStoryIds);
     parent.hiddenDuplicateIds = [...hiddenIds].filter(id => clusterIdSet.has(id));
 
-    parent.weakTree = isWeakTree(sourceDiversityChildren, cfg);
+    parent.weakTree = isWeakTree(finalChildren, cfg);
     computePostTreeQualityScore(parent, storiesById, cfg);
 
     evaluated.push(parent);

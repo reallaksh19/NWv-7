@@ -46,7 +46,7 @@ jobs:
         run: python scripts/weather_snapshot_worker.py
 
       - name: Validate snapshot freshness
-        run: npm run test:snapshot-freshness
+        run: npm run test:weather-snapshot-freshness
 
       - name: Commit data
         id: commit_weather

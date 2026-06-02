@@ -8,7 +8,6 @@ import {
   mergeUpAheadData,
   loadFromCache,
   saveToCache,
-  clearUpAheadCache,
   isActualWeatherAlertText,
   isActualOfferText,
 } from '../services/upAheadService';

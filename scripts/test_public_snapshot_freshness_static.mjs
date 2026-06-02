@@ -44,9 +44,17 @@ function payloadTimestamp(payload) {
 function snapshotFiles() {
   assert(fs.existsSync(DATA_DIR), `Missing data directory: ${DATA_DIR}`);
 
+  const allowList = process.env.SNAPSHOT_FRESHNESS_FILES
+    ? new Set(process.env.SNAPSHOT_FRESHNESS_FILES.split(',').map(f => f.trim()).filter(Boolean))
+    : null;
+
   return fs
     .readdirSync(DATA_DIR)
-    .filter(fileName => fileName.includes('snapshot') && fileName.endsWith('.json'))
+    .filter(fileName =>
+      fileName.includes('snapshot') &&
+      fileName.endsWith('.json') &&
+      (!allowList || allowList.has(fileName))
+    )
     .sort();
 }
 

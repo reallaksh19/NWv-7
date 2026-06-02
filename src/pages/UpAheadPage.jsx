@@ -424,9 +424,7 @@ function UpAheadPage() {
     handleRemoveFromPlan,
     removeUpAheadLocation,
     promptAddUpAheadLocation,
-    toggleWatchlist,
     watchlistError,
-    isWatched,
   } = useUpAheadPageViewModel();
 
   const handleRefresh = () => loadData({ forceRefresh: false });

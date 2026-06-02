@@ -2,6 +2,7 @@ import { DEFAULT_SETTINGS } from '../utils/storage.js';
 import plannerStorage from '../utils/plannerStorage.js';
 import { fetchIntelligentUpAheadData } from './intelligentUpAheadFetcher.js';
 import { toDateKey } from '../utils/dateDisplay.js';
+import { getRuntimeCapabilities } from '../runtime/runtimeCapabilities.js';
 
 export const CACHE_KEY = 'upAhead_cache';
 
@@ -130,7 +131,8 @@ function categorySectionKey(category) {
 }
 
 function getDayLabel(dateKey) {
-  const date = new Date(dateKey);
+  const [year, month, day] = dateKey.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
   date.setHours(0, 0, 0, 0);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -175,7 +177,8 @@ function persistPlannerCandidates(items = []) {
 }
 
 function formatPlanLabel(dateKey) {
-  const d = new Date(dateKey);
+  const [year, month, day] = dateKey.split('-').map(Number);
+  const d = new Date(year, month - 1, day);
   const getOrdinal = (n) => {
     const s = ['th', 'st', 'nd', 'rd'];
     const v = n % 100;
@@ -461,7 +464,11 @@ export async function fetchStaticUpAheadData(upAheadSettings = {}) {
     const response = await fetch(`${cleanBase}data/up_ahead.json`, { cache: 'no-cache' });
     if (!response.ok) return null;
     const parsed = await response.json();
-    if (!isStaticUpAheadFresh(parsed)) {
+    // When snapshot mode is forced (static host or ?preferSnapshots=true), serve the
+    // static snapshot even if stale — there is no live backend to fall back to, and
+    // showing stale civic/event data beats showing only festival placeholders.
+    const { preferSnapshots } = getRuntimeCapabilities();
+    if (!isStaticUpAheadFresh(parsed) && !preferSnapshots) {
       console.warn('[UpAheadService] Ignoring stale static Up Ahead snapshot', {
         fetchedAt: parsed?.fetchedAt || parsed?.lastUpdated,
       });

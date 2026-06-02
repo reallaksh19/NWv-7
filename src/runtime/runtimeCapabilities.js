@@ -19,15 +19,39 @@ function getConfiguredBackendUrl() {
   );
 }
 
+function readSnapshotOverride(isBrowser) {
+  if (!isBrowser) return false;
+  try {
+    const params = window.location?.search
+      ? new URLSearchParams(window.location.search)
+      : null;
+    const fromUrl = params
+      ? (params.get('preferSnapshots') === 'true' || params.get('prefer_snapshots') === 'true')
+      : false;
+    const fromStorage = typeof localStorage !== 'undefined'
+      ? (localStorage.getItem('preferSnapshots') === 'true' || localStorage.getItem('prefer_snapshots') === 'true')
+      : false;
+    return fromUrl || fromStorage;
+  } catch {
+    return false;
+  }
+}
+
 export function getRuntimeCapabilities() {
   const isBrowser = typeof window !== 'undefined';
   const hostname = isBrowser ? window.location.hostname : '';
   const isStaticHost = isKnownStaticHost(hostname);
   const configuredBackendUrl = getConfiguredBackendUrl();
 
+  // Developer override: force pure client-side snapshot mode on localhost via
+  // ?preferSnapshots=true (or localStorage). This bypasses local API endpoints
+  // (no /api 500s) and wide RSS proxy fetches (no CORS/429 floods) so the app
+  // runs fully from static JSON, exactly like the deployed static host.
+  const forceSnapshots = readSnapshotOverride(isBrowser);
+  const preferSnapshots = isStaticHost || forceSnapshots;
+
   const backendConfigured = Boolean(
-    configuredBackendUrl ||
-    (!isStaticHost && isBrowser)
+    (configuredBackendUrl || (!isStaticHost && isBrowser)) && !preferSnapshots
   );
 
   return {
@@ -38,8 +62,8 @@ export function getRuntimeCapabilities() {
 
     // Existing compatibility fields.
     canUseBackendApi: backendConfigured,
-    preferSnapshots: isStaticHost,
-    allowWideFeedFetch: !isStaticHost,
+    preferSnapshots,
+    allowWideFeedFetch: !preferSnapshots,
 
     // Release 1C compatibility + future runtime fields.
     allowRemoteSettingsSync: backendConfigured,
@@ -47,19 +71,19 @@ export function getRuntimeCapabilities() {
     canUseRemoteStorage: backendConfigured,
     canUseLocalStorage: isBrowser,
 
-    weatherMode: isStaticHost ? 'cache-or-snapshot' : 'live',
-    marketMode: isStaticHost ? 'snapshot-first' : 'live',
-    upAheadMode: isStaticHost ? 'limited-live' : 'full-live',
-    plannerSyncMode: isStaticHost ? 'local-only' : 'remote-capable',
+    weatherMode: preferSnapshots ? 'cache-or-snapshot' : 'live',
+    marketMode: preferSnapshots ? 'snapshot-first' : 'live',
+    upAheadMode: preferSnapshots ? 'limited-live' : 'full-live',
+    plannerSyncMode: preferSnapshots ? 'local-only' : 'remote-capable',
 
     featureStatus: {
-      settings: isStaticHost ? 'local-only' : 'remote-capable',
-      planner: isStaticHost ? 'local-only' : 'remote-capable',
-      weather: isStaticHost ? 'snapshot-or-cache' : 'live',
-      market: isStaticHost ? 'snapshot-or-cache' : 'live',
-      upAhead: isStaticHost ? 'limited-live' : 'full-live'
+      settings: preferSnapshots ? 'local-only' : 'remote-capable',
+      planner: preferSnapshots ? 'local-only' : 'remote-capable',
+      weather: preferSnapshots ? 'snapshot-or-cache' : 'live',
+      market: preferSnapshots ? 'snapshot-or-cache' : 'live',
+      upAhead: preferSnapshots ? 'limited-live' : 'full-live'
     },
 
-    runtimeLabel: isStaticHost ? 'static-host' : 'full-runtime'
+    runtimeLabel: preferSnapshots ? 'static-host' : 'full-runtime'
   };
 }

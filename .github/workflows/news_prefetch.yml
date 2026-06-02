@@ -152,6 +152,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Clean up any in-progress rebase left by a previous crashed run
+          git rebase --abort 2>/dev/null || true
           git add public/newsdata/
           if git diff --staged --quiet; then
             echo "No meaningful news-data changes — skipping commit"

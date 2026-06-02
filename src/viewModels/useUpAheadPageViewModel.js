@@ -8,6 +8,7 @@ import {
   mergeUpAheadData,
   loadFromCache,
   saveToCache,
+  clearUpAheadCache,
   isActualWeatherAlertText,
   isActualOfferText,
 } from '../services/upAheadService';
@@ -282,6 +283,7 @@ export function useUpAheadPageViewModel() {
     }
 
     if (forceRefresh) {
+      clearUpAheadCache();
       if (liveOnly) {
         setLoading(true);
         setLoadingPhase(0);

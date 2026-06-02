@@ -209,11 +209,19 @@ function filterOldNews(newsArray, freshnessLimitHours = 72) {
   const limitMs = Number(freshnessLimitHours || 72) * 3600000;
   const now = Date.now();
 
-  return asArray(newsArray).filter(item => {
+  const filtered = asArray(newsArray).filter(item => {
     const publishedAtMs = getStoryTimeMs(item);
     if (!publishedAtMs) return true;
     return now - publishedAtMs < limitMs;
   });
+
+  // If live feeds are stale (e.g. in test env or due to feed delay) and all items
+  // were filtered, fall back to displaying the raw items to avoid a blank screen
+  if (filtered.length === 0 && asArray(newsArray).length > 0) {
+    console.warn(`[BuzzHub] Relaxing freshness filter; no articles found within ${freshnessLimitHours}h`);
+    return asArray(newsArray);
+  }
+  return filtered;
 }
 
 function sortNewestFirst(stories) {

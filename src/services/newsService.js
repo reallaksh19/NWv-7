@@ -6,6 +6,7 @@
 const BASE_URL = 'https://newsdata.io/api/1/news';
 import { proxyManager } from './proxyManager.js';
 import { fnv1aHex } from '../data/dataEnvelope.js';
+import { sanitizeHtmlText } from '../utils/htmlText.js';
 
 // Mapping from Settings Keys (or general identifiers) to Google News Source Strings
 const SOURCE_MAPPINGS = {
@@ -111,7 +112,7 @@ async function fetchRSSNews(query, settings = null) {
             return {
                 id: makeStableNewsId('rss', item),
                 headline: item.title,
-                summary: 'Latest coverage from Google News',
+                summary: sanitizeHtmlText(item.description || item.content || 'Latest coverage from Google News', { maxLength: 150 }),
                 source: source,
                 url: item.link,
                 time: new Date(item.pubDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),

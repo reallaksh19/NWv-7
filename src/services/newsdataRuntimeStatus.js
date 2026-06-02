@@ -35,9 +35,18 @@ async function fetchJsonOrNull(url) {
       };
     }
 
+    const text = await response.text();
+    if (!text.trim().startsWith('{') && !text.trim().startsWith('[')) {
+      return {
+        ok: false,
+        missing: true,
+        error: 'Invalid JSON format (HTML fallback detected)',
+      };
+    }
+
     return {
       ok: true,
-      data: await response.json(),
+      data: JSON.parse(text),
     };
   } catch (error) {
     return {

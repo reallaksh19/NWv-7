@@ -32,13 +32,14 @@ const DEFAULT_UPAHEAD_SETTINGS = {
     weather_alerts: true,
     airlines: true,
   },
-  locations: ['Chennai'],
+  locations: ['Chennai', 'Muscat'],
 };
 
-const OFFER_MAX_AGE_MS         = 14 * 24 * 60 * 60 * 1000; // 14 days
+const OFFER_MAX_AGE_MS         = 30 * 24 * 60 * 60 * 1000;  // 30 days (offers are awareness items; news lags)
 const WEATHER_ALERT_MAX_AGE_MS = 36 * 60 * 60 * 1000;       // 36 hours
 const ALERT_MAX_AGE_MS         = 48 * 60 * 60 * 1000;       // 48 hours
-const CIVIC_MAX_AGE_MS         = 7  * 24 * 60 * 60 * 1000;  // 7 days
+const CIVIC_MAX_AGE_MS         = 365 * 24 * 60 * 60 * 1000; // 1 year (drop clearly-broken dates; civic feeds are evergreen)
+const CIVIC_MAX_ITEMS          = 20;                        // cap civic notices shown
 
 function normalizePlanDate(dateStr) {
   if (!dateStr) return new Date().toISOString().slice(0, 10);
@@ -60,6 +61,23 @@ function asSections(data) {
   return data?.sections && typeof data.sections === 'object'
     ? data.sections
     : {};
+}
+
+function itemLocation(item) {
+  return String(item?.city || item?.locationCanonical || item?.region || '').trim();
+}
+
+function matchesConfiguredLocation(item, locations) {
+  const loc = itemLocation(item).toLowerCase();
+  if (!loc) return false;
+  return (locations || []).some(configured => {
+    const c = String(configured || '').trim().toLowerCase();
+    return c && (c === loc || loc.includes(c) || c.includes(loc));
+  });
+}
+
+function publishedMs(item) {
+  return getEventDateMs(item?.publishedAt || item?.eventStartAt || item?.date || item?.timestamp);
 }
 
 function hasVisibleUpAheadContent(data) {
@@ -157,27 +175,52 @@ function getVisibleUpAheadProjection({ data, settings }) {
     const age = getEventDateMs(item?.publishedAt || item?.eventStartAt || item?.date || item?.timestamp);
     return age === 0 || (Date.now() - age) <= ALERT_MAX_AGE_MS;
   });
-  const civicAlerts = asArray(sections.civic).filter(item => {
-    const age = getEventDateMs(item?.publishedAt || item?.eventStartAt || item?.date || item?.timestamp);
-    return age === 0 || (Date.now() - age) <= CIVIC_MAX_AGE_MS;
-  });
-  const combinedAlerts = [...weatherAlerts, ...generalAlerts, ...civicAlerts];
 
-  const highPriorityAlert = weatherAlerts[0] || generalAlerts[0] || null;
-  const alertIcon = weatherAlerts.length > 0 ? '🌪️' : '⚠️';
-  const alertTitle = weatherAlerts.length > 0 ? 'Weather Warning' : 'Worth Knowing';
+  const locations = upAheadSettings.locations || DEFAULT_UPAHEAD_SETTINGS.locations;
 
-  const offerItems = [
+  // Civic notices are dateless "current awareness" items: filter to the user's
+  // configured locations (explicit + configurable), drop clearly-broken dates with
+  // a generous 1-year window, sort newest-first, and cap. This is the single source
+  // for both the Civics tab and the civic portion of the Alerts badge.
+  const civicItems = asArray(sections.civic)
+    .filter(item => matchesConfiguredLocation(item, locations))
+    .filter(item => {
+      const age = publishedMs(item);
+      return age === 0 || (Date.now() - age) <= CIVIC_MAX_AGE_MS;
+    })
+    .sort((a, b) => publishedMs(b) - publishedMs(a))
+    .slice(0, CIVIC_MAX_ITEMS);
+  const civicAlerts = civicItems;
+  const combinedAlerts = [...weatherAlerts, ...generalAlerts, ...civicItems];
+
+  // Offers, quality-gated by offer keywords, newest-first.
+  // Online = city-agnostic e-commerce + airlines. These are time-sensitive (Prime
+  // Day, flash/fare sales) so use the tight 30-day window.
+  const onlineOffers = [
     ...asArray(sections.shopping),
     ...asArray(sections.airlines),
   ].filter(item => {
+    if (itemLocation(item)) return false; // city-agnostic only
     if (!isActualOfferText(`${item?.title || ''} ${item?.description || ''}`, upAheadSettings)) return false;
-
-    const publishedAt = getEventDateMs(item?.publishedAt || item?.eventStartAt);
-
+    const publishedAt = publishedMs(item);
     if (publishedAt && (Date.now() - publishedAt) > OFFER_MAX_AGE_MS) return false;
     return true;
-  });
+  }).sort((a, b) => publishedMs(b) - publishedMs(a));
+
+  // Offline = location-matched local shopping. These feeds are already offer-
+  // intentioned (e.g. "Chennai sale … OR offer") but sparse & evergreen, so we skip
+  // the strict keyword gate and instead location-match with the same generous window
+  // + cap as civic, recency-sorted.
+  const offlineOffers = asArray(sections.shopping)
+    .filter(item => itemLocation(item) && matchesConfiguredLocation(item, locations))
+    .filter(item => {
+      const publishedAt = publishedMs(item);
+      return publishedAt === 0 || (Date.now() - publishedAt) <= CIVIC_MAX_AGE_MS;
+    })
+    .sort((a, b) => publishedMs(b) - publishedMs(a))
+    .slice(0, CIVIC_MAX_ITEMS);
+
+  const offerItems = [...onlineOffers, ...offlineOffers]; // combined, for backward-compat
 
   const movieCards = asArray(sections.movies).map(buildCardArticle);
   const festivalCards = asArray(sections.festivals).map(buildCardArticle);
@@ -190,11 +233,11 @@ function getVisibleUpAheadProjection({ data, settings }) {
     weatherAlerts,
     generalAlerts,
     civicAlerts,
+    civicItems,
     combinedAlerts,
-    highPriorityAlert,
-    alertIcon,
-    alertTitle,
     offerItems,
+    onlineOffers,
+    offlineOffers,
     movieCards,
     festivalCards,
     eventItems,
@@ -241,8 +284,6 @@ export function useUpAheadPageViewModel() {
 
     if (forceRefresh) {
       if (liveOnly) {
-        clearUpAheadCache();
-        setData(null);
         setLoading(true);
         setLoadingPhase(0);
       }
@@ -289,7 +330,7 @@ export function useUpAheadPageViewModel() {
       const liveData = await fetchLiveUpAheadData(upAheadSettings);
 
       setData(prev => {
-        const merged = mergeUpAheadData(liveOnly ? null : prev, liveData, upAheadSettings);
+        const merged = mergeUpAheadData(prev, liveData, upAheadSettings);
         saveToCache(merged, upAheadSettings);
         return merged;
       });

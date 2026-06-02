@@ -52,8 +52,9 @@ export function isTierD(story: RawStory): boolean {
 /**
  * Recency decay: smooth curve, not binary cutoff.
  */
-export function computeFreshnessScore(publishedAt: number): number {
-  const ageHours = (Date.now() - publishedAt) / (60 * 60 * 1000);
+export function computeFreshnessScore(publishedAt: number, referenceTime?: number): number {
+  const refTime = referenceTime ?? Date.now();
+  const ageHours = (refTime - publishedAt) / (60 * 60 * 1000);
   if (ageHours < 0) return 1.0;
   return Math.exp((-0.693 * ageHours) / 8); // 8h half-life
 }
@@ -142,8 +143,10 @@ export function normalizeStory(
   extractedKeywords: string[],
   extractedVerbs: string[],
   extractedNumbers: string[],
+  referenceTime?: number,
 ): InsightStory | null {
-  const ageHours = (Date.now() - raw.publishedAt) / (60 * 60 * 1000);
+  const refTime = referenceTime ?? Date.now();
+  const ageHours = (refTime - raw.publishedAt) / (60 * 60 * 1000);
   if (ageHours > cfg.MAX_STORY_AGE_HOURS) return null;
 
   if (cfg.TIER_D_EXCLUDE && isTierD(raw)) return null;
@@ -171,7 +174,7 @@ export function normalizeStory(
     numbers: extractedNumbers,
     sourceTier: tier,
     sourceAuthority: TIER_AUTHORITY[tier],
-    freshnessScore: computeFreshnessScore(raw.publishedAt),
+    freshnessScore: computeFreshnessScore(raw.publishedAt, refTime),
     rawProminence: computeRawProminence(raw),
     sentiment: 0,       // override from sentiment model if available
     factualDensity: computeFactualDensity(raw, extractedNumbers, allEntities),

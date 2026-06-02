@@ -387,6 +387,7 @@ function TimelineCard({
 
 function UpAheadPage() {
   const shellRuntimeProps = useShellRuntimeProps();
+  const [offerMode, setOfferMode] = useState('online');
   const {
     data,
     loading,
@@ -406,11 +407,10 @@ function UpAheadPage() {
 
     weatherAlerts,
     civicAlerts,
+    civicItems,
     combinedAlerts,
-    highPriorityAlert,
-    alertIcon,
-    alertTitle,
-    offerItems,
+    onlineOffers,
+    offlineOffers,
     movieCards,
     festivalCards,
     eventItems,
@@ -529,16 +529,6 @@ function UpAheadPage() {
         )}
       </div>
 
-      {highPriorityAlert && (
-        <div className={`ua-alert-banner ${weatherAlerts.length > 0 ? 'weather-alert' : ''}`}>
-          <span className="ua-alert-icon">{alertIcon}</span>
-          <div className="ua-alert-content">
-            <h4>{alertTitle}</h4>
-            <p>{sanitizeHtmlText(highPriorityAlert.text || highPriorityAlert.description || highPriorityAlert.title || 'Alert details unavailable.')}</p>
-          </div>
-        </div>
-      )}
-
       <main className="main-content">
         {watchlistError && (
           <div className="ua-storage-alert" role="status" aria-live="polite">
@@ -548,12 +538,12 @@ function UpAheadPage() {
 
         <div className="ua-view-toggle scrollable-tabs">
           <button className={`ua-toggle-btn ${view === 'plan' ? 'active' : ''}`} onClick={() => setView('plan')} title="Suggested">✨ Suggested</button>
-          <button className={`ua-toggle-btn ${view === 'offers' ? 'active' : ''}`} onClick={() => setView('offers')} title="Offers">🏷️ Offers{offerItems.length > 0 && <span className="ua-tab-count">{offerItems.length}</span>}</button>
+          <button className={`ua-toggle-btn ${view === 'offers' ? 'active' : ''}`} onClick={() => setView('offers')} title="Offers">🏷️ Offers{(onlineOffers.length + offlineOffers.length) > 0 && <span className="ua-tab-count">{onlineOffers.length + offlineOffers.length}</span>}</button>
           <button className={`ua-toggle-btn ${view === 'movies' ? 'active' : ''}`} onClick={() => setView('movies')} title="Releases">🎬 Release{movieCards.length > 0 && <span className="ua-tab-count">{movieCards.length}</span>}</button>
           <button className={`ua-toggle-btn ${view === 'events' ? 'active' : ''}`} onClick={() => setView('events')} title="Events">{'🎫 Events'}{eventItems.length > 0 && <span className="ua-tab-count">{eventItems.length}</span>}</button>
           <button className={`ua-toggle-btn ${view === 'alerts' ? 'active' : ''}`} onClick={() => setView('alerts')} title="Alerts">🚨 Alerts{(weatherAlerts.length + civicAlerts.length) > 0 && <span className="ua-tab-count">{weatherAlerts.length + civicAlerts.length}</span>}</button>
           <button className={`ua-toggle-btn ${view === 'festivals' ? 'active' : ''}`} onClick={() => setView('festivals')} title="Festivals">🎉 Festivals{festivalCards.length > 0 && <span className="ua-tab-count">{festivalCards.length}</span>}</button>
-          <button className={`ua-toggle-btn ${view === 'feed' ? 'active' : ''}`} onClick={() => setView('feed')} title="Civics / Timeline">🏛️ Civics</button>
+          <button className={`ua-toggle-btn ${view === 'feed' ? 'active' : ''}`} onClick={() => setView('feed')} title="Civics">🏛️ Civics{civicItems.length > 0 && <span className="ua-tab-count">{civicItems.length}</span>}</button>
           <button
             type="button"
             className="ua-toggle-btn ua-quality-btn"
@@ -651,7 +641,30 @@ function UpAheadPage() {
         )}
 
         {view === 'movies' && <div className="ua-tab-view"><ProgressBar active={loading || isRefreshing} /><EntertainmentStyleGrid items={movieCards} emptyMessage="No upcoming movie releases found." /></div>}
-        {view === 'offers' && <div className="ua-tab-view"><ProgressBar active={loading || isRefreshing} /><GridSection items={offerItems} colorClass="type-shopping" emptyMessage="No offers found." isOffer={true} onAddToPlan={handleAddToPlan} /></div>}
+        {view === 'offers' && (
+          <div className="ua-tab-view">
+            <ProgressBar active={loading || isRefreshing} />
+            <div className="ua-offer-subtabs" style={{ display: 'flex', gap: '8px', marginBottom: '12px', padding: '0 8px' }}>
+              <button
+                className={`ua-toggle-btn ${offerMode === 'online' ? 'active' : ''}`}
+                onClick={() => setOfferMode('online')}
+                title="Online offers (e-commerce & airlines)"
+              >
+                🛒 Online{onlineOffers.length > 0 && <span className="ua-tab-count">{onlineOffers.length}</span>}
+              </button>
+              <button
+                className={`ua-toggle-btn ${offerMode === 'offline' ? 'active' : ''}`}
+                onClick={() => setOfferMode('offline')}
+                title="Local offline offers near your locations"
+              >
+                📍 Offline{offlineOffers.length > 0 && <span className="ua-tab-count">{offlineOffers.length}</span>}
+              </button>
+            </div>
+            {offerMode === 'online'
+              ? <GridSection items={onlineOffers} colorClass="type-shopping" emptyMessage="No online offers right now." isOffer={true} onAddToPlan={handleAddToPlan} />
+              : <GridSection items={offlineOffers} colorClass="type-shopping" emptyMessage={`No local offers for ${locationLabel} right now.`} isOffer={true} onAddToPlan={handleAddToPlan} />}
+          </div>
+        )}
         {view === 'events' && <div className="ua-tab-view"><ProgressBar active={loading || isRefreshing} /><GridSection items={eventItems} colorClass="type-event" emptyMessage="No upcoming events found." onAddToPlan={handleAddToPlan} /></div>}
         {view === 'alerts' && <div className="ua-tab-view"><ProgressBar active={loading || isRefreshing} /><GridSection items={combinedAlerts} colorClass="type-alert" emptyMessage="No alerts found." onAddToPlan={handleAddToPlan} /></div>}
 
@@ -691,25 +704,36 @@ function UpAheadPage() {
         )}
 
         {view === 'feed' && (
-          <div className="ua-timeline">
-            {(data.timeline || []).map((day) => (
-              <div key={day.date} className="ua-day-section timeline-track">
-                <div className="ua-day-header">
-                  <div className="ua-day-label">{day.dayLabel}</div>
-                  <div className="ua-date-sub">{day.date}</div>
-                </div>
-                {day.items?.map(item => (
-                  <TimelineCard
-                    key={item.id}
-                    item={item}
-                    dayDate={day.date}
-                    handleAddToPlan={handleAddToPlan}
-                    isWatched={isWatched}
-                    toggleWatchlist={toggleWatchlist}
-                  />
-                ))}
-              </div>
-            ))}
+          <div className="ua-tab-view">
+            <ProgressBar active={loading || isRefreshing} />
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px', alignItems: 'center', padding: '8px' }}>
+              <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginRight: '4px' }}>Civic notices for:</span>
+              {(upAheadSettings?.locations || ['Chennai', 'Muscat']).map(location => (
+                <span key={location} className="ua-badge type-civic" style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  {location}
+                  <span
+                    title={`Remove ${location}`}
+                    style={{ opacity: 0.7, cursor: 'pointer', fontSize: '0.75rem' }}
+                    onClick={() => removeUpAheadLocation(location)}
+                  >
+                    ✕
+                  </span>
+                </span>
+              ))}
+              <button
+                className="btn btn--secondary"
+                style={{ padding: '4px 12px', fontSize: '0.75rem' }}
+                onClick={promptAddUpAheadLocation}
+              >
+                + Add
+              </button>
+            </div>
+            <GridSection
+              items={civicItems}
+              colorClass="type-civic"
+              emptyMessage={`No civic notices for ${locationLabel} right now.`}
+              onAddToPlan={handleAddToPlan}
+            />
           </div>
         )}
       </main>

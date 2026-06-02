@@ -269,12 +269,14 @@ function buildLegacyDisplayFromRanked(items = [], meta = {}) {
       planDate: eventDateKey,
       category: sectionKey,
       source: item.sourceDomain || item.source || sectionKey,
-      locationCanonical: item.locationCanonical || null,
+      city: item.city || null,
+      region: item.region || null,
+      locationCanonical: item.locationCanonical || item.city || item.region || null,
       dateConfidence: item.dateConfidence || 'none',
       decisionTrace: item.decisionTrace || [],
       plannerEligible: Boolean(item.plannerEligible && eventDateKey),
       displayEligible: item.displayEligible !== false,
-      publishedAt: item.publishDate || null
+      publishedAt: item.publishedAt || item.publishDate || null
     };
 
     if (displayItem.displayEligible && sections[sectionKey]) {
@@ -362,8 +364,13 @@ function transformPythonItemsToDisplay(items = []) {
     .filter(Boolean)
     .map(it => {
       const category = categorySectionKey(it.category);
-      const expiryEligibleCategory = ['shopping', 'airlines'].includes(category);
-      const eventTs = it.eventStartAt || it.eventEndAt || (expiryEligibleCategory ? it.expiryAt : null) || null;
+      // Only assign a display event-date from a REAL event timestamp. Offers
+      // (shopping/airlines) and civic notices are dateless "current awareness"
+      // items — assigning them expiryAt (48h after an often-stale publish date)
+      // pushed them past `filterPastDatedDisplayItems`, deleting them before they
+      // ever reached their section. They now flow through and are recency-ranked
+      // by the view model instead.
+      const eventTs = it.eventStartAt || it.eventEndAt || null;
       const eventDate = eventTs ? new Date(eventTs) : null;
       const hasEventDate = eventDate && !Number.isNaN(eventDate.getTime());
       const eventDateIso = hasEventDate ? eventDate.toISOString() : null;
@@ -377,9 +384,12 @@ function transformPythonItemsToDisplay(items = []) {
         link:              it.url,
         category,
         publishDate:       it.publishedAt ? new Date(it.publishedAt).toISOString() : null,
+        publishedAt:       it.publishedAt || null,
         eventDate:         eventDateIso,
         eventDateKey,
         dateConfidence:    it.dateConfidence || (eventDateKey ? 'exact' : 'none'),
+        city:              it.city || null,
+        region:            it.region || null,
         locationCanonical: it.city || it.region || null,
         sourceDomain:      it.source,
         source:            it.source,

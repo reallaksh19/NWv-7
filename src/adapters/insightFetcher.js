@@ -6,7 +6,7 @@ import { loadInsightSnapshot, createSnapshotRawFetcher } from './insightSnapshot
 import { getInsightSnapshotSignals } from './insightSnapshotSignalAdapter.js';
 import { getRuntimeCapabilities } from '../runtime/runtimeCapabilities.js';
 
-async function normalizeRawStories(rawStories, slot, cfg = DEFAULT_CONFIG) {
+async function normalizeRawStories(rawStories, slot, cfg = DEFAULT_CONFIG, referenceTime = undefined) {
   if (!Array.isArray(rawStories) || rawStories.length === 0) return [];
 
   const validRawStories = rawStories
@@ -59,6 +59,7 @@ async function normalizeRawStories(rawStories, slot, cfg = DEFAULT_CONFIG) {
       keywords,
       verbs,
       numbers,
+      referenceTime,
     );
   }));
 
@@ -72,7 +73,7 @@ export async function slotFetcher(slot) {
 
 function createNormalizedSnapshotFetcher(snapshot, cfg = DEFAULT_CONFIG) {
   const rawFetcher = createSnapshotRawFetcher(snapshot);
-  return async (slot) => normalizeRawStories(await rawFetcher(slot), slot, cfg);
+  return async (slot) => normalizeRawStories(await rawFetcher(slot), slot, cfg, snapshot.fetchedAt);
 }
 
 export { runInsightPipeline, applyIncrementalUpdate, DEFAULT_CONFIG };

@@ -3,9 +3,22 @@ import { enrichCanonicalItemForPlanner, buildPlannerMergePayload } from '../util
 import plannerStorage from '../utils/plannerStorage.js';
 
 function dayLabelFor(dateKey, asOfDate = null) {
-  const d = new Date(dateKey);
+  const [year, month, day] = dateKey.split('-').map(Number);
+  const d = new Date(year, month - 1, day);
   d.setHours(0, 0, 0, 0);
-  const ref = asOfDate ? new Date(asOfDate) : new Date();
+  let ref;
+  if (asOfDate) {
+    if (asOfDate instanceof Date) {
+      ref = new Date(asOfDate);
+    } else if (typeof asOfDate === 'string' && asOfDate.includes('-')) {
+      const parts = asOfDate.slice(0, 10).split('-').map(Number);
+      ref = new Date(parts[0], parts[1] - 1, parts[2]);
+    } else {
+      ref = new Date(asOfDate);
+    }
+  } else {
+    ref = new Date();
+  }
   ref.setHours(0, 0, 0, 0);
   const tomorrow = new Date(ref);
   tomorrow.setDate(tomorrow.getDate() + 1);

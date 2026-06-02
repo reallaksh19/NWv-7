@@ -1,5 +1,4 @@
 .grade-badge {
-  --grade-badge-top-offset: 12px;
   --grade-badge-right-offset: 12px;
   --grade-badge-z-index: 40;
   --grade-badge-size: 42px;
@@ -20,19 +19,22 @@
 
 .grade-badge--position-top-right {
   position: fixed;
+  --grade-badge-top-offset: 12px;
   top: calc(env(safe-area-inset-top, 0px) + var(--grade-badge-top-offset));
   right: calc(env(safe-area-inset-right, 0px) + var(--grade-badge-right-offset));
 }
 
 .grade-badge--position-below-header {
   position: fixed;
-  top: calc(env(safe-area-inset-top, 0px) + var(--grade-badge-top-offset, 72px));
+  --grade-badge-top-offset: 72px;
+  top: calc(env(safe-area-inset-top, 0px) + var(--grade-badge-top-offset));
   right: calc(env(safe-area-inset-right, 0px) + var(--grade-badge-right-offset, 12px));
 }
 
 .grade-badge--position-floating-low {
   position: fixed;
-  top: calc(env(safe-area-inset-top, 0px) + var(--grade-badge-top-offset, 88px));
+  --grade-badge-top-offset: 88px;
+  top: calc(env(safe-area-inset-top, 0px) + var(--grade-badge-top-offset));
   right: calc(env(safe-area-inset-right, 0px) + var(--grade-badge-right-offset, 12px));
 }
 

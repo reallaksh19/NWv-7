@@ -25,6 +25,7 @@ import * as sourceDominancePolicy from '../intelligence/sourceDominancePolicy.js
 import * as staleStoryPolicy from '../intelligence/staleStoryPolicy.js';
 import { recordDiagnostic } from '../data/diagnosticsStore.js';
 import { getRuntimeCapabilities } from '../runtime/runtimeCapabilities.js';
+import { isLiveMode } from '../utils/fetchMode.js';
 
 /**
  * @typedef {Object} NewsItem
@@ -507,7 +508,7 @@ export async function fetchSectionNews(section, limit = 10, allowedSources = nul
     const cacheEnabled = settings.enableCache !== false; // Default to true
 
     // Check cache first if enabled
-    if (cacheEnabled) {
+    if (cacheEnabled && !isLiveMode()) {
         const cached = memoryCache.get(cacheKey);
         if (cached && (Date.now() - cached.timestamp) < CACHE_TTL_MS) {
             const ageSeconds = Math.round((Date.now() - cached.timestamp) / 1000);
@@ -515,6 +516,8 @@ export async function fetchSectionNews(section, limit = 10, allowedSources = nul
             return rankAndFilter(cached.data, section, limit, allowedSources);
         }
         console.log(`[RSS] ⚠️ Cache MISS for ${section} - Fetching fresh data`);
+    } else if (isLiveMode()) {
+        console.log(`[RSS] ⚡ Live mode active - bypassing memory cache for ${section}`);
     } else {
         console.log(`[RSS] ℹ️ Cache DISABLED by user settings for ${section}`);
     }
@@ -543,7 +546,7 @@ export async function fetchSectionNews(section, limit = 10, allowedSources = nul
 
     // Static-host / GitHub Pages path: prefer pre-generated section JSON.
     // This avoids browser RSS/proxy failures and uses workflow-produced quality data.
-    if (settings.usePrefetchedSections !== false) {
+    if (!isLiveMode() && settings.usePrefetchedSections !== false) {
         try {
             const prefetched = await fetchPrefetchedSectionNews(section, Math.max(limit * 3, limit));
             const runtime = getRuntimeCapabilities();

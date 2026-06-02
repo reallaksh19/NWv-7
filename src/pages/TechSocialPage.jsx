@@ -31,6 +31,7 @@ function TechSocialPage() {
         setActiveEntTab,
 
         contextLoading,
+        buzzDatasetLoading,
         loadingPhase,
 
         visibleEntertainment,
@@ -66,7 +67,7 @@ function TechSocialPage() {
             <main className="main-content">
                 <DataStateBoundary
                     envelope={envelope}
-                    loading={contextLoading && loadingPhase < 1}
+                    loading={contextLoading || buzzDatasetLoading || loadingPhase < 1}
                     error={error}
                     onRetry={handleRefresh}
                     label="Buzz Hub"

@@ -78,7 +78,27 @@ function getInsightResultParentCount(result) {
 }
 
 function hasRenderableInsightResult(result) {
-  return getInsightResultParentCount(result) > 0;
+  const parents = result?.parents;
+  if (!Array.isArray(parents) || parents.length === 0) return false;
+
+  // Gate out thin live-fallback results that would render as grade F / 0 multi-angle.
+  // The runtimeQualityGate.before diagnostics are produced by recoverInsightRuntimeQuality
+  // before any recovery attempt; they reflect raw pipeline output.
+  const gate = result?.runtimeQualityGate;
+  if (gate?.attempted) {
+    const before = gate?.before || {};
+    const multiAngleCount = Number(before.multiAngleCount || 0);
+    const storyCount = Number(before.storyCount || 0);
+    const grade = String(before.grade || 'F');
+    const gradeRank = ['F', 'D', 'C', 'B', 'A'].indexOf(grade);
+    // Suppress: fewer than 3 parents, or grade F/D with no multi-angle clusters,
+    // or storyCount below a meaningful minimum.
+    if (parents.length < 3) return false;
+    if (gradeRank < 2 && multiAngleCount === 0) return false;
+    if (storyCount > 0 && storyCount < 24) return false;
+  }
+
+  return true;
 }
 
 function hasQualityAcceptedInsightResult(result) {

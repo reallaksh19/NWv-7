@@ -69,15 +69,24 @@ export async function loadInsightSnapshot({ allowStale = false } = {}) {
  * @returns {(slot: string) => Promise<object[]>}
  */
 export function createSnapshotRawFetcher(snapshot) {
+  // Use the snapshot's own fetch time as the reference clock so that slot
+  // assignment (now / minus4h / minus12h / minus24h) is stable regardless of
+  // how much time has elapsed since the snapshot was generated.  Without this,
+  // a snapshot fetched at 3 pm would have all its stories classified as "older"
+  // by midnight the same day, producing 0 usable stories even though the data
+  // is perfectly valid.
+  const referenceMs = Number(snapshot.fetchedAt || 0) || Date.now();
   const intakeSummary = getSnapshotIntakeSummary(snapshot, {
     minStoriesPerSlot: 12,
     maxStoriesPerSlot: 40,
+    nowMs: referenceMs,
   });
 
   return async (slot) => {
     const selected = selectSnapshotStoriesForSlot(snapshot, slot, {
       minStoriesPerSlot: 12,
       maxStoriesPerSlot: 40,
+      nowMs: referenceMs,
     });
 
     return selected.map(story => ({

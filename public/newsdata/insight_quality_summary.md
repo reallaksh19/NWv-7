@@ -1,31 +1,38 @@
 # Insight Prefetch Quality Report
 
 - Status: **WARN**
-- Schema: `2`
-- Collector: `n/a`
-- Content hash: `40f989d5da9c`
-- Stories: `877`
-- Usable 24h stories: `0`
-- Source groups: `8`
-- Angle hint coverage: `0%`
-- Non-base angle stories: `0`
+- Schema: `3`
+- Collector: `insight-collector-json-v3`
+- Content hash: `69fce93b47c61dae`
+- Stories: `703`
+- Usable 36h stories: `0`
+- Source groups: `11`
+- Angle hint coverage: `100%`
+- Non-base angle stories: `270`
 
 ## Slot health
 
 | Slot | Story IDs | Linked | Sources | Thin |
 |---|---:|---:|---:|---|
-| now | 99 | 99 | 5 | False |
-| minus4h | 80 | 80 | 4 | False |
-| minus12h | 39 | 39 | 2 | False |
-| minus24h | 20 | 20 | 1 | False |
+| now | 80 | 80 | 4 | False |
+| minus4h | 60 | 60 | 3 | False |
+| minus12h | 78 | 78 | 4 | False |
+| minus24h | 55 | 55 | 3 | False |
 
 ## Warnings
 
-- schemaVersion is supported but not optimized schema v3
 - Thin usable 36h pool: 0 stories < recommended 18
-- Weak angle hint coverage: 0% < recommended 35%
-- Weak non-base angle coverage: 0 stories < recommended 6
 
 ## Top angles
 
-- missing: 877
+- base_report: 433
+- market_reaction: 93
+- official_response: 59
+- regional_followup: 30
+- fact_update: 27
+- reaction_public: 26
+- expert_analysis: 19
+- investigative_detail: 9
+- opinion_editorial: 5
+- correction: 1
+- background_context: 1

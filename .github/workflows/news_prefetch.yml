@@ -148,13 +148,13 @@ jobs:
       # ── Commit only when meaningful content changed ───────────────────────────
 
       - name: Commit data
-        if: always() && steps.prefetch_commit.outputs.should_commit == 'true'
+        if: steps.prefetch_commit.outputs.should_commit == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           # Clean up any in-progress rebase left by a previous crashed run
           git rebase --abort 2>/dev/null || true
-          git add public/newsdata/
+          git add public/newsdata/insight_latest.json public/newsdata/sections_latest.json public/newsdata/source_health.json public/newsdata/prefetch_commit_manifest.json
           if git diff --staged --quiet; then
             echo "No meaningful news-data changes — skipping commit"
             exit 0
@@ -169,7 +169,7 @@ jobs:
           exit 1
 
       - name: Skip commit for diagnostic-only changes
-        if: always() && steps.prefetch_commit.outputs.should_commit != 'true'
+        if: steps.prefetch_commit.outputs.should_commit != 'true'
         run: |
           echo "No meaningful news content changes. Quality reports were uploaded as artifacts only."
 

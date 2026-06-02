@@ -225,7 +225,9 @@ function getInsightStaleLabel({ source, fetcherSnapshotTs, envelope }) {
   }
 
   if (source === 'stale-snapshot' && fetcherSnapshotTs) {
-    return `Pre-generated · ${formatInsightAge(fetcherSnapshotTs)}`;
+    // Stale snapshots run with a relaxed (but still 2-angle/2-source) floor — flag the
+    // reduced quality so the front page doesn't look as authoritative as a fresh one.
+    return `Pre-generated · ${formatInsightAge(fetcherSnapshotTs)} · reduced quality`;
   }
 
   if (source === 'cached') {

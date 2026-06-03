@@ -1,5 +1,6 @@
 import { rankByTemporalScore } from './temporalScorer.js';
 import { getSettings } from '../utils/storage.js';
+import { isBreakingStory } from './breakingNewsService.js';
 
 /**
  * Composes a balanced front page with diversity constraints
@@ -21,7 +22,9 @@ export function composeBalancedFeed(articles, limit = 20, maxTopicPercent = 40, 
     // 2.5 keeps breaking news while filtering celebrity filler / listicle fodder.
     // Safety: if fewer than 5 qualify, use top-scored from full list to avoid empty feed.
     const MIN_IMPACT = 2.5;
-    const qualified  = articles.filter(a => (a.impactScore || 0) >= MIN_IMPACT);
+    // Breaking news bypasses the relevance floor — it must never be filtered out
+    // by the quality gate, regardless of its computed impact score.
+    const qualified  = articles.filter(a => isBreakingStory(a) || (a.impactScore || 0) >= MIN_IMPACT);
     const pool       = qualified.length >= 5
         ? qualified
         : [...articles].sort((a, b) => (b.impactScore || 0) - (a.impactScore || 0)).slice(0, limit * 2);
@@ -88,7 +91,29 @@ export function composeBalancedFeed(articles, limit = 20, maxTopicPercent = 40, 
         byGeo: Object.fromEntries(geoCounts)
     });
 
-    return selected;
+    // L3 — pin breaking news to the top so a high-scoring soft story can never
+    // bury it. Breaking items keep their own (breakingScore) order, are deduped
+    // against the composed selection, and the overall limit is preserved.
+    const breaking = articles
+        .filter(isBreakingStory)
+        .sort((a, b) =>
+            (Number(b.breakingScore || 0) - Number(a.breakingScore || 0)) ||
+            (Number(b.publishedAt || 0) - Number(a.publishedAt || 0)));
+
+    if (breaking.length === 0) return selected;
+
+    const keyOf = (a) => String(a?.id || a?.url || a?.link || a?.title || '').toLowerCase();
+    const seenKeys = new Set();
+    const pinned = [];
+    for (const article of [...breaking, ...selected]) {
+        const key = keyOf(article);
+        if (seenKeys.has(key)) continue;
+        seenKeys.add(key);
+        pinned.push(article);
+        if (pinned.length >= limit) break;
+    }
+
+    return pinned;
 }
 
 /**

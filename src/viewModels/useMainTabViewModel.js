@@ -17,6 +17,7 @@ import {
   mergeTravelNewsIntoNewsData,
 } from '../services/travelNewsIngestion.js';
 import { auditMainTabQuality } from '../services/pageAuditGrading.js';
+import { isBreakingStory } from '../services/breakingNewsService.js';
 
 const MIN_CUSTOM_TOP_STORIES = 10;
 const MAX_VIEW_COUNT_FOR_CUSTOM_TOP_STORIES = 3;
@@ -44,22 +45,36 @@ function filterLatestStories(frontPage = [], customSortTopStories = false) {
   // Sort all stories by impact score once so filtered and top-up pools share the same rank order
   const sorted = [...stories].sort((a, b) => (b.impactScore || 0) - (a.impactScore || 0));
 
+  const breaking = [];
   const fresh = [];
   const rest = [];
 
   for (const item of sorted) {
-    if (item?.id && (isArticleRead(item.id) || getViewCount(item.id) > MAX_VIEW_COUNT_FOR_CUSTOM_TOP_STORIES)) {
+    // L3 — breaking news is always pinned to the top and is exempt from the
+    // "seen / over-viewed" demotion, so a major story can't be pushed down just
+    // because the user already glanced at it.
+    if (isBreakingStory(item)) {
+      breaking.push(item);
+    } else if (item?.id && (isArticleRead(item.id) || getViewCount(item.id) > MAX_VIEW_COUNT_FOR_CUSTOM_TOP_STORIES)) {
       rest.push(item);
     } else {
       fresh.push(item);
     }
   }
 
-  if (fresh.length >= MIN_CUSTOM_TOP_STORIES) return fresh;
+  // Keep breaking pinned at the top, ranked by breaking score.
+  breaking.sort((a, b) =>
+    (Number(b.breakingScore || 0) - Number(a.breakingScore || 0)) ||
+    (Number(b.publishedAt || 0) - Number(a.publishedAt || 0)));
+
+  if (breaking.length + fresh.length >= MIN_CUSTOM_TOP_STORIES) {
+    return [...breaking, ...fresh];
+  }
 
   return [
+    ...breaking,
     ...fresh,
-    ...rest.slice(0, MIN_CUSTOM_TOP_STORIES - fresh.length),
+    ...rest.slice(0, Math.max(0, MIN_CUSTOM_TOP_STORIES - breaking.length - fresh.length)),
   ];
 }
 

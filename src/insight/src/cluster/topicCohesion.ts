@@ -102,7 +102,7 @@ export function topicTokenOverlap(a: InsightStory, b: InsightStory): number {
 export function hasSharedTopicSignature(a: InsightStory, b: InsightStory): boolean {
   const overlap = topicTokenOverlap(a, b);
 
-  if (overlap >= 0.34) return true;
+  if (overlap >= 0.42) return true;
 
   const aTokens = new Set(getStoryTopicTokens(a));
   const bTokens = new Set(getStoryTopicTokens(b));
@@ -110,11 +110,14 @@ export function hasSharedTopicSignature(a: InsightStory, b: InsightStory): boole
   const strongTokens = [...aTokens].filter(token => {
     if (!bTokens.has(token)) return false;
 
+    // Exclude high-frequency geographic/generic tokens that appear across unrelated stories
+    if (/^(india|indian|world|global|country|countries|record|report|people|year|years|national|international)$/.test(token)) return false;
+
     return token.length >= 7 ||
       /bank|ministry|court|market|shares|outage|policy|election|storm|crash|launch|strike|attack|regulator/.test(token);
   });
 
-  return strongTokens.length >= 2;
+  return strongTokens.length >= 3;
 }
 
 export function getTopicCohesionDiagnostics(a: InsightStory, b: InsightStory) {

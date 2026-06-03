@@ -150,7 +150,7 @@ export function computeFreshnessScore(publishedAt: number, referenceTime?: numbe
   const refTime = referenceTime ?? Date.now();
   const ageHours = (refTime - publishedAt) / (60 * 60 * 1000);
   if (ageHours < 0) return 1.0;
-  return Math.exp((-0.693 * ageHours) / 8); // 8h half-life
+  return Math.exp((-0.693 * ageHours) / 6); // 6h half-life
 }
 
 export function computeRawProminence(raw: RawStory): number {

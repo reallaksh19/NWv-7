@@ -63,7 +63,7 @@ describe('Insight ranking certification', () => {
       0.20 * parent.persistenceScore +
       0.14 * parent.sourceDiversityScore +
       0.12 * parent.noveltyScore +
-      0.10 * parent.freshnessScore +
+      0.16 * parent.freshnessScore +
       0.08 * parent.crossSnapshotMomentum +
       0.05 * parent.editorialClarityScore +
       0.03 * parent.regionBoost;

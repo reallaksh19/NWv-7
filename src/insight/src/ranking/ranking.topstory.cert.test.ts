@@ -152,7 +152,7 @@ describe('Insight top-story anchoring certification', () => {
       0.20 * p.persistenceScore +
       0.14 * p.sourceDiversityScore +
       0.12 * p.noveltyScore +
-      0.10 * p.freshnessScore +
+      0.16 * p.freshnessScore +
       0.08 * p.crossSnapshotMomentum +
       0.05 * p.editorialClarityScore +
       0.03 * p.regionBoost;

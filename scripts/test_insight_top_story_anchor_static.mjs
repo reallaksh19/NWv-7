@@ -35,7 +35,7 @@ for (const token of [
   'persistenceScore: 0.20',
   'sourceDiversityScore: 0.14',
   'noveltyScore: 0.12',
-  'freshnessScore: 0.10',
+  'freshnessScore: 0.16',
   'crossSnapshotMomentum: 0.08',
   'editorialClarityScore: 0.05',
   'regionBoost: 0.03'

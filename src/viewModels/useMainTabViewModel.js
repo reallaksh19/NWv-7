@@ -18,6 +18,7 @@ import {
 } from '../services/travelNewsIngestion.js';
 import { auditMainTabQuality } from '../services/pageAuditGrading.js';
 import { isBreakingStory } from '../services/breakingNewsService.js';
+import { temporalScore } from '../services/temporalScorer.js';
 
 const MIN_CUSTOM_TOP_STORIES = 10;
 const MAX_VIEW_COUNT_FOR_CUSTOM_TOP_STORIES = 3;
@@ -42,8 +43,10 @@ function filterLatestStories(frontPage = [], customSortTopStories = false) {
 
   if (!customSortTopStories) return stories;
 
-  // Sort all stories by impact score once so filtered and top-up pools share the same rank order
-  const sorted = [...stories].sort((a, b) => (b.impactScore || 0) - (a.impactScore || 0));
+  // Sort by temporal-decayed score (freshness + impact), not raw impact score (RC-2 fix)
+  const now = Date.now();
+  const decayed = (a) => temporalScore(a.impactScore || 0, a.publishedAt, now);
+  const sorted = [...stories].sort((a, b) => decayed(b) - decayed(a));
 
   const breaking = [];
   const fresh = [];

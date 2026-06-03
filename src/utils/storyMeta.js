@@ -62,13 +62,21 @@ export function buildStoryInfoText(item, { includeScoreBreakdown = false } = {})
 
     if (includeScoreBreakdown && item?._scoreBreakdown) {
         const b = item._scoreBreakdown;
+        const f = (x, d = 2) => Number(x ?? 0).toFixed(d);
         lines.push('');
-        lines.push(`Ranking Score: ${Number(item.impactScore || 0).toFixed(2)}`);
-        lines.push(`Freshness: ${Number(b.freshness || 0).toFixed(2)}`);
-        lines.push(`Source Tier: ${Number(b.sourceScore || 0).toFixed(2)}`);
-        lines.push(`Relevance Multiplier: ${Number(b.impact || 1).toFixed(2)}`);
-        lines.push(`Live Boost: ${b.liveBoost || 1}`);
-        lines.push(`Breaking Boost: ${b.breakingBoost || 1}`);
+        lines.push(`Ranking Score: ${f(item.impactScore)}`);
+        lines.push(`Formula: (freshness + keyword + sentiment) x sourceMult x [impact*severity*novelty*visual*humanInterest] x section x breaking x live x seen`);
+        lines.push(`Freshness: ${f(b.freshness)}`);
+        lines.push(`Source Tier: ${f(b.sourceScore)} (cat ${f(b.categoryWeight)})`);
+        lines.push(`Impact/Geo: ${f(b.impact)}`);
+        lines.push(`Severity: ${f(b.severity, 2)}`);
+        lines.push(`Novelty: ${f(b.novelty)}  Visual: ${f(b.visual)}  HumanInterest: ${f(b.humanInterest)}`);
+        lines.push(`Section x: ${f(b.sectionPriority)}  Breaking x: ${f(b.breakingBoost)}  Live x: ${f(b.liveBoost)}  Seen x: ${f(b.seenPenalty)}`);
+        if (Array.isArray(b.decisions) && b.decisions.length) {
+            lines.push('');
+            lines.push('Why this rank:');
+            b.decisions.forEach((d) => lines.push(`• ${d}`));
+        }
     }
 
     return lines.join('\n');

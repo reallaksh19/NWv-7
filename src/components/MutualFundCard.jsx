@@ -9,17 +9,33 @@ const FUND_TABS = [
 ];
 
 function normalizeFundType(fund = {}) {
-    const explicitType = String(fund.fundType || '').toLowerCase();
-    if (FUND_TABS.some((tab) => tab.id === explicitType)) {
-        return explicitType;
+    const explicitType = String(fund.fundType || '').toLowerCase().replace(/[_\s]+/g, '-');
+    if (FUND_TABS.some((tab) => tab.id === explicitType)) return explicitType;
+
+    // AMFI data stores fund house as `category`; classification must come from name.
+    const name = String(fund.name || '').toLowerCase();
+
+    // Debt / money-market funds don't belong in equity tabs — exclude them.
+    if (/(liquid fund|overnight|money market|ultra short|low duration|short duration|medium duration|long duration|dynamic bond|credit risk|corporate bond|banking.*(psu|debt)|psu.*debt|banking.*psu|gilt|floating rate|bond fund)/.test(name)) {
+        return null;
     }
 
-    const text = `${fund.name || ''} ${fund.category || ''}`.toLowerCase();
+    if (/(elss|tax[- ]?saver|tax[- ]?savings|long term equity)/.test(name)) return 'elss';
+    if (/(value fund|contra fund|dividend yield)/.test(name)) return 'value';
+    if (/(small[- ]?cap|smallcap)/.test(name)) return 'mid-cap';
+    if (/(mid[- ]?cap|midcap)/.test(name)) return 'mid-cap';
+    if (/(large[- ]?cap|bluechip|top[- ]?100|nifty 50|sensex|nifty50)/.test(name)) return 'large-cap';
+    if (/index fund/.test(name) && !/(mid|small|next 50)/.test(name)) return 'large-cap';
+    if (/(flexi[- ]?cap|multi[- ]?cap|balanced advantage|dynamic asset)/.test(name)) return 'flexi-cap';
+
+    // Fall back to category field (may be meaningful if set explicitly by a future data source).
+    const text = `${name} ${String(fund.category || '').toLowerCase()}`;
     if (/(elss|tax saver|long term equity)/.test(text)) return 'elss';
     if (/(value|contra|dividend yield)/.test(text)) return 'value';
-    if (/(mid[- ]?cap|midcap|emerging|small[- ]?cap)/.test(text)) return 'mid-cap';
+    if (/(mid[- ]?cap|midcap|small[- ]?cap)/.test(text)) return 'mid-cap';
     if (/(large[- ]?cap|bluechip|index)/.test(text)) return 'large-cap';
-    if (/(flexi[- ]?cap|multi[- ]?cap|balanced advantage|dynamic asset)/.test(text)) return 'flexi-cap';
+    if (/(flexi[- ]?cap|multi[- ]?cap|balanced advantage)/.test(text)) return 'flexi-cap';
+
     return 'flexi-cap';
 }
 
@@ -36,11 +52,13 @@ function MutualFundCard({ funds }) {
 
         (funds || []).forEach((fund) => {
             const type = normalizeFundType(fund);
-            buckets[type].push({
-                ...fund,
-                fundType: type,
-                fundTypeLabel: getTabLabel(type)
-            });
+            if (type && buckets[type]) {
+                buckets[type].push({
+                    ...fund,
+                    fundType: type,
+                    fundTypeLabel: getTabLabel(type)
+                });
+            }
         });
 
         return buckets;

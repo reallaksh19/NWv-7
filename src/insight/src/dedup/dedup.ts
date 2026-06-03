@@ -667,7 +667,7 @@ const MARKET_SIGNALS = [
   /nifty/i, /sensex/i, /bse/i, /nse/i, /intraday/i,
   /stocks? (rallied|slumped|gained|lost|jumped|dropped)/i,
   /investors? (cheered|sold|bought|reacted)/i,
-  /rupee/i, /bond yields?/i, /oil prices?/i, /gold prices?/i,
+  /bond yields?/i,
 ];
 
 const FACT_UPDATE_SIGNALS = [
@@ -696,12 +696,11 @@ const CORRECTION_SIGNALS = [
 ];
 
 const REGIONAL_SIGNALS = [
-  /local impact/i, /state government/i, /city council/i,
-  /chennai/i, /trichy/i, /tamil nadu/i, /tn/i, /muscat/i, /oman/i, /kerala/i,
-  /regional/i, /district/i, /municipal/i, /local authorities/i,
+  /local impact/i, /state government of/i, /city council/i,
+  /chennai/i, /trichy/i, /tamil nadu government/i,
+  /muscat/i, /local authorities/i,
   /statewide/i, /in the state/i, /in the city/i,
   /chennai bureau/i, /trichy correspondent/i, /muscat desk/i,
-  /state government of/i, /tamil nadu government/i, /oman gov/i,
   /district collector/i,
 ];
 
@@ -942,14 +941,15 @@ export function classifyAngle(story: InsightStory): AngleLabel {
     return best.angle;
   }
 
-  // Secondary regex fallbacks to ensure signal patterns are always consulted.
+  // Secondary regex fallbacks. Weak signals (market, regional) require 2+ matches
+  // to avoid mis-labelling stories that merely mention a market or place in passing.
   if (CORRECTION_SIGNALS.some(p => p.test(text)))           return "correction";
   if (FACT_UPDATE_SIGNALS.some(p => p.test(text)))          return "fact_update";
   if (OFFICIAL_SIGNALS.some(p => p.test(text)))             return "official_response";
-  if (MARKET_SIGNALS.some(p => p.test(text)))               return "market_reaction";
+  if (MARKET_SIGNALS.filter(p => p.test(text)).length >= 2) return "market_reaction";
   if (EXPERT_SIGNALS.some(p => p.test(text)))               return "expert_analysis";
   if (INVESTIGATIVE_SIGNALS.some(p => p.test(text)))        return "investigative_detail";
-  if (REGIONAL_SIGNALS.some(p => p.test(text)))             return "regional_followup";
+  if (REGIONAL_SIGNALS.filter(p => p.test(text)).length >= 2) return "regional_followup";
   if (PUBLIC_REACTION_SIGNALS.some(p => p.test(text)))      return "reaction_public";
   if (BACKGROUND_CONTEXT_SIGNALS.some(p => p.test(text)))   return "background_context";
   if (OPINION_EDITORIAL_SIGNALS.some(p => p.test(text)))    return "opinion_editorial";

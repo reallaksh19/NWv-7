@@ -76,6 +76,7 @@ describe('Release 6J Market surface binding', () => {
   it('projectMarketData normalizes missing sections', () => {
     expect(projectMarketData(null)).toEqual({
       indices: [],
+      globalIndices: [],
       commodities: [],
       currencies: [],
       ipo: {},

@@ -11,10 +11,11 @@ describe('Weather location manager clarity certification', () => {
     expect(component).toContain('data-weather-location-help');
   });
 
-  it('provides one-click Colombo add path', () => {
-    expect(component).toContain('colomboMissing');
-    expect(component).toContain('data-weather-add-colombo');
-    expect(component).toContain('+ Add Colombo');
+  it('provides city management without a dedicated Colombo shortcut', () => {
+    // Colombo-specific one-click button was removed per user request; cities are
+    // managed through the standard add/delete flow instead.
+    expect(component).toContain('availableToAdd');
+    expect(component).toContain('data-weather-location-manager');
   });
 
   it('provides labelled delete buttons', () => {
@@ -30,7 +31,6 @@ describe('Weather location manager clarity certification', () => {
 
   it('has professional visual classes', () => {
     expect(css).toContain('.wlm-help');
-    expect(css).toContain('.wlm-add-colombo');
     expect(css).toContain('.wlm-quick-add__buttons');
     expect(css).toContain('.wlm-chip button:hover');
   });

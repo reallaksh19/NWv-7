@@ -76,6 +76,16 @@ function matchesConfiguredLocation(item, locations) {
   });
 }
 
+// Fallback for items (e.g. Google News shopping results) that have no explicit
+// location metadata: scan title + description + source for the configured city name.
+function matchesConfiguredLocationByText(item, locations) {
+  const text = `${item?.title || ''} ${item?.description || ''} ${item?.source || ''}`.toLowerCase();
+  return (locations || []).some(configured => {
+    const c = String(configured || '').trim().toLowerCase();
+    return c.length >= 4 && text.includes(c);
+  });
+}
+
 function publishedMs(item) {
   return getEventDateMs(item?.publishedAt || item?.eventStartAt || item?.date || item?.timestamp);
 }
@@ -211,8 +221,14 @@ function getVisibleUpAheadProjection({ data, settings }) {
   // intentioned (e.g. "Chennai sale … OR offer") but sparse & evergreen, so we skip
   // the strict keyword gate and instead location-match with the same generous window
   // + cap as civic, recency-sorted.
+  // Google News RSS items carry no explicit location metadata, so fall back to
+  // text scanning when city/locationCanonical/region fields are all absent.
   const offlineOffers = asArray(sections.shopping)
-    .filter(item => itemLocation(item) && matchesConfiguredLocation(item, locations))
+    .filter(item =>
+      itemLocation(item)
+        ? matchesConfiguredLocation(item, locations)
+        : matchesConfiguredLocationByText(item, locations)
+    )
     .filter(item => {
       const publishedAt = publishedMs(item);
       return publishedAt === 0 || (Date.now() - publishedAt) <= CIVIC_MAX_AGE_MS;

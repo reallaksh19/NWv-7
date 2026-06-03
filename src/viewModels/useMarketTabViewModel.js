@@ -94,6 +94,7 @@ export function projectMarketData(marketData) {
 
   return {
     indices: asArray(safeMarketData.indices),
+    globalIndices: asArray(safeMarketData.globalIndices),
     commodities: asArray(safeMarketData.commodities),
     currencies: asArray(safeMarketData.currencies),
     ipo: asRecord(safeMarketData.ipo),
@@ -142,9 +143,11 @@ export function useMarketTabViewModel() {
     getIndexByAliases(indices, INDEX_ALIAS_MAP, PRIMARY_INDEX_NAMES)
   ), [indices]);
 
-  const globalIndices = useMemo(() => (
-    getIndexByAliases(indices, GLOBAL_INDEX_ALIAS_MAP, GLOBAL_INDEX_NAMES)
-  ), [indices]);
+  const globalIndices = useMemo(() => {
+    const dedicated = projectedMarketData.globalIndices;
+    if (dedicated.length > 0) return dedicated;
+    return getIndexByAliases(indices, GLOBAL_INDEX_ALIAS_MAP, GLOBAL_INDEX_NAMES);
+  }, [projectedMarketData.globalIndices, indices]);
 
   const displayedPrimaryIndices = primaryIndices.length
     ? primaryIndices
@@ -163,7 +166,7 @@ export function useMarketTabViewModel() {
 
   const sessionState = useMemo(() => (
     getMarketSessionState({
-      lastUpdated: lastFetch || projectedMarketData.fetchedAt,
+      lastUpdated: projectedMarketData.fetchedAt || lastFetch,
       tradingHolidays: marketSettings.tradingHolidays || [],
     })
   ), [lastFetch, projectedMarketData.fetchedAt, marketSettings.tradingHolidays]);

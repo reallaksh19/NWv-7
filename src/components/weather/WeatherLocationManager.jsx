@@ -49,8 +49,6 @@ export default function WeatherLocationManager({
       .filter(option => optionMatchesSearch(option, searchTerm))
   ), [safeOptions, safeCities, searchTerm]);
 
-  const colomboMissing = !safeCities.includes('colombo');
-
   async function addCity(cityValue = inputValue) {
     const canonical = resolveRegistryKey(cityValue);
 
@@ -156,20 +154,6 @@ export default function WeatherLocationManager({
         </div>
 
         <div className="wlm-collapsed__actions">
-          {colomboMissing && (
-            <button
-              className="wlm-add-colombo"
-              type="button"
-              onClick={() => {
-                addCity('colombo');
-                setOpen(true);
-              }}
-              data-weather-add-colombo="true"
-            >
-              + Add Colombo
-            </button>
-          )}
-
           <button className="wlm-toggle" type="button" onClick={() => setOpen(true)}>
             Manage
           </button>
@@ -205,16 +189,7 @@ export default function WeatherLocationManager({
         </span>
         <span>
           Supported now: {safeOptions.length} selectable cities.
-          Defaults: Chennai, Trichy, Muscat and Colombo.
         </span>
-
-        {colomboMissing ? (
-          <button type="button" onClick={() => addCity('colombo')} data-weather-add-colombo="true">
-            + Add Colombo
-          </button>
-        ) : (
-          <strong>Colombo is already added.</strong>
-        )}
       </div>
 
       <div className="wlm-current">

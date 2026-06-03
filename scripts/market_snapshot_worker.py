@@ -563,21 +563,55 @@ def fetch_amfi_navall() -> Tuple[dict, List[ProviderResult]]:
                 }
             )
 
-        # Market tab needs a light list; portfolio module can later search full file if desired.
-        focus_keywords = [
-            "direct plan-growth",
+        # Market tab shows equity fund categories only; debt/liquid funds are excluded.
+        # "direct plan-growth" is intentionally absent — it catches thousands of debt
+        # funds before the equity ones, exhausting the 300-row budget.
+        equity_keywords = [
+            "large cap",
+            "flexi cap",
+            "mid cap",
+            "small cap",
+            "elss",
+            "tax saver",
+            "tax savings",
+            "value fund",
+            "contra fund",
+            "index fund",
             "nifty 50",
             "sensex",
-            "liquid",
-            "flexi cap",
-            "large cap",
-            "index fund",
         ]
 
-        selected = [
+        def derive_fund_type(name: str) -> str:
+            n = name.lower()
+            if any(k in n for k in ("elss", "tax saver", "tax savings", "long term equity")):
+                return "elss"
+            if any(k in n for k in ("value fund", "contra fund", "dividend yield")):
+                return "value"
+            if any(k in n for k in ("small cap", "smallcap")):
+                return "mid-cap"
+            if any(k in n for k in ("mid cap", "midcap")):
+                return "mid-cap"
+            if any(k in n for k in ("large cap", "bluechip", "top 100", "nifty 50", "sensex")):
+                return "large-cap"
+            if "index fund" in n:
+                return "large-cap"
+            if any(k in n for k in ("flexi cap", "multi cap", "balanced advantage")):
+                return "flexi-cap"
+            return ""
+
+        equity_rows = [
             row for row in rows
-            if any(key in row["name"].lower() for key in focus_keywords)
-        ][:300]
+            if any(key in row["name"].lower() for key in equity_keywords)
+            and "direct" in row["name"].lower()
+            and "growth" in row["name"].lower()
+        ]
+
+        for row in equity_rows:
+            row["fundType"] = derive_fund_type(row["name"])
+            row["fundHouse"] = row.pop("category", "")
+            row["category"] = row["fundType"]
+
+        selected = equity_rows[:300]
 
         payload = {
             "schemaVersion": SCHEMA_VERSION,

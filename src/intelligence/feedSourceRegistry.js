@@ -36,10 +36,15 @@ const DEFAULT_FEED_SOURCE_REGISTRY = Object.freeze({
       { url: `https://news.google.com/rss/search?q=online+shopping+sale+discount+coupon+India+${CURRENT_YEAR}&hl=en-IN&gl=IN&ceid=IN:en`, sourceType: 'search', trust: 'high' }
     ],
     Chennai: [
-      { url: 'https://news.google.com/rss/search?q=Chennai+sale+OR+T+Nagar+shopping+OR+Saravana+Stores+offer&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'high' }
+      { url: 'https://news.google.com/rss/search?q=Chennai+sale+OR+offer+OR+discount+T+Nagar+OR+Phoenix+Marketcity+OR+Express+Avenue+OR+Saravana+Stores+OR+Pothys+when:14d&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'high' },
+      { url: 'https://news.google.com/rss/search?q=Chennai+mall+weekend+sale+OR+festive+offer+OR+shopping+deal+this+week&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'high' }
+    ],
+    Trichy: [
+      { url: 'https://news.google.com/rss/search?q=Trichy+OR+Tiruchirappalli+shopping+sale+OR+offer+OR+discount+mall+when:14d&hl=en-IN&gl=IN&ceid=IN:en', sourceType: 'search', trust: 'high' }
     ],
     Muscat: [
-      { url: 'https://news.google.com/rss/search?q=Muscat+Lulu+sale+OR+Oman+shopping+offer+discount&hl=en-US&gl=US&ceid=US:en', sourceType: 'search', trust: 'high' }
+      { url: 'https://news.google.com/rss/search?q=Muscat+sale+OR+offer+OR+discount+Lulu+OR+Carrefour+OR+City+Centre+OR+Oman+Avenues+Mall+when:14d&hl=en-US&gl=US&ceid=US:en', sourceType: 'search', trust: 'high' },
+      { url: 'https://news.google.com/rss/search?q=Oman+shopping+festival+OR+weekend+offer+OR+mall+sale+this+week&hl=en-US&gl=US&ceid=US:en', sourceType: 'search', trust: 'high' }
     ]
   },
   airlines: {

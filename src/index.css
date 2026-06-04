@@ -2301,7 +2301,7 @@ html[data-layout-mode='mobile'] .bottom-nav__label {
 }
 .mnc-time {
   font-size: 0.7rem;
-  color: #9CA5B0;
+  color: var(--text-muted);
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   margin-left: auto;
 }
@@ -2312,6 +2312,9 @@ html[data-layout-mode='mobile'] .bottom-nav__label {
   line-height: 1.35;
   letter-spacing: 0;
   text-wrap: pretty;
+  /* Explicit so the headline can never inherit a muted color regardless of
+     cascade/specificity between the two .mnc-headline variants. */
+  color: var(--text-primary);
 }
 .mnc-image {
   grid-area: image;
@@ -2326,7 +2329,7 @@ html[data-layout-mode='mobile'] .bottom-nav__label {
   grid-area: summary;
   margin-top: 6px;
   font-size: 0.83rem;
-  color: #D0D7DE;
+  color: var(--text-secondary);
   line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 3;

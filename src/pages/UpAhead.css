@@ -837,3 +837,55 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
+
+/* ── Light-mode overrides for the evidence/briefing panels ──────────────────
+   The base panel styles are tuned for the default dark theme (light text on a
+   dark glass surface). In light mode the body text — which routes through
+   var(--text-primary/secondary) and therefore becomes dark — would sit on the
+   hardcoded dark glass and be unreadable. Flip the surfaces to light and tone
+   the bright teal/blue accents down so they read on a light card. */
+[data-theme="light"] .ua-evidence {
+    background:
+        radial-gradient(420px 180px at 100% 0%, rgba(0, 212, 170, 0.06), transparent 62%),
+        var(--bg-secondary);
+    border-color: var(--border-default);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .ua-briefing {
+    background:
+        radial-gradient(420px 180px at 100% 0%, rgba(88, 166, 255, 0.06), transparent 62%),
+        var(--bg-secondary);
+    border-color: var(--border-default);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .ua-evidence__eyebrow,
+[data-theme="light"] .ua-evidence__score strong,
+[data-theme="light"] .ua-evidence__details summary {
+    color: #0f766e;
+}
+
+[data-theme="light"] .ua-briefing__eyebrow,
+[data-theme="light"] .ua-briefing__highlight span,
+[data-theme="light"] .ua-briefing__bucket-head span,
+[data-theme="light"] .ua-briefing__details summary {
+    color: #1d4ed8;
+}
+
+[data-theme="light"] .ua-evidence__tile,
+[data-theme="light"] .ua-briefing__stats div,
+[data-theme="light"] .ua-briefing__bucket {
+    background: rgba(15, 23, 42, 0.03);
+    border-color: var(--border-default);
+}
+
+[data-theme="light"] .ua-evidence__chips span {
+    color: #065f46;
+}
+
+[data-theme="light"] .ua-evidence__details ul,
+[data-theme="light"] .ua-briefing__bucket ul,
+[data-theme="light"] .ua-briefing__details ul {
+    color: var(--text-secondary);
+}

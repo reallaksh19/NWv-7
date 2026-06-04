@@ -552,10 +552,18 @@ export function useTechSocialPageViewModel() {
     reload: reloadBuzzDataset,
   } = useDataset('buzz');
 
-  const [activeEntTab, setActiveEntTab] = useState('tamil');
+  const [activeEntTab, setActiveEntTabState] = useState('tamil');
+  const [userSelectedEntTab, setUserSelectedEntTab] = useState(false);
   const [cachedData, setCachedData] = useState(null);
   const [loadingPhase, setLoadingPhase] = useState(0);
   const [showBackToTop, setShowBackToTop] = useState(false);
+
+  // Wrap the setter so an explicit user choice is remembered and we stop
+  // auto-switching the Entertainment tab out from under them.
+  const setActiveEntTab = useCallback((tab) => {
+    setUserSelectedEntTab(true);
+    setActiveEntTabState(tab);
+  }, []);
 
   const freshnessLimitHours = useMemo(() => (
     getFreshnessLimitHours(settings)
@@ -656,6 +664,47 @@ export function useTechSocialPageViewModel() {
     projectAiInnovationStories(displayData, freshnessLimitHours)
   ), [displayData, freshnessLimitHours]);
 
+  // Auto-select the first Entertainment region that actually has items so the
+  // hub doesn't open on an empty "Tamil" tab when the snapshot is, say, all
+  // Hindi/Hollywood. Respects an explicit user choice.
+  useEffect(() => {
+    if (userSelectedEntTab) return;
+    const counts = { tamil: 0, hindi: 0, hollywood: 0, ott: 0 };
+    processedEntertainment.forEach(item => {
+      if (counts[item.region] != null) counts[item.region] += 1;
+    });
+    if (counts[activeEntTab] === 0) {
+      const firstNonEmpty = ['tamil', 'hindi', 'hollywood', 'ott'].find(region => counts[region] > 0);
+      if (firstNonEmpty && firstNonEmpty !== activeEntTab) {
+        setActiveEntTabState(firstNonEmpty);
+      }
+    }
+  }, [processedEntertainment, activeEntTab, userSelectedEntTab]);
+
+  // The DataStateBoundary on the page is fed the buzz *dataset* envelope, but the
+  // page actually renders `displayData`, which also merges NewsContext + the local
+  // cache. Synthesize a "ready" envelope whenever we have ANY display content so
+  // the page isn't blanked just because the dataset envelope came back empty.
+  const hasDisplayContent = useMemo(() => (
+    [processedEntertainment, socialTrends, technologyStories, aiInnovationStories]
+      .some(list => asArray(list).length > 0)
+  ), [processedEntertainment, socialTrends, technologyStories, aiInnovationStories]);
+
+  const boundaryEnvelope = useMemo(() => {
+    if (hasDisplayContent) {
+      return {
+        ...(buzzEnvelope || {}),
+        ok: true,
+        freshness: (buzzEnvelope?.freshness && buzzEnvelope.freshness !== 'empty')
+          ? buzzEnvelope.freshness
+          : 'fresh',
+        error: null,
+        data: displayData,
+      };
+    }
+    return buzzEnvelope || null;
+  }, [buzzEnvelope, displayData, hasDisplayContent]);
+
   const handleRefresh = useCallback(() => {
     setLoadingPhase(3);
 
@@ -691,9 +740,11 @@ export function useTechSocialPageViewModel() {
     technologyMaxDisplay,
     aiInnovationStories,
 
-    // DataStateBoundary wiring
-    envelope: buzzEnvelope || null,
-    error: buzzEnvelope?.error || null,
+    // DataStateBoundary wiring — use the synthesized envelope so the page renders
+    // whenever display content exists (dataset, NewsContext, or cache).
+    envelope: boundaryEnvelope,
+    hasDisplayContent,
+    error: boundaryEnvelope?.error || null,
 
     navSections: NAV_SECTIONS,
     showBackToTop,

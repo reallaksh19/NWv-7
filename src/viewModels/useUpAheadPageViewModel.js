@@ -171,6 +171,113 @@ function getEventDateMs(value) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+// Curated sale-campaign signatures. Online offers about the SAME campaign
+// (e.g. the dozen "Amazon Prime Day 2026" write-ups from different outlets)
+// are grouped into one card so the Offers tab isn't flooded with duplicates.
+const OFFER_CAMPAIGNS = [
+  { key: 'amazon-prime-day', re: /\bprime day\b/i },
+  { key: 'flipkart-big-billion-days', re: /\bbig billion days\b/i },
+  { key: 'amazon-great-indian', re: /\bgreat indian (festival|sale)\b/i },
+  { key: 'myntra-eoss', re: /\b(end of season sale|eoss)\b/i },
+  { key: 'target-circle-week', re: /\bcircle (week|deal days)\b/i },
+  { key: 'black-friday', re: /\bblack friday\b/i },
+  { key: 'cyber-monday', re: /\bcyber monday\b/i },
+  { key: 'festive-sale', re: /\b(diwali|festive) sale\b/i },
+  { key: 'independence-day-sale', re: /\bindependence day sale\b/i },
+  { key: 'republic-day-sale', re: /\brepublic day sale\b/i },
+];
+
+function offerCampaignKey(item) {
+  const text = `${item?.title || ''} ${item?.description || ''}`;
+  for (const campaign of OFFER_CAMPAIGNS) {
+    if (campaign.re.test(text)) return campaign.key;
+  }
+  return null;
+}
+
+// Group online offers by sale campaign. Offers that don't match a known
+// campaign are kept as-is. Each group keeps the newest item as the
+// representative and exposes sourceCount + grouped members for the UI.
+function groupOnlineOffers(offers = []) {
+  const groups = new Map();
+  const singles = [];
+
+  for (const offer of offers) {
+    const key = offerCampaignKey(offer);
+    if (!key) {
+      singles.push(offer);
+      continue;
+    }
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(offer);
+  }
+
+  const grouped = [];
+  for (const members of groups.values()) {
+    if (members.length === 1) {
+      grouped.push(members[0]);
+      continue;
+    }
+    const sorted = [...members].sort((a, b) => publishedMs(b) - publishedMs(a));
+    const representative = sorted[0];
+    const sources = [...new Set(members.map(m => m.source).filter(Boolean))];
+    grouped.push({
+      ...representative,
+      sourceCount: Math.max(Number(representative.sourceCount || 1), sources.length || members.length),
+      sources,
+      groupedOffers: sorted,
+      groupedCount: members.length,
+    });
+  }
+
+  return [...grouped, ...singles];
+}
+
+// Sort key for the Suggested feed: prefer a real upcoming event/release date,
+// otherwise fall back to publish recency.
+function getSuggestedSortMs(item) {
+  const eventMs = getEventDateMs(item?.date || item?.releaseDate || item?.eventStartAt);
+  if (eventMs > 0) return eventMs;
+  return publishedMs(item);
+}
+
+// The "Suggested" tab is the automatic, cross-category feed (the planner is
+// manual-only). Combine the auto-derived categories — releases, events,
+// festivals, offers, civic — rank them (soonest upcoming first, then most
+// recent), dedupe, and cap.
+function buildSuggestedItems({ movieCards, festivalCards, eventItems, onlineOffers, offlineOffers, civicAlerts } = {}) {
+  const tagged = [
+    ...asArray(movieCards).map(item => ({ ...item, _suggestKind: 'release' })),
+    ...asArray(festivalCards).map(item => ({ ...item, _suggestKind: 'festival' })),
+    ...asArray(eventItems).map(item => ({ ...item, _suggestKind: 'event' })),
+    ...asArray(onlineOffers).map(item => ({ ...item, _suggestKind: 'offer', isOffer: true })),
+    ...asArray(offlineOffers).map(item => ({ ...item, _suggestKind: 'offer', isOffer: true })),
+    ...asArray(civicAlerts).map(item => ({ ...item, _suggestKind: 'civic' })),
+  ];
+
+  const seen = new Set();
+  const deduped = [];
+  for (const item of tagged) {
+    const key = String(item?.id || item?.link || item?.url || item?.title || '').trim().toLowerCase();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    deduped.push(item);
+  }
+
+  const now = Date.now();
+  return deduped
+    .sort((a, b) => {
+      const aMs = getSuggestedSortMs(a);
+      const bMs = getSuggestedSortMs(b);
+      const aUpcoming = aMs >= now;
+      const bUpcoming = bMs >= now;
+      if (aUpcoming !== bUpcoming) return aUpcoming ? -1 : 1; // upcoming before past
+      if (aUpcoming) return aMs - bMs;                        // soonest upcoming first
+      return bMs - aMs;                                       // most recent first
+    })
+    .slice(0, 24);
+}
+
 function getVisibleUpAheadProjection({ data, settings }) {
   const sections = asSections(data);
   const upAheadSettings = settings?.upAhead || DEFAULT_UPAHEAD_SETTINGS;
@@ -206,7 +313,7 @@ function getVisibleUpAheadProjection({ data, settings }) {
   // Offers, quality-gated by offer keywords, newest-first.
   // Online = city-agnostic e-commerce + airlines. These are time-sensitive (Prime
   // Day, flash/fare sales) so use the tight 30-day window.
-  const onlineOffers = [
+  const onlineOfferCandidates = [
     ...asArray(sections.shopping),
     ...asArray(sections.airlines),
   ].filter(item => {
@@ -215,7 +322,13 @@ function getVisibleUpAheadProjection({ data, settings }) {
     const publishedAt = publishedMs(item);
     if (publishedAt && (Date.now() - publishedAt) > OFFER_MAX_AGE_MS) return false;
     return true;
-  }).sort((a, b) => publishedMs(b) - publishedMs(a));
+  });
+
+  // Group near-duplicate online offers (e.g. the many "Amazon Prime Day 2026"
+  // write-ups from different outlets) into a single representative carrying a
+  // sourceCount, so the Offers tab shows one card per deal instead of a dozen.
+  const onlineOffers = groupOnlineOffers(onlineOfferCandidates)
+    .sort((a, b) => publishedMs(b) - publishedMs(a));
 
   // Offline = location-matched local shopping. These feeds are already offer-
   // intentioned (e.g. "Chennai sale … OR offer") but sparse & evergreen, so we skip
@@ -245,6 +358,15 @@ function getVisibleUpAheadProjection({ data, settings }) {
     ...asArray(sections.sports),
   ];
 
+  const suggestedItems = buildSuggestedItems({
+    movieCards,
+    festivalCards,
+    eventItems,
+    onlineOffers,
+    offlineOffers,
+    civicAlerts,
+  });
+
   const visible = {
     weatherAlerts,
     generalAlerts,
@@ -257,6 +379,7 @@ function getVisibleUpAheadProjection({ data, settings }) {
     movieCards,
     festivalCards,
     eventItems,
+    suggestedItems,
   };
 
   return {
@@ -526,4 +649,5 @@ export const __upAheadPageViewModelInternalsForTest = {
   formatConciseDate,
   getEventDateMs,
   getVisibleUpAheadProjection,
+  buildSuggestedItems,
 };

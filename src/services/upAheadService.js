@@ -283,10 +283,17 @@ function buildLegacyDisplayFromRanked(items = [], meta = {}) {
     }))
     .sort((a, b) => a.date.localeCompare(b.date));
 
+  // Cap each section, but reserve slots for location-tagged items. Without this,
+  // a section full of fresh city-agnostic items (e.g. national "Prime Day" offers)
+  // fills all 20 slots and evicts every local Chennai/Muscat offer before the view
+  // model can split them into the Online vs Offline tabs — leaving Offline empty.
+  const byDate = (a, b) => String(a.date || '').localeCompare(String(b.date || ''));
+  const isLocated = (item) => Boolean(item?.city || item?.locationCanonical || item?.region);
   Object.keys(sections).forEach((key) => {
-    sections[key] = uniqByKey(sections[key])
-      .sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')))
-      .slice(0, 20);
+    const deduped = uniqByKey(sections[key]);
+    const located = deduped.filter(isLocated).sort(byDate).slice(0, 20);
+    const global = deduped.filter(item => !isLocated(item)).sort(byDate).slice(0, 20);
+    sections[key] = [...global, ...located];
   });
 
   const weekly_plan = generateWeeklyPlan(timeline);

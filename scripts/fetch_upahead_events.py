@@ -148,12 +148,20 @@ CATEGORY_FEEDS = {
              'Google News Deals', 'google_news'),
         ],
         'Chennai': [
-            ('https://news.google.com/rss/search?q=Chennai+sale+T+Nagar+shopping+OR+Saravana+Stores+offer&hl=en-IN&gl=IN&ceid=IN:en',
+            ('https://news.google.com/rss/search?q=Chennai+sale+OR+offer+OR+discount+T+Nagar+OR+Phoenix+Marketcity+OR+Express+Avenue+OR+Saravana+Stores+OR+Pothys+when:14d&hl=en-IN&gl=IN&ceid=IN:en',
              'Google News Chennai Shopping', 'google_news'),
+            ('https://news.google.com/rss/search?q=Chennai+mall+weekend+sale+OR+festive+offer+OR+shopping+deal+this+week&hl=en-IN&gl=IN&ceid=IN:en',
+             'Google News Chennai Deals', 'google_news'),
+        ],
+        'Trichy': [
+            ('https://news.google.com/rss/search?q=Trichy+OR+Tiruchirappalli+shopping+sale+OR+offer+OR+discount+mall+when:14d&hl=en-IN&gl=IN&ceid=IN:en',
+             'Google News Trichy Shopping', 'google_news'),
         ],
         'Muscat': [
-            ('https://news.google.com/rss/search?q=Muscat+Lulu+sale+OR+Oman+shopping+offer+discount&hl=en-US&gl=US&ceid=US:en',
+            ('https://news.google.com/rss/search?q=Muscat+sale+OR+offer+OR+discount+Lulu+OR+Carrefour+OR+City+Centre+OR+Oman+Avenues+Mall+when:14d&hl=en-US&gl=US&ceid=US:en',
              'Google News Muscat Shopping', 'google_news'),
+            ('https://news.google.com/rss/search?q=Oman+shopping+festival+OR+weekend+offer+OR+mall+sale+this+week&hl=en-US&gl=US&ceid=US:en',
+             'Google News Oman Deals', 'google_news'),
         ],
     },
     'airlines': {

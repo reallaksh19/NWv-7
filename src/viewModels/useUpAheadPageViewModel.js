@@ -171,6 +171,68 @@ function getEventDateMs(value) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+// Curated sale-campaign signatures. Online offers about the SAME campaign
+// (e.g. the dozen "Amazon Prime Day 2026" write-ups from different outlets)
+// are grouped into one card so the Offers tab isn't flooded with duplicates.
+const OFFER_CAMPAIGNS = [
+  { key: 'amazon-prime-day', re: /\bprime day\b/i },
+  { key: 'flipkart-big-billion-days', re: /\bbig billion days\b/i },
+  { key: 'amazon-great-indian', re: /\bgreat indian (festival|sale)\b/i },
+  { key: 'myntra-eoss', re: /\b(end of season sale|eoss)\b/i },
+  { key: 'target-circle-week', re: /\bcircle (week|deal days)\b/i },
+  { key: 'black-friday', re: /\bblack friday\b/i },
+  { key: 'cyber-monday', re: /\bcyber monday\b/i },
+  { key: 'festive-sale', re: /\b(diwali|festive) sale\b/i },
+  { key: 'independence-day-sale', re: /\bindependence day sale\b/i },
+  { key: 'republic-day-sale', re: /\brepublic day sale\b/i },
+];
+
+function offerCampaignKey(item) {
+  const text = `${item?.title || ''} ${item?.description || ''}`;
+  for (const campaign of OFFER_CAMPAIGNS) {
+    if (campaign.re.test(text)) return campaign.key;
+  }
+  return null;
+}
+
+// Group online offers by sale campaign. Offers that don't match a known
+// campaign are kept as-is. Each group keeps the newest item as the
+// representative and exposes sourceCount + grouped members for the UI.
+function groupOnlineOffers(offers = []) {
+  const groups = new Map();
+  const singles = [];
+
+  for (const offer of offers) {
+    const key = offerCampaignKey(offer);
+    if (!key) {
+      singles.push(offer);
+      continue;
+    }
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(offer);
+  }
+
+  const grouped = [];
+  for (const members of groups.values()) {
+    if (members.length === 1) {
+      grouped.push(members[0]);
+      continue;
+    }
+    const sorted = [...members].sort((a, b) => publishedMs(b) - publishedMs(a));
+    const representative = sorted[0];
+    const sources = [...new Set(members.map(m => m.source).filter(Boolean))];
+    grouped.push({
+      ...representative,
+      sourceCount: Math.max(Number(representative.sourceCount || 1), sources.length || members.length),
+      sources,
+      groupedOffers: sorted,
+      groupedCount: members.length,
+    });
+  }
+
+  return [...grouped, ...singles];
+}
+
 function getVisibleUpAheadProjection({ data, settings }) {
   const sections = asSections(data);
   const upAheadSettings = settings?.upAhead || DEFAULT_UPAHEAD_SETTINGS;
@@ -206,7 +268,7 @@ function getVisibleUpAheadProjection({ data, settings }) {
   // Offers, quality-gated by offer keywords, newest-first.
   // Online = city-agnostic e-commerce + airlines. These are time-sensitive (Prime
   // Day, flash/fare sales) so use the tight 30-day window.
-  const onlineOffers = [
+  const onlineOfferCandidates = [
     ...asArray(sections.shopping),
     ...asArray(sections.airlines),
   ].filter(item => {
@@ -215,7 +277,13 @@ function getVisibleUpAheadProjection({ data, settings }) {
     const publishedAt = publishedMs(item);
     if (publishedAt && (Date.now() - publishedAt) > OFFER_MAX_AGE_MS) return false;
     return true;
-  }).sort((a, b) => publishedMs(b) - publishedMs(a));
+  });
+
+  // Group near-duplicate online offers (e.g. the many "Amazon Prime Day 2026"
+  // write-ups from different outlets) into a single representative carrying a
+  // sourceCount, so the Offers tab shows one card per deal instead of a dozen.
+  const onlineOffers = groupOnlineOffers(onlineOfferCandidates)
+    .sort((a, b) => publishedMs(b) - publishedMs(a));
 
   // Offline = location-matched local shopping. These feeds are already offer-
   // intentioned (e.g. "Chennai sale … OR offer") but sparse & evergreen, so we skip

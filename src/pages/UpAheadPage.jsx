@@ -177,7 +177,12 @@ function GridSection({
         <div key={item.id || i} className="modern-card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div className={`ua-badge ${colorClass}`}>{formatConciseDate(item.date || item.releaseDate, item.publishedAt)}</div>
-            {isOffer && <span style={{ fontSize: '1.2rem' }}>🏷️</span>}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              {item.groupedCount > 1 && (
+                <span className="ua-tab-count" title={(item.sources || []).join(', ')}>🔗 {item.groupedCount} sources</span>
+              )}
+              {isOffer && <span style={{ fontSize: '1.2rem' }}>🏷️</span>}
+            </div>
           </div>
           <h3 className="modern-card__title" style={{ marginTop: '8px' }}>{sanitizeHtmlText(item.title)}</h3>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '8px 0', flex: 1 }}>

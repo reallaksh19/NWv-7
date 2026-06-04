@@ -75,14 +75,14 @@ describe('Release 6K Weather ViewModel binding', () => {
     expect(settingsWeatherManager).not.toContain("from '../../context/SettingsContext'");
   });
 
-  it('location registry has exactly 300 selectable cities and Colombo is in registry and defaults (59A restored)', () => {
+  it('location registry has exactly 300 selectable cities; Colombo stays in registry but is no longer a default', () => {
     const locationsModuleText = fs.readFileSync('src/services/weatherLocations.js', 'utf8');
 
-    // 59A closure: Colombo restored to DEFAULT_WEATHER_CITIES
-    expect(locationsModuleText).toContain("DEFAULT_WEATHER_CITIES = ['chennai', 'trichy', 'muscat', 'colombo']");
+    // Colombo removed from defaults per user request (still selectable in the registry).
+    expect(locationsModuleText).toContain("DEFAULT_WEATHER_CITIES = ['chennai', 'trichy', 'muscat']");
 
     expect(Object.keys(WEATHER_LOCATION_REGISTRY)).toHaveLength(300);
-    expect(DEFAULT_WEATHER_CITIES).toEqual(['chennai', 'trichy', 'muscat', 'colombo']);
+    expect(DEFAULT_WEATHER_CITIES).toEqual(['chennai', 'trichy', 'muscat']);
     expect(WEATHER_LOCATION_REGISTRY.colombo).toBeTruthy();
   });
 

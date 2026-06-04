@@ -21,8 +21,8 @@ import {
 } from './displayPreferences';
 
 describe('Weather final closure certification', () => {
-  it('keeps Colombo in default and registry-backed weather locations', () => {
-    expect(DEFAULT_WEATHER_CITIES).toContain('colombo');
+  it('drops Colombo from defaults but keeps it registry-backed and selectable', () => {
+    expect(DEFAULT_WEATHER_CITIES).not.toContain('colombo');
     expect(WEATHER_LOCATION_REGISTRY.colombo).toMatchObject({
       key: 'colombo',
       display: 'Colombo',

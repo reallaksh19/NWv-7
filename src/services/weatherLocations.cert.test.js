@@ -8,8 +8,8 @@ import {
 } from './weatherLocations.js';
 
 describe('weatherLocations – Slice 59A', () => {
-    test('DEFAULT_WEATHER_CITIES includes colombo', () => {
-        expect(DEFAULT_WEATHER_CITIES).toContain('colombo');
+    test('DEFAULT_WEATHER_CITIES does NOT include colombo (removed per request)', () => {
+        expect(DEFAULT_WEATHER_CITIES).not.toContain('colombo');
     });
 
     test('DEFAULT_WEATHER_CITIES includes chennai, trichy, muscat', () => {
@@ -52,8 +52,26 @@ describe('weatherLocations – Slice 59A', () => {
         expect(result).toContain('muscat');
     });
 
-    test('getConfiguredWeatherCities migrates missing colombo for small lists', () => {
-        const settings = { weather: { cities: ['chennai', 'trichy'] } };
+    test('getConfiguredWeatherCities strips force-injected colombo when upgrading from v7 restore', () => {
+        const settings = {
+            weather: {
+                cities: ['chennai', 'trichy', 'colombo'],
+                locationConfigVersion: 'weather-locations-v7-colombo-restored',
+            },
+        };
+        const result = getConfiguredWeatherCities(settings);
+        expect(result).not.toContain('colombo');
+        expect(result).toContain('chennai');
+        expect(result).toContain('trichy');
+    });
+
+    test('getConfiguredWeatherCities keeps colombo a user added on the current version', () => {
+        const settings = {
+            weather: {
+                cities: ['chennai', 'colombo'],
+                locationConfigVersion: 'weather-locations-v8-colombo-removed',
+            },
+        };
         const result = getConfiguredWeatherCities(settings);
         expect(result).toContain('colombo');
     });

@@ -367,7 +367,8 @@ export function computeImpactScore(item, section, viewCount = 0, overrideSetting
 
     // Severity multiplier — real harm/conflict coverage gets extra weight; entertainment-guarded items get none (RC-3 fix)
     const fullText = `${item.title} ${item.description}`;
-    const sevHits = matchesEntertainmentGuard(fullText) ? [] : severityHits(fullText);
+    const entertainmentGuarded = matchesEntertainmentGuard(fullText);
+    const sevHits = entertainmentGuarded ? [] : severityHits(fullText);
     const severityMultiplier = sevHits.length
         ? Math.min(DEFAULT_RANKING_POLICY.severityBoost ** Math.min(sevHits.length, 3), 5)
         : 1.0;
@@ -422,10 +423,18 @@ export function computeImpactScore(item, section, viewCount = 0, overrideSetting
     const day = now.getDay();
     const isWeekend = (day === 0 || day === 6 || day === 5); // Fri, Sat, Sun
 
-    // 1. Entertainment Boost (Always active for target sections)
+    // 1. Entertainment Boost (active for target sections) — but NOT for items
+    //    matching the entertainment guard (game trailers, "God of War", gameplay
+    //    reveals, season/episode promos). Those promotional items previously got
+    //    a 2.5x lift that floated them above hard news in the cross-section Top
+    //    Stories feed (RC-1 follow-up). The guard now strips that artificial lift.
     if (['entertainment', 'social', 'movies'].includes(section) || item.section === 'entertainment') {
-        const entBoost = scoringSettings.rankingWeights?.temporal?.entertainmentBoost || 2.5;
-        temporalMultiplier *= entBoost;
+        if (entertainmentGuarded) {
+            item._rankDecisions = [...(item._rankDecisions || []), 'entertainment temporal boost suppressed: entertainment guard'];
+        } else {
+            const entBoost = scoringSettings.rankingWeights?.temporal?.entertainmentBoost || 2.5;
+            temporalMultiplier *= entBoost;
+        }
     }
 
     // 2. Weekend Boost (Active on Fri-Sun for leisure/local content)

@@ -3,14 +3,22 @@
  *
  * Release 6K / 59A update:
  * - Top 300 governed selectable weather cities.
- * - Default selected cities include Colombo (restored per 59A closure).
- * - Migration: old configs missing Colombo get it added on first load.
+ * - Default selected cities: Chennai, Trichy, Muscat (Colombo removed per request).
+ * - Migration: configs that still carry the previously force-injected Colombo
+ *   get it stripped on first load (reverses the 59A auto-restore). Users who
+ *   add Colombo back themselves keep it — see getConfiguredWeatherCities.
  * - User settings store stable city keys only.
  */
 
-export const WEATHER_LOCATION_CONFIG_VERSION = 'weather-locations-v7-colombo-restored';
+export const WEATHER_LOCATION_CONFIG_VERSION = 'weather-locations-v8-colombo-removed';
 
-export const DEFAULT_WEATHER_CITIES = ['chennai', 'trichy', 'muscat', 'colombo'];
+export const DEFAULT_WEATHER_CITIES = ['chennai', 'trichy', 'muscat'];
+
+// Cities that earlier versions force-injected and that the colombo-removal
+// migration should strip exactly once (only while upgrading from the old
+// auto-restore version).
+const AUTO_RESTORE_LEGACY_CITIES = ['colombo'];
+const COLOMBO_RESTORE_VERSION = 'weather-locations-v7-colombo-restored';
 
 const LOCATION_ROWS = [
     ['chennai', 'Chennai', 'India', 'Tamil Nadu', 'Asia/Kolkata', 13.0827, 80.2707, '🏛️', ['madras']],
@@ -461,14 +469,17 @@ export function getConfiguredWeatherCities(settings) {
 
     if (normalized.length === 0) return [...DEFAULT_WEATHER_CITIES];
 
-    const alreadyMigrated =
-        settings?.weather?.locationConfigVersion === WEATHER_LOCATION_CONFIG_VERSION;
+    const configVersion = settings?.weather?.locationConfigVersion;
+    const alreadyMigrated = configVersion === WEATHER_LOCATION_CONFIG_VERSION;
 
     if (!alreadyMigrated) {
-        // Migration: ensure colombo is present; do NOT pad with other defaults
-        // (user may have intentionally chosen a small list like ['colombo'] only)
-        if (!normalized.includes('colombo')) {
-            return uniqueWeatherCities([...normalized, 'colombo']);
+        // Colombo-removal migration: only configs coming from the prior
+        // force-restore version (v7) get the auto-injected cities stripped.
+        // This reverses the 59A auto-add without touching lists a user built
+        // on any other version.
+        if (configVersion === COLOMBO_RESTORE_VERSION) {
+            const pruned = normalized.filter((city) => !AUTO_RESTORE_LEGACY_CITIES.includes(city));
+            return pruned.length ? pruned : [...DEFAULT_WEATHER_CITIES];
         }
         return normalized;
     }

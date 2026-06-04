@@ -143,39 +143,6 @@ function getDayLabel(dateKey) {
   return date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
 }
 
-function groupPlannerPayloads(items = []) {
-  const grouped = new Map();
-  for (const item of items || []) {
-    if (!item?.plannerEligible || !item?.eventDateKey) continue;
-    const payload = {
-      id: item.canonicalId || item.hiddenKey || item.rawSourceId,
-      hiddenKey: item.canonicalId || item.hiddenKey || item.rawSourceId,
-      canonicalId: item.canonicalId || item.hiddenKey || item.rawSourceId,
-      title: item.title,
-      category: item.category,
-      type: getItemType(item.category),
-      link: item.link,
-      description: item.description || item.summary || '',
-      icon: null,
-      eventDate: item.eventDate ? new Date(item.eventDate).toISOString() : item.eventDateKey,
-      eventDateKey: item.eventDateKey,
-      dateConfidence: item.dateConfidence,
-      locationCanonical: item.locationCanonical || null,
-      isOffer: ['shopping', 'airlines', 'offer', 'airline_offer'].includes(String(item.category || '').toLowerCase())
-    };
-    if (!grouped.has(item.eventDateKey)) grouped.set(item.eventDateKey, []);
-    grouped.get(item.eventDateKey).push(payload);
-  }
-  return grouped;
-}
-
-function persistPlannerCandidates(items = []) {
-  const grouped = groupPlannerPayloads(items);
-  for (const [dateKey, payloads] of grouped.entries()) {
-    plannerStorage.merge([dateKey], payloads);
-  }
-}
-
 function formatPlanLabel(dateKey) {
   const [year, month, day] = dateKey.split('-').map(Number);
   const d = new Date(year, month - 1, day);
@@ -630,7 +597,10 @@ export async function fetchLiveUpAheadData(upAheadSettings = {}) {
       settings: { upAhead: upAheadSettings }
     });
 
-    persistPlannerCandidates(result.rankedItems || []);
+    // NOTE: We deliberately do NOT auto-persist ranked items into the planner.
+    // The planner is for MANUAL additions only (user taps "+ Plan"); automatic
+    // suggestions belong in the "Suggested" feed. Auto-persisting here was the
+    // cause of the planner silently filling with weather/power-cut alerts.
     const display = buildLegacyDisplayFromRanked(result.rankedItems || [], {
       auditSummary: result.auditSummary,
       dropReport: result.dropReport

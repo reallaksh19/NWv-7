@@ -233,6 +233,51 @@ function groupOnlineOffers(offers = []) {
   return [...grouped, ...singles];
 }
 
+// Sort key for the Suggested feed: prefer a real upcoming event/release date,
+// otherwise fall back to publish recency.
+function getSuggestedSortMs(item) {
+  const eventMs = getEventDateMs(item?.date || item?.releaseDate || item?.eventStartAt);
+  if (eventMs > 0) return eventMs;
+  return publishedMs(item);
+}
+
+// The "Suggested" tab is the automatic, cross-category feed (the planner is
+// manual-only). Combine the auto-derived categories — releases, events,
+// festivals, offers, civic — rank them (soonest upcoming first, then most
+// recent), dedupe, and cap.
+function buildSuggestedItems({ movieCards, festivalCards, eventItems, onlineOffers, offlineOffers, civicAlerts } = {}) {
+  const tagged = [
+    ...asArray(movieCards).map(item => ({ ...item, _suggestKind: 'release' })),
+    ...asArray(festivalCards).map(item => ({ ...item, _suggestKind: 'festival' })),
+    ...asArray(eventItems).map(item => ({ ...item, _suggestKind: 'event' })),
+    ...asArray(onlineOffers).map(item => ({ ...item, _suggestKind: 'offer', isOffer: true })),
+    ...asArray(offlineOffers).map(item => ({ ...item, _suggestKind: 'offer', isOffer: true })),
+    ...asArray(civicAlerts).map(item => ({ ...item, _suggestKind: 'civic' })),
+  ];
+
+  const seen = new Set();
+  const deduped = [];
+  for (const item of tagged) {
+    const key = String(item?.id || item?.link || item?.url || item?.title || '').trim().toLowerCase();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    deduped.push(item);
+  }
+
+  const now = Date.now();
+  return deduped
+    .sort((a, b) => {
+      const aMs = getSuggestedSortMs(a);
+      const bMs = getSuggestedSortMs(b);
+      const aUpcoming = aMs >= now;
+      const bUpcoming = bMs >= now;
+      if (aUpcoming !== bUpcoming) return aUpcoming ? -1 : 1; // upcoming before past
+      if (aUpcoming) return aMs - bMs;                        // soonest upcoming first
+      return bMs - aMs;                                       // most recent first
+    })
+    .slice(0, 24);
+}
+
 function getVisibleUpAheadProjection({ data, settings }) {
   const sections = asSections(data);
   const upAheadSettings = settings?.upAhead || DEFAULT_UPAHEAD_SETTINGS;
@@ -313,6 +358,15 @@ function getVisibleUpAheadProjection({ data, settings }) {
     ...asArray(sections.sports),
   ];
 
+  const suggestedItems = buildSuggestedItems({
+    movieCards,
+    festivalCards,
+    eventItems,
+    onlineOffers,
+    offlineOffers,
+    civicAlerts,
+  });
+
   const visible = {
     weatherAlerts,
     generalAlerts,
@@ -325,6 +379,7 @@ function getVisibleUpAheadProjection({ data, settings }) {
     movieCards,
     festivalCards,
     eventItems,
+    suggestedItems,
   };
 
   return {
@@ -594,4 +649,5 @@ export const __upAheadPageViewModelInternalsForTest = {
   formatConciseDate,
   getEventDateMs,
   getVisibleUpAheadProjection,
+  buildSuggestedItems,
 };

@@ -419,6 +419,7 @@ function UpAheadPage() {
     movieCards,
     festivalCards,
     eventItems,
+    suggestedItems,
     upAheadEvidence,
     upAheadBriefing,
 
@@ -426,7 +427,6 @@ function UpAheadPage() {
     setShowDiagnostics,
     loadData,
     handleAddToPlan,
-    handleRemoveFromPlan,
     removeUpAheadLocation,
     promptAddUpAheadLocation,
     watchlistError,
@@ -605,41 +605,16 @@ function UpAheadPage() {
         )}
 
         {view === 'plan' && (
-          <div className="ua-weekly-plan">
+          <div className="ua-tab-view">
             <ProgressBar active={loading || isRefreshing} style={{ marginBottom: '10px', borderRadius: '4px' }} />
-            {Array.isArray(data.weekly_plan) ? data.weekly_plan.map((dayData, dIdx) => (
-              <div key={dIdx} className="modern-card" style={{ marginBottom: '16px' }}>
-                <div className="modern-card__header" style={{ paddingBottom: '0', borderBottom: 'none' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div className="ua-plan-ribbon" style={{ borderRadius: '8px' }}>
-                      <div style={{ fontSize: '0.95rem', fontWeight: 800, whiteSpace: 'nowrap' }}>
-                        {dayData.day}
-                      </div>
-                    </div>
-                    <span style={{ opacity: 0.8, fontWeight: 500, color: 'var(--text-muted)' }}>{dayData.date}</span>
-                  </div>
-                </div>
-                <div className="ua-plan-day-content" style={{ border: 'none', padding: '8px 0 0 0', background: 'transparent' }}>
-                  {dayData.items && dayData.items.length > 0 ? (
-                    dayData.items.map((item, idx) => (
-                      <div key={idx} className="ua-plan-event-item" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
-                        <button className="ua-plan-delete-btn" onClick={(event) => { event.preventDefault(); handleRemoveFromPlan(item); }} aria-label="Remove event" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.9rem', padding: '0 8px 0 0' }}>✕</button>
-                        <a href={item.link} target="_blank" draggable="false" rel="noopener noreferrer" style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: 'inherit' }}>
-                          <span className="ua-event-icon">{item.icon}</span>
-                          <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            <span className="ua-event-title">{sanitizeHtmlText(item.title)}</span>
-                            {item.isOffer && <span className="ua-offer-badge">🛒 Ends Today</span>}
-                          </div>
-                        </a>
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <button className="ua-plan-action-btn" onClick={(event) => { event.preventDefault(); downloadCalendarEvent(item.title, item.description || item.title); }} title="Add to Calendar" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem' }}>📅</button>
-                        </div>
-                      </div>
-                    ))
-                  ) : <span className="ua-plan-empty" style={{ padding: '10px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>-</span>}
-                </div>
-              </div>
-            )) : <div style={{ textAlign: 'center', padding: '20px' }}>Data unavailable.</div>}
+            {/* Suggested is the automatic, cross-category feed (releases, events,
+                festivals, offers, civic). The planner itself is manual-add only. */}
+            <GridSection
+              items={suggestedItems}
+              colorClass="type-event"
+              emptyMessage="No suggestions right now. Pull to refresh."
+              onAddToPlan={handleAddToPlan}
+            />
           </div>
         )}
 

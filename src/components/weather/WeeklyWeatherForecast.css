@@ -178,3 +178,57 @@
   color: #94a3b8;
   font-size: 0.84rem;
 }
+
+/* Light-mode overrides — the base styles above are tuned for the default dark
+   theme (light text on dark glass). In light mode that text washes out, so flip
+   the card/rows to light surfaces and route text through the theme tokens. */
+[data-theme="light"] .wwf-card {
+  background:
+    radial-gradient(520px 180px at 100% 0%, rgba(20, 184, 166, 0.10), transparent 70%),
+    var(--bg-secondary);
+  border-color: var(--border-default);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .wwf-header {
+  border-bottom-color: var(--border-default);
+}
+
+[data-theme="light"] .wwf-header h3,
+[data-theme="light"] .wwf-day,
+[data-theme="light"] .wwf-temp strong {
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .wwf-condition,
+[data-theme="light"] .wwf-temp span,
+[data-theme="light"] .wwf-metric strong {
+  color: var(--text-secondary);
+}
+
+[data-theme="light"] .wwf-metric span,
+[data-theme="light"] .wwf-empty {
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .wwf-eyebrow {
+  color: #0f766e;
+}
+
+[data-theme="light"] .wwf-row {
+  background: rgba(15, 23, 42, 0.03);
+  border-color: var(--border-default);
+}
+
+[data-theme="light"] .wwf-row--today {
+  background: rgba(20, 184, 166, 0.12);
+  border-color: rgba(45, 212, 191, 0.40);
+}
+
+[data-theme="light"] .wwf-city {
+  color: #0f766e;
+}
+
+[data-theme="light"] .wwf-source {
+  color: #1e40af;
+}

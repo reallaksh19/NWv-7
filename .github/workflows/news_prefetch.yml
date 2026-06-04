@@ -55,6 +55,7 @@ jobs:
         run: python scripts/fetch_insight_stories.py
 
       - name: Validate Insight prefetch quality
+        continue-on-error: true        # observability, NOT a deploy gate (INS-1 fix)
         run: python scripts/validate_insight_prefetch_output.py
 
       - name: Upload Insight quality report
@@ -71,6 +72,7 @@ jobs:
         run: python scripts/fetch_sections_stories.py
 
       - name: Validate Sections prefetch quality
+        continue-on-error: true        # observability, NOT a deploy gate (INS-1 fix)
         run: python scripts/validate_sections_prefetch_output.py
 
       - name: Upload Sections quality report

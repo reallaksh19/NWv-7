@@ -19,9 +19,11 @@ import {
   getInsightSnapshotRuntimeSummary,
   isSupportedInsightSnapshotSchema,
 } from './insightSnapshotSignalAdapter.js';
+import INSIGHT_POLICY from '../../config/insight_policy.json';
 
 const H = 3_600_000;
-const FRESH_MAX_AGE_MS = 8 * H; // snapshot file age — covers IST night gap between hourly runs
+// INS-3 fix: freshness driven by policy file, not hardcoded constant
+const FRESH_MAX_AGE_MS = (INSIGHT_POLICY.freshMaxAgeHours || 8) * H;
 
 const SNAPSHOT_URL = (() => {
   const base = (import.meta.env.BASE_URL ?? '/').replace(/\/$/, '');
@@ -41,8 +43,14 @@ export async function loadInsightSnapshot({ allowStale = false } = {}) {
     const snapshot = await res.json();
     if (!isSupportedInsightSnapshotSchema(snapshot)) return null;
     if (!Array.isArray(snapshot?.stories)) return null;
-    const age = Date.now() - Number(snapshot.fetchedAt || 0);
-    if (!allowStale && age > FRESH_MAX_AGE_MS) return null;
+    // INS-3 fix: use story-based freshness — fresh if EITHER the file OR the newest story is recent
+    const nowMs = Date.now();
+    const fileAge = nowMs - Number(snapshot.fetchedAt || 0);
+    const newestStoryTs = Math.max(0, ...(snapshot.stories || []).map(s => Number(s.publishedAt || 0)));
+    const storyAge = newestStoryTs > 0 ? nowMs - newestStoryTs : fileAge;
+    const effectiveAge = Math.min(fileAge, storyAge);
+    if (!allowStale && effectiveAge > FRESH_MAX_AGE_MS) return null;
+    snapshot.freshnessMs = effectiveAge;
     const pool = (snapshot?.stories ?? []).map((story, index) => (
       enrichRawStoryWithSnapshotSignals({
         ...story,

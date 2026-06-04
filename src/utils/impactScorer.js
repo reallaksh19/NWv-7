@@ -1,54 +1,67 @@
+import { matchesEntertainmentGuard, severityHits, geoScaleScore, DEFAULT_RANKING_POLICY } from '../config/rankingPolicy.js';
+
 /**
  * Calculates impact score based on:
- * 1. Geographic scale (global > national > regional > local)
+ * 1. Geographic scale (global > national > regional > local) — driven by ranking_policy.json
  * 2. Population magnitude (millions > thousands > individuals)
- * 3. User-defined High Impact Keywords (New)
+ * 3. High-impact keywords with optional severity context gate (RC-1 fix)
  */
 export function calculateImpactScore(title, description, settings) {
-    const text = `${title} ${description}`.toLowerCase();
+    const text = `${title} ${description}`;
 
-    // 1. Scale Detection
-    let scaleScore = 1.0;
-    if (/\b(world|international|global|planet|earth|un|united nations)\b/.test(text)) {
-        scaleScore = 1.5; // Global
-    } else if (/\b(india|country|nation|nationwide|federal|central govt|modi|parliament)\b/.test(text)) {
-        scaleScore = 1.3; // National
-    } else if (/\b(state|tamil nadu|kerala|karnataka|region|district)\b/.test(text)) {
-        scaleScore = 1.1; // Regional
-    }
+    // 1. Scale Detection — uses policy geoScale lexicon (RC-4 fix)
+    const scaleScore = geoScaleScore(text);
 
     // 2. Magnitude Detection (Population/Financial Impact)
     let magnitudeScore = 1.0;
+    const textLow = text.toLowerCase();
 
-    // Billions/Trillions
-    if (/\b(billions?|trillions?)\b/.test(text)) {
+    if (/\b(billions?|trillions?)\b/.test(textLow)) {
         magnitudeScore = 1.5;
-    }
-    // Millions / Lakhs / Crores
-    else if (/\b(millions?|lakhs?|crores?)\b/.test(text)) {
+    } else if (/\b(millions?|lakhs?|crores?)\b/.test(textLow)) {
         magnitudeScore = 1.3;
-    }
-    // Thousands
-    else if (/\b(thousands?|hundreds of thousands?)\b/.test(text)) {
+    } else if (/\b(thousands?|hundreds of thousands?)\b/.test(textLow)) {
         magnitudeScore = 1.1;
     }
 
-    // 3. High Impact Keyword Detection (Settings Driven)
+    // 3. High-Impact Keyword Detection — severity-gated to prevent franchise/entertainment false positives (RC-1 fix)
     let keywordMultiplier = 1.0;
-    if (settings && settings.highImpactKeywords && Array.isArray(settings.highImpactKeywords)) {
+    const decisions = [];
+    const guarded = matchesEntertainmentGuard(text);
+
+    for (const entry of DEFAULT_RANKING_POLICY.highImpactKeywords) {
+        const term = (entry.term || '').toLowerCase();
+        if (!term) continue;
+        const re = new RegExp(`\\b${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+        if (!re.test(text)) continue;
+        if (entry.requireSeverityContext) {
+            if (guarded) {
+                decisions.push(`high-impact '${term}' suppressed: entertainment guard`);
+                continue;
+            }
+            if (severityHits(text).length === 0) {
+                decisions.push(`high-impact '${term}' suppressed: no severity context`);
+                continue;
+            }
+        }
+        keywordMultiplier = settings?.rankingWeights?.impact?.highImpactBoost || 2.5;
+        decisions.push(`high-impact keyword '${term}' x${keywordMultiplier}`);
+        break;
+    }
+
+    // Also check legacy settings.highImpactKeywords for backwards compatibility
+    if (keywordMultiplier === 1.0 && settings && Array.isArray(settings.highImpactKeywords)) {
         const hasMatch = settings.highImpactKeywords.some(keyword => {
             if (!keyword) return false;
-            // Case-insensitive match, word boundary check recommended
-            const regex = new RegExp(`\\b${keyword.toLowerCase()}\\b`, 'i');
-            return regex.test(text);
+            const re = new RegExp(`\\b${String(keyword).toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+            return re.test(textLow);
         });
-
         if (hasMatch) {
-            // Use configured boost or default to 2.5
             keywordMultiplier = settings.rankingWeights?.impact?.highImpactBoost || 2.5;
+            decisions.push(`legacy high-impact keyword match x${keywordMultiplier}`);
         }
     }
 
-    // Combined multiplier (Base 1.0, max ~2.25 * keywordMultiplier)
+    calculateImpactScore._lastDecisions = decisions;
     return scaleScore * magnitudeScore * keywordMultiplier;
 }

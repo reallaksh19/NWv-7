@@ -1,26 +1,16 @@
+import { DEFAULT_RANKING_POLICY } from '../config/rankingPolicy.js';
+
 /**
  * temporalScorer.js — Exponential time-decay freshness scorer.
  *
  * Replaces hard freshness cut-offs with smooth decay:
  *   weight = e^(-λ × age_hours)   where λ = ln(2) / halfLifeHours
  *
- * Breaking news (HALF_LIFE = 6h):
- *   0h   → weight 1.00
- *   6h   → weight 0.50
- *   12h  → weight 0.25
- *   24h  → weight 0.06
- *   48h  → weight 0.004
- *
- * Long-form / analysis / opinion (LONG_FORM_HALF_LIFE = 36h):
- *   0h   → weight 1.00
- *   12h  → weight 0.79
- *   24h  → weight 0.63
- *   36h  → weight 0.50
- *   72h  → weight 0.25
+ * Half-lives are driven by ranking_policy.json (default 10h / 36h).
  */
 
-const HALF_LIFE_HOURS = 6;
-const LONG_FORM_HALF_LIFE_HOURS = 36;
+const HALF_LIFE_HOURS = DEFAULT_RANKING_POLICY.freshness.halfLifeHours;
+const LONG_FORM_HALF_LIFE_HOURS = DEFAULT_RANKING_POLICY.freshness.longFormHalfLifeHours;
 
 function lambda(halfLifeHours) {
   return Math.LN2 / halfLifeHours;
@@ -35,7 +25,7 @@ function isLongForm(article) {
  * @param {number} baseScore      Raw impact/relevance score (e.g. 0–10)
  * @param {number} publishedAt    Unix timestamp in milliseconds
  * @param {number} [now]          Override for unit testing
- * @param {number} [halfLifeHours] Decay half-life; defaults to 6h (breaking news)
+ * @param {number} [halfLifeHours] Decay half-life; defaults to policy value (10h)
  * @returns {number}              Time-decayed score (always >= 0)
  */
 export function temporalScore(baseScore, publishedAt, now = Date.now(), halfLifeHours = HALF_LIFE_HOURS) {
@@ -46,7 +36,7 @@ export function temporalScore(baseScore, publishedAt, now = Date.now(), halfLife
 
 /**
  * Re-rank an array of articles by decayed score.
- * Analysis/opinion/feature sections use a 36h half-life; all others use 6h.
+ * Analysis/opinion/feature sections use the long-form half-life; all others use the standard.
  * Non-destructive.
  * @param {Array<{impactScore?: number, publishedAt: number, section?: string}>} articles
  * @returns {Array} Sorted highest temporal-score first

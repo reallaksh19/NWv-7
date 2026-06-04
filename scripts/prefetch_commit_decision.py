@@ -177,6 +177,28 @@ def has_meaningful_diff(paths: list[Path]) -> bool:
     return False
 
 
+_HEARTBEAT_MS = 3 * 3600 * 1000  # 3 hours in milliseconds
+
+def _committed_fetched_at(path: str = "public/newsdata/insight_latest.json") -> int:
+    try:
+        blob = subprocess.run(
+            ["git", "show", f"HEAD:{path}"],
+            capture_output=True, text=True, check=True,
+        ).stdout
+        return int(json.loads(blob).get("fetchedAt", 0))
+    except Exception:
+        return 0
+
+def _disk_fetched_at(path: str = "public/newsdata/insight_latest.json") -> int:
+    try:
+        return int(json.loads(Path(path).read_text()).get("fetchedAt", 0))
+    except Exception:
+        return 0
+
+def _heartbeat_needed(path: str = "public/newsdata/insight_latest.json") -> bool:
+    return (_disk_fetched_at(path) - _committed_fetched_at(path)) >= _HEARTBEAT_MS
+
+
 def write_github_output(values: dict[str, str]) -> None:
     output_path = os.environ.get("GITHUB_OUTPUT")
     if not output_path:
@@ -207,10 +229,19 @@ def build_manifest() -> dict[str, Any]:
     should_commit = bool(changed_content_files)
     diagnostic_only = bool(changed_diagnostic_files) and not should_commit
 
+    # INS-2 fix: heartbeat republish so fetchedAt advances even when clusters are unchanged
+    heartbeat_triggered = False
+    if not should_commit:
+        heartbeat_triggered = _heartbeat_needed("public/newsdata/insight_latest.json")
+        if heartbeat_triggered:
+            should_commit = True
+            diagnostic_only = False
+
     return {
         "generatedAt": int(time.time() * 1000),
-        "policyVersion": "prefetch-commit-policy-v1",
+        "policyVersion": "prefetch-commit-policy-v2",
         "shouldCommit": should_commit,
+        "heartbeatTriggered": heartbeat_triggered,
         "diagnosticOnly": diagnostic_only,
         "changedFiles": changed_files,
         "changedContentFiles": changed_content_files,

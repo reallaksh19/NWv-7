@@ -13,6 +13,7 @@ import '../styles/InsightPage.css';
 import GradeBadge from '../components/audit/GradeBadge.jsx';
 import { auditInsightTabQuality } from '../services/pageAuditGrading.js';
 import { useInsightTabViewModel } from '../viewModels/useInsightTabViewModel.js';
+import INSIGHT_POLICY from '../../config/insight_policy.json';
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
@@ -1264,7 +1265,7 @@ function InsightTab({ result, source }) {
       </div>
 
       <div className="ins-meta" style={{ marginTop: 8 }}>
-        <span>{freshnessMinutes == null ? 'Freshness unknown' : `Data from ~${freshnessMinutes} min ago`}</span>
+        <span>{freshnessMinutes == null ? 'Freshness unknown' : `Data from ~${freshnessMinutes} min ago · source ${sourceLabel} · fresh<${INSIGHT_POLICY.freshMaxAgeHours}h`}</span>
         <span>·</span>
         <span>{sourceGroupCount} source groups</span>
         <span>·</span>

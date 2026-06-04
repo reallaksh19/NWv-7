@@ -7,6 +7,8 @@ import { useSettings } from './SettingsContext';
 import { runFullAudit } from '../utils/newsAudit';
 import { deduplicateAndCluster } from '../utils/similarity';
 import { getRuntimeCapabilities } from '../runtime/runtimeCapabilities';
+import { loadFreshBreakingItems } from '../adapters/breakingSnapshotFetcher';
+import { mergeBreakingNews } from '../services/breakingNewsService';
 
 const NewsContext = createContext();
 
@@ -17,6 +19,8 @@ export function NewsProvider({ children }) {
     const prevVersion = useRef(settingsVersion);
     const [newsData, setNewsData] = useState({});
     const [breakingNews, setBreakingNews] = useState([]);
+    // Workflow-computed breaking snapshot (server-side flags), polled separately.
+    const [snapshotBreaking, setSnapshotBreaking] = useState([]);
     const [loading, setLoading] = useState(true);
     const [loadedSections, setLoadedSections] = useState([]);
     const [errors, setErrors] = useState({});
@@ -219,6 +223,35 @@ export function NewsProvider({ children }) {
         }
     }, [settingsVersion, refreshNews]);
 
+    // Breaking snapshot poll (L2): in hybrid mode the in-session detector almost
+    // never fires (it needs < 60-min, multi-source data), so genuine breaking
+    // news gets left behind. Here we trust the workflow-computed breaking
+    // snapshot and poll it on a short cadence to cover the gap between full
+    // section refreshes. An absent file is a valid "nothing breaking" state.
+    useEffect(() => {
+        let cancelled = false;
+        const BREAKING_POLL_MS = 4 * 60 * 1000;
+
+        const pullBreaking = async () => {
+            try {
+                const items = await loadFreshBreakingItems({ force: true });
+                if (!cancelled) setSnapshotBreaking(items);
+            } catch (err) {
+                if (!cancelled) {
+                    console.warn('[NewsContext] breaking snapshot poll failed:', err?.message || err);
+                }
+            }
+        };
+
+        pullBreaking();
+        const breakingTimer = setInterval(pullBreaking, BREAKING_POLL_MS);
+
+        return () => {
+            cancelled = true;
+            clearInterval(breakingTimer);
+        };
+    }, []);
+
     useEffect(() => {
         console.log('[NewsContext] Mounting - Initial fetch (Priority Only)');
         // Initial Fetch: Only Priority Sections
@@ -244,13 +277,17 @@ export function NewsProvider({ children }) {
         };
     }, [refreshNews]);
 
+    // Merge client-detected breaking with the authoritative workflow snapshot
+    // (snapshot wins on conflicts) so consumers see a single ranked list.
+    const mergedBreakingNews = mergeBreakingNews(breakingNews, snapshotBreaking);
+
     return (
         <NewsContext.Provider value={{
             newsData,
             loading,
             errors,
             refreshNews,
-            breakingNews,
+            breakingNews: mergedBreakingNews,
             lastFetch,
             loadSection,
             loadedSections,

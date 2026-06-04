@@ -4,6 +4,8 @@ import { useNews } from '../context/NewsContext';
 import ProgressBar from './ProgressBar';
 import { buildStoryInfoText, getStoryUrl, shortenSourceLabel } from '../utils/storyMeta';
 import { sanitizeHtmlText } from '../utils/htmlText.js';
+import { getRankingPolicy } from '../config/rankingPolicy.js';
+import { computeTrending } from '../utils/trendingUtils.js';
 
 /**
  * News Section Component
@@ -33,9 +35,8 @@ function NewsSection({
     const [infoText, setInfoText] = useState('');
     const { auditResults } = useNews();
 
-    // Get trending threshold from settings (default 12)
     const settings = getSettings();
-    const trendingThreshold = settings.rankingWeights?.trending?.threshold || 12;
+    const rankingPolicy = getRankingPolicy(settings);
 
     const displayCount = expanded ? news.length : Math.min(maxDisplay, news.length);
     const displayNews = news.slice(0, displayCount);
@@ -167,7 +168,7 @@ function NewsSection({
                                 {/* Badges Row */}
                                 <div className="mnc-badges">
                                     {item.isBreaking && <span className="mnc-badge mnc-badge--breaking">⚡ Breaking</span>}
-                                    {(!item.isBreaking && item.impactScore > trendingThreshold) && <span className="mnc-badge mnc-badge--trending">🔥 Trending</span>}
+                                    {computeTrending(item, rankingPolicy) && <span className="mnc-badge mnc-badge--trending">🔥 Trending</span>}
 
                                     {item.sourceCount > 1 && (
                                         <span className="mnc-badge mnc-badge--consensus">

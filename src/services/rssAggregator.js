@@ -26,6 +26,8 @@ import * as staleStoryPolicy from '../intelligence/staleStoryPolicy.js';
 import { recordDiagnostic } from '../data/diagnosticsStore.js';
 import { getRuntimeCapabilities } from '../runtime/runtimeCapabilities.js';
 import { isLiveMode } from '../utils/fetchMode.js';
+import { severityHits, matchesEntertainmentGuard, DEFAULT_RANKING_POLICY } from '../config/rankingPolicy.js';
+import { temporalScore } from './temporalScorer.js';
 
 /**
  * @typedef {Object} NewsItem
@@ -132,8 +134,8 @@ const KEYWORDS = [
     "rain"
 ];
 
-// Pre-compiled Regex for faster matching
-const KEYWORDS_REGEX = new RegExp(KEYWORDS.join('|'), 'i');
+// Pre-compiled Regex for faster matching — word-boundary to prevent "God of War" matching "war" (RC-1)
+const KEYWORDS_REGEX = new RegExp(`\\b(${KEYWORDS.join('|')})\\b`, 'i');
 
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
@@ -289,22 +291,9 @@ export function computeImpactScore(item, section, viewCount = 0, overrideSetting
     const scoringSettings = overrideSettings || getSettings();
     const w = scoringSettings.rankingWeights || {};
 
-    // 1. Freshness Decay (Logistic "News Half-Life" Model)
-    const ageInHours = (Date.now() - item.publishedAt) / (1000 * 60 * 60);
-    const maxBoost = w.freshness?.maxBoost || 3;
-
-    let freshness;
-    if (scoringSettings.rankingMode === 'smart') {
-        // Logistic Decay: Keeps news "fresh" for ~12 hours, then drops rapidly
-        // Score = MaxBoost / (1 + e^(k * (Age - HalfLife)))
-        const halfLife = 12;
-        const k = 0.5; // Steepness
-        freshness = maxBoost / (1 + Math.exp(k * (ageInHours - halfLife)));
-    } else {
-        // Linear fallback
-        const decayHours = w.freshness?.decayHours || 26;
-        freshness = Math.max(0, (decayHours - ageInHours) / decayHours) * maxBoost;
-    }
+    // 1. Freshness — unified exponential model (RC-6 fix: no more 12h cliff)
+    const maxBoost = (w.freshness?.maxBoost || DEFAULT_RANKING_POLICY.weights.freshnessMaxBoost || 3);
+    const freshness = temporalScore(maxBoost, item.publishedAt, Date.now());
 
     // 2. Source Weight and Category Relevance (NEW)
     const sourceScore = calculateSourceScore(item.source);
@@ -376,9 +365,23 @@ export function computeImpactScore(item, section, viewCount = 0, overrideSetting
 
     const baseScore = coreRelevance * sourceMultiplier;
 
-    // Multipliers (Product of multiplicative components)
-    const multipliers = impactMultiplier * proximityMultiplier * noveltyMultiplier *
-        currencyMultiplier * humanInterestMultiplier * visualMultiplier;
+    // Severity multiplier — real harm/conflict coverage gets extra weight; entertainment-guarded items get none (RC-3 fix)
+    const fullText = `${item.title} ${item.description}`;
+    const sevHits = matchesEntertainmentGuard(fullText) ? [] : severityHits(fullText);
+    const severityMultiplier = sevHits.length
+        ? Math.min(DEFAULT_RANKING_POLICY.severityBoost ** Math.min(sevHits.length, 3), 5)
+        : 1.0;
+    if (sevHits.length) {
+        item._rankDecisions = [...(item._rankDecisions || []), `severity: ${sevHits.join(',')} x${severityMultiplier.toFixed(2)}`];
+    }
+
+    // Append impactScorer decisions (RC-1 guard decisions)
+    if (Array.isArray(calculateImpactScore._lastDecisions) && calculateImpactScore._lastDecisions.length) {
+        item._rankDecisions = [...(item._rankDecisions || []), ...calculateImpactScore._lastDecisions];
+    }
+
+    // Hard multipliers (geo/impact, proximity, currency, severity) — no cap needed here
+    const hardMultipliers = impactMultiplier * proximityMultiplier * currencyMultiplier * severityMultiplier;
 
     // --- BUZZ / SECTION-SPECIFIC RANKING (NEW) ---
     // Applies strictly to configured sections (Entertainment, Tech, Sports)
@@ -443,29 +446,38 @@ export function computeImpactScore(item, section, viewCount = 0, overrideSetting
         if (viewCount > 3) seenPenalty = basePenalty / 2; // Extra severe penalty for repeated views
     }
 
-    // Final Calculation with multipliers
-    // Added buzzBoost (additive) and buzzFilterPenalty (multiplicative)
-    const total = (baseScore + buzzBoost) * multipliers * temporalMultiplier * sectionPriority * breakingBoost * liveBoost * seenPenalty * buzzFilterPenalty;
-
-    // Attach breakdown for debugging (only if debug logs enabled or override present)
-    if (scoringSettings.debugLogs || overrideSettings) {
-        item._scoreBreakdown = {
-            freshness,
-            sourceScore,
-            categoryWeight,
-            keywordBoost,
-            sentimentBoost,
-            impact: impactMultiplier,
-            proximity: proximityMultiplier,
-            novelty: noveltyMultiplier,
-            currency: currencyMultiplier,
-            visual: visualMultiplier,
-            sectionPriority,
-            breakingBoost,
-            seenPenalty,
-            total
-        };
+    // Soft-boost cap: novelty × visual × humanInterest × temporalMultiplier must not stack unbounded (RC-5 fix)
+    const SOFT_CAP = DEFAULT_RANKING_POLICY.weights.softBoostCap || 2.0;
+    const softProduct = noveltyMultiplier * visualMultiplier * humanInterestMultiplier * temporalMultiplier;
+    const cappedSoft = Math.min(softProduct, SOFT_CAP);
+    if (softProduct > SOFT_CAP) {
+        item._rankDecisions = [...(item._rankDecisions || []), `soft boosts capped ${softProduct.toFixed(2)}→${SOFT_CAP}`];
     }
+
+    // Final Calculation — hardMultipliers × cappedSoft replaces the old unbounded product
+    const total = (baseScore + buzzBoost) * hardMultipliers * cappedSoft * sectionPriority * breakingBoost * liveBoost * seenPenalty * buzzFilterPenalty;
+
+    // Always-on breakdown for Story Intelligence modal (Phase 0.3)
+    item._scoreBreakdown = {
+        freshness,
+        sourceScore,
+        categoryWeight,
+        keywordBoost,
+        sentimentBoost,
+        impact: impactMultiplier,
+        proximity: proximityMultiplier,
+        novelty: noveltyMultiplier,
+        currency: currencyMultiplier,
+        visual: visualMultiplier,
+        severity: severityMultiplier,
+        sectionPriority,
+        breakingBoost,
+        liveBoost,
+        seenPenalty,
+        temporalMultiplier,
+        total,
+        decisions: item._rankDecisions || [],
+    };
 
     return total;
 }

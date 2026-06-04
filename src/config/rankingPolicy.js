@@ -16,8 +16,11 @@ export function getRankingPolicy(settings = {}) {
 const norm = (s) => ` ${String(s || '').toLowerCase()} `;
 
 export function matchesEntertainmentGuard(text) {
-  const low = norm(text);
-  return DEFAULT_RANKING_POLICY.entertainmentGuard.some((g) => low.includes(` ${g} `) || low.includes(g));
+  // Word/phrase-boundary match (NOT bare substring) so broad words like
+  // "season" / "trailer" can't flag real news such as "monsoon season floods"
+  // or "trailer truck overturns, 3 dead" as entertainment.
+  const low = String(text || '').toLowerCase();
+  return DEFAULT_RANKING_POLICY.entertainmentGuard.some((g) => hasWord(low, g));
 }
 
 export function severityHits(text) {

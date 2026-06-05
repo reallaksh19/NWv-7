@@ -281,13 +281,22 @@ DESTINATION_REGISTRY: list[dict] = [
         "route": "/tech-social",
         "navLabel": "Buzz",
         "destinationType": "feed_trend",
-        "migrationStatus": "NOT_MIGRATED",
+        "migrationStatus": "DERIVED",
         "expectedStaticJson": [],
         "producers": [],
         "workflows": [],
         "validators": [],
-        "consumers": ["src/viewModels/useTechSocialPageViewModel.js", "src/data/datasets/buzzDataset.js"],
-        "note": "GENUINE GAP. Served by client-side buzzDataset.js seed. New static buzz layer should feed the existing dataset/SLO shape, not bypass it.",
+        "consumers": [
+            "src/viewModels/useTechSocialPageViewModel.js",
+            "src/data/datasets/buzzDataset.js",
+        ],
+        "note": (
+            "DERIVED, not greenfield: buzzDataset.load() builds trends from "
+            "loadSectionsDataset() (technology/entertainment/social + viral-filtered "
+            "world/india/local) with a live rssAggregator fallback for technology. A "
+            "precomputed buzz_latest.json is OPTIONAL enrichment that must fall back to "
+            "this derived path, shaped to the buzzDataset/buzzSlo buckets."
+        ),
     },
     {
         "destination": "Newspaper",

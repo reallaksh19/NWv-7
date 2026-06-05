@@ -89,9 +89,18 @@ def test_migrated_destinations_have_static_json():
             assert d["expectedStaticJson"], f"{d['destination']} MIGRATED but has no static JSON"
 
 
-def test_buzz_is_the_only_not_migrated():
+def test_no_greenfield_destinations():
+    """Deeper read showed every destination has a live data path: Buzz derives
+    from Sections, so there is no NOT_MIGRATED greenfield work left."""
     not_migrated = [d["destination"] for d in DESTINATION_REGISTRY if d["migrationStatus"] == "NOT_MIGRATED"]
-    assert not_migrated == ["Buzz"], f"expected only Buzz NOT_MIGRATED, got {not_migrated}"
+    assert not_migrated == [], f"expected zero greenfield destinations, got {not_migrated}"
+
+
+def test_buzz_is_derived_from_sections():
+    buzz = next(d for d in DESTINATION_REGISTRY if d["destination"] == "Buzz")
+    assert buzz["migrationStatus"] == "DERIVED"
+    # no mandatory static producer; any buzz_latest.json is optional enrichment
+    assert buzz["expectedStaticJson"] == []
 
 
 # --------------------------------------------------------------------------- #
@@ -122,4 +131,4 @@ def test_markdown_renders_matrix():
     md = render_markdown(audit())
     assert "# NWv-7 — Destination Contract Baseline" in md
     assert "## Destination matrix" in md
-    assert "Buzz" in md and "NOT_MIGRATED" in md
+    assert "Buzz" in md and "DERIVED" in md

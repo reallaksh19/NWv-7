@@ -107,7 +107,7 @@ function buildRankingAudit(rankings) {
       overallScore: null,
       overallGrade: null,
       rankingVersion: null,
-      message: 'quality_rankings.json not available; run build_quality_rankings.py before dashboard generation to populate rankingAudit.',
+      message: 'quality_rankings.json not available; run the quality ranking builder before dashboard generation to populate rankingAudit.',
       destinationScores: {},
       destinationStatuses: {},
       rankingProfiles: {},

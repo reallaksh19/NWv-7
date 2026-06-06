@@ -19,15 +19,12 @@ from audit_destination_contracts import (
     staged_match,
 )
 
-# --------------------------------------------------------------------------- #
-# staged_match — pure logic used by the G3 "is every output staged?" gate
-# --------------------------------------------------------------------------- #
+
 def test_staged_match_exact_path():
     assert staged_match("public/data/up_ahead.json", ["public/data/up_ahead.json"])
 
 
 def test_staged_match_directory_prefix():
-    # `git add public/data/` covers everything beneath it
     assert staged_match("public/data/planner_latest.json", ["public/data/"])
 
 
@@ -42,9 +39,6 @@ def test_staged_match_negative():
     )
 
 
-# --------------------------------------------------------------------------- #
-# Detectors against the live repo
-# --------------------------------------------------------------------------- #
 def test_routes_and_nav_detected():
     routes = detect_routes()
     nav = detect_nav()
@@ -54,27 +48,22 @@ def test_routes_and_nav_detected():
 
 
 def test_every_nav_destination_has_a_contract():
-    """No orphan bottom-nav destinations (registry must cover the nav)."""
     nav_paths = {n["path"] for n in detect_nav()}
     contract_routes = {d["route"] for d in DESTINATION_REGISTRY}
     missing = nav_paths - contract_routes
     assert not missing, f"bottom-nav destinations with no contract: {missing}"
 
 
-# --------------------------------------------------------------------------- #
-# Reconciliation guardrails (G2: reuse filenames, never fork)
-# --------------------------------------------------------------------------- #
 FORK_BLOCKLIST = {
     "weather_latest.json",
     "market_latest.json",
     "newspaper_latest.json",
     "data_health_dashboard.json",
+    "buzz_latest.json",
 }
 
 
 def test_no_forked_latest_siblings():
-    """A destination already served by a snapshot must not also list a
-    parallel *_latest.json. Locks in the in-place reconciliation."""
     for d in DESTINATION_REGISTRY:
         for j in d["expectedStaticJson"]:
             leaf = j.split("/")[-1]
@@ -90,36 +79,35 @@ def test_migrated_destinations_have_static_json():
 
 
 def test_no_greenfield_destinations():
-    """Deeper read showed every destination has a live data path: Buzz derives
-    from Sections, so there is no NOT_MIGRATED greenfield work left."""
     not_migrated = [d["destination"] for d in DESTINATION_REGISTRY if d["migrationStatus"] == "NOT_MIGRATED"]
     assert not_migrated == [], f"expected zero greenfield destinations, got {not_migrated}"
 
 
-def test_buzz_is_derived_from_sections():
+def test_buzz_is_derived_from_sections_without_new_json():
     buzz = next(d for d in DESTINATION_REGISTRY if d["destination"] == "Buzz")
     assert buzz["migrationStatus"] == "DERIVED"
-    # no mandatory static producer; any buzz_latest.json is optional enrichment
-    assert buzz["expectedStaticJson"] == []
+    assert buzz["expectedStaticJson"] == ["public/newsdata/sections_latest.json"]
+    assert buzz["producers"] == ["scripts/fetch_sections_stories.py"]
+    assert buzz["workflows"] == ["news_prefetch.yml"]
+    assert buzz["validators"] == ["scripts/validate_sections_prefetch_output.py"]
+    assert not any(path.endswith("buzz_latest.json") for path in buzz["expectedStaticJson"])
 
 
-# --------------------------------------------------------------------------- #
-# audit() integration
-# --------------------------------------------------------------------------- #
 def test_audit_shape_and_invariants():
     data = audit()
     assert data["schemaVersion"] == 1
     assert data["summary"]["contractsDefined"] == len(DESTINATION_REGISTRY)
     assert data["errors"] == []
-    # weather is already static-first via weather_snapshot.json
     weather = next(d for d in data["destinations"] if d["destination"] == "Weather")
     assert weather["migrationStatus"] == "MIGRATED"
     assert any(p["path"].endswith("weather_snapshot.json") for p in weather["staticPresent"])
     assert weather["staticMissing"] == []
+    buzz = next(d for d in data["destinations"] if d["destination"] == "Buzz")
+    assert buzz["migrationStatus"] == "DERIVED"
+    assert any(p["path"].endswith("sections_latest.json") for p in buzz["staticPresent"])
 
 
 def test_audit_reports_sections_retain_gap_mechanism():
-    """Robust to the eventual fix: assert the gap is *measured*, not that it's open."""
     gap = audit()["summary"]["sectionsRetainGap"]
     assert gap is not None
     assert set(gap) >= {"collectorRetainHours", "adapterMaxAgeHours", "gap"}
@@ -132,3 +120,4 @@ def test_markdown_renders_matrix():
     assert "# NWv-7 — Destination Contract Baseline" in md
     assert "## Destination matrix" in md
     assert "Buzz" in md and "DERIVED" in md
+    assert "sections_latest.json" in md

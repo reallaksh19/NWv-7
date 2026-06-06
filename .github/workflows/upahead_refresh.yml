@@ -47,6 +47,24 @@ jobs:
         if: ${{ github.event.schedule == '30 21 * * 6' || github.event_name == 'workflow_dispatch' }}
         run: python scripts/fetch_festivals.py
 
+      - name: Enrich UpAhead lifecycle contract
+        run: python scripts/enrich_upahead_contract.py
+
+      - name: Validate UpAhead lifecycle contract
+        # Hard gate only for structural lifecycle/horizon failures. Thin pools are
+        # WARN and still exit 0 so static fallback availability is preserved.
+        run: python scripts/validate_upahead_prefetch_output.py
+
+      - name: Upload UpAhead quality report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: upahead-quality-report
+          path: |
+            public/data/up_ahead_quality_report.json
+            public/data/up_ahead_quality_summary.md
+          if-no-files-found: warn
+
       - name: Commit data
         run: |
           git config user.name "github-actions[bot]"

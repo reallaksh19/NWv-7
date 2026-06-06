@@ -14,7 +14,7 @@ import re
 from collections import Counter, defaultdict
 from typing import Any
 
-COLLECTOR_VERSION = "insight-collector-json-v3"
+COLLECTOR_VERSION = "insight-collector-json-v4"
 
 SLOT_ORDER = ["now", "minus4h", "minus12h", "minus24h"]
 
@@ -131,6 +131,16 @@ def _tokens(text: str) -> list[str]:
     ]
 
 
+def primary_angle(story: dict[str, Any]) -> str:
+    hints = story.get("angleHints") or story.get("storySignals", {}).get("angleHints") or []
+    if not hints:
+        return "base_report"
+    hint = hints[0]
+    if isinstance(hint, str):
+        return hint
+    return str(hint.get("angle") or "base_report")
+
+
 def infer_angle_hints(story: dict[str, Any]) -> list[dict[str, Any]]:
     text = _text(story).lower()
     hints = []
@@ -143,7 +153,6 @@ def infer_angle_hints(story: dict[str, Any]) -> list[dict[str, Any]]:
                 "score": round(min(1.0, 0.45 + 0.22 * len(matches)), 3),
                 "matches": matches[:5],
             })
-
     if not hints:
         hints.append({
             "angle": "base_report",
@@ -214,10 +223,7 @@ def build_slot_quality(stories: list[dict[str, Any]], slot_meta: dict[str, Any])
         ids = slot_meta.get(slot, {}).get("storyIds", [])
         slot_stories = [by_id[sid] for sid in ids if sid in by_id]
         source_groups = {story.get("sourceGroup") or story.get("source") or "unknown" for story in slot_stories}
-        angle_counts = Counter(
-            (story.get("angleHints") or [{"angle": "base_report"}])[0]["angle"]
-            for story in slot_stories
-        )
+        angle_counts = Counter(primary_angle(story) for story in slot_stories)
 
         quality[slot] = {
             "storyCount": len(slot_stories),
@@ -234,7 +240,7 @@ def build_slot_quality(stories: list[dict[str, Any]], slot_meta: dict[str, Any])
 
 
 def build_source_diversity(stories: list[dict[str, Any]]) -> dict[str, Any]:
-    counts = Counter(story.get("sourceGroup") or story.get("source") or "unknown" for story in stories)
+    counts = Counter(story.get("sourceGroup") or story.get("source") or "unknown_source" for story in stories)
     return {
         "sourceGroupCount": len(counts),
         "topSources": [
@@ -244,9 +250,102 @@ def build_source_diversity(stories: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def build_angle_coverage(stories: list[dict[str, Any]]) -> dict[str, Any]:
+    primary_counts = Counter(primary_angle(story) for story in stories)
+    non_base = sum(
+        1 for story in stories
+        if primary_angle(story) not in {"base_report", "unknown", "missing"}
+    )
+    total = len(stories)
+    return {
+        "storyCount": total,
+        "nonBaseStoryCount": non_base,
+        "nonBaseRatio": round(non_base / max(1, total), 4),
+        "angleCount": len(primary_counts),
+        "topAngles": [
+            {"angle": angle, "count": count}
+            for angle, count in primary_counts.most_common(12)
+        ],
+    }
+
+
+def _story_cluster_tokens(story: dict[str, Any]) -> list[str]:
+    tokens = story.get("storySignals", {}).get("topicTokens", []) or []
+    return [str(token).strip().lower() for token in tokens if str(token).strip()][:4]
+
+
+def build_event_sketches(stories: list[dict[str, Any]], *, max_sketches: int = 12) -> list[dict[str, Any]]:
+    """Build advisory event sketches for workflow QA.
+
+    These are not final Insight parent cards. They are lightweight, additive
+    diagnostics that answer whether the static pool has enough repeated topic
+    signals, sources, slots, and angle diversity to support event clustering.
+    """
+    grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
+
+    for story in stories:
+        tokens = _story_cluster_tokens(story)
+        if not tokens:
+            continue
+        key = "|".join(tokens[:3])
+        grouped[key].append(story)
+
+    sketches = []
+    for key, group in grouped.items():
+        if len(group) < 2:
+            continue
+        group_sorted = sorted(group, key=lambda s: int(s.get("publishedAt") or 0), reverse=True)
+        source_groups = sorted({str(s.get("sourceGroup") or s.get("source") or "unknown_source") for s in group_sorted})
+        slots = sorted({slot for s in group_sorted for slot in (s.get("fetchedForSlots") or [])})
+        angle_counts = Counter(primary_angle(s) for s in group_sorted)
+        token_counts = Counter(token for s in group_sorted for token in _story_cluster_tokens(s))
+        representative = group_sorted[0]
+        sketches.append({
+            "id": f"sketch:{hashlib.sha1(key.encode('utf-8')).hexdigest()[:10]}",
+            "topicKey": key,
+            "storyCount": len(group_sorted),
+            "sourceGroupCount": len(source_groups),
+            "slotCount": len(slots),
+            "angleCount": len(angle_counts),
+            "storyIds": [str(s.get("id")) for s in group_sorted[:8] if s.get("id")],
+            "representativeId": representative.get("id"),
+            "representativeTitle": representative.get("title", "")[:180],
+            "topTokens": [token for token, _ in token_counts.most_common(8)],
+            "topAngles": [
+                {"angle": angle, "count": count}
+                for angle, count in angle_counts.most_common(6)
+            ],
+            "sourceGroups": source_groups[:8],
+            "slots": slots,
+        })
+
+    sketches.sort(
+        key=lambda item: (
+            -item["storyCount"],
+            -item["sourceGroupCount"],
+            -item["angleCount"],
+            item["topicKey"],
+        )
+    )
+    return sketches[:max_sketches]
+
+
+def build_richness_summary(stories: list[dict[str, Any]], event_sketches: list[dict[str, Any]]) -> dict[str, Any]:
+    multi_source = [item for item in event_sketches if item.get("sourceGroupCount", 0) >= 2]
+    multi_angle = [item for item in event_sketches if item.get("angleCount", 0) >= 2]
+    return {
+        "storyCount": len(stories),
+        "eventSketchCount": len(event_sketches),
+        "multiSourceSketchCount": len(multi_source),
+        "multiAngleSketchCount": len(multi_angle),
+        "hasClusterablePool": len(event_sketches) >= 3 and len(multi_source) >= 2,
+    }
+
+
 def optimize_insight_snapshot(snapshot: dict[str, Any], ts: int) -> dict[str, Any]:
     stories = [enrich_story(story) for story in snapshot.get("stories", [])]
     slot_meta = snapshot.get("slotMeta", {})
+    event_sketches = build_event_sketches(stories)
 
     optimized = dict(snapshot)
     optimized["schemaVersion"] = 3
@@ -256,6 +355,9 @@ def optimize_insight_snapshot(snapshot: dict[str, Any], ts: int) -> dict[str, An
     optimized["stories"] = stories
     optimized["slotQuality"] = build_slot_quality(stories, slot_meta)
     optimized["sourceDiversity"] = build_source_diversity(stories)
+    optimized["angleCoverage"] = build_angle_coverage(stories)
+    optimized["eventSketches"] = event_sketches
+    optimized["richnessSummary"] = build_richness_summary(stories, event_sketches)
     optimized["contentHash"] = compute_snapshot_content_hash(stories)
 
     return optimized

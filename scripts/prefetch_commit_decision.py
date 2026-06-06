@@ -11,6 +11,7 @@ Outputs:
   GITHUB_OUTPUT values when running in Actions:
     should_commit=true/false
     changed_content_files=...
+    changed_diagnostic_files=...
     diagnostic_only=true/false
 """
 from __future__ import annotations
@@ -41,6 +42,10 @@ DIAGNOSTIC_FILES = [
     NEWS_DIR / "real_insight_quality_summary.md",
     NEWS_DIR / "quality_dashboard.json",
     NEWS_DIR / "quality_dashboard_history.json",
+    NEWS_DIR / "quality_rankings.json",
+    NEWS_DIR / "quality_rankings.md",
+    NEWS_DIR / "quality_rankings_history.json",
+    NEWS_DIR / "quality_rankings_validation_report.json",
     NEWS_DIR / "section_source_policy_report.json",
     NEWS_DIR / "source_policy_report.json",
 ]
@@ -237,7 +242,7 @@ def build_manifest() -> dict[str, Any]:
 
     return {
         "generatedAt": int(time.time() * 1000),
-        "policyVersion": "prefetch-commit-policy-v3",
+        "policyVersion": "prefetch-commit-policy-v4-ranking-diagnostics",
         "shouldCommit": should_commit,
         "heartbeatTriggered": heartbeat_triggered,
         "diagnosticOnly": diagnostic_only,
@@ -263,6 +268,7 @@ def main() -> int:
         "should_commit": "true" if manifest["shouldCommit"] else "false",
         "diagnostic_only": "true" if manifest["diagnosticOnly"] else "false",
         "changed_content_files": ",".join(manifest["changedContentFiles"]),
+        "changed_diagnostic_files": ",".join(manifest["changedDiagnosticFiles"]),
     })
 
     print(json.dumps({

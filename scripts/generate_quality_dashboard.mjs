@@ -4,6 +4,7 @@ import path from 'node:path';
 const NEWSDATA_DIR = path.resolve('public/newsdata');
 const OUTPUT_PATH = path.join(NEWSDATA_DIR, 'quality_dashboard.json');
 const HISTORY_PATH = path.join(NEWSDATA_DIR, 'quality_dashboard_history.json');
+const QUALITY_RANKINGS_PATH = path.join(NEWSDATA_DIR, 'quality_rankings.json');
 
 function readJson(filePath, fallback = null) {
   try {
@@ -16,6 +17,15 @@ function readJson(filePath, fallback = null) {
 function toNumber(value, fallback = 0) {
   const n = Number(value);
   return Number.isFinite(n) ? n : fallback;
+}
+
+function gradeFromScore(score) {
+  const value = toNumber(score, 0);
+  if (value >= 0.90) return 'A';
+  if (value >= 0.80) return 'B';
+  if (value >= 0.70) return 'C';
+  if (value >= 0.55) return 'D';
+  return 'F';
 }
 
 /**
@@ -57,12 +67,108 @@ function extractSourceGroupCount(report) {
   );
 }
 
+function compactGateSummary(gateSummary = {}) {
+  const compact = {};
+  for (const key of [
+    'rankedItemCount',
+    'suppressedItemCount',
+    'events',
+    'onlineOffers',
+    'offlineOffers',
+    'alerts',
+    'festivals',
+    'buzzTrendCount',
+    'localBuzzCount',
+    'travelBuzzCount',
+    'oneSourceCappedCount',
+    'travelItemCount',
+    'utilityItemCount',
+    'disruptionItemCount',
+    'familyRelevantItemCount',
+    'parentClusters',
+    'strongParents',
+    'weakParentsDemoted',
+    'avgAnglesPerParent',
+    'baseReportHeavyParents',
+    'duplicateChildrenSuppressed',
+  ]) {
+    if (gateSummary[key] !== undefined) compact[key] = gateSummary[key];
+  }
+  if (Array.isArray(gateSummary.locationsCovered)) {
+    compact.locationsCovered = gateSummary.locationsCovered.slice(0, 8);
+  }
+  return compact;
+}
+
+function buildRankingAudit(rankings) {
+  if (!rankings || typeof rankings !== 'object') {
+    return {
+      status: 'MISSING',
+      overallScore: null,
+      overallGrade: null,
+      rankingVersion: null,
+      message: 'quality_rankings.json not available; run build_quality_rankings.py before dashboard generation to populate rankingAudit.',
+      destinationScores: {},
+      destinationStatuses: {},
+      rankingProfiles: {},
+      weakDestinations: [],
+      compactGateSummary: {},
+      topFindings: [],
+      actionRequired: [],
+    };
+  }
+
+  const summary = rankings.summary || {};
+  const destinations = rankings.destinations || {};
+  const destinationScores = summary.destinationScores || {};
+  const destinationStatuses = summary.destinationStatuses || {};
+  const rankingProfiles = summary.rankingProfiles || {};
+  const compactSummaries = {};
+  const findings = [];
+  const actions = [];
+  const weakDestinations = [];
+
+  for (const [name, payload] of Object.entries(destinations)) {
+    compactSummaries[name] = compactGateSummary(payload?.gateSummary || {});
+    const score = toNumber(payload?.qualityScore ?? destinationScores[name], 0);
+    const status = payload?.qualityStatus || destinationStatuses[name] || 'FAIL';
+    if (status !== 'PASS' || score < 0.70) {
+      weakDestinations.push({
+        destination: name,
+        status,
+        score,
+        profile: payload?.rankingProfile || rankingProfiles[name] || 'unknown',
+      });
+    }
+    for (const item of payload?.diagnosticReasons || []) findings.push(`${name}: ${item}`);
+    for (const item of payload?.actionableFindings || []) actions.push(`${name}: ${item}`);
+  }
+
+  const overallScore = toNumber(summary.overallScore, 0);
+  return {
+    status: summary.overallStatus || 'WARN',
+    overallScore,
+    overallGrade: gradeFromScore(overallScore),
+    rankingVersion: rankings.rankingVersion || null,
+    generatedAt: rankings.generatedAt || null,
+    destinationScores,
+    destinationStatuses,
+    rankingProfiles,
+    weakDestinations: weakDestinations.slice(0, 12),
+    compactGateSummary: compactSummaries,
+    topFindings: [...(summary.topFindings || []), ...findings].slice(0, 12),
+    actionRequired: [...(summary.actionRequired || []), ...actions].slice(0, 12),
+  };
+}
+
 function main() {
   const insightQuality = readJson(path.join(NEWSDATA_DIR, 'insight_quality_report.json'), {});
   const sectionsQuality = readJson(path.join(NEWSDATA_DIR, 'sections_quality_report.json'), {});
   const sourcePolicy = readJson(path.join(NEWSDATA_DIR, 'source_policy_report.json'), {});
   const sectionSourcePolicy = readJson(path.join(NEWSDATA_DIR, 'section_source_policy_report.json'), {});
   const realInsightQuality = readJson(path.join(NEWSDATA_DIR, 'real_insight_quality_report.json'), {});
+  const qualityRankings = readJson(QUALITY_RANKINGS_PATH, null);
+  const rankingAudit = buildRankingAudit(qualityRankings);
 
   // Use the richer real-insight-quality report when it has more data
   const primaryReport = extractStoryCount(realInsightQuality) > extractStoryCount(insightQuality)
@@ -87,6 +193,8 @@ function main() {
     angleHintCoverage: toNumber(primaryReport.angleHintCoverage ?? insightQuality.angleHintCoverage, 0),
     sectionsTotalStories: toNumber(sectionsQuality.totalStories, 0),
     sectionsCount: toNumber(sectionsQuality.sectionCount, 0),
+    rankingOverallScore: rankingAudit.overallScore,
+    rankingOverallStatus: rankingAudit.status,
   };
 
   // ── False-zero guard ─────────────────────────────────────────────────────────
@@ -126,7 +234,7 @@ function main() {
   }
 
   const today = new Date(generatedAt).toISOString().slice(0, 10);
-  const history = readJson(HISTORY_PATH, { schemaVersion: 1, days: [] });
+  const history = readJson(HISTORY_PATH, { schemaVersion: 2, days: [] });
   const prunedDays = Array.isArray(history.days) ? history.days.filter(d => d?.date !== today) : [];
 
   prunedDays.push({
@@ -135,6 +243,7 @@ function main() {
     ...latest,
     sourceUptimePercent: toNumber(sourcePolicy.summary?.uptimePercent, 0),
     angleDiversityScore: toNumber(primaryReport.angleDiversityScore ?? insightQuality.angleDiversityScore, 0),
+    rankingWeakDestinationCount: rankingAudit.weakDestinations.length,
   });
 
   prunedDays.sort((a, b) => String(a.date).localeCompare(String(b.date)));
@@ -147,10 +256,11 @@ function main() {
   };
 
   const dashboard = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     generatedAt,
     windowDays: 7,
     latest,
+    rankingAudit,
     sourceHealth: {
       insight: {
         activeFeeds: toNumber(sourcePolicy.summary?.activeFeedCount, 0),
@@ -166,15 +276,18 @@ function main() {
       avgInsightScore7d: avg(days, 'insightScore'),
       sourceUptimePercent7d: avg(days, 'sourceUptimePercent'),
       angleDiversity7d: avg(days, 'angleDiversityScore'),
+      avgRankingScore7d: avg(days, 'rankingOverallScore'),
+      avgRankingWeakDestinations7d: avg(days, 'rankingWeakDestinationCount'),
     },
     history: days,
     notes: [
       'This dashboard reflects the best available insight quality report and guards against false-zero output.',
+      'rankingAudit is compact; full per-tab ranking details remain in quality_rankings.json.',
     ],
   };
 
   fs.mkdirSync(NEWSDATA_DIR, { recursive: true });
-  fs.writeFileSync(HISTORY_PATH, JSON.stringify({ schemaVersion: 1, generatedAt, days }, null, 2));
+  fs.writeFileSync(HISTORY_PATH, JSON.stringify({ schemaVersion: 2, generatedAt, days }, null, 2));
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(dashboard, null, 2));
   console.log(`[generate_quality_dashboard] Wrote ${OUTPUT_PATH} (totalStories: ${latest.totalStories})`);
 }

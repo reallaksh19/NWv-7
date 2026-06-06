@@ -33,15 +33,10 @@ function requireOrder(workflow, before, after) {
   assert(a < b, `Workflow order invalid: ${before} must run before ${after}`);
 }
 
-function stepBlock(workflow, name) {
-  const start = requireStep(workflow, name);
-  const next = workflow.indexOf('\n      - name:', start + 1);
-  return next > start ? workflow.slice(start, next) : workflow.slice(start);
-}
-
 const news = read('.github/workflows/news_prefetch.yml');
 const upahead = read('.github/workflows/upahead_refresh.yml');
 const audit = read('scripts/audit_destination_contracts.py');
+const auditTest = read('scripts/test_audit_destination_contracts.py');
 
 // News workflow contract.
 requireOrder(news, 'Fetch Insight stories', 'Validate Insight prefetch quality');
@@ -67,6 +62,10 @@ requireToken(upahead, 'public/data/', 'Up Ahead workflow must stage public/data 
 rejectToken(upahead, 'news_prefetch', 'Up Ahead workflow must remain independent from news_prefetch workflow');
 
 // Destination registry / no parallel JSON fork guard.
+requireToken(audit, 'public/newsdata/sections_latest.json', 'Buzz/Sections upstream contract must reference sections_latest.json');
+requireToken(audit, 'scripts/fetch_sections_stories.py', 'Buzz/Sections upstream contract must reference Sections producer');
+requireToken(auditTest, 'FORK_BLOCKLIST', 'audit tests must keep a parallel output blocklist');
+requireToken(auditTest, 'test_no_forked_latest_siblings', 'audit tests must reject forked latest siblings');
 for (const forbidden of [
   'buzz_latest.json',
   'weather_latest.json',
@@ -74,10 +73,8 @@ for (const forbidden of [
   'newspaper_latest.json',
   'data_health_dashboard.json',
 ]) {
-  rejectToken(audit, forbidden, `Destination registry must not introduce parallel unused output ${forbidden}`);
+  requireToken(auditTest, forbidden, `audit tests must block parallel unused output ${forbidden}`);
 }
-requireToken(audit, 'public/newsdata/sections_latest.json', 'Buzz/Sections upstream contract must reference sections_latest.json');
-requireToken(audit, 'scripts/fetch_sections_stories.py', 'Buzz/Sections upstream contract must reference Sections producer');
 
 // Existing certification path must include the orchestration script that invokes this validator.
 const packageJson = read('package.json');
@@ -95,7 +92,7 @@ console.log(JSON.stringify({
     'news workflow does not publish Pages directly',
     'Up Ahead workflow enriches and validates lifecycle after event/festival fetches',
     'Up Ahead remains independent from news_prefetch workflow',
-    'destination registry blocks parallel unused *_latest.json outputs',
+    'destination registry tests block parallel unused *_latest.json outputs',
     'workflow certification profile reaches this cross-workflow validator'
   ]
 }, null, 2));

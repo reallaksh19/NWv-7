@@ -4,7 +4,7 @@ Validate generated Insight prefetch JSON.
 This is intentionally stricter than a file-exists check and softer than a
 production outage gate:
   - FAIL: malformed/unsupported JSON or missing core contract fields.
-  - WARN: thin story pool, weak diversity, weak angle-hint coverage.
+  - WARN: thin story pool, weak diversity, weak angle/event richness.
   - WRITE: JSON + Markdown reports for UI/debug/artifacts.
 """
 from __future__ import annotations
@@ -31,6 +31,8 @@ MIN_USABLE_36H_STORIES = 18
 MIN_SOURCE_GROUPS = 5
 MIN_ANGLE_HINT_COVERAGE = 0.35
 MIN_NON_BASE_ANGLE_STORIES = 6
+MIN_EVENT_SKETCHES = 3
+MIN_MULTI_SOURCE_EVENT_SKETCHES = 2
 
 
 def read_json(path: Path, fallback: Any = None) -> Any:
@@ -76,10 +78,12 @@ def story_source_group(story: dict[str, Any]) -> str:
 
 
 def story_is_within_retention_window(story: dict[str, Any], now_ms: int) -> bool:
-    published_at = int(story.get("publishedAt") or 0)
+    try:
+        published_at = int(story.get("publishedAt") or 0)
+    except (TypeError, ValueError):
+        return False
     if published_at <= 0:
         return False
-
     age = now_ms - published_at
     return 0 <= age < 36 * 3_600_000
 
@@ -88,14 +92,12 @@ def build_slot_health(snapshot: dict[str, Any], stories: list[dict[str, Any]]) -
     by_id = {story.get("id"): story for story in stories if story.get("id")}
     slot_meta = snapshot.get("slotMeta", {}) or {}
     slot_quality = snapshot.get("slotQuality", {}) or {}
-
     result = {}
 
     for slot in SLOT_ORDER:
         ids = slot_meta.get(slot, {}).get("storyIds", []) or []
         linked_stories = [by_id[sid] for sid in ids if sid in by_id]
         slot_q = slot_quality.get(slot, {}) or {}
-
         result[slot] = {
             "storyIds": len(ids),
             "linkedStories": len(linked_stories),
@@ -106,6 +108,13 @@ def build_slot_health(snapshot: dict[str, Any], stories: list[dict[str, Any]]) -
         }
 
     return result
+
+
+def _count_event_sketches(snapshot: dict[str, Any]) -> tuple[int, int, int]:
+    sketches = snapshot.get("eventSketches") if isinstance(snapshot.get("eventSketches"), list) else []
+    multi_source = [item for item in sketches if int(item.get("sourceGroupCount") or 0) >= 2]
+    multi_angle = [item for item in sketches if int(item.get("angleCount") or 0) >= 2]
+    return len(sketches), len(multi_source), len(multi_angle)
 
 
 def validate_snapshot(snapshot: dict[str, Any], now_ms: int) -> dict[str, Any]:
@@ -130,6 +139,18 @@ def validate_snapshot(snapshot: dict[str, Any], now_ms: int) -> dict[str, Any]:
     if not int(snapshot.get("fetchedAt") or 0):
         errors.append("fetchedAt is missing or zero")
 
+    if schema >= 3:
+        if not isinstance(snapshot.get("slotQuality"), dict):
+            errors.append("schema v3 snapshot missing slotQuality")
+        if not isinstance(snapshot.get("sourceDiversity"), dict):
+            errors.append("schema v3 snapshot missing sourceDiversity")
+        if not isinstance(snapshot.get("angleCoverage"), dict):
+            errors.append("schema v3 snapshot missing angleCoverage")
+        if not isinstance(snapshot.get("eventSketches"), list):
+            warnings.append("schema v3 snapshot missing eventSketches; Insight event richness cannot be audited")
+        if not isinstance(snapshot.get("richnessSummary"), dict):
+            warnings.append("schema v3 snapshot missing richnessSummary")
+
     total_stories = len(stories)
     source_groups = Counter(story_source_group(story) for story in stories)
     usable_36h = [story for story in stories if story_is_within_retention_window(story, now_ms)]
@@ -150,6 +171,7 @@ def validate_snapshot(snapshot: dict[str, Any], now_ms: int) -> dict[str, Any]:
             angle_counter["missing"] += 1
 
     angle_hint_coverage = len(stories_with_hints) / max(1, total_stories)
+    event_sketch_count, multi_source_event_sketch_count, multi_angle_event_sketch_count = _count_event_sketches(snapshot)
 
     if total_stories < MIN_TOTAL_STORIES:
         warnings.append(f"Thin story pool: {total_stories} stories < recommended {MIN_TOTAL_STORIES}")
@@ -174,8 +196,17 @@ def validate_snapshot(snapshot: dict[str, Any], now_ms: int) -> dict[str, Any]:
             f"Weak non-base angle coverage: {len(non_base_angle_stories)} stories < recommended {MIN_NON_BASE_ANGLE_STORIES}"
         )
 
-    slot_health = build_slot_health(snapshot, stories)
+    if schema >= 3 and event_sketch_count < MIN_EVENT_SKETCHES:
+        warnings.append(
+            f"Weak event sketch coverage: {event_sketch_count} sketches < recommended {MIN_EVENT_SKETCHES}"
+        )
 
+    if schema >= 3 and multi_source_event_sketch_count < MIN_MULTI_SOURCE_EVENT_SKETCHES:
+        warnings.append(
+            f"Weak multi-source event sketch coverage: {multi_source_event_sketch_count} sketches < recommended {MIN_MULTI_SOURCE_EVENT_SKETCHES}"
+        )
+
+    slot_health = build_slot_health(snapshot, stories)
     for slot, health in slot_health.items():
         if health["linkedStories"] == 0:
             warnings.append(f"Slot {slot} has zero linked stories")
@@ -214,15 +245,21 @@ def validate_snapshot(snapshot: dict[str, Any], now_ms: int) -> dict[str, Any]:
             {"angle": angle, "count": count}
             for angle, count in angle_counter.most_common(12)
         ],
+        "eventSketchCount": event_sketch_count,
+        "multiSourceEventSketchCount": multi_source_event_sketch_count,
+        "multiAngleEventSketchCount": multi_angle_event_sketch_count,
+        "richnessSummary": snapshot.get("richnessSummary", {}) if isinstance(snapshot.get("richnessSummary"), dict) else {},
         "slotHealth": slot_health,
         "errors": errors,
         "warnings": warnings,
         "thresholds": {
             "minTotalStories": MIN_TOTAL_STORIES,
-            "minUsable24hStories": MIN_USABLE_36H_STORIES,
+            "minUsable36hStories": MIN_USABLE_36H_STORIES,
             "minSourceGroups": MIN_SOURCE_GROUPS,
             "minAngleHintCoverage": MIN_ANGLE_HINT_COVERAGE,
             "minNonBaseAngleStories": MIN_NON_BASE_ANGLE_STORIES,
+            "minEventSketches": MIN_EVENT_SKETCHES,
+            "minMultiSourceEventSketches": MIN_MULTI_SOURCE_EVENT_SKETCHES,
         },
     }
 
@@ -240,6 +277,8 @@ def write_summary(report: dict[str, Any]) -> None:
         f"- Source groups: `{report['sourceGroupCount']}`",
         f"- Angle hint coverage: `{report['angleHintCoverage']:.0%}`",
         f"- Non-base angle stories: `{report['nonBaseAngleStoryCount']}`",
+        f"- Event sketches: `{report.get('eventSketchCount', 0)}`",
+        f"- Multi-source sketches: `{report.get('multiSourceEventSketchCount', 0)}`",
         "",
         "## Slot health",
         "",
@@ -289,6 +328,8 @@ def main() -> int:
             "sourceGroupCount": 0,
             "angleHintCoverage": 0,
             "nonBaseAngleStoryCount": 0,
+            "eventSketchCount": 0,
+            "multiSourceEventSketchCount": 0,
             "slotHealth": {},
             "topAngles": [],
         })
@@ -307,6 +348,8 @@ def main() -> int:
         "usable36hStoryCount": report["usable36hStoryCount"],
         "sourceGroupCount": report["sourceGroupCount"],
         "angleHintCoverage": report["angleHintCoverage"],
+        "eventSketchCount": report["eventSketchCount"],
+        "multiSourceEventSketchCount": report["multiSourceEventSketchCount"],
         "errors": report["errors"],
         "warnings": report["warnings"],
     }, indent=2))

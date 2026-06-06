@@ -56,6 +56,8 @@ assert(
   'certification gate must run test:news-prefetch-workflow-orchestration'
 );
 
+await import('./validate_prefetch_workflow_contracts.mjs');
+
 console.log(JSON.stringify({
   status: 'PASS',
   checked: 'News + Up Ahead workflow orchestration static slice',

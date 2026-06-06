@@ -1,74 +1,40 @@
 #!/usr/bin/env python3
-"""
-audit_destination_contracts.py — NWv-7 destination contract baseline audit.
+"""NWv-7 destination contract baseline audit.
 
-Phase 0 of the destination-covered static pipeline. Produces a *source-level*
-map of every user-facing destination by cross-referencing the live repository
-against a curated expectation registry, so later phases never build JSON that no
-page reads (or fork a pipeline that already exists).
-
-It auto-detects, at run time:
-  - routes declared in        src/App.jsx
-  - destinations exposed in    src/components/BottomNav.jsx
-  - static JSON actually on    public/data + public/newsdata
-  - schema versions accepted   src/adapters/*.js
-  - outputs staged by          .github/workflows/*.yml
-
-...then reconciles that reality against DESTINATION_REGISTRY (the corrected
-wiring, which reuses existing files such as weather_snapshot.json,
-market_snapshot.json, epaper_data.json and quality_dashboard.json rather than
-inventing parallel *_latest.json siblings).
-
-Emits:
-  - reports/destination_contract_baseline.json   (machine)
-  - reports/destination_contract_baseline.md      (human)
-
-This audit is READ-ONLY with respect to application behavior and never exits
-non-zero on contract divergence — like the Data Health philosophy, it *reports*
-state, it does not gate deployment. It exits non-zero only if it cannot write
-its own artifacts.
+Read-only source-level audit for user-facing destinations. The registry is
+intentionally reconciled to existing consumer files; it must not invent parallel
+*_latest.json siblings when a destination already has a static/runtime path.
 """
 from __future__ import annotations
 
 import fnmatch
 import json
-import os
 import re
 import sys
 import time
 from pathlib import Path
 
-# --------------------------------------------------------------------------- #
-# Paths
-# --------------------------------------------------------------------------- #
 REPO_ROOT = Path(__file__).resolve().parent.parent
 APP_JSX = "src/App.jsx"
 BOTTOM_NAV = "src/components/BottomNav.jsx"
 ADAPTER_DIR = "src/adapters"
 WORKFLOW_DIR = ".github/workflows"
 DATA_DIRS = ["public/data", "public/newsdata"]
-
 OUT_JSON = "reports/destination_contract_baseline.json"
 OUT_MD = "reports/destination_contract_baseline.md"
-
 SCHEMA_VERSION = 1
 
 
-# --------------------------------------------------------------------------- #
-# Safe IO helpers
-# --------------------------------------------------------------------------- #
 def read_text(rel: str) -> str:
-    p = REPO_ROOT / rel
     try:
-        return p.read_text(encoding="utf-8")
+        return (REPO_ROOT / rel).read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError):
         return ""
 
 
 def read_json(rel: str):
-    p = REPO_ROOT / rel
     try:
-        with p.open("r", encoding="utf-8") as fh:
+        with (REPO_ROOT / rel).open("r", encoding="utf-8") as fh:
             return json.load(fh)
     except (OSError, ValueError):
         return None
@@ -78,117 +44,96 @@ def exists(rel: str) -> bool:
     return (REPO_ROOT / rel).exists()
 
 
-# --------------------------------------------------------------------------- #
-# Detectors (live repository reality)
-# --------------------------------------------------------------------------- #
 def detect_routes() -> list[str]:
-    """Every path="..." declared in App.jsx."""
-    text = read_text(APP_JSX)
-    routes = re.findall(r"""path=["']([^"']+)["']""", text)
-    # de-dupe, preserve order
+    routes = re.findall(r"""path=[\"']([^\"']+)[\"']""", read_text(APP_JSX))
     seen, out = set(), []
-    for r in routes:
-        if r not in seen:
-            seen.add(r)
-            out.append(r)
+    for route in routes:
+        if route not in seen:
+            seen.add(route)
+            out.append(route)
     return out
 
 
 def detect_nav() -> list[dict]:
-    """Each { path: '...', label: '...' } entry in BottomNav.jsx."""
-    text = read_text(BOTTOM_NAV)
     nav = []
-    for m in re.finditer(
-        r"""path:\s*['"]([^'"]+)['"]\s*,\s*label:\s*['"]([^'"]+)['"]""", text
+    for match in re.finditer(
+        r"""path:\s*['\"]([^'\"]+)['\"]\s*,\s*label:\s*['\"]([^'\"]+)['\"]""",
+        read_text(BOTTOM_NAV),
     ):
-        nav.append({"path": m.group(1), "label": m.group(2)})
+        nav.append({"path": match.group(1), "label": match.group(2)})
     return nav
 
 
 def scan_static_json() -> dict[str, dict]:
-    """{ 'public/data/x.json': {sizeBytes, schemaVersion} } for every JSON file."""
     out: dict[str, dict] = {}
-    for d in DATA_DIRS:
-        base = REPO_ROOT / d
+    for folder in DATA_DIRS:
+        base = REPO_ROOT / folder
         if not base.is_dir():
             continue
-        for p in sorted(base.glob("*.json")):
-            rel = f"{d}/{p.name}"
-            entry = {"sizeBytes": p.stat().st_size, "schemaVersion": None}
+        for path in sorted(base.glob("*.json")):
+            rel = f"{folder}/{path.name}"
             data = read_json(rel)
-            if isinstance(data, dict) and "schemaVersion" in data:
-                entry["schemaVersion"] = data.get("schemaVersion")
-            out[rel] = entry
+            out[rel] = {
+                "sizeBytes": path.stat().st_size,
+                "schemaVersion": data.get("schemaVersion") if isinstance(data, dict) else None,
+            }
     return out
 
 
 def detect_adapter_schemas() -> dict[str, list[int]]:
-    """Best-effort: schema versions each adapter accepts, via `schema === N`
-    and `schemaVersion ... === N` patterns."""
     out: dict[str, list[int]] = {}
     base = REPO_ROOT / ADAPTER_DIR
     if not base.is_dir():
         return out
-    for p in sorted(base.glob("*.js")):
-        if ".cert." in p.name or ".test." in p.name:
+    for path in sorted(base.glob("*.js")):
+        if ".cert." in path.name or ".test." in path.name:
             continue
-        text = p.read_text(encoding="utf-8", errors="ignore")
+        text = path.read_text(encoding="utf-8", errors="ignore")
         versions = set()
-        for m in re.finditer(r"schema(?:Version)?[^=\n]{0,40}===\s*(\d+)", text):
-            versions.add(int(m.group(1)))
-        for m in re.finditer(r"===\s*(\d+)\s*\|\|[^=\n]{0,20}===\s*(\d+)", text):
-            versions.add(int(m.group(1)))
-            versions.add(int(m.group(2)))
+        for match in re.finditer(r"schema(?:Version)?[^=\n]{0,40}===\s*(\d+)", text):
+            versions.add(int(match.group(1)))
+        for match in re.finditer(r"===\s*(\d+)\s*\|\|[^=\n]{0,20}===\s*(\d+)", text):
+            versions.add(int(match.group(1)))
+            versions.add(int(match.group(2)))
         if versions:
-            out[f"{ADAPTER_DIR}/{p.name}"] = sorted(versions)
+            out[f"{ADAPTER_DIR}/{path.name}"] = sorted(versions)
     return out
 
 
 def detect_int(rel: str, pattern: str):
-    m = re.search(pattern, read_text(rel))
-    return int(m.group(1)) if m else None
+    match = re.search(pattern, read_text(rel))
+    return int(match.group(1)) if match else None
 
 
 def parse_workflows() -> dict[str, dict]:
-    """{ workflow_file: {runs: [scripts...], staged: [tokens...]} }."""
     out: dict[str, dict] = {}
     base = REPO_ROOT / WORKFLOW_DIR
     if not base.is_dir():
         return out
-    for p in sorted(base.glob("*.yml")):
-        text = p.read_text(encoding="utf-8", errors="ignore")
+    for path in sorted(base.glob("*.yml")):
+        text = path.read_text(encoding="utf-8", errors="ignore")
         runs = re.findall(r"(?:python|node)\s+(scripts/[A-Za-z0-9_./-]+)", text)
         staged: list[str] = []
-        for m in re.finditer(r"git add\s+(.+)", text):
-            for tok in m.group(1).split():
-                tok = tok.strip().strip("\\").strip()
-                if tok:
-                    staged.append(tok)
-        out[p.name] = {"runs": sorted(set(runs)), "staged": staged}
+        for match in re.finditer(r"git add\s+(.+)", text):
+            for token in match.group(1).split():
+                token = token.strip().strip("\\").strip()
+                if token:
+                    staged.append(token)
+        out[path.name] = {"runs": sorted(set(runs)), "staged": staged}
     return out
 
 
 def staged_match(path: str, staged_tokens: list[str]) -> bool:
-    """Does any `git add` token cover `path` (exact, directory-prefix, or glob)?"""
-    for tok in staged_tokens:
-        if tok == path:
+    for token in staged_tokens:
+        if token == path:
             return True
-        if tok.endswith("/") and path.startswith(tok):
+        if token.endswith("/") and path.startswith(token):
             return True
-        if "*" in tok and fnmatch.fnmatch(path, tok):
+        if "*" in token and fnmatch.fnmatch(path, token):
             return True
     return False
 
 
-# --------------------------------------------------------------------------- #
-# Curated expectation registry — the *reconciled* wiring.
-#
-# migrationStatus:
-#   MIGRATED     — already served by a committed static JSON the page reads
-#   DERIVED      — built client-side from other MIGRATED feeds (optional static later)
-#   NOT_MIGRATED — no static source yet; a genuine build target
-#   LOCAL_ONLY   — no data pipeline required (device-local / routing only)
-# --------------------------------------------------------------------------- #
 DESTINATION_REGISTRY: list[dict] = [
     {
         "destination": "Main",
@@ -196,10 +141,7 @@ DESTINATION_REGISTRY: list[dict] = [
         "navLabel": "Main",
         "destinationType": "feed",
         "migrationStatus": "MIGRATED",
-        "expectedStaticJson": [
-            "public/newsdata/sections_latest.json",
-            "public/newsdata/breaking_latest.json",
-        ],
+        "expectedStaticJson": ["public/newsdata/sections_latest.json", "public/newsdata/breaking_latest.json"],
         "producers": ["scripts/fetch_sections_stories.py", "scripts/fetch_breaking_news.py"],
         "workflows": ["news_prefetch.yml", "breaking_refresh.yml"],
         "validators": ["scripts/validate_sections_prefetch_output.py"],
@@ -251,12 +193,7 @@ DESTINATION_REGISTRY: list[dict] = [
         "navLabel": "Market",
         "destinationType": "snapshot",
         "migrationStatus": "MIGRATED",
-        "expectedStaticJson": [
-            "public/data/market_snapshot.json",
-            "public/data/market_metrics.json",
-            "public/data/mutual_fund_snapshot.json",
-            "public/data/fx_snapshot.json",
-        ],
+        "expectedStaticJson": ["public/data/market_snapshot.json", "public/data/market_metrics.json", "public/data/mutual_fund_snapshot.json", "public/data/fx_snapshot.json"],
         "producers": ["scripts/market_snapshot_worker.py"],
         "workflows": ["market_refresh.yml"],
         "validators": [],
@@ -282,20 +219,16 @@ DESTINATION_REGISTRY: list[dict] = [
         "navLabel": "Buzz",
         "destinationType": "feed_trend",
         "migrationStatus": "DERIVED",
-        "expectedStaticJson": [],
-        "producers": [],
-        "workflows": [],
-        "validators": [],
-        "consumers": [
-            "src/viewModels/useTechSocialPageViewModel.js",
-            "src/data/datasets/buzzDataset.js",
-        ],
+        "expectedStaticJson": ["public/newsdata/sections_latest.json"],
+        "producers": ["scripts/fetch_sections_stories.py"],
+        "workflows": ["news_prefetch.yml"],
+        "validators": ["scripts/validate_sections_prefetch_output.py"],
+        "consumers": ["src/viewModels/useTechSocialPageViewModel.js", "src/data/datasets/buzzDataset.js"],
         "note": (
             "DERIVED, not greenfield: buzzDataset.load() builds trends from "
-            "loadSectionsDataset() (technology/entertainment/social + viral-filtered "
-            "world/india/local) with a live rssAggregator fallback for technology. A "
-            "precomputed buzz_latest.json is OPTIONAL enrichment that must fall back to "
-            "this derived path, shaped to the buzzDataset/buzzSlo buckets."
+            "loadSectionsDataset() using entertainment/social/technology plus viral-filtered "
+            "world/india/chennai/local. The same Sections snapshot is its upstream contract; "
+            "a precomputed buzz_latest.json is optional enrichment only and must fall back to this path."
         ),
     },
     {
@@ -343,10 +276,7 @@ DESTINATION_REGISTRY: list[dict] = [
         "navLabel": None,
         "destinationType": "status",
         "migrationStatus": "MIGRATED",
-        "expectedStaticJson": [
-            "public/newsdata/quality_dashboard.json",
-            "public/newsdata/insight_quality_report.json",
-        ],
+        "expectedStaticJson": ["public/newsdata/quality_dashboard.json", "public/newsdata/insight_quality_report.json"],
         "producers": ["scripts/generate_quality_dashboard.mjs"],
         "workflows": ["news_prefetch.yml"],
         "validators": ["scripts/validate_quality_dashboard.mjs"],
@@ -395,9 +325,6 @@ DESTINATION_REGISTRY: list[dict] = [
 ]
 
 
-# --------------------------------------------------------------------------- #
-# Audit
-# --------------------------------------------------------------------------- #
 def audit() -> dict:
     routes = detect_routes()
     nav = detect_nav()
@@ -405,88 +332,65 @@ def audit() -> dict:
     static_json = scan_static_json()
     adapter_schemas = detect_adapter_schemas()
     workflows = parse_workflows()
-
-    # Flagship numeric gap: sections collector retain vs adapter max-age.
-    sections_retain_h = detect_int(
-        "scripts/fetch_sections_stories.py", r"STORY_RETAIN_HOURS\s*=\s*(\d+)"
-    )
-    sections_adapter_h = detect_int(
-        "src/adapters/sectionsSnapshotFetcher.js", r"SECTION_ITEM_MAX_AGE_MS\s*=\s*(\d+)\s*\*"
-    )
-
     all_run_scripts = {s for wf in workflows.values() for s in wf["runs"]}
     all_staged = [tok for wf in workflows.values() for tok in wf["staged"]]
-
-    destinations = []
+    registry_routes = {d["route"] for d in DESTINATION_REGISTRY}
     warnings: list[str] = []
     errors: list[str] = []
 
-    registry_routes = {d["route"] for d in DESTINATION_REGISTRY}
+    sections_retain_h = detect_int("scripts/fetch_sections_stories.py", r"STORY_RETAIN_HOURS\s*=\s*(\d+)")
+    sections_adapter_h = detect_int("src/adapters/sectionsSnapshotFetcher.js", r"SECTION_ITEM_MAX_AGE_MS\s*=\s*(\d+)\s*\*")
 
+    destinations = []
     for d in DESTINATION_REGISTRY:
         entry = dict(d)
-        entry["routeDeclared"] = d["route"] in routes or d["route"].split(":")[0].rstrip("/") + "/" in [
-            r for r in routes
-        ] or any(r.split(":")[0] == d["route"].split(":")[0] for r in routes)
+        entry["routeDeclared"] = d["route"] in routes or any(
+            r.split(":")[0] == d["route"].split(":")[0] for r in routes
+        )
         entry["navVisible"] = d["route"] in nav_paths
 
-        # static presence
         present = []
         missing = []
-        for j in d["expectedStaticJson"]:
-            if j in static_json:
-                present.append({"path": j, **static_json[j]})
-            elif exists(j):
-                present.append({"path": j, "sizeBytes": (REPO_ROOT / j).stat().st_size, "schemaVersion": None})
+        for json_path in d["expectedStaticJson"]:
+            if json_path in static_json:
+                present.append({"path": json_path, **static_json[json_path]})
+            elif exists(json_path):
+                present.append({"path": json_path, "sizeBytes": (REPO_ROOT / json_path).stat().st_size, "schemaVersion": None})
             else:
-                missing.append(j)
+                missing.append(json_path)
         entry["staticPresent"] = present
         entry["staticMissing"] = missing
 
-        # producer wiring
         producers_wired = {p: (p in all_run_scripts) for p in d["producers"]}
         entry["producersWired"] = producers_wired
-
-        # output staging
         staging = {j: staged_match(j, all_staged) for j in d["expectedStaticJson"]}
         entry["outputStaged"] = staging
 
-        # adapter schema support (where the consumer is a scanned adapter)
-        schemas = {}
-        for c in d["consumers"]:
-            if c in adapter_schemas:
-                schemas[c] = adapter_schemas[c]
+        schemas = {c: adapter_schemas[c] for c in d["consumers"] if c in adapter_schemas}
         if schemas:
             entry["adapterSchemas"] = schemas
 
-        # ---- divergence warnings ----
         if d["migrationStatus"] == "MIGRATED" and missing:
-            warnings.append(
-                f"[{d['destination']}] marked MIGRATED but missing static JSON: {', '.join(missing)}"
-            )
-        for p, wired in producers_wired.items():
+            warnings.append(f"[{d['destination']}] marked MIGRATED but missing static JSON: {', '.join(missing)}")
+        for producer, wired in producers_wired.items():
             if not wired and d["migrationStatus"] == "MIGRATED":
-                warnings.append(f"[{d['destination']}] producer not wired into any workflow: {p}")
-        for j, staged in staging.items():
-            if not staged and j not in missing:
-                warnings.append(f"[{d['destination']}] committed output not staged by any workflow: {j}")
+                warnings.append(f"[{d['destination']}] producer not wired into any workflow: {producer}")
+        for json_path, staged in staging.items():
+            if not staged and json_path not in missing:
+                warnings.append(f"[{d['destination']}] committed output not staged by any workflow: {json_path}")
         if d["route"] not in routes and ":" not in d["route"]:
             warnings.append(f"[{d['destination']}] registry route not found in App.jsx: {d['route']}")
-
         destinations.append(entry)
 
-    # orphan routes / nav entries (declared in app but absent from registry)
-    skip_routes = {"*"}
-    for r in routes:
-        base = r.split(":")[0]
-        if r in registry_routes or base in {x.split(":")[0] for x in registry_routes} or r in skip_routes:
-            continue
-        warnings.append(f"[orphan-route] App.jsx route has no destination contract: {r}")
-    for n in nav:
-        if n["path"] not in registry_routes:
-            warnings.append(f"[orphan-nav] BottomNav destination has no contract: {n['path']} ({n['label']})")
+    route_bases = {x.split(":")[0] for x in registry_routes}
+    for route in routes:
+        base = route.split(":")[0]
+        if route not in registry_routes and base not in route_bases and route != "*":
+            warnings.append(f"[orphan-route] App.jsx route has no destination contract: {route}")
+    for item in nav:
+        if item["path"] not in registry_routes:
+            warnings.append(f"[orphan-nav] BottomNav destination has no contract: {item['path']} ({item['label']})")
 
-    # flagship numeric gap
     sections_gap = None
     if sections_retain_h is not None and sections_adapter_h is not None:
         sections_gap = {
@@ -531,40 +435,31 @@ def audit() -> dict:
     }
 
 
-# --------------------------------------------------------------------------- #
-# Markdown render
-# --------------------------------------------------------------------------- #
 def render_markdown(data: dict) -> str:
-    s = data["summary"]
-    lines = []
-    lines.append("# NWv-7 — Destination Contract Baseline")
-    lines.append("")
-    lines.append(f"_Generated by `scripts/audit_destination_contracts.py` (schema v{data['schemaVersion']})._")
-    lines.append("")
-    lines.append(
-        f"- Routes detected: **{s['routesDetected']}** · "
-        f"Bottom-nav destinations: **{s['navDestinations']}** · "
-        f"Contracts: **{s['contractsDefined']}**"
-    )
-    lines.append(
-        f"- Static JSON files: **{s['staticJsonFiles']}** · "
-        f"Workflows: **{s['workflows']}** · "
-        f"Warnings: **{s['warningCount']}** · Errors: **{s['errorCount']}**"
-    )
-    counts = ", ".join(f"{k}: {v}" for k, v in sorted(s["migrationStatusCounts"].items()))
+    summary = data["summary"]
+    lines = [
+        "# NWv-7 — Destination Contract Baseline",
+        "",
+        f"_Generated by `scripts/audit_destination_contracts.py` (schema v{data['schemaVersion']})._",
+        "",
+        f"- Routes detected: **{summary['routesDetected']}** · Bottom-nav destinations: **{summary['navDestinations']}** · Contracts: **{summary['contractsDefined']}**",
+        f"- Static JSON files: **{summary['staticJsonFiles']}** · Workflows: **{summary['workflows']}** · Warnings: **{summary['warningCount']}** · Errors: **{summary['errorCount']}**",
+    ]
+    counts = ", ".join(f"{k}: {v}" for k, v in sorted(summary["migrationStatusCounts"].items()))
     lines.append(f"- Migration status: {counts}")
-    if s.get("sectionsRetainGap"):
-        g = s["sectionsRetainGap"]
-        flag = "⚠️ GAP" if g["gap"] else "ok"
+    if summary.get("sectionsRetainGap"):
+        gap = summary["sectionsRetainGap"]
+        flag = "⚠️ GAP" if gap["gap"] else "ok"
         lines.append(
-            f"- Sections retain vs adapter: collector **{g['collectorRetainHours']}h** "
-            f"vs adapter **{g['adapterMaxAgeHours']}h** — {flag}"
+            f"- Sections retain vs adapter: collector **{gap['collectorRetainHours']}h** vs adapter **{gap['adapterMaxAgeHours']}h** — {flag}"
         )
-    lines.append("")
-    lines.append("## Destination matrix")
-    lines.append("")
-    lines.append("| Destination | Route | Nav | Type | Status | Static JSON (present) | Staged | Producer wired |")
-    lines.append("|---|---|---|---|---|---|---|---|")
+    lines.extend([
+        "",
+        "## Destination matrix",
+        "",
+        "| Destination | Route | Nav | Type | Status | Static JSON (present) | Staged | Producer wired |",
+        "|---|---|---|---|---|---|---|---|",
+    ])
     for d in data["destinations"]:
         present = ", ".join(p["path"].split("/")[-1] for p in d["staticPresent"]) or "—"
         missing = ", ".join(m.split("/")[-1] for m in d["staticMissing"])
@@ -576,48 +471,35 @@ def render_markdown(data: dict) -> str:
         prod_str = "n/a" if not prod else ("✓" if all(prod.values()) else "partial")
         nav = "✓" if d["navVisible"] else "—"
         lines.append(
-            f"| {d['destination']} | `{d['route']}` | {nav} | {d['destinationType']} | "
-            f"{d['migrationStatus']} | {present} | {staged_str} | {prod_str} |"
+            f"| {d['destination']} | `{d['route']}` | {nav} | {d['destinationType']} | {d['migrationStatus']} | {present} | {staged_str} | {prod_str} |"
         )
-    lines.append("")
-
-    lines.append("## Per-destination notes")
-    lines.append("")
+    lines.extend(["", "## Per-destination notes", ""])
     for d in data["destinations"]:
         lines.append(f"### {d['destination']} — `{d['route']}` ({d['migrationStatus']})")
         lines.append(f"- **Consumers:** {', '.join(d['consumers']) or '—'}")
         if d["expectedStaticJson"]:
             lines.append(f"- **Expected static JSON:** {', '.join(d['expectedStaticJson'])}")
         if d.get("adapterSchemas"):
-            sc = "; ".join(f"{k.split('/')[-1]} → {v}" for k, v in d["adapterSchemas"].items())
-            lines.append(f"- **Adapter schemas accepted:** {sc}")
+            schemas = "; ".join(f"{k.split('/')[-1]} → {v}" for k, v in d["adapterSchemas"].items())
+            lines.append(f"- **Adapter schemas accepted:** {schemas}")
         if d.get("note"):
             lines.append(f"- **Note:** {d['note']}")
         lines.append("")
-
     if data["warnings"]:
-        lines.append("## Divergence warnings")
+        lines.extend(["## Divergence warnings", ""])
+        for warning in data["warnings"]:
+            lines.append(f"- ⚠️ {warning}")
         lines.append("")
-        for w in data["warnings"]:
-            lines.append(f"- ⚠️ {w}")
-        lines.append("")
-
     if data["errors"]:
-        lines.append("## Errors")
+        lines.extend(["## Errors", ""])
+        for error in data["errors"]:
+            lines.append(f"- ❌ {error}")
         lines.append("")
-        for e in data["errors"]:
-            lines.append(f"- ❌ {e}")
-        lines.append("")
-
     return "\n".join(lines) + "\n"
 
 
-# --------------------------------------------------------------------------- #
-# Main
-# --------------------------------------------------------------------------- #
 def main() -> int:
     data = audit()
-
     out_json = REPO_ROOT / OUT_JSON
     out_md = REPO_ROOT / OUT_MD
     try:
@@ -627,17 +509,16 @@ def main() -> int:
     except OSError as exc:
         print(f"ERROR: could not write audit artifacts: {exc}", file=sys.stderr)
         return 1
-
-    s = data["summary"]
+    summary = data["summary"]
     print("destination contract baseline written:")
     print(f"  {OUT_JSON}")
     print(f"  {OUT_MD}")
     print(
-        f"  contracts={s['contractsDefined']} routes={s['routesDetected']} "
-        f"nav={s['navDestinations']} warnings={s['warningCount']} errors={s['errorCount']}"
+        f"  contracts={summary['contractsDefined']} routes={summary['routesDetected']} "
+        f"nav={summary['navDestinations']} warnings={summary['warningCount']} errors={summary['errorCount']}"
     )
-    for w in data["warnings"]:
-        print(f"  WARN {w}")
+    for warning in data["warnings"]:
+        print(f"  WARN {warning}")
     return 0
 
 

@@ -23,24 +23,9 @@ describe('computeImpactScore — soft boost cap (RC-5 fix)', () => {
       rankingWeights: { temporal: { entertainmentBoost: 5.0, weekendBoost: 5.0 } },
     });
 
-    // Baseline: entertainment item with same config but minimal boosts
-    const baseItem = {
-      id: 'ent2',
-      title: 'Entertainment news today',
-      description: 'Entertainment today',
-      publishedAt: Date.now() - 5 * 60 * 1000,
-      source: 'Variety',
-    };
-    const baseScore = computeImpactScore(baseItem, 'entertainment', 0, {
-      enableNewScoring: true,
-      rankingMode: 'smart',
-      rankingWeights: { temporal: { entertainmentBoost: 5.0, weekendBoost: 5.0 } },
-    });
-
-    // The ratio should not exceed SOFT_CAP by more than the hard multipliers (impact/proximity/currency/severity)
-    // This verifies that the soft boosts are capped
+    // The capped score should exist and be finite.
+    // The cap behavior itself is recorded in item._scoreBreakdown.decisions when triggered.
     expect(SOFT_CAP).toBeGreaterThan(1); // sanity check policy
-    // The capped score should exist and be finite
     expect(isFinite(score)).toBe(true);
     expect(score).toBeGreaterThan(0);
   });

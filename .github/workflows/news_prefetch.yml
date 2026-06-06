@@ -71,8 +71,9 @@ jobs:
       - name: Fetch Sections stories
         run: python scripts/fetch_sections_stories.py
 
-      - name: Validate Sections prefetch quality
-        continue-on-error: true        # observability, NOT a deploy gate (INS-1 fix)
+      - name: Validate Sections prefetch contract
+        # Hard gate only for structural/contract failures. Thin pools are WARN and
+        # still exit 0 so low-news cycles do not block fallback/stale behavior.
         run: python scripts/validate_sections_prefetch_output.py
 
       - name: Upload Sections quality report

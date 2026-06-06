@@ -26,11 +26,14 @@ SOURCE_HEALTH_PATH = 'public/newsdata/source_health.json'
 SECTION_SOURCE_POLICY_REPORT_PATH = 'public/newsdata/section_source_policy_report.json'
 
 SECTION_CACHE_MAX_AGE_MS = 2 * H_MS   # re-fetch each run (sections refresh every ~2 h)
-STORY_RETAIN_HOURS       = 24          # stories older than 24h are dropped
+# Keep collector retention aligned with src/adapters/sectionsSnapshotFetcher.js
+# SECTION_ITEM_MAX_AGE_MS. If this is lower than the adapter window, the UI can
+# accept 36h data that the workflow never actually publishes.
+STORY_RETAIN_HOURS       = 36
 
 # ── Section source policy / feed registry ─────────────────────────────────────
 # Section feeds are loaded from config/section_sources.json so source mix can be
-# tuned without changing fetcher code.
+tuned without changing fetcher code.
 SECTION_FEEDS = get_section_feeds_map()
 
 MAX_STORIES_PER_SECTION = 30
@@ -48,6 +51,24 @@ DEFAULT_SECTIONS_SNAPSHOT = {
     'contentHash':   '',
     'sections': {s: [] for s in SECTION_FEEDS},
 }
+
+
+def is_story_within_retain_window(item: dict, cutoff_ms: int) -> bool:
+    """Return True when a section item is still inside the collector window.
+
+    Missing or malformed timestamps are treated as stale in the workflow output:
+    publishing undated RSS rows into a 36h news feed makes Top Stories and Buzz
+    look current without freshness proof.
+    """
+    try:
+        published_at = int(item.get('publishedAt', 0) or 0)
+    except (TypeError, ValueError):
+        return False
+    return published_at >= int(cutoff_ms)
+
+
+def filter_retained_stories(items: list, cutoff_ms: int) -> list:
+    return [item for item in items if is_story_within_retain_window(item, cutoff_ms)]
 
 
 def fetch_section(section: str, feeds: list, ts: int) -> tuple[list, dict]:
@@ -106,15 +127,15 @@ def main():
     ts     = now_ms()
     cutoff = ts - STORY_RETAIN_HOURS * H_MS
 
-    print(f'Fetching sections (ts={ts})…')
+    print(f'Fetching sections (ts={ts}, retainHours={STORY_RETAIN_HOURS})…')
     new_sections: dict = {}
     all_health: dict   = {}
 
     for section, feeds in SECTION_FEEDS.items():
         items, health = fetch_section(section, feeds, ts)
         all_health.update(health)
-        # Drop stories older than 24 h
-        fresh = [i for i in items if i.get('publishedAt', 0) >= cutoff]
+        # Drop stories outside the configured collector retention window.
+        fresh = filter_retained_stories(items, cutoff)
         deduped = dedup_section(fresh)
         # Most recent first, capped
         deduped.sort(key=lambda x: x.get('publishedAt', 0), reverse=True)
@@ -150,6 +171,10 @@ def main():
         'schemaVersion': 2,
         'fetchedAt':     ts,
         'contentHash':   compute_content_hash(all_stories_flat),
+        'window': {
+            'retainHours': STORY_RETAIN_HOURS,
+            'cutoffAt': cutoff,
+        },
         'sectionQuality': section_quality,
         'sections':      new_sections,
     }

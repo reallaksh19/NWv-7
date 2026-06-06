@@ -42,7 +42,7 @@ def test_manifest_marks_diagnostic_only():
         "shouldCommit": False,
         "diagnosticOnly": True,
         "changedContentFiles": [],
-        "changedDiagnosticFiles": ["public/newsdata/insight_quality_report.json"],
+        "changedDiagnosticFiles": ["public/newsdata/quality_rankings.json"],
     }
 
     assert manifest["shouldCommit"] is False
@@ -65,7 +65,7 @@ def test_heartbeat_does_not_trigger_when_advance_is_less_than_3h():
             assert result is False, "Heartbeat should NOT trigger when fetchedAt advanced only 1h"
 
 
-def test_diagnostic_file_registry_includes_dashboard_and_section_reports():
+def test_diagnostic_file_registry_includes_dashboard_section_and_ranking_reports():
     names = {path.name for path in policy.DIAGNOSTIC_FILES}
     assert "insight_quality_report.json" in names
     assert "insight_quality_summary.md" in names
@@ -75,7 +75,35 @@ def test_diagnostic_file_registry_includes_dashboard_and_section_reports():
     assert "real_insight_quality_summary.md" in names
     assert "quality_dashboard.json" in names
     assert "quality_dashboard_history.json" in names
+    assert "quality_rankings.json" in names
+    assert "quality_rankings.md" in names
+    assert "quality_rankings_history.json" in names
+    assert "quality_rankings_validation_report.json" in names
     assert "section_source_policy_report.json" in names
+
+
+def test_quality_rankings_are_diagnostic_not_content():
+    content_names = {path.name for path in policy.CONTENT_FILES}
+    diagnostic_names = {path.name for path in policy.DIAGNOSTIC_FILES}
+    for name in {
+        "quality_rankings.json",
+        "quality_rankings.md",
+        "quality_rankings_history.json",
+        "quality_rankings_validation_report.json",
+    }:
+        assert name in diagnostic_names
+        assert name not in content_names
+
+
+def test_policy_version_marks_ranking_diagnostics():
+    with mock.patch.object(policy, "changed_files_from_git", return_value=[]):
+        with mock.patch.object(policy, "content_hashes", return_value={}):
+            with mock.patch.object(policy, "has_meaningful_diff", return_value=False):
+                with mock.patch.object(policy, "_heartbeat_needed", return_value=False):
+                    manifest = policy.build_manifest()
+    assert manifest["policyVersion"] == "prefetch-commit-policy-v4-ranking-diagnostics"
+    assert "changedDiagnosticFiles" in manifest
+    assert "trackedDiagnosticFiles" in manifest
 
 
 if __name__ == "__main__":
@@ -85,7 +113,9 @@ if __name__ == "__main__":
         test_manifest_marks_diagnostic_only,
         test_heartbeat_triggers_commit_when_fetched_at_advances_more_than_3h,
         test_heartbeat_does_not_trigger_when_advance_is_less_than_3h,
-        test_diagnostic_file_registry_includes_dashboard_and_section_reports,
+        test_diagnostic_file_registry_includes_dashboard_section_and_ranking_reports,
+        test_quality_rankings_are_diagnostic_not_content,
+        test_policy_version_marks_ranking_diagnostics,
     ]
     passed = 0
     for t in tests:

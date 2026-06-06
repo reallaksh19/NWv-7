@@ -89,7 +89,7 @@
     "test:sections-browser-ingestion": "node scripts/test_sections_browser_ingestion_static.mjs",
     "test:sections-quality-deploy": "node scripts/test_sections_quality_and_deploy_static.mjs && python -m pytest scripts/test_validate_sections_prefetch_output.py",
     "test:newsdata-runtime-status": "node scripts/test_newsdata_runtime_status_static.mjs",
-    "test:news-prefetch-workflow-orchestration": "node scripts/test_news_prefetch_workflow_orchestration_static.mjs && node scripts/validate_news_prefetch_workflow.mjs",
+    "test:news-prefetch-workflow-orchestration": "node scripts/test_news_prefetch_workflow_orchestration_static.mjs && node scripts/validate_news_prefetch_workflow.mjs && node scripts/test_news_prefetch_diagnostic_staging_static.mjs",
     "test:newsdata-raw-json-fallback": "node scripts/test_newsdata_raw_json_fallback_static.mjs",
     "test:certification-manifest": "node scripts/test_certification_manifest_static.mjs && node scripts/validate_certification_manifest.mjs",
     "test:real-insight-snapshot-quality": "node scripts/test_real_insight_snapshot_quality_static.mjs && vitest run --config vitest.config.js src/insight/src/quality/insightRealSnapshotQuality.cert.test.ts",

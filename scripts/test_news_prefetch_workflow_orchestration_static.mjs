@@ -18,12 +18,14 @@ for (const token of [
   'Bump fetchedAt sentinel',
   'git add public/newsdata/\\n',
   'Validate Insight prefetch quality',
-  'Validate Sections prefetch quality',
+  'Validate Sections prefetch contract',
   'Decide whether news data commit is needed',
+  'Validate quality dashboard',
   'Build Pages site with latest newsdata',
   'Publish updated Pages site',
   'Verify deployed Pages newsdata',
   'should_commit=true',
+  'quality_dashboard.json',
 ]) {
   assert(validator.includes(token), `validate_news_prefetch_workflow.mjs missing token: ${token}`);
 }
@@ -46,6 +48,7 @@ console.log(JSON.stringify({
     'old fetchedAt sentinel is rejected',
     'blind public/newsdata git add is rejected',
     'critical workflow step order is certified',
+    'Data Health diagnostic staging is certified',
     'certification gate includes workflow orchestration validation'
   ]
 }, null, 2));

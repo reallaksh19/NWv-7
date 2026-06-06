@@ -19,7 +19,6 @@ import hashlib
 import json
 import os
 import subprocess
-import sys
 import time
 from pathlib import Path
 from typing import Any
@@ -36,6 +35,14 @@ CONTENT_FILES = [
 DIAGNOSTIC_FILES = [
     NEWS_DIR / "insight_quality_report.json",
     NEWS_DIR / "insight_quality_summary.md",
+    NEWS_DIR / "sections_quality_report.json",
+    NEWS_DIR / "sections_quality_summary.md",
+    NEWS_DIR / "real_insight_quality_report.json",
+    NEWS_DIR / "real_insight_quality_summary.md",
+    NEWS_DIR / "quality_dashboard.json",
+    NEWS_DIR / "quality_dashboard_history.json",
+    NEWS_DIR / "section_source_policy_report.json",
+    NEWS_DIR / "source_policy_report.json",
 ]
 
 
@@ -61,7 +68,6 @@ def stable_json_hash(value: Any) -> str:
 def file_sha256(path: Path) -> str:
     if not path.exists():
         return ""
-
     h = hashlib.sha256()
     h.update(path.read_bytes())
     return h.hexdigest()[:16]
@@ -132,9 +138,7 @@ def meaningful_payload(path: Path) -> Any:
         }
 
     if path.name == "source_health.json":
-        return {
-            "sources": data.get("sources", {}),
-        }
+        return {"sources": data.get("sources", {})}
 
     return data
 
@@ -150,12 +154,10 @@ def content_hashes(paths: list[Path]) -> dict[str, str]:
 def changed_files_from_git() -> list[str]:
     output = run_git(["status", "--porcelain", "--", "public/newsdata"])
     changed = []
-
     for line in output.splitlines():
         if not line.strip():
             continue
         changed.append(line[3:].strip())
-
     return sorted(changed)
 
 
@@ -163,21 +165,17 @@ def has_meaningful_diff(paths: list[Path]) -> bool:
     for path in paths:
         if not path.exists():
             continue
-
         diff_name_only = run_git(["diff", "--name-only", "--", str(path)])
         staged_name_only = run_git(["diff", "--cached", "--name-only", "--", str(path)])
-
         if diff_name_only or staged_name_only:
             return True
-
-        # New untracked file
         if str(path) in changed_files_from_git():
             return True
-
     return False
 
 
-_HEARTBEAT_MS = 3 * 3600 * 1000  # 3 hours in milliseconds
+_HEARTBEAT_MS = 3 * 3600 * 1000
+
 
 def _committed_fetched_at(path: str = "public/newsdata/insight_latest.json") -> int:
     try:
@@ -189,11 +187,13 @@ def _committed_fetched_at(path: str = "public/newsdata/insight_latest.json") -> 
     except Exception:
         return 0
 
+
 def _disk_fetched_at(path: str = "public/newsdata/insight_latest.json") -> int:
     try:
         return int(json.loads(Path(path).read_text()).get("fetchedAt", 0))
     except Exception:
         return 0
+
 
 def _heartbeat_needed(path: str = "public/newsdata/insight_latest.json") -> bool:
     return (_disk_fetched_at(path) - _committed_fetched_at(path)) >= _HEARTBEAT_MS
@@ -203,7 +203,6 @@ def write_github_output(values: dict[str, str]) -> None:
     output_path = os.environ.get("GITHUB_OUTPUT")
     if not output_path:
         return
-
     with open(output_path, "a", encoding="utf-8") as handle:
         for key, value in values.items():
             handle.write(f"{key}={value}\n")
@@ -229,7 +228,6 @@ def build_manifest() -> dict[str, Any]:
     should_commit = bool(changed_content_files)
     diagnostic_only = bool(changed_diagnostic_files) and not should_commit
 
-    # INS-2 fix: heartbeat republish so fetchedAt advances even when clusters are unchanged
     heartbeat_triggered = False
     if not should_commit:
         heartbeat_triggered = _heartbeat_needed("public/newsdata/insight_latest.json")
@@ -239,7 +237,7 @@ def build_manifest() -> dict[str, Any]:
 
     return {
         "generatedAt": int(time.time() * 1000),
-        "policyVersion": "prefetch-commit-policy-v2",
+        "policyVersion": "prefetch-commit-policy-v3",
         "shouldCommit": should_commit,
         "heartbeatTriggered": heartbeat_triggered,
         "diagnosticOnly": diagnostic_only,
@@ -255,7 +253,6 @@ def build_manifest() -> dict[str, Any]:
 
 def main() -> int:
     NEWS_DIR.mkdir(parents=True, exist_ok=True)
-
     manifest = build_manifest()
     MANIFEST_PATH.write_text(
         json.dumps(manifest, indent=2, ensure_ascii=False, sort_keys=True),

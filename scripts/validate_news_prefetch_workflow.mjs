@@ -27,7 +27,6 @@ function requireStep(workflow, stepName) {
 function requireOrder(workflow, beforeStep, afterStep) {
   const before = requireStep(workflow, beforeStep);
   const after = requireStep(workflow, afterStep);
-
   assert(
     before < after,
     `Workflow order invalid: "${beforeStep}" must appear before "${afterStep}"`
@@ -40,6 +39,14 @@ function rejectToken(workflow, token, reason) {
 
 function requireToken(workflow, token, reason) {
   assert(workflow.includes(token), reason);
+}
+
+function getStepBlock(workflow, stepName) {
+  const stepIndex = requireStep(workflow, stepName);
+  const nextStepIndex = workflow.indexOf('\n      - name:', stepIndex + 1);
+  return nextStepIndex > stepIndex
+    ? workflow.slice(stepIndex, nextStepIndex)
+    : workflow.slice(stepIndex);
 }
 
 function validateNewsPrefetchWorkflow(workflow) {
@@ -59,8 +66,6 @@ function validateNewsPrefetchWorkflow(workflow) {
     'workflow must not blindly add all public/newsdata files'
   );
 
-  // The old in-workflow Pages publish/verify path is forbidden — deploy.yml
-  // is the single authoritative deploy path.
   for (const forbidden of [
     'npx gh-pages',
     'Publish updated Pages site',
@@ -75,41 +80,58 @@ function validateNewsPrefetchWorkflow(workflow) {
     );
   }
 
-  // Required core data-pipeline steps
   requireStep(workflow, 'Fetch Insight stories');
   requireStep(workflow, 'Validate Insight prefetch quality');
   requireStep(workflow, 'Fetch Sections stories');
-  requireStep(workflow, 'Validate Sections prefetch quality');
+  requireStep(workflow, 'Validate Sections prefetch contract');
+  requireStep(workflow, 'Run real Insight snapshot quality benchmark');
+  requireStep(workflow, 'Generate quality dashboard');
+  requireStep(workflow, 'Validate quality dashboard');
   requireStep(workflow, 'Decide whether news data commit is needed');
+  requireStep(workflow, 'Upload prefetch commit manifest');
   requireStep(workflow, 'Commit data');
 
-  // The benchmark is intentionally unconditional observability; only the data
-  // commit is gated on meaningful content changes.
-  requireStep(workflow, 'Run real Insight snapshot quality benchmark');
-
   requireOrder(workflow, 'Fetch Insight stories', 'Validate Insight prefetch quality');
-  requireOrder(workflow, 'Fetch Sections stories', 'Validate Sections prefetch quality');
-  requireOrder(workflow, 'Validate Insight prefetch quality', 'Decide whether news data commit is needed');
-  requireOrder(workflow, 'Validate Sections prefetch quality', 'Decide whether news data commit is needed');
+  requireOrder(workflow, 'Fetch Sections stories', 'Validate Sections prefetch contract');
+  requireOrder(workflow, 'Validate Insight prefetch quality', 'Run real Insight snapshot quality benchmark');
+  requireOrder(workflow, 'Validate Sections prefetch contract', 'Run real Insight snapshot quality benchmark');
+  requireOrder(workflow, 'Run real Insight snapshot quality benchmark', 'Generate quality dashboard');
+  requireOrder(workflow, 'Generate quality dashboard', 'Validate quality dashboard');
+  requireOrder(workflow, 'Validate quality dashboard', 'Decide whether news data commit is needed');
+  requireOrder(workflow, 'Decide whether news data commit is needed', 'Upload prefetch commit manifest');
   requireOrder(workflow, 'Decide whether news data commit is needed', 'Commit data');
-  requireOrder(workflow, 'Decide whether news data commit is needed', 'Run real Insight snapshot quality benchmark');
-  // Benchmark runs before commit so its report can be committed too
-  requireOrder(workflow, 'Run real Insight snapshot quality benchmark', 'Commit data');
 
-  for (const step of [
-    'Commit data',
-  ]) {
-    const stepIndex = requireStep(workflow, step);
-    const nextStepIndex = workflow.indexOf('\n      - name:', stepIndex + 1);
-    const block = nextStepIndex > stepIndex
-      ? workflow.slice(stepIndex, nextStepIndex)
-      : workflow.slice(stepIndex);
+  const commitBlock = getStepBlock(workflow, 'Commit data');
+  assert(
+    commitBlock.includes("if: steps.prefetch_commit.outputs.should_commit == 'true'"),
+    'Commit data must be conditional on should_commit=true'
+  );
 
-    assert(
-      block.includes("if: steps.prefetch_commit.outputs.should_commit == 'true'"),
-      `${step} must be conditional on should_commit=true`
-    );
+  const requiredStagedOutputs = [
+    'public/newsdata/insight_latest.json',
+    'public/newsdata/sections_latest.json',
+    'public/newsdata/source_health.json',
+    'public/newsdata/prefetch_commit_manifest.json',
+    'public/newsdata/insight_quality_report.json',
+    'public/newsdata/insight_quality_summary.md',
+    'public/newsdata/sections_quality_report.json',
+    'public/newsdata/sections_quality_summary.md',
+    'public/newsdata/real_insight_quality_report.json',
+    'public/newsdata/real_insight_quality_summary.md',
+    'public/newsdata/quality_dashboard.json',
+    'public/newsdata/quality_dashboard_history.json',
+    'public/newsdata/section_source_policy_report.json',
+  ];
+
+  for (const path of requiredStagedOutputs) {
+    requireToken(commitBlock, path, `commit step must stage generated output: ${path}`);
   }
+
+  rejectToken(
+    commitBlock,
+    'intentionally never committed',
+    'commit step must not describe generated Data Health diagnostics as never committed'
+  );
 
   for (const token of [
     'python scripts/validate_insight_prefetch_output.py',
@@ -119,15 +141,10 @@ function validateNewsPrefetchWorkflow(workflow) {
     'sections-quality-report',
     'prefetch-commit-manifest',
     'real-insight-quality-report',
+    'quality-dashboard',
   ]) {
     requireToken(workflow, token, `workflow missing required command/artifact token: ${token}`);
   }
-
-  requireToken(
-    workflow,
-    'public/newsdata/insight_latest.json public/newsdata/sections_latest.json public/newsdata/source_health.json public/newsdata/prefetch_commit_manifest.json',
-    'commit step must stage only meaningful content files plus commit manifest'
-  );
 
   requireToken(
     workflow,
@@ -137,18 +154,18 @@ function validateNewsPrefetchWorkflow(workflow) {
 
   return {
     status: 'PASS',
-    checked: 'News prefetch workflow orchestration (consolidated deploy)',
+    checked: 'News prefetch workflow orchestration and diagnostic staging',
     guarantees: [
       'concurrency guard exists',
       'fetchedAt-only sentinel is rejected',
       'blind public/newsdata git add is rejected',
       'Insight quality validation runs after Insight fetch',
-      'Sections quality validation runs after Sections fetch',
-      'commit decision runs after all quality validators',
+      'Sections contract validation runs after Sections fetch',
+      'benchmark and dashboard run before commit decision',
+      'commit decision sees generated dashboard diagnostics',
       'data commit is gated by should_commit=true',
-      'benchmark runs before commit so its report joins the commit',
       'workflow does not publish Pages directly — deploy.yml owns publish',
-      'required quality and benchmark artifacts are uploaded',
+      'Data Health diagnostics are staged with meaningful data commits',
     ],
   };
 }

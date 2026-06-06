@@ -1,8 +1,8 @@
 """
 Validate generated section prefetch JSON.
 
-Hard fail only for structural breakage. Thin sections generate warnings and
-reports so the app can diagnose why a tab is weak without blocking every run.
+Hard fail only for contract/structural breakage. Thin sections generate warnings
+and reports so the app can diagnose why a tab is weak without blocking every run.
 """
 from __future__ import annotations
 
@@ -18,9 +18,10 @@ SUMMARY_PATH = Path("public/newsdata/sections_quality_summary.md")
 
 SUPPORTED_SCHEMAS = {1, 2}
 RECOMMENDED_SCHEMA = 2
+EXPECTED_RETAIN_HOURS = 36
 
 REQUIRED_SECTIONS = [
-    "topStories", "india", "tn", "trichy", "world",
+    "topStories", "india", "tn", "trichy", "muscat", "world",
     "business", "technology", "sports", "entertainment",
 ]
 
@@ -52,24 +53,52 @@ def normalize_sections(snapshot: dict[str, Any]) -> dict[str, list[dict[str, Any
     sections = snapshot.get("sections", {})
     if not isinstance(sections, dict):
         return {}
-
     return {
         key: value if isinstance(value, list) else []
         for key, value in sections.items()
     }
 
 
+def validate_window_contract(snapshot: dict[str, Any]) -> tuple[list[str], list[str]]:
+    errors: list[str] = []
+    warnings: list[str] = []
+    window = snapshot.get("window")
+
+    if not isinstance(window, dict):
+        errors.append("window object is missing; expected 36h retention metadata")
+        return errors, warnings
+
+    try:
+        retain_hours = int(window.get("retainHours"))
+    except (TypeError, ValueError):
+        errors.append("window.retainHours is missing or not numeric")
+        return errors, warnings
+
+    if retain_hours != EXPECTED_RETAIN_HOURS:
+        errors.append(f"window.retainHours must be {EXPECTED_RETAIN_HOURS}, got {retain_hours}")
+
+    cutoff_at = window.get("cutoffAt")
+    try:
+        cutoff_ms = int(cutoff_at)
+    except (TypeError, ValueError):
+        warnings.append("window.cutoffAt is missing or not numeric")
+    else:
+        fetched_at = int(snapshot.get("fetchedAt") or 0)
+        if fetched_at and cutoff_ms >= fetched_at:
+            warnings.append("window.cutoffAt is not earlier than fetchedAt")
+
+    return errors, warnings
+
+
 def build_section_health(snapshot: dict[str, Any]) -> dict[str, Any]:
     sections = normalize_sections(snapshot)
     section_quality = snapshot.get("sectionQuality", {}) if isinstance(snapshot.get("sectionQuality", {}), dict) else {}
-
     health = {}
 
     for section in REQUIRED_SECTIONS:
         stories = sections.get(section, [])
         source_counts = Counter(story_source_group(story) for story in stories)
         quality = section_quality.get(section, {}) if isinstance(section_quality.get(section, {}), dict) else {}
-
         story_count = len(stories)
         source_group_count = len(source_counts)
 
@@ -110,9 +139,13 @@ def validate_sections_snapshot(snapshot: dict[str, Any]) -> dict[str, Any]:
     if not int(snapshot.get("fetchedAt") or 0):
         errors.append("fetchedAt is missing or zero")
 
+    window_errors, window_warnings = validate_window_contract(snapshot)
+    errors.extend(window_errors)
+    warnings.extend(window_warnings)
+
     missing_sections = [section for section in REQUIRED_SECTIONS if section not in sections]
     if missing_sections:
-        warnings.append(f"Missing configured sections: {', '.join(missing_sections)}")
+        errors.append(f"Missing required sections: {', '.join(missing_sections)}")
 
     health = build_section_health(snapshot)
     total_stories = sum(len(stories) for stories in sections.values())
@@ -147,6 +180,7 @@ def validate_sections_snapshot(snapshot: dict[str, Any]) -> dict[str, Any]:
         "schemaVersion": schema,
         "contentHash": snapshot.get("contentHash", ""),
         "fetchedAt": snapshot.get("fetchedAt", 0),
+        "window": snapshot.get("window") if isinstance(snapshot.get("window"), dict) else {},
         "sectionCount": len(sections),
         "storyCount": total_stories,
         "sourceGroupCount": len(all_source_groups),
@@ -154,6 +188,8 @@ def validate_sections_snapshot(snapshot: dict[str, Any]) -> dict[str, Any]:
         "errors": errors,
         "warnings": warnings,
         "thresholds": {
+            "requiredSections": REQUIRED_SECTIONS,
+            "expectedRetainHours": EXPECTED_RETAIN_HOURS,
             "minTotalStories": MIN_TOTAL_STORIES,
             "minSectionStories": MIN_SECTION_STORIES,
             "minSectionSourceGroups": MIN_SECTION_SOURCE_GROUPS,
@@ -171,6 +207,7 @@ def write_summary(report: dict[str, Any]) -> None:
         f"- Sections: `{report['sectionCount']}`",
         f"- Stories: `{report['storyCount']}`",
         f"- Source groups: `{report['sourceGroupCount']}`",
+        f"- Retain hours: `{report.get('window', {}).get('retainHours', 'n/a')}`",
         "",
         "## Section health",
         "",
@@ -203,12 +240,17 @@ def main() -> int:
             "schemaVersion": 0,
             "contentHash": "",
             "fetchedAt": 0,
+            "window": {},
             "sectionCount": 0,
             "storyCount": 0,
             "sourceGroupCount": 0,
             "sectionHealth": {},
             "errors": [f"Missing {SECTIONS_PATH}"],
             "warnings": [],
+            "thresholds": {
+                "requiredSections": REQUIRED_SECTIONS,
+                "expectedRetainHours": EXPECTED_RETAIN_HOURS,
+            },
         }
         write_json(REPORT_PATH, report)
         write_summary(report)

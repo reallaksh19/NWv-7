@@ -38,7 +38,7 @@ for (const token of [
 }
 
 for (const token of [
-  'Validate Sections prefetch quality',
+  'Validate Sections prefetch contract',
   'python scripts/validate_sections_prefetch_output.py',
   'Upload Sections quality report',
   'sections-quality-report'

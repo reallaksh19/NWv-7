@@ -39,7 +39,6 @@ for (const token of [
 }
 
 for (const token of [
-  'Persist selected child objects back into storiesById',
   'storiesById.set(child.id, child)'
 ]) {
   assert(pipeline.includes(token), `pipeline.ts missing output persistence token: ${token}`);

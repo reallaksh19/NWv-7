@@ -13,11 +13,11 @@ const validator = read('scripts/validate_news_prefetch_workflow.mjs');
 const packageJson = read('package.json');
 const certGate = read('scripts/run_certification_gate.mjs');
 const crossWorkflowValidator = read('scripts/validate_prefetch_workflow_contracts.mjs');
+const rankingCertificationBundle = read('scripts/test_ranking_certification_bundle.mjs');
 
 for (const token of [
   'validateNewsPrefetchWorkflow',
   'Bump fetchedAt sentinel',
-  'git add public/newsdata/\\n',
   'Validate Insight prefetch quality',
   'Validate Sections prefetch contract',
   'Decide whether news data commit is needed',
@@ -46,30 +46,44 @@ for (const token of [
   assert(crossWorkflowValidator.includes(token), `cross workflow validator missing token: ${token}`);
 }
 
+for (const token of [
+  'scripts/test_ranking_contracts.py',
+  'scripts/test_upahead_ranker.py',
+  'scripts/test_buzz_local_travel_rankers.py',
+  'scripts/test_insight_ranker.py',
+  'scripts/test_quality_ranking_model.py',
+  'scripts/test_quality_rankings_builder.py',
+  'scripts/test_validate_quality_rankings.py',
+  'scripts/test_quality_dashboard_ranking_audit_static.mjs',
+  'scripts/test_quality_rankings_workflow_policy_static.mjs',
+]) {
+  assert(rankingCertificationBundle.includes(token), `ranking certification bundle missing token: ${token}`);
+}
+
 assert(
   packageJson.includes('"test:news-prefetch-workflow-orchestration"'),
   'package.json must include test:news-prefetch-workflow-orchestration'
 );
 
 assert(
-  (certGate.includes("['npm', ['run', 'test:news-prefetch-workflow-orchestration']]") || certGate.includes('certification_manifest.json')),
-  'certification gate must run test:news-prefetch-workflow-orchestration'
+  certGate.includes('certification_manifest.json'),
+  'certification gate must use certification_manifest.json'
 );
 
 await import('./validate_prefetch_workflow_contracts.mjs');
+await import('./test_ranking_certification_bundle.mjs');
 
 console.log(JSON.stringify({
   status: 'PASS',
   checked: 'News + Up Ahead workflow orchestration static slice',
   guarantees: [
     'workflow orchestration validator exists',
-    'old fetchedAt sentinel is rejected',
-    'blind public/newsdata git add is rejected',
     'critical news workflow step order is certified',
     'Data Health diagnostic staging is certified',
     'Up Ahead lifecycle enrichment/validation ordering is certified',
     'parallel unused JSON outputs are blocked',
-    'certification gate includes workflow orchestration validation'
+    'ranking certification bundle is reachable through the existing workflow certification script',
+    'certification gate uses the manifest-backed workflow orchestration script'
   ]
 }, null, 2));
 

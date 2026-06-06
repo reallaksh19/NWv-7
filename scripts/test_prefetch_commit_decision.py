@@ -1,7 +1,4 @@
-import json
-import tempfile
 import unittest.mock as mock
-from pathlib import Path
 
 import prefetch_commit_decision as policy
 
@@ -53,7 +50,6 @@ def test_manifest_marks_diagnostic_only():
 
 
 def test_heartbeat_triggers_commit_when_fetched_at_advances_more_than_3h():
-    # INS-2: heartbeat should force commit when disk fetchedAt is > 3h ahead of HEAD
     _3h_ms = 3 * 3600 * 1000
     with mock.patch.object(policy, "_disk_fetched_at", return_value=10_000_000 + _3h_ms + 1):
         with mock.patch.object(policy, "_committed_fetched_at", return_value=10_000_000):
@@ -69,6 +65,19 @@ def test_heartbeat_does_not_trigger_when_advance_is_less_than_3h():
             assert result is False, "Heartbeat should NOT trigger when fetchedAt advanced only 1h"
 
 
+def test_diagnostic_file_registry_includes_dashboard_and_section_reports():
+    names = {path.name for path in policy.DIAGNOSTIC_FILES}
+    assert "insight_quality_report.json" in names
+    assert "insight_quality_summary.md" in names
+    assert "sections_quality_report.json" in names
+    assert "sections_quality_summary.md" in names
+    assert "real_insight_quality_report.json" in names
+    assert "real_insight_quality_summary.md" in names
+    assert "quality_dashboard.json" in names
+    assert "quality_dashboard_history.json" in names
+    assert "section_source_policy_report.json" in names
+
+
 if __name__ == "__main__":
     tests = [
         test_stable_hash_ignores_insight_fetched_at_noise,
@@ -76,6 +85,7 @@ if __name__ == "__main__":
         test_manifest_marks_diagnostic_only,
         test_heartbeat_triggers_commit_when_fetched_at_advances_more_than_3h,
         test_heartbeat_does_not_trigger_when_advance_is_less_than_3h,
+        test_diagnostic_file_registry_includes_dashboard_and_section_reports,
     ]
     passed = 0
     for t in tests:

@@ -73,8 +73,19 @@ def published_at(item: dict[str, Any]) -> int:
 
 
 def token_set(text: str) -> set[str]:
-    stop = {"this", "that", "with", "from", "after", "before", "latest", "news", "says", "said", "will", "have"}
+    stop = {
+        "this", "that", "with", "from", "after", "before", "latest", "news",
+        "says", "said", "will", "have", "update", "updates", "item",
+    }
     return {token for token in re.sub(r"[^a-z0-9\s]", " ", text.lower()).split() if len(token) >= 4 and token not in stop}
+
+
+def has_negated_overlap(child_text: str, overlapping_tokens: set[str]) -> bool:
+    lowered = child_text.lower()
+    return any(
+        re.search(rf"\b(unrelated|not related|unconnected)\s+(to|with)\s+.{0,32}\b{re.escape(token)}\b", lowered)
+        for token in overlapping_tokens
+    )
 
 
 def event_coherence_gate(candidate: dict[str, Any]) -> GateResult:
@@ -90,8 +101,17 @@ def event_coherence_gate(candidate: dict[str, Any]) -> GateResult:
         title_tokens = token_set(" ".join(text_blob(child) for child in children[:2]))
     overlap_count = 0
     for child in children:
-        if title_tokens.intersection(token_set(text_blob(child))):
-            overlap_count += 1
+        child_text = text_blob(child)
+        full_overlap = title_tokens.intersection(token_set(child_text))
+        if not full_overlap:
+            continue
+        title_overlap = title_tokens.intersection(token_set(str(child.get("title") or child.get("headline") or "")))
+        strong_enough = bool(title_overlap) or len(full_overlap) >= 2
+        if not strong_enough:
+            continue
+        if not title_overlap and has_negated_overlap(child_text, full_overlap):
+            continue
+        overlap_count += 1
     ratio = overlap_count / max(1, len(children))
     if ratio >= 0.67:
         return pass_gate("eventCoherence", ratio, "children share event tokens", matchingChildren=overlap_count, childCount=len(children))

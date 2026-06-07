@@ -11,6 +11,7 @@ from typing import Any, Iterable
 
 from ranking_contracts import GateResult, RankedItem, RankingResult, fail_gate, pass_gate, warn_gate, weighted_score
 from ranking_gates import (
+    CITY_ALIASES,
     DAY_MS,
     H_MS,
     actionability_gate,
@@ -94,6 +95,24 @@ def is_offer_category(category: str) -> bool:
 def is_online_item(item: dict[str, Any]) -> bool:
     blob = text_blob(item)
     return bool(item.get("onlineOnly")) or any(term in blob for term in ONLINE_TERMS)
+
+
+def explicit_location_key(item: dict[str, Any], configured_locations: Iterable[str]) -> str | None:
+    direct_text = " ".join(
+        str(item.get(key) or "")
+        for key in ("location", "city", "region", "country", "venue")
+    ).lower()
+    if not direct_text.strip():
+        return None
+    padded = f" {direct_text} "
+    for raw_loc in configured_locations:
+        loc = str(raw_loc or "").strip().lower()
+        if not loc:
+            continue
+        aliases = CITY_ALIASES.get(loc, {loc})
+        if any(f" {alias} " in padded for alias in aliases):
+            return loc
+    return None
 
 
 def display_until(item: dict[str, Any], now_ms: int) -> int | None:
@@ -245,12 +264,13 @@ def score_item(
         ranking_reasons.append("planner advisory fit")
 
     location_details = gates[2].details
+    direct_location_key = explicit_location_key(item, configured_locations)
     ranked = RankedItem(
         item_id=item_id(item, index),
         title=item_title(item),
         score=score,
         category=category,
-        location_key=str(location_details.get("matchedLocation") or "unknown"),
+        location_key=str(direct_location_key or location_details.get("matchedLocation") or "unknown"),
         ranking_reasons=tuple(reason for reason in ranking_reasons if reason),
         gates=tuple(gates),
         item={**item, "normalizedCategory": category, "scoreBreakdown": parts},
@@ -349,7 +369,7 @@ def _avg_item_part(items: list[RankedItem], key: str) -> float:
     if not items:
         return 0.0
     values = [float(item.item.get("scoreBreakdown", {}).get(key, 0.0) or 0.0) for item in items]
-    return round(sum(values) / len(values), 4)
+    return round(sum(values) / len(items), 4)
 
 
 def _actionable_findings(

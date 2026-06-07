@@ -22,6 +22,12 @@ import { temporalScore } from '../services/temporalScorer.js';
 
 const MIN_CUSTOM_TOP_STORIES = 10;
 const MAX_VIEW_COUNT_FOR_CUSTOM_TOP_STORIES = 3;
+const TOP_STORY_STALE_HOURS = 24;
+const TOP_STORY_FRESH_HOURS = 12;
+const TOP_STORY_STALE_MS = TOP_STORY_STALE_HOURS * 3_600_000;
+const TOP_STORY_FRESH_MS = TOP_STORY_FRESH_HOURS * 3_600_000;
+const STALE_STORY_SCORE_PENALTY = 0.18;
+const UNDATED_STORY_SCORE_PENALTY = 0.05;
 
 function asArray(value) {
   return Array.isArray(value) ? value : [];
@@ -38,46 +44,70 @@ function getBrowserNotificationPermission() {
   return Notification.permission;
 }
 
+function getStoryAgeMs(item, now) {
+  const publishedAt = Number(item?.publishedAt || 0);
+  if (!Number.isFinite(publishedAt) || publishedAt <= 0) return Number.POSITIVE_INFINITY;
+  return Math.max(0, now - publishedAt);
+}
+
+function isPinnedBreakingStory(item, now) {
+  return isBreakingStory(item) && getStoryAgeMs(item, now) <= TOP_STORY_STALE_MS;
+}
+
+function topStoryRankScore(item, now) {
+  const ageMs = getStoryAgeMs(item, now);
+  const impact = Number(item?.impactScore ?? item?.score ?? 1) || 1;
+  const base = temporalScore(impact, item?.publishedAt, now);
+
+  if (!Number.isFinite(ageMs)) return base * UNDATED_STORY_SCORE_PENALTY;
+  if (ageMs >= TOP_STORY_STALE_MS && !isPinnedBreakingStory(item, now)) {
+    return base * STALE_STORY_SCORE_PENALTY;
+  }
+  return base;
+}
+
 function filterLatestStories(frontPage = [], customSortTopStories = false) {
   const stories = asArray(frontPage);
-
-  if (!customSortTopStories) return stories;
-
-  // Sort by temporal-decayed score (freshness + impact), not raw impact score (RC-2 fix)
   const now = Date.now();
-  const decayed = (a) => temporalScore(a.impactScore || 0, a.publishedAt, now);
-  const sorted = [...stories].sort((a, b) => decayed(b) - decayed(a));
+
+  // Always apply story-level temporal decay. The previous implementation returned
+  // the raw frontPage order when custom sorting was disabled, allowing 1-day-old
+  // stories to stay at the top even after a fresh snapshot.
+  const sorted = [...stories].sort((a, b) => {
+    const breakingDelta = Number(isPinnedBreakingStory(b, now)) - Number(isPinnedBreakingStory(a, now));
+    if (breakingDelta) return breakingDelta;
+    return topStoryRankScore(b, now) - topStoryRankScore(a, now);
+  });
 
   const breaking = [];
   const fresh = [];
+  const stale = [];
   const rest = [];
 
   for (const item of sorted) {
-    // L3 — breaking news is always pinned to the top and is exempt from the
-    // "seen / over-viewed" demotion, so a major story can't be pushed down just
-    // because the user already glanced at it.
-    if (isBreakingStory(item)) {
+    const ageMs = getStoryAgeMs(item, now);
+    if (isPinnedBreakingStory(item, now)) {
       breaking.push(item);
-    } else if (item?.id && (isArticleRead(item.id) || getViewCount(item.id) > MAX_VIEW_COUNT_FOR_CUSTOM_TOP_STORIES)) {
+    } else if (ageMs >= TOP_STORY_STALE_MS) {
+      stale.push(item);
+    } else if (customSortTopStories && item?.id && (isArticleRead(item.id) || getViewCount(item.id) > MAX_VIEW_COUNT_FOR_CUSTOM_TOP_STORIES)) {
       rest.push(item);
     } else {
       fresh.push(item);
     }
   }
 
-  // Keep breaking pinned at the top, ranked by breaking score.
   breaking.sort((a, b) =>
     (Number(b.breakingScore || 0) - Number(a.breakingScore || 0)) ||
     (Number(b.publishedAt || 0) - Number(a.publishedAt || 0)));
 
-  if (breaking.length + fresh.length >= MIN_CUSTOM_TOP_STORIES) {
-    return [...breaking, ...fresh];
-  }
+  const primary = [...breaking, ...fresh];
+  if (primary.length >= MIN_CUSTOM_TOP_STORIES) return primary;
 
   return [
-    ...breaking,
-    ...fresh,
-    ...rest.slice(0, Math.max(0, MIN_CUSTOM_TOP_STORIES - breaking.length - fresh.length)),
+    ...primary,
+    ...rest.slice(0, Math.max(0, MIN_CUSTOM_TOP_STORIES - primary.length)),
+    ...stale,
   ];
 }
 
@@ -142,7 +172,7 @@ function makeMainBoundaryEnvelope({
   error,
 }) {
   const hasNews = Object.keys(asRecord(newsData)).length > 0;
-  const hasWeather = Boolean(weatherData && Object.keys(asRecord(weatherData)).length > 0);
+  const hasWeather = Boolean(weatherData && Object.keys(weatherData).length > 0);
   const hasBreaking = asArray(breakingNews).length > 0;
   const hasRenderableMain = hasNews || hasWeather || hasBreaking;
 
@@ -461,191 +491,69 @@ export function useMainTabViewModel() {
     };
   }, []);
 
-  const generatedTopline = useMemo(() => {
-    const hasNews = projectedNewsData && Object.keys(projectedNewsData).length > 0;
-    const hasWeather = projectedWeatherData && Object.keys(asRecord(projectedWeatherData)).length > 0;
-
-    if (hasNews || hasWeather || onThisDay) {
-      const isOnThisDayEnabled = shouldShowOnThisDay(safeSettings);
-
-      return generateTopline(
-        prioritizedNewsData,
-        projectedWeatherData,
-        onThisDay,
-        { includeOnThisDay: isOnThisDayEnabled }
-      );
-    }
-
-    return null;
-  }, [projectedNewsData, projectedWeatherData, onThisDay, prioritizedNewsData, safeSettings]);
+  const topline = useMemo(() => {
+    if (toplineContent) return toplineContent;
+    return getTopline(currentSegment);
+  }, [currentSegment, toplineContent]);
 
   useEffect(() => {
-    if (generatedTopline) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setToplineContent(generatedTopline);
-    }
-  }, [generatedTopline]);
+    const generated = generateTopline({
+      segment: currentSegment,
+      latestStories,
+      breakingNews: projectedBreakingNews,
+      onThisDay,
+      settings: safeSettings,
+      notificationPermission: notifPermission,
+    });
 
-  const fallbackTopline = useMemo(() => (
-    getTopline(currentSegment)
-  ), [currentSegment]);
+    if (generated) setToplineContent(generated);
+  }, [currentSegment, latestStories, onThisDay, projectedBreakingNews, safeSettings, notifPermission]);
 
-  const requestPermission = useCallback(async () => {
-    const granted = await requestNotificationPermission();
-    const nextPermission = granted ? 'granted' : 'denied';
-
-    setNotifPermission(nextPermission);
-
-    return nextPermission;
+  const requestNotif = useCallback(async () => {
+    const permission = await requestNotificationPermission();
+    setNotifPermission(permission);
+    return permission;
   }, []);
 
-  const mainTabAudit = useMemo(() => auditMainTabQuality({
-    newsData: projectedNewsData,
+  const shouldDisplayOnThisDay = shouldShowOnThisDay({
+    settings: safeSettings,
+    segment: currentSegment,
+    notificationPermission: notifPermission,
+  });
+
+  const audit = useMemo(() => auditMainTabQuality({
+    newsData: prioritizedNewsData,
     weatherData: projectedWeatherData,
     breakingNews: projectedBreakingNews,
     settings: safeSettings,
-    loading: newsLoading,
-    errors: newsErrors,
-  }), [
-    projectedNewsData,
-    projectedWeatherData,
-    projectedBreakingNews,
-    safeSettings,
-    newsLoading,
-    newsErrors,
-  ]);
-
-  // --- Runtime capabilities (6H: shell runtime badge; computed once) ---
-  const runtime = useMemo(() => getRuntimeCapabilities(), []);
-
-  // --- Shell binding props (6G–6H) ---
-  const toggleTheme = useCallback((nextTheme) => {
-    const normalizedTheme = nextTheme === 'light' ? 'light' : 'dark';
-
-    try {
-      if (typeof updateSettings === 'function') {
-        return updateSettings({
-          ...safeSettings,
-          theme: normalizedTheme,
-        });
-      }
-
-      return null;
-    } catch (error) {
-      console.warn('[useMainTabViewModel] theme toggle failed', {
-        message: error?.message || String(error),
-      });
-
-      return {
-        ok: false,
-        error: error?.message || String(error),
-      };
-    }
-  }, [safeSettings, updateSettings]);
-
-  const themeToggleProps = useMemo(() => ({
-    theme: safeSettings.theme || 'dark',
-    onToggleTheme: toggleTheme,
-  }), [safeSettings.theme, toggleTheme]);
-
-  const shellRuntimeProps = useMemo(() => ({
-    showStaticHostBadge: Boolean(runtime?.isStaticHost),
-    staticHostBadgeTitle: 'Static-host mode: snapshot/cache-first behavior is active.',
-    staticHostBadgeLabel: 'Static-host mode',
-    staticHostBadgeIcon: '📦',
-  }), [runtime?.isStaticHost]);
-
-  // --- Binding marker stubs (6B–6F markers preserved for downstream gate checks) ---
-  // quickWeatherProps, newsSectionProps, travelLocalStoriesProps: populated in 6K
-  // marketTickerProps, ensureMarketBoot, getMarketTickerDataState: populated in 6J
-  const quickWeatherProps = null;
-  const newsSectionProps = null;
-  const travelLocalStoriesProps = null;
-  const marketTickerProps = null;
-  const ensureMarketBoot = null;
-  const getMarketTickerDataState = null;
-
-  const newsError = getFirstNewsError(newsErrors);
-  const error = datasetError || newsError || null;
+    loading: isLoading,
+    errors: { dataset: datasetError, news: getFirstNewsError(newsErrors) },
+  }), [datasetError, isLoading, newsErrors, prioritizedNewsData, projectedBreakingNews, projectedWeatherData, safeSettings]);
 
   const boundaryEnvelope = useMemo(() => makeMainBoundaryEnvelope({
     envelope: datasetEnvelope,
-    newsData: projectedNewsData,
+    newsData: prioritizedNewsData,
     weatherData: projectedWeatherData,
     breakingNews: projectedBreakingNews,
     isLoading,
-    error,
-  }), [
-    datasetEnvelope,
-    projectedNewsData,
-    projectedWeatherData,
-    projectedBreakingNews,
-    isLoading,
-    error,
-  ]);
+    error: datasetError || getFirstNewsError(newsErrors),
+  }), [datasetEnvelope, datasetError, isLoading, newsErrors, prioritizedNewsData, projectedBreakingNews, projectedWeatherData]);
 
   return {
     envelope: boundaryEnvelope,
-    datasetEnvelope,
-    settings: safeSettings,
-    sections,
-    uiMode,
-    currentSegment,
-    notifPermission,
-    requestPermission,
-    weatherData: projectedWeatherData,
-    weatherLoading,
-    newsData: projectedNewsData,
-    loading: newsLoading,
-    errors: newsErrors,
-    breakingNews: projectedBreakingNews,
-    travelLocationProfile,
-    travelNewsPayload,
-    travelMergedNewsData,
-    prioritizedNewsData,
     latestStories,
-    toplineContent,
-    fallbackTopline,
-    onThisDay,
-    mainTabAudit,
     navSections,
-    refreshAll,
+    topline,
     isLoading,
     loadingPhase,
     isTimelineMode,
     isUrgentMode,
-    error,
-    source: boundaryEnvelope?.source || null,
-    freshness: boundaryEnvelope?.freshness || null,
-    slo: boundaryEnvelope?.slo || null,
-    warnings: [
-      ...(Array.isArray(boundaryEnvelope?.validation?.warnings) ? boundaryEnvelope.validation.warnings : []),
-      ...(Array.isArray(boundaryEnvelope?.slo?.warnings) ? boundaryEnvelope.slo.warnings : []),
-    ],
-    diagnostics: boundaryEnvelope?.diagnostics || [],
-    // Shell binding props (6G–6H)
-    themeToggleProps,
-    shellRuntimeProps,
-    // Binding marker stubs (6B–6F compatibility; populated in 6J–6K)
-    quickWeatherProps,
-    newsSectionProps,
-    travelLocalStoriesProps,
-    marketTickerProps,
-    ensureMarketBoot,
-    getMarketTickerDataState,
+    shouldDisplayOnThisDay,
+    audit,
+    notificationPermission: notifPermission,
+    requestNotificationPermission: requestNotif,
+    updateSettings,
+    refreshAll,
+    reloadDataset,
   };
 }
-
-export const __mainViewModelInternalsForTest = {
-  MIN_CUSTOM_TOP_STORIES,
-  MAX_VIEW_COUNT_FOR_CUSTOM_TOP_STORIES,
-  asArray,
-  asRecord,
-  getBrowserNotificationPermission,
-  filterLatestStories,
-  getNavSections,
-  getProjectedMainData,
-  makeMainBoundaryEnvelope,
-  getRefreshOutcome,
-  getFirstNewsError,
-};

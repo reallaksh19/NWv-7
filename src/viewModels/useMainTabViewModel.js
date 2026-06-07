@@ -22,6 +22,7 @@ import { temporalScore } from '../services/temporalScorer.js';
 
 const MIN_CUSTOM_TOP_STORIES = 10;
 const MAX_VIEW_COUNT_FOR_CUSTOM_TOP_STORIES = 3;
+const DEFAULT_UI_MODE = 'classic';
 
 function asArray(value) {
   return Array.isArray(value) ? value : [];
@@ -326,7 +327,7 @@ export function useMainTabViewModel() {
   const sections = useMemo(() => (
     rawSections || {}
   ), [rawSections]);
-  const uiMode = safeSettings.uiMode || 'timeline';
+  const uiMode = safeSettings.uiMode || DEFAULT_UI_MODE;
 
   const projected = useMemo(() => getProjectedMainData({
     envelope: datasetEnvelope,
@@ -372,9 +373,9 @@ export function useMainTabViewModel() {
 
   const travelMergedNewsData = useMemo(() => (
     travelNewsPayload && travelLocationProfile?.prioritizeStories
-      ? mergeTravelNewsIntoNewsData(projectedNewsData, travelNewsPayload, travelLocationProfile)
+      ? mergeTravelNewsIntoNewsData(projectedNewsData, travelNewsPayload)
       : projectedNewsData
-  ), [projectedNewsData, travelNewsPayload, travelLocationProfile]);
+  ), [projectedNewsData, travelNewsPayload, travelLocationProfile?.prioritizeStories]);
 
   const prioritizedNewsData = useMemo(() => (
     applyTravelLocationPriority(travelMergedNewsData, travelLocationProfile)
@@ -639,6 +640,7 @@ export function useMainTabViewModel() {
 export const __mainViewModelInternalsForTest = {
   MIN_CUSTOM_TOP_STORIES,
   MAX_VIEW_COUNT_FOR_CUSTOM_TOP_STORIES,
+  DEFAULT_UI_MODE,
   asArray,
   asRecord,
   getBrowserNotificationPermission,

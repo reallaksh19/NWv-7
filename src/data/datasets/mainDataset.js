@@ -11,7 +11,6 @@ import { load as loadUpAhead } from './upAheadDataset.js';
 import { load as loadInsight } from './insightDataset.js';
 
 // Release 5A adapter-only dataset.
-// Do not consume from MainPage until Release 5H.
 // Insight is expensive and is not loaded by default.
 
 function settledValue(result) {
@@ -93,6 +92,22 @@ function hasStaleInput(...envelopes) {
   return envelopes.some(env => env?.freshness === ENVELOPE_FRESHNESS.STALE);
 }
 
+function getSectionStaleWarnings(sectionsEnv) {
+  if (!sectionsEnv) return [];
+
+  const warnings = [];
+  if (sectionsEnv.freshness === ENVELOPE_FRESHNESS.STALE) {
+    warnings.push('main_sections_stale');
+  }
+
+  const staleRows = sectionsEnv?.data?.sectionSnapshotStaleness?.rows || [];
+  staleRows.forEach(row => {
+    warnings.push(`main_section_snapshot_stale:${row.section}:${row.staleReason || 'snapshot_stale'}`);
+  });
+
+  return warnings;
+}
+
 export async function load(options = {}) {
   const includeInsight = options.includeInsight === true;
 
@@ -120,18 +135,20 @@ export async function load(options = {}) {
 
   const onThisDay = null;
 
+  const sectionStaleWarnings = getSectionStaleWarnings(sectionsEnv);
   const warnings = [
     !sectionsEnv?.ok ? 'main_sections_unavailable' : null,
+    ...sectionStaleWarnings,
     weatherEnv && !weatherEnv.ok ? 'main_weather_degraded' : null,
     marketEnv && !marketEnv.ok ? 'main_market_degraded' : null,
     upAheadEnv && !upAheadEnv.ok ? 'main_upAhead_degraded' : null,
     includeInsight && insightEnv && !insightEnv.ok ? 'main_insight_degraded' : null,
     !includeInsight ? 'main_insight_skipped_adapter_only' : null,
-    ...collectInputWarnings(weatherEnv, marketEnv),
+    ...collectInputWarnings(sectionsEnv, weatherEnv, marketEnv),
   ].filter(Boolean);
 
   const ok = frontPage.length > 0 || Boolean(quickWeather || marketSummary?.primary || upAheadSummary?.event);
-  const stale = ok && hasStaleInput(weatherEnv, marketEnv);
+  const stale = ok && hasStaleInput(sectionsEnv, weatherEnv, marketEnv, upAheadEnv);
 
   const envelope = makeEnvelope({
     ok,
@@ -160,7 +177,7 @@ export async function load(options = {}) {
       : ENVELOPE_FRESHNESS.EMPTY,
     error: ok ? null : 'main dataset unavailable',
     validation: {
-      passed: ok,
+      passed: ok && !stale,
       errors: ok ? [] : ['main_dataset_unavailable'],
       warnings,
     },
@@ -175,8 +192,21 @@ export async function load(options = {}) {
           index,
           datasetId: result.status === 'fulfilled' ? result.value?.datasetId || null : null,
           ok: result.status === 'fulfilled' ? result.value?.ok ?? true : false,
+          freshness: result.status === 'fulfilled' ? result.value?.freshness || null : null,
         },
       })),
+      ...(stale ? [{
+        event: 'mainDataset.stale_input',
+        severity: 'warn',
+        message: 'Main tab is stale because one or more input datasets are stale.',
+        details: {
+          sectionsFreshness: sectionsEnv?.freshness || null,
+          weatherFreshness: weatherEnv?.freshness || null,
+          marketFreshness: marketEnv?.freshness || null,
+          upAheadFreshness: upAheadEnv?.freshness || null,
+          sectionStaleWarnings,
+        },
+      }] : []),
       {
         event: 'mainDataset.adapter_only',
         severity: 'info',
@@ -190,3 +220,16 @@ export async function load(options = {}) {
 
   return applyDatasetSlo(envelope);
 }
+
+export const __mainDatasetInternalsForTest = {
+  settledValue,
+  firstStory,
+  getQuickWeather,
+  getMarketSummary,
+  getUpAheadSummary,
+  getInsightSummary,
+  buildTopline,
+  collectInputWarnings,
+  hasStaleInput,
+  getSectionStaleWarnings,
+};

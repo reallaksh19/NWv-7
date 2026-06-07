@@ -84,6 +84,8 @@ function validateNewsPrefetchWorkflow(workflow) {
   requireStep(workflow, 'Validate Insight prefetch quality');
   requireStep(workflow, 'Fetch Sections stories');
   requireStep(workflow, 'Validate Sections prefetch contract');
+  requireStep(workflow, 'Validate generated newsdata freshness');
+  requireStep(workflow, 'Upload newsdata freshness report');
   requireStep(workflow, 'Run real Insight snapshot quality benchmark');
   requireStep(workflow, 'Generate quality dashboard');
   requireStep(workflow, 'Validate quality dashboard');
@@ -93,8 +95,10 @@ function validateNewsPrefetchWorkflow(workflow) {
 
   requireOrder(workflow, 'Fetch Insight stories', 'Validate Insight prefetch quality');
   requireOrder(workflow, 'Fetch Sections stories', 'Validate Sections prefetch contract');
-  requireOrder(workflow, 'Validate Insight prefetch quality', 'Run real Insight snapshot quality benchmark');
-  requireOrder(workflow, 'Validate Sections prefetch contract', 'Run real Insight snapshot quality benchmark');
+  requireOrder(workflow, 'Validate Insight prefetch quality', 'Validate generated newsdata freshness');
+  requireOrder(workflow, 'Validate Sections prefetch contract', 'Validate generated newsdata freshness');
+  requireOrder(workflow, 'Validate generated newsdata freshness', 'Run real Insight snapshot quality benchmark');
+  requireOrder(workflow, 'Validate generated newsdata freshness', 'Generate quality dashboard');
   requireOrder(workflow, 'Run real Insight snapshot quality benchmark', 'Generate quality dashboard');
   requireOrder(workflow, 'Generate quality dashboard', 'Validate quality dashboard');
   requireOrder(workflow, 'Validate quality dashboard', 'Decide whether news data commit is needed');
@@ -116,6 +120,8 @@ function validateNewsPrefetchWorkflow(workflow) {
     'public/newsdata/insight_quality_summary.md',
     'public/newsdata/sections_quality_report.json',
     'public/newsdata/sections_quality_summary.md',
+    'public/newsdata/newsdata_freshness_report.json',
+    'public/newsdata/newsdata_freshness_summary.md',
     'public/newsdata/real_insight_quality_report.json',
     'public/newsdata/real_insight_quality_summary.md',
     'public/newsdata/quality_dashboard.json',
@@ -136,9 +142,11 @@ function validateNewsPrefetchWorkflow(workflow) {
   for (const token of [
     'python scripts/validate_insight_prefetch_output.py',
     'python scripts/validate_sections_prefetch_output.py',
+    'python scripts/validate_newsdata_freshness.py',
     'python scripts/prefetch_commit_decision.py',
     'insight-quality-report',
     'sections-quality-report',
+    'newsdata-freshness-report',
     'prefetch-commit-manifest',
     'real-insight-quality-report',
     'quality-dashboard',
@@ -154,13 +162,14 @@ function validateNewsPrefetchWorkflow(workflow) {
 
   return {
     status: 'PASS',
-    checked: 'News prefetch workflow orchestration and diagnostic staging',
+    checked: 'News prefetch workflow orchestration, freshness gate, and diagnostic staging',
     guarantees: [
       'concurrency guard exists',
       'fetchedAt-only sentinel is rejected',
       'blind public/newsdata git add is rejected',
       'Insight quality validation runs after Insight fetch',
       'Sections contract validation runs after Sections fetch',
+      'freshness gate runs after fetch validation and before benchmark/dashboard/commit',
       'benchmark and dashboard run before commit decision',
       'commit decision sees generated dashboard diagnostics',
       'data commit is gated by should_commit=true',

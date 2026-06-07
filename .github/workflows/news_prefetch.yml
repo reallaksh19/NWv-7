@@ -18,8 +18,8 @@ name: News Prefetch
 # automatically when the data commit lands on main.
 #
 # Step ordering:
-#   Python fetch/validate → Node benchmark → ranking build/validate → dashboard
-#   → commit decision → artifact upload → commit (conditional on should_commit)
+#   Python fetch/validate/freshness gate → Node benchmark → ranking build/validate
+#   → dashboard → commit decision → artifact upload → commit (conditional on should_commit)
 
 on:
   schedule:
@@ -94,6 +94,19 @@ jobs:
           path: |
             public/newsdata/sections_quality_report.json
             public/newsdata/sections_quality_summary.md
+          if-no-files-found: warn
+
+      - name: Validate generated newsdata freshness
+        run: python scripts/validate_newsdata_freshness.py
+
+      - name: Upload newsdata freshness report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: newsdata-freshness-report
+          path: |
+            public/newsdata/newsdata_freshness_report.json
+            public/newsdata/newsdata_freshness_summary.md
           if-no-files-found: warn
 
       # ── Benchmark + diagnostic dashboard run unconditionally ─────────────────
@@ -189,7 +202,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           # Clean up any in-progress rebase left by a previous crashed run
           git rebase --abort 2>/dev/null || true
-          git add public/newsdata/insight_latest.json public/newsdata/sections_latest.json public/newsdata/source_health.json public/newsdata/prefetch_commit_manifest.json public/newsdata/insight_quality_report.json public/newsdata/insight_quality_summary.md public/newsdata/sections_quality_report.json public/newsdata/sections_quality_summary.md public/newsdata/real_insight_quality_report.json public/newsdata/real_insight_quality_summary.md public/newsdata/quality_rankings.json public/newsdata/quality_rankings.md public/newsdata/quality_rankings_history.json public/newsdata/quality_rankings_validation_report.json public/newsdata/quality_dashboard.json public/newsdata/quality_dashboard_history.json public/newsdata/section_source_policy_report.json
+          git add public/newsdata/insight_latest.json public/newsdata/sections_latest.json public/newsdata/source_health.json public/newsdata/prefetch_commit_manifest.json public/newsdata/insight_quality_report.json public/newsdata/insight_quality_summary.md public/newsdata/sections_quality_report.json public/newsdata/sections_quality_summary.md public/newsdata/newsdata_freshness_report.json public/newsdata/newsdata_freshness_summary.md public/newsdata/real_insight_quality_report.json public/newsdata/real_insight_quality_summary.md public/newsdata/quality_rankings.json public/newsdata/quality_rankings.md public/newsdata/quality_rankings_history.json public/newsdata/quality_rankings_validation_report.json public/newsdata/quality_dashboard.json public/newsdata/quality_dashboard_history.json public/newsdata/section_source_policy_report.json
           if git diff --staged --quiet; then
             echo "No meaningful news-data changes — skipping commit"
             exit 0
@@ -227,7 +240,7 @@ jobs:
               `- Ref: ${context.ref}`,
               `- Commit: ${context.sha}`,
               '',
-              'Please review failed step logs and uploaded quality artifacts (`insight-quality-report`, `sections-quality-report`, `real-insight-quality-report`, `quality-rankings`, `quality-dashboard`).'
+              'Please review failed step logs and uploaded quality artifacts (`insight-quality-report`, `sections-quality-report`, `newsdata-freshness-report`, `real-insight-quality-report`, `quality-rankings`, `quality-dashboard`).'
             ].join('\n');
             await github.rest.issues.create({
               owner: context.repo.owner,

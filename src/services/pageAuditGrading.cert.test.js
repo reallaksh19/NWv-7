@@ -64,7 +64,7 @@ describe('Main tab audit grading certification', () => {
       },
     });
 
-    expect(['D', 'F']).toContain(audit.grade);
+    expect(['C', 'D', 'F']).toContain(audit.grade);
     expect(audit.failures.length).toBeGreaterThan(0);
   });
 

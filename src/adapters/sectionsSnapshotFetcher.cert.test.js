@@ -99,7 +99,7 @@ describe('Sections snapshot browser ingestion certification', () => {
     expect(result.items[0].title).toBe('Tech trend');
   });
 
-  it('returns stale items with stale marker so callers can show data rather than nothing', () => {
+  it('serves only item-fresh normal-section rows from a stale snapshot', () => {
     const staleSnapshot = {
       ...snapshot,
       fetchedAt: Date.now() - SECTION_SNAPSHOT_MAX_AGE_MS - 1000,
@@ -107,12 +107,65 @@ describe('Sections snapshot browser ingestion certification', () => {
 
     const result = selectPrefetchedSectionItems(staleSnapshot, 'chennai', 10);
 
-    // Stale snapshot should return available items (not empty) so the UI shows
-    // something rather than "No news available". Caller shows a stale warning.
     expect(result.items).toHaveLength(2);
     expect(result.items[0]._prefetchedSection).toBe(true);
     expect(result.stale).toBe(true);
     expect(result.staleReason).toBe('sections_snapshot_stale');
+  });
+
+  it('hard-blocks Top Stories when the topStories snapshot is stale', () => {
+    const topStoriesSnapshot = {
+      schemaVersion: 2,
+      fetchedAt: Date.now() - SECTION_SNAPSHOT_MAX_AGE_MS - 1000,
+      sections: {
+        topStories: [
+          {
+            id: 'top-1',
+            title: 'Important story',
+            summary: 'Fresh item in stale snapshot should not render as Top Stories.',
+            url: 'https://example.com/top-1',
+            source: 'Example',
+            sourceGroup: 'example',
+            publishedAt: Date.now() - 1000,
+          },
+        ],
+      },
+    };
+
+    const result = selectPrefetchedSectionItems(topStoriesSnapshot, 'topStories', 10);
+
+    expect(result.items).toEqual([]);
+    expect(result.stale).toBe(true);
+    expect(result.staleReason).toBe('top_stories_snapshot_stale');
+    expect(result.blockedBySnapshotStaleness).toBe(true);
+  });
+
+  it('rejects missing or low-confidence timestamps for Top Stories', () => {
+    const topStoriesSnapshot = {
+      schemaVersion: 2,
+      fetchedAt: Date.now(),
+      sections: {
+        topStories: [
+          {
+            id: 'fallback-ts',
+            title: 'Undated story',
+            url: 'https://example.com/fallback-ts',
+            source: 'Example',
+            sourceGroup: 'example',
+            publishedAt: Date.now(),
+            publishedAtSource: 'fetch_time_fallback',
+            timestampConfidence: 'low',
+          },
+        ],
+      },
+    };
+
+    const result = selectPrefetchedSectionItems(topStoriesSnapshot, 'topStories', 10);
+
+    expect(result.items).toEqual([]);
+    expect(result.stale).toBe(true);
+    expect(result.staleReason).toBe('section_items_stale');
+    expect(result.lowConfidenceTimestampCount).toBe(1);
   });
 
   it('maps local requests to muscat prefetched section', () => {

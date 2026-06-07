@@ -16,8 +16,8 @@ name: News Prefetch
 # automatically when the data commit lands on main.
 #
 # Step ordering:
-#   Python fetch/validate → Node benchmark/dashboard → commit decision
-#   → artifact upload → commit (conditional on should_commit)
+#   Python fetch/validate → Node benchmark → ranking build/validate → dashboard
+#   → commit decision → artifact upload → commit (conditional on should_commit)
 
 on:
   schedule:
@@ -85,7 +85,7 @@ jobs:
             public/newsdata/sections_quality_summary.md
           if-no-files-found: warn
 
-      # ── Benchmark + dashboard run unconditionally ─────────────────────────────
+      # ── Benchmark + diagnostic dashboard run unconditionally ─────────────────
       # Observability data must be produced on every run, not just when content
       # changes. Only the git commit at the end stays conditional.
 
@@ -115,7 +115,29 @@ jobs:
             public/newsdata/real_insight_quality_summary.md
           if-no-files-found: warn
 
-      # ── Dashboard runs AFTER benchmark so it can read real_insight_quality_report ──
+      # ── Rankings run BEFORE dashboard so dashboard.rankingAudit is populated ──
+
+      - name: Build quality rankings
+        if: always()
+        run: python scripts/build_quality_rankings.py
+
+      - name: Validate quality rankings
+        if: always()
+        run: python scripts/validate_quality_rankings.py
+
+      - name: Upload quality rankings
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: quality-rankings
+          path: |
+            public/newsdata/quality_rankings.json
+            public/newsdata/quality_rankings.md
+            public/newsdata/quality_rankings_history.json
+            public/newsdata/quality_rankings_validation_report.json
+          if-no-files-found: warn
+
+      # ── Dashboard runs AFTER ranking + benchmark diagnostic artifacts ─────────
 
       - name: Generate quality dashboard
         if: always()
@@ -156,7 +178,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           # Clean up any in-progress rebase left by a previous crashed run
           git rebase --abort 2>/dev/null || true
-          git add public/newsdata/insight_latest.json public/newsdata/sections_latest.json public/newsdata/source_health.json public/newsdata/prefetch_commit_manifest.json public/newsdata/insight_quality_report.json public/newsdata/insight_quality_summary.md public/newsdata/sections_quality_report.json public/newsdata/sections_quality_summary.md public/newsdata/real_insight_quality_report.json public/newsdata/real_insight_quality_summary.md public/newsdata/quality_dashboard.json public/newsdata/quality_dashboard_history.json public/newsdata/section_source_policy_report.json
+          git add public/newsdata/insight_latest.json public/newsdata/sections_latest.json public/newsdata/source_health.json public/newsdata/prefetch_commit_manifest.json public/newsdata/insight_quality_report.json public/newsdata/insight_quality_summary.md public/newsdata/sections_quality_report.json public/newsdata/sections_quality_summary.md public/newsdata/real_insight_quality_report.json public/newsdata/real_insight_quality_summary.md public/newsdata/quality_rankings.json public/newsdata/quality_rankings.md public/newsdata/quality_rankings_history.json public/newsdata/quality_rankings_validation_report.json public/newsdata/quality_dashboard.json public/newsdata/quality_dashboard_history.json public/newsdata/section_source_policy_report.json
           if git diff --staged --quiet; then
             echo "No meaningful news-data changes — skipping commit"
             exit 0
@@ -179,6 +201,7 @@ jobs:
         if: steps.prefetch_commit.outputs.should_commit != 'true'
         run: |
           echo "No meaningful news content changes. Quality reports were uploaded as artifacts only."
+          echo "Diagnostic-only files: ${{ steps.prefetch_commit.outputs.changed_diagnostic_files }}"
 
       - name: Open issue on workflow failure
         if: failure()
@@ -193,7 +216,7 @@ jobs:
               `- Ref: ${context.ref}`,
               `- Commit: ${context.sha}`,
               '',
-              'Please review failed step logs and uploaded quality artifacts (`insight-quality-report`, `sections-quality-report`, `real-insight-quality-report`, `quality-dashboard`).'
+              'Please review failed step logs and uploaded quality artifacts (`insight-quality-report`, `sections-quality-report`, `real-insight-quality-report`, `quality-rankings`, `quality-dashboard`).'
             ].join('\n');
             await github.rest.issues.create({
               owner: context.repo.owner,

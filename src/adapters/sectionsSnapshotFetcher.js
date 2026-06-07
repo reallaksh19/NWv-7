@@ -2,6 +2,8 @@ const SECTION_SNAPSHOT_PATH = '/newsdata/sections_latest.json';
 const SECTION_SNAPSHOT_TTL_MS = 10 * 60 * 1000;
 export const SECTION_SNAPSHOT_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 export const SECTION_ITEM_MAX_AGE_MS = 36 * 60 * 60 * 1000;
+export const TOP_STORIES_ITEM_MAX_AGE_MS = 12 * 60 * 60 * 1000;
+export const TOP_STORIES_WARN_AGE_MS = 6 * 60 * 60 * 1000;
 
 const SECTION_ALIASES = {
   chennai: 'tn',
@@ -11,9 +13,17 @@ const SECTION_ALIASES = {
   buzz: 'technology',
   top: 'topStories',
   topstories: 'topStories',
+  topStories: 'topStories',
   local: 'muscat',
   oman: 'muscat',
 };
+
+const LOW_CONFIDENCE_TIMESTAMP_SOURCES = new Set([
+  'missing',
+  'invalid',
+  'fetch_time_fallback',
+  'unknown',
+]);
 
 let memorySnapshot = null;
 
@@ -57,11 +67,45 @@ function isSectionsSnapshotFresh(snapshot, maxAgeMs = SECTION_SNAPSHOT_MAX_AGE_M
   return Date.now() - fetchedAt <= maxAgeMs;
 }
 
-function isFreshSectionItem(item, maxAgeMs = SECTION_ITEM_MAX_AGE_MS) {
-  const publishedAt = Number(item?.publishedAt || item?.pubDate || item?.date || 0);
-  if (!Number.isFinite(publishedAt) || publishedAt <= 0) return true;
-  const normalized = publishedAt < 10_000_000_000 ? publishedAt * 1000 : publishedAt;
-  return Date.now() - normalized <= maxAgeMs;
+function itemTimestampMs(item) {
+  const raw = Number(item?.publishedAt || item?.pubDate || item?.date || 0);
+  if (!Number.isFinite(raw) || raw <= 0) return 0;
+  return raw < 10_000_000_000 ? raw * 1000 : raw;
+}
+
+function isLowConfidenceTimestamp(item) {
+  const explicitConfidence = String(item?.timestampConfidence || '').toLowerCase();
+  if (explicitConfidence === 'low') return true;
+
+  const source = String(item?.publishedAtSource || item?.timestampSource || '').toLowerCase();
+  if (LOW_CONFIDENCE_TIMESTAMP_SOURCES.has(source)) return true;
+
+  return itemTimestampMs(item) <= 0;
+}
+
+function isLiveLikeStory(item) {
+  const text = `${item?.title || item?.headline || ''} ${item?.summary || item?.description || ''}`;
+  return Boolean(
+    item?.isBreaking ||
+    Number(item?.breakingScore || 0) > 0 ||
+    /^live\b/i.test(text) ||
+    /\b(live\s+blog|live\s+updates?|live\s+coverage|developing|ongoing)\b/i.test(text) ||
+    String(item?.url || item?.link || '').includes('/live/')
+  );
+}
+
+function maxAgeForSection(sourceSection, item) {
+  if (sourceSection === 'topStories') {
+    return isLiveLikeStory(item) ? SECTION_ITEM_MAX_AGE_MS : TOP_STORIES_ITEM_MAX_AGE_MS;
+  }
+  return SECTION_ITEM_MAX_AGE_MS;
+}
+
+function isFreshSectionItem(item, sourceSection = '', now = Date.now()) {
+  const publishedAt = itemTimestampMs(item);
+  if (!publishedAt) return false;
+  if (isLowConfidenceTimestamp(item) && sourceSection === 'topStories') return false;
+  return now - publishedAt <= maxAgeForSection(sourceSection, item);
 }
 
 function getSnapshotUrl() {
@@ -79,7 +123,7 @@ function normalizePrefetchedSectionItem(item, requestedSection, sourceSection) {
   const description = safeText(item.description || item.summary, '');
   const url = safeText(item.url || item.link || item.guid, '');
   const source = safeText(item.source || item.sourceGroup, 'Unknown');
-  const publishedAt = Number(item.publishedAt || item.pubDate || item.date || Date.now());
+  const publishedAt = itemTimestampMs(item);
 
   return {
     ...item,
@@ -94,7 +138,7 @@ function normalizePrefetchedSectionItem(item, requestedSection, sourceSection) {
     sourceGroup: safeText(item.sourceGroup || source, source),
     publishedAt,
     fetchedAt: Number(item.fetchedAt || Date.now()),
-    time: new Date(publishedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    time: publishedAt ? new Date(publishedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Unknown',
     section: requestedSection,
     sourceSection,
     impactScore: Number(item.impactScore || 0),
@@ -179,18 +223,35 @@ export function selectPrefetchedSectionItems(snapshot, section, limit = 10) {
   const sourceSection = normalizeSectionKey(section);
   const sectionItems = safeArray(snapshot?.sections?.[sourceSection]);
   const snapshotStale = !isSectionsSnapshotFresh(snapshot);
-  // Always filter per-item freshness; snapshot-level staleness is tracked separately
-  // so callers can decide to show stale data with a warning rather than nothing.
-  const freshSectionItems = sectionItems.filter(item => isFreshSectionItem(item));
+  const now = Date.now();
+  const lowConfidenceTimestampCount = sectionItems.filter(isLowConfidenceTimestamp).length;
+  const freshSectionItems = sectionItems.filter(item => isFreshSectionItem(item, sourceSection, now));
   const staleReason = snapshotStale
-    ? 'sections_snapshot_stale'
+    ? (sourceSection === 'topStories' ? 'top_stories_snapshot_stale' : 'sections_snapshot_stale')
     : sectionItems.length > 0 && freshSectionItems.length === 0
       ? 'section_items_stale'
-      : null;
+      : lowConfidenceTimestampCount > 0 && sourceSection === 'topStories'
+        ? 'top_stories_low_confidence_timestamps'
+        : null;
 
-  // When snapshot is stale, use ALL available items (not just fresh ones) so users
-  // see something rather than an empty section — caller marks them as stale.
-  const candidateItems = snapshotStale ? sectionItems : freshSectionItems;
+  if (sourceSection === 'topStories' && snapshotStale) {
+    return {
+      items: [],
+      sourceSection,
+      quality: snapshot?.sectionQuality?.[sourceSection] || null,
+      summary: getSectionsSnapshotRuntimeSummary(snapshot),
+      stale: true,
+      staleReason,
+      blockedBySnapshotStaleness: true,
+      staleItemCount: sectionItems.length,
+      lowConfidenceTimestampCount,
+      itemMaxAgeMs: TOP_STORIES_ITEM_MAX_AGE_MS,
+    };
+  }
+
+  // Snapshot fallback is intentionally strict: render only item-fresh rows.
+  // Never rehydrate a stale snapshot with stale rows just to avoid an empty UI.
+  const candidateItems = freshSectionItems;
 
   const items = candidateItems
     .map(item => normalizePrefetchedSectionItem(item, requestedSection, sourceSection))
@@ -204,6 +265,9 @@ export function selectPrefetchedSectionItems(snapshot, section, limit = 10) {
     summary: getSectionsSnapshotRuntimeSummary(snapshot),
     stale: Boolean(staleReason),
     staleReason,
+    staleItemCount: Math.max(0, sectionItems.length - freshSectionItems.length),
+    lowConfidenceTimestampCount,
+    itemMaxAgeMs: sourceSection === 'topStories' ? TOP_STORIES_ITEM_MAX_AGE_MS : SECTION_ITEM_MAX_AGE_MS,
   };
 }
 
@@ -219,6 +283,8 @@ export function clearSectionsSnapshotCache() {
 export const __sectionsSnapshotInternalsForTest = {
   isSectionsSnapshotFresh,
   isFreshSectionItem,
+  isLowConfidenceTimestamp,
+  itemTimestampMs,
 };
 
 export default fetchPrefetchedSectionNews;

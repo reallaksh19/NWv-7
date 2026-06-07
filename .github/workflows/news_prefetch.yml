@@ -1,6 +1,8 @@
 name: News Prefetch
 
 # Runs hourly during IST 7am–7:30pm (UTC 1:30–14:00), plus 3 overnight runs.
+# Also runs after pipeline-code changes on main, but ignores generated
+# public/newsdata commits to prevent self-trigger loops.
 # All times are IST (UTC+5:30). Cron uses UTC.
 #
 # IST 7:30am  = UTC 02:00
@@ -24,6 +26,15 @@ on:
     - cron: '30 1-13 * * *'    # every hour IST ~7:30am–7:30pm (UTC 1:30–13:30)
     - cron: '0 15,17,18,20,23 * * *' # IST ~8:30pm,10:30pm,11:30pm,1:30am,4:30am
   workflow_dispatch:            # allow manual trigger
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/news_prefetch.yml'
+      - 'scripts/**'
+      - 'src/services/**'
+      - 'requirements.txt'
+      - 'package.json'
+      - 'package-lock.json'
 
 concurrency:
   group: news-prefetch

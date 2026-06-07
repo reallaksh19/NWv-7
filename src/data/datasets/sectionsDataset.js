@@ -124,6 +124,25 @@ function normalizeSectionBuckets(items, fallbackSections) {
   return buckets;
 }
 
+function getSectionSnapshotStaleness(sectionHealth = {}) {
+  const staleRows = Object.entries(sectionHealth)
+    .filter(([, meta]) => Boolean(
+      meta?.staleReason ||
+      meta?.snapshotStale ||
+      meta?.snapshotRuntimeSummary?.stale
+    ))
+    .map(([section, meta]) => ({
+      section,
+      staleReason: meta?.staleReason || 'snapshot_stale',
+      snapshotAgeMs: meta?.snapshotRuntimeSummary?.ageMs ?? null,
+    }));
+
+  return {
+    stale: staleRows.length > 0,
+    rows: staleRows,
+  };
+}
+
 export async function load(options = {}) {
   const settings = safeGetSettings();
   const diagnostics = [];
@@ -142,6 +161,8 @@ export async function load(options = {}) {
           prefetchSourceSection: items?.prefetchSourceSection || null,
           sectionQuality: items?.sectionQuality || null,
           snapshotRuntimeSummary: items?.snapshotRuntimeSummary || null,
+          staleReason: items?.staleReason || null,
+          snapshotStale: Boolean(items?.staleReason || items?.snapshotRuntimeSummary?.stale),
           health: items?.health || null,
           isSingleSource: items?.isSingleSource || false,
         },
@@ -203,6 +224,7 @@ export async function load(options = {}) {
   const sourceCounts = countSources(deduplicated);
   const duplicateHints = getDuplicateHints(allFetched);
   const ok = frontPage.length > 0 || deduplicated.length > 0;
+  const sectionSnapshotStaleness = getSectionSnapshotStaleness(sectionHealth);
 
   const envelope = makeEnvelope({
     ok,
@@ -215,25 +237,37 @@ export async function load(options = {}) {
       duplicateHints,
       failedSections,
       sectionHealth,
+      sectionSnapshotStaleness,
       requestedSections,
       raw,
     },
     source: Object.values(sectionHealth).some(meta => meta?.prefetched)
       ? ENVELOPE_SOURCES.SNAPSHOT
       : ENVELOPE_SOURCES.LIVE,
-    freshness: ok ? ENVELOPE_FRESHNESS.FRESH : ENVELOPE_FRESHNESS.EMPTY,
+    freshness: ok
+      ? (sectionSnapshotStaleness.stale ? ENVELOPE_FRESHNESS.STALE : ENVELOPE_FRESHNESS.FRESH)
+      : ENVELOPE_FRESHNESS.EMPTY,
     error: ok ? null : 'sections unavailable',
     validation: {
-      passed: ok,
+      passed: ok && !sectionSnapshotStaleness.stale,
       errors: ok ? [] : ['sections_unavailable'],
       warnings: [
         ...failedSections.map(section => `section_failed:${section}`),
         ...Object.entries(sectionCounts)
           .filter(([, count]) => count === 0)
           .map(([section]) => `section_empty:${section}`),
+        ...sectionSnapshotStaleness.rows.map(row => `section_snapshot_stale:${row.section}:${row.staleReason}`),
       ],
     },
-    diagnostics,
+    diagnostics: [
+      ...diagnostics,
+      ...(sectionSnapshotStaleness.stale ? [{
+        event: 'sectionsDataset.snapshot_stale',
+        severity: 'warn',
+        message: 'One or more prefetched section snapshots are stale or degraded.',
+        details: sectionSnapshotStaleness,
+      }] : []),
+    ],
   });
 
   return applyDatasetSlo(envelope);
@@ -246,4 +280,5 @@ export const __sectionsDatasetInternalsForTest = {
   getDuplicateHints,
   normalizeSectionBuckets,
   getRequestedSections,
+  getSectionSnapshotStaleness,
 };

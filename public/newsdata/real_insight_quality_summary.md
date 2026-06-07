@@ -10,15 +10,15 @@
 - Base report share: `0`
 - Multi-angle parents: `0`
 - Weak parents: `6`
-- Story count: `186`
+- Story count: `207`
 - Source groups: `10`
-- Content hash: `9d94ebfb1a591e32`
+- Content hash: `e3a6bd6ace173390`
 
 ## Top parents
 
 | # | Headline | Children | Angles | Weak | Score |
 |---:|---|---:|---|---|---:|
-| 1 | NTA releases NEET-UG 2026 re-exam city intimation slip; test on June 21 | 2 | regional_followup | NO | 0.6401766666666666 |
+| 1 | NTA releases NEET-UG 2026 re-exam city intimation slip; test on June 21 | 2 | regional_followup | NO | 0.6601766666666666 |
 | 2 | Union Minister On Success Of J&K's Lavender Fields, Breaking Startup Myths | 2 | fact_update | NO | 0.6422467197849984 |
 | 3 | Trump says he would not unfreeze Iran's assets before peace deal is done | 2 | official_response | NO | 0.5759232802150018 |
 | 4 | Nuclear fears resurface, Kyiv says Russian attack ‘deliberate' | 2 | official_response | NO | 0.5075933333333333 |

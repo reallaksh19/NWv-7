@@ -53,18 +53,18 @@
     },
     "insight": {
       "actionableFindings": [
-        "Insight event/angle ranking has no critical demotion finding"
+        "1 base-report-heavy Insight parent(s) demoted"
       ],
       "destination": "insight",
       "diagnosticReasons": [],
       "gateResults": [
         {
           "details": {
-            "itemCount": 2
+            "itemCount": 5
           },
           "name": "insightEventPool",
           "reason": "rankable Insight event pool",
-          "score": 0.3333,
+          "score": 0.8333,
           "status": "PASS"
         },
         {
@@ -77,16 +77,16 @@
       ],
       "gateSummary": {
         "avgAnglesPerParent": 0.0,
-        "baseReportHeavyParents": 0,
+        "baseReportHeavyParents": 1,
         "duplicateChildrenSuppressed": 0,
-        "inputCandidateCount": 2,
-        "parentClusters": 2,
-        "strongParents": 2,
+        "inputCandidateCount": 5,
+        "parentClusters": 5,
+        "strongParents": 5,
         "suppressedCandidateCount": 0,
         "weakParentsDemoted": 0
       },
       "qualityGrade": "F",
-      "qualityScore": 0.43,
+      "qualityScore": 0.3803,
       "qualityStatus": "WARN",
       "rankedItems": [
         {
@@ -314,16 +314,344 @@
           ],
           "score": 0.389,
           "title": "World’s hottest market has Korea bulls reaching for protection"
+        },
+        {
+          "category": "insightEvent",
+          "gates": [
+            {
+              "details": {
+                "storyCount": 2
+              },
+              "name": "eventCoherence",
+              "reason": "event sketch has repeated story count",
+              "score": 0.62,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "baseReportRatio": 0.0,
+                "distinctAngles": 1
+              },
+              "name": "angleDiversity",
+              "reason": "weak child angle diversity",
+              "score": 0.25,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "sourceGroupCount": 1
+              },
+              "name": "sourceDiversity",
+              "reason": "one-source event candidate",
+              "score": 0.35,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "baseReportRatio": 0.0
+              },
+              "name": "baseReportCap",
+              "reason": "base-report ratio controlled",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "childCount": 2
+              },
+              "name": "weakTree",
+              "reason": "child tree has enough depth",
+              "score": 0.5,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "duplicateChildren",
+              "reason": "no child objects to dedup",
+              "score": 0.7,
+              "status": "PASS"
+            }
+          ],
+          "id": "sketch:203f063190",
+          "item": {
+            "angleCount": 1,
+            "baseReportRatio": 0.0,
+            "childScores": [],
+            "id": "sketch:203f063190",
+            "representativeId": "8333e3d10e21d80d",
+            "representativeTitle": "ସନ୍ଧ୍ୟା ୭ର ବଡ଼ ଖବର | 7PM Headlines | 7th JUNE 2026 | Odia News | Breaking News | Kanak News - Kanak News Odisha",
+            "scoreBreakdown": {
+              "angleDiversityScore": 0.25,
+              "eventImportanceScore": 0.59,
+              "freshnessScore": 0.0,
+              "noveltyDeltaScore": 0.44999999999999996,
+              "sourceAuthorityScore": 0.38,
+              "sourceDiversityScore": 0.35,
+              "temporalEvolutionScore": 0.37
+            },
+            "slotCount": 1,
+            "slots": [
+              "now"
+            ],
+            "sourceGroupCount": 1,
+            "sourceGroups": [
+              "google_news"
+            ],
+            "storyCount": 2,
+            "storyIds": [
+              "8333e3d10e21d80d",
+              "f27e4f87ad50d4a7"
+            ],
+            "topAngles": [
+              {
+                "angle": "fact_update",
+                "count": 2
+              }
+            ],
+            "topTokens": [
+              "kanak",
+              "headlines",
+              "june",
+              "odia"
+            ],
+            "topicKey": "kanak|headlines|june"
+          },
+          "locationKey": "event",
+          "rankingReasons": [
+            "event sketch has repeated story count",
+            "weak child angle diversity",
+            "one-source event candidate"
+          ],
+          "score": 0.389,
+          "title": "ସନ୍ଧ୍ୟା ୭ର ବଡ଼ ଖବର | 7PM Headlines | 7th JUNE 2026 | Odia News | Breaking News | Kanak News - Kanak News Odisha"
+        },
+        {
+          "category": "insightEvent",
+          "gates": [
+            {
+              "details": {
+                "storyCount": 2
+              },
+              "name": "eventCoherence",
+              "reason": "event sketch has repeated story count",
+              "score": 0.62,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "baseReportRatio": 0.0,
+                "distinctAngles": 1
+              },
+              "name": "angleDiversity",
+              "reason": "weak child angle diversity",
+              "score": 0.25,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "sourceGroupCount": 1
+              },
+              "name": "sourceDiversity",
+              "reason": "one-source event candidate",
+              "score": 0.35,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "baseReportRatio": 0.0
+              },
+              "name": "baseReportCap",
+              "reason": "base-report ratio controlled",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "childCount": 2
+              },
+              "name": "weakTree",
+              "reason": "child tree has enough depth",
+              "score": 0.5,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "duplicateChildren",
+              "reason": "no child objects to dedup",
+              "score": 0.7,
+              "status": "PASS"
+            }
+          ],
+          "id": "sketch:eb6f0bcb07",
+          "item": {
+            "angleCount": 1,
+            "baseReportRatio": 0.0,
+            "childScores": [],
+            "id": "sketch:eb6f0bcb07",
+            "representativeId": "5a87029180955892",
+            "representativeTitle": "🔴Live | ସନ୍ଧ୍ୟା ୭ଟାର ବଡ଼ ଖବର | 7PM News | Prime Time | Breaking News | 7th June 2026 | Kanak News - Kanak News Odisha",
+            "scoreBreakdown": {
+              "angleDiversityScore": 0.25,
+              "eventImportanceScore": 0.59,
+              "freshnessScore": 0.0,
+              "noveltyDeltaScore": 0.44999999999999996,
+              "sourceAuthorityScore": 0.38,
+              "sourceDiversityScore": 0.35,
+              "temporalEvolutionScore": 0.37
+            },
+            "slotCount": 1,
+            "slots": [
+              "now"
+            ],
+            "sourceGroupCount": 1,
+            "sourceGroups": [
+              "google_news"
+            ],
+            "storyCount": 2,
+            "storyIds": [
+              "5a87029180955892",
+              "10c2e6ca1686dccb"
+            ],
+            "topAngles": [
+              {
+                "angle": "fact_update",
+                "count": 2
+              }
+            ],
+            "topTokens": [
+              "kanak",
+              "live",
+              "prime",
+              "time"
+            ],
+            "topicKey": "kanak|live|prime"
+          },
+          "locationKey": "event",
+          "rankingReasons": [
+            "event sketch has repeated story count",
+            "weak child angle diversity",
+            "one-source event candidate"
+          ],
+          "score": 0.389,
+          "title": "🔴Live | ସନ୍ଧ୍ୟା ୭ଟାର ବଡ଼ ଖବର | 7PM News | Prime Time | Breaking News | 7th June 2026 | Kanak News - Kanak News Odisha"
+        },
+        {
+          "category": "insightEvent",
+          "gates": [
+            {
+              "details": {
+                "storyCount": 3
+              },
+              "name": "eventCoherence",
+              "reason": "event sketch has repeated story count",
+              "score": 0.62,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "baseReportRatio": 1.0,
+                "distinctAngles": 0
+              },
+              "name": "angleDiversity",
+              "reason": "weak child angle diversity",
+              "score": 0.25,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "sourceGroupCount": 1
+              },
+              "name": "sourceDiversity",
+              "reason": "one-source event candidate",
+              "score": 0.35,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "baseReportRatio": 1.0
+              },
+              "name": "baseReportCap",
+              "reason": "base-report dominated event candidate",
+              "score": 0.25,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "childCount": 3
+              },
+              "name": "weakTree",
+              "reason": "child tree has enough depth",
+              "score": 0.75,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "duplicateChildren",
+              "reason": "no child objects to dedup",
+              "score": 0.7,
+              "status": "PASS"
+            }
+          ],
+          "id": "sketch:bbd7147cc9",
+          "item": {
+            "angleCount": 1,
+            "baseReportRatio": 1.0,
+            "childScores": [],
+            "id": "sketch:bbd7147cc9",
+            "representativeId": "b9f6d9b467e7ef2e",
+            "representativeTitle": "top news of the day | may 20 2026 - The Hindu",
+            "scoreBreakdown": {
+              "angleDiversityScore": 0.25,
+              "eventImportanceScore": 0.71,
+              "freshnessScore": 0.0,
+              "noveltyDeltaScore": 0.44999999999999996,
+              "sourceAuthorityScore": 0.38,
+              "sourceDiversityScore": 0.35,
+              "temporalEvolutionScore": 0.37
+            },
+            "slotCount": 1,
+            "slots": [
+              "now"
+            ],
+            "sourceGroupCount": 1,
+            "sourceGroups": [
+              "google_news"
+            ],
+            "storyCount": 3,
+            "storyIds": [
+              "b9f6d9b467e7ef2e",
+              "ae7f751c70f2e97a",
+              "4fae47360e015627"
+            ],
+            "topAngles": [
+              {
+                "angle": "base_report",
+                "count": 3
+              }
+            ],
+            "topTokens": [
+              "hindu"
+            ],
+            "topicKey": "hindu"
+          },
+          "locationKey": "event",
+          "rankingReasons": [
+            "event sketch has repeated story count",
+            "weak child angle diversity",
+            "one-source event candidate"
+          ],
+          "score": 0.1885,
+          "title": "top news of the day | may 20 2026 - The Hindu"
         }
       ],
       "rankingProfile": "insight-v2-event-angle-tree",
       "scoreBreakdown": {
-        "angleDiversityScore": 0.515,
-        "eventImportanceScore": 0.59,
+        "angleDiversityScore": 0.356,
+        "eventImportanceScore": 0.614,
         "freshnessScore": 0.0,
-        "noveltyDeltaScore": 0.5,
-        "sourceAuthorityScore": 0.5,
-        "sourceDiversityScore": 0.535,
+        "noveltyDeltaScore": 0.47,
+        "sourceAuthorityScore": 0.428,
+        "sourceDiversityScore": 0.424,
         "temporalEvolutionScore": 0.37
       }
     },
@@ -400,16 +728,16 @@
         "Mother’s Day 2026 Flight Sale - IndianEagle: location failed — offline/local item lacks configured location match",
         "Tamil Nadu weather today: IMD issues orange alert for 3 districts, predicts heavy rainfall in coming days - MSN: futureValidity failed — expired display window",
         "Tamil Nadu weather today: IMD issues orange alert for 3 districts, predicts heavy rainfall in coming days - MSN: alertUrgency failed — alert expired",
+        "5 Amazon Tech Finds With Deep Discounts In June 2026 - bgr.com: futureValidity failed — expired display window",
         "5 Amazon Tech Finds With Deep Discounts In June 2026 - bgr.com: location failed — offline/local item lacks configured location match",
+        "5 Amazon Tech Finds With Deep Discounts In June 2026 - bgr.com: offerValidity failed — offer expired",
+        "You don’t have to wait — here are 51+ Prime Day early deals you can already shop - NBC News: futureValidity failed — expired display window",
         "You don’t have to wait — here are 51+ Prime Day early deals you can already shop - NBC News: location failed — offline/local item lacks configured location match",
+        "You don’t have to wait — here are 51+ Prime Day early deals you can already shop - NBC News: offerValidity failed — offer expired",
         "OTT Releases This Week Tamil (இந்த வாரம் தமிழ் OTT வெளியீல்கள்) –6th June to 12th June - Vi: futureValidity failed — missing eventStartAt/displayUntil",
         "OTT Releases This Week Tamil (இந்த வாரம் தமிழ் OTT வெளியீல்கள்) –6th June to 12th June - Vi: location failed — offline/local item lacks configured location match",
         "Support your local artist, says Naga illustrator Canato Jimo: futureValidity failed — expired display window",
-        "Support your local artist, says Naga illustrator Canato Jimo: alertUrgency failed — alert expired",
-        "One more arrestedin EB dept. hard disk theft case; all missing drives recovered: futureValidity failed — expired display window",
-        "One more arrestedin EB dept. hard disk theft case; all missing drives recovered: alertUrgency failed — alert expired",
-        "CM Vijay directs urban localbodies to intensify morning checks, revenue collection: futureValidity failed — expired display window",
-        "CM Vijay directs urban localbodies to intensify morning checks, revenue collection: alertUrgency failed — alert expired"
+        "Support your local artist, says Naga illustrator Canato Jimo: alertUrgency failed — alert expired"
       ],
       "gateResults": [
         {
@@ -506,7 +834,7 @@
             },
             {
               "details": {
-                "hoursLeft": 7.44
+                "hoursLeft": 4.87
               },
               "name": "offerValidity",
               "reason": "offer expires soon",
@@ -677,7 +1005,7 @@
       }
     }
   },
-  "generatedAt": 1780857321298,
+  "generatedAt": 1780866581885,
   "implementedDestinations": [
     "upAhead",
     "buzz",
@@ -706,11 +1034,11 @@
       "no ranked local/travel item for muscat",
       "no ranked local/travel item for chennai",
       "no ranked local/travel item for trichy",
-      "Insight event/angle ranking has no critical demotion finding"
+      "1 base-report-heavy Insight parent(s) demoted"
     ],
     "destinationScores": {
       "buzz": 0.0,
-      "insight": 0.43,
+      "insight": 0.3803,
       "localTravel": 0.0,
       "upAhead": 0.6171
     },
@@ -720,7 +1048,7 @@
       "localTravel": "FAIL",
       "upAhead": "WARN"
     },
-    "overallScore": 0.2618,
+    "overallScore": 0.2494,
     "overallStatus": "FAIL",
     "rankingProfiles": {
       "buzz": "buzz-v2-trend-local-travel",
@@ -739,16 +1067,16 @@
       "Mother’s Day 2026 Flight Sale - IndianEagle: location failed — offline/local item lacks configured location match",
       "Tamil Nadu weather today: IMD issues orange alert for 3 districts, predicts heavy rainfall in coming days - MSN: futureValidity failed — expired display window",
       "Tamil Nadu weather today: IMD issues orange alert for 3 districts, predicts heavy rainfall in coming days - MSN: alertUrgency failed — alert expired",
+      "5 Amazon Tech Finds With Deep Discounts In June 2026 - bgr.com: futureValidity failed — expired display window",
       "5 Amazon Tech Finds With Deep Discounts In June 2026 - bgr.com: location failed — offline/local item lacks configured location match",
+      "5 Amazon Tech Finds With Deep Discounts In June 2026 - bgr.com: offerValidity failed — offer expired",
+      "You don’t have to wait — here are 51+ Prime Day early deals you can already shop - NBC News: futureValidity failed — expired display window",
       "You don’t have to wait — here are 51+ Prime Day early deals you can already shop - NBC News: location failed — offline/local item lacks configured location match",
+      "You don’t have to wait — here are 51+ Prime Day early deals you can already shop - NBC News: offerValidity failed — offer expired",
       "OTT Releases This Week Tamil (இந்த வாரம் தமிழ் OTT வெளியீல்கள்) –6th June to 12th June - Vi: futureValidity failed — missing eventStartAt/displayUntil",
       "OTT Releases This Week Tamil (இந்த வாரம் தமிழ் OTT வெளியீல்கள்) –6th June to 12th June - Vi: location failed — offline/local item lacks configured location match",
       "Support your local artist, says Naga illustrator Canato Jimo: futureValidity failed — expired display window",
-      "Support your local artist, says Naga illustrator Canato Jimo: alertUrgency failed — alert expired",
-      "One more arrestedin EB dept. hard disk theft case; all missing drives recovered: futureValidity failed — expired display window",
-      "One more arrestedin EB dept. hard disk theft case; all missing drives recovered: alertUrgency failed — alert expired",
-      "CM Vijay directs urban localbodies to intensify morning checks, revenue collection: futureValidity failed — expired display window",
-      "CM Vijay directs urban localbodies to intensify morning checks, revenue collection: alertUrgency failed — alert expired"
+      "Support your local artist, says Naga illustrator Canato Jimo: alertUrgency failed — alert expired"
     ]
   }
 }

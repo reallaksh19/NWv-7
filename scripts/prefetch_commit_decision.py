@@ -38,6 +38,8 @@ DIAGNOSTIC_FILES = [
     NEWS_DIR / "insight_quality_summary.md",
     NEWS_DIR / "sections_quality_report.json",
     NEWS_DIR / "sections_quality_summary.md",
+    NEWS_DIR / "newsdata_freshness_report.json",
+    NEWS_DIR / "newsdata_freshness_summary.md",
     NEWS_DIR / "real_insight_quality_report.json",
     NEWS_DIR / "real_insight_quality_summary.md",
     NEWS_DIR / "quality_dashboard.json",

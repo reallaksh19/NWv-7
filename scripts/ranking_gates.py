@@ -118,12 +118,29 @@ def classify_location_scope(item: dict[str, Any], configured_locations: list[str
     return {"scope": "unknown", "matchedLocation": "unknown", "score": 0.0, "relevance": "weak"}
 
 
+def _match_details_without_score(match: dict[str, Any]) -> dict[str, Any]:
+    """Return location-match diagnostics without shadowing GateResult.score.
+
+    pass_gate/warn_gate accept score as a positional argument. classify_location_scope
+    also returns a diagnostic field named score. Expanding that dict directly as
+    **kwargs causes TypeError: got multiple values for argument 'score'. Preserve
+    the diagnostic value under matchScore instead.
+    """
+    details = dict(match)
+    match_score = details.pop("score", None)
+    if match_score is not None:
+        details["matchScore"] = match_score
+    return details
+
+
 def location_gate(item: dict[str, Any], configured_locations: list[str], *, allow_online: bool = True) -> GateResult:
     match = classify_location_scope(item, configured_locations)
+    score = match["score"]
+    details = _match_details_without_score(match)
     if match["scope"] in {"exactCity", "region"}:
-        return pass_gate("location", match["score"], "location matches configured profile", **match)
+        return pass_gate("location", score, "location matches configured profile", **details)
     if allow_online and match["scope"] in {"online", "global"}:
-        return warn_gate("location", match["score"], "online/global item allowed without city match", **match)
+        return warn_gate("location", score, "online/global item allowed without city match", **details)
     return fail_gate("location", "offline/local item lacks configured location match", **match)
 
 

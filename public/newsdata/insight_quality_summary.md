@@ -25,9 +25,11 @@
 
 - Weak event sketch coverage: 2 sketches < recommended 3
 - Weak multi-source event sketch coverage: 1 sketches < recommended 2
-- feed 'hindustan_times' has returned zero items for 4 consecutive runs
-- feed 'financial_express' has returned zero items for 30 consecutive runs
-- feed 'muscat_daily' has returned zero items for 26 consecutive runs (last zero at 1780856130136)
+- feed 'hindustan_times' has returned zero items for 5 consecutive runs
+- feed 'financial_express' has returned zero items for 31 consecutive runs
+- feed 'dtnext' has returned zero items for 3 consecutive runs
+- feed 'oman_observer' has returned zero items for 3 consecutive runs (last zero at 1780856702749)
+- feed 'muscat_daily' has returned zero items for 27 consecutive runs (last zero at 1780856702749)
 
 ## Top angles
 

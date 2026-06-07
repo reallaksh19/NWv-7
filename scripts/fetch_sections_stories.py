@@ -33,7 +33,7 @@ STORY_RETAIN_HOURS       = 36
 
 # ── Section source policy / feed registry ─────────────────────────────────────
 # Section feeds are loaded from config/section_sources.json so source mix can be
-tuned without changing fetcher code.
+# tuned without changing fetcher code.
 SECTION_FEEDS = get_section_feeds_map()
 
 MAX_STORIES_PER_SECTION = 30

@@ -11,6 +11,7 @@ import { load as loadUpAhead } from './upAheadDataset.js';
 import { load as loadInsight } from './insightDataset.js';
 
 // Release 5A adapter-only dataset.
+// Do not consume from MainPage until Release 5H.
 // Insight is expensive and is not loaded by default.
 
 function settledValue(result) {

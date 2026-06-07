@@ -1,16 +1,137 @@
 {
-  "schemaVersion": 1,
-  "generatedAt": 1779892762004,
+  "schemaVersion": 2,
+  "generatedAt": 1780856167712,
   "windowDays": 7,
   "latest": {
-    "insightGrade": "B",
+    "insightGrade": "D",
     "insightScore": 0,
-    "totalStories": 0,
-    "usableStories36h": 0,
-    "sourceGroups": 0,
+    "totalStories": 241,
+    "usableStories36h": 186,
+    "sourceGroups": 11,
     "angleHintCoverage": 1,
     "sectionsTotalStories": 0,
-    "sectionsCount": 9
+    "sectionsCount": 10,
+    "rankingOverallScore": 0.2485,
+    "rankingOverallStatus": "FAIL"
+  },
+  "rankingAudit": {
+    "status": "FAIL",
+    "overallScore": 0.2485,
+    "overallGrade": "F",
+    "rankingVersion": "tab-specific-quality-ranking-v1",
+    "generatedAt": 1780856166890,
+    "destinationScores": {
+      "buzz": 0,
+      "insight": 0.3769,
+      "localTravel": 0,
+      "upAhead": 0.6171
+    },
+    "destinationStatuses": {
+      "buzz": "FAIL",
+      "insight": "WARN",
+      "localTravel": "FAIL",
+      "upAhead": "WARN"
+    },
+    "rankingProfiles": {
+      "buzz": "buzz-v2-trend-local-travel",
+      "insight": "insight-v2-event-angle-tree",
+      "localTravel": "localTravel-v1-location-utility-disruption",
+      "upAhead": "upAhead-v2-lifecycle-location-category"
+    },
+    "weakDestinations": [
+      {
+        "destination": "buzz",
+        "status": "FAIL",
+        "score": 0,
+        "profile": "buzz-v2-trend-local-travel"
+      },
+      {
+        "destination": "insight",
+        "status": "WARN",
+        "score": 0.3769,
+        "profile": "insight-v2-event-angle-tree"
+      },
+      {
+        "destination": "localTravel",
+        "status": "FAIL",
+        "score": 0,
+        "profile": "localTravel-v1-location-utility-disruption"
+      },
+      {
+        "destination": "upAhead",
+        "status": "WARN",
+        "score": 0.6171,
+        "profile": "upAhead-v2-lifecycle-location-category"
+      }
+    ],
+    "compactGateSummary": {
+      "buzz": {
+        "rankedItemCount": 0,
+        "suppressedItemCount": 0,
+        "buzzTrendCount": 0,
+        "localBuzzCount": 0,
+        "travelBuzzCount": 0,
+        "oneSourceCappedCount": 0
+      },
+      "insight": {
+        "parentClusters": 5,
+        "strongParents": 5,
+        "weakParentsDemoted": 0,
+        "avgAnglesPerParent": 0,
+        "baseReportHeavyParents": 1,
+        "duplicateChildrenSuppressed": 0
+      },
+      "localTravel": {
+        "rankedItemCount": 0,
+        "suppressedItemCount": 0,
+        "travelItemCount": 0,
+        "utilityItemCount": 0,
+        "disruptionItemCount": 0,
+        "familyRelevantItemCount": 0,
+        "locationsCovered": []
+      },
+      "upAhead": {
+        "rankedItemCount": 2,
+        "suppressedItemCount": 341,
+        "events": 1,
+        "onlineOffers": 0,
+        "offlineOffers": 1,
+        "alerts": 0,
+        "festivals": 0,
+        "locationsCovered": [
+          "chennai",
+          "muscat"
+        ]
+      }
+    },
+    "topFindings": [
+      "Early Amazon Prime Day Deals Are Live Now Ahead of the Official Sale - CNET: location failed — offline/local item lacks configured location match",
+      "‘Outsiders have it easier’: Imtiaz Ali says ‘nepo kids’ Ranbir Kapoor, Alia Bhatt face ‘added toughness’ in Bollywood: futureValidity failed — missing eventStartAt/displayUntil",
+      "‘Outsiders have it easier’: Imtiaz Ali says ‘nepo kids’ Ranbir Kapoor, Alia Bhatt face ‘added toughness’ in Bollywood: location failed — offline/local item lacks configured location match",
+      "OTT Releases This Week (6th June to 12th June) - Vi: futureValidity failed — missing eventStartAt/displayUntil",
+      "OTT Releases This Week (6th June to 12th June) - Vi: location failed — offline/local item lacks configured location match",
+      "Farah Khan is ‘officially highest-earning YouTuber’, says Varun Dhawan as she gifts luxury watches worth lakhs, diamonds: futureValidity failed — missing eventStartAt/displayUntil",
+      "Farah Khan is ‘officially highest-earning YouTuber’, says Varun Dhawan as she gifts luxury watches worth lakhs, diamonds: location failed — offline/local item lacks configured location match",
+      "Mother’s Day 2026 Flight Sale - IndianEagle: location failed — offline/local item lacks configured location match",
+      "Tamil Nadu weather today: IMD issues orange alert for 3 districts, predicts heavy rainfall in coming days - MSN: futureValidity failed — expired display window",
+      "Tamil Nadu weather today: IMD issues orange alert for 3 districts, predicts heavy rainfall in coming days - MSN: alertUrgency failed — alert expired",
+      "5 Amazon Tech Finds With Deep Discounts In June 2026 - bgr.com: location failed — offline/local item lacks configured location match",
+      "You don’t have to wait — here are 51+ Prime Day early deals you can already shop - NBC News: location failed — offline/local item lacks configured location match"
+    ],
+    "actionRequired": [
+      "341 invalid/expired/duplicate Up Ahead item(s) suppressed",
+      "no active alert items in ranked Up Ahead set",
+      "no ranked Up Ahead item for trichy",
+      "no local Buzz item in ranked set",
+      "no travel Buzz item in ranked set",
+      "no active local/travel disruption item",
+      "no family-relevant local/travel item",
+      "no ranked local/travel item for muscat",
+      "no ranked local/travel item for chennai",
+      "no ranked local/travel item for trichy",
+      "1 base-report-heavy Insight parent(s) demoted",
+      "buzz: no local Buzz item in ranked set"
+    ]
   },
   "sourceHealth": {
     "insight": {
@@ -26,7 +147,9 @@
   "trends": {
     "avgInsightScore7d": 0,
     "sourceUptimePercent7d": 0,
-    "angleDiversity7d": 0
+    "angleDiversity7d": 0,
+    "avgRankingScore7d": 0.25,
+    "avgRankingWeakDestinations7d": 4
   },
   "history": [
     {
@@ -56,9 +179,27 @@
       "sectionsCount": 9,
       "sourceUptimePercent": 0,
       "angleDiversityScore": 0
+    },
+    {
+      "date": "2026-06-07",
+      "generatedAt": 1780856167712,
+      "insightGrade": "D",
+      "insightScore": 0,
+      "totalStories": 241,
+      "usableStories36h": 186,
+      "sourceGroups": 11,
+      "angleHintCoverage": 1,
+      "sectionsTotalStories": 0,
+      "sectionsCount": 10,
+      "rankingOverallScore": 0.2485,
+      "rankingOverallStatus": "FAIL",
+      "sourceUptimePercent": 0,
+      "angleDiversityScore": 0,
+      "rankingWeakDestinationCount": 4
     }
   ],
   "notes": [
-    "This dashboard currently reflects latest available reports and is designed for extension to persisted 7-day history."
+    "This dashboard reflects the best available insight quality report and guards against false-zero output.",
+    "rankingAudit is compact; full per-tab ranking details remain in quality_rankings.json."
   ]
 }

@@ -1,0 +1,1081 @@
+{
+  "destinations": {
+    "buzz": {
+      "actionableFindings": [
+        "no local Buzz item in ranked set",
+        "no travel Buzz item in ranked set"
+      ],
+      "destination": "buzz",
+      "diagnosticReasons": [],
+      "gateResults": [
+        {
+          "details": {
+            "suppressedCount": 0
+          },
+          "name": "buzzPool",
+          "reason": "no rankable Buzz items",
+          "score": 0.0,
+          "status": "FAIL"
+        },
+        {
+          "details": {},
+          "name": "trendCoverage",
+          "reason": "repeated-topic coverage available",
+          "score": 0.82,
+          "status": "PASS"
+        }
+      ],
+      "gateSummary": {
+        "buzzTrendCount": 0,
+        "categoryCounts": {},
+        "duplicateTrendSuppressedCount": 0,
+        "inputItemCount": 0,
+        "localBuzzCount": 0,
+        "oneSourceCappedCount": 0,
+        "rankedItemCount": 0,
+        "suppressedItemCount": 0,
+        "travelBuzzCount": 0
+      },
+      "qualityGrade": "F",
+      "qualityScore": 0.0,
+      "qualityStatus": "FAIL",
+      "rankedItems": [],
+      "rankingProfile": "buzz-v2-trend-local-travel",
+      "scoreBreakdown": {
+        "categoryFitScore": 0.0,
+        "freshnessScore": 0.0,
+        "localTravelBoost": 0.0,
+        "noveltyScore": 0.0,
+        "sourceSpreadScore": 0.0,
+        "trendVelocityScore": 0.0,
+        "visualSocialSignal": 0.0
+      }
+    },
+    "insight": {
+      "actionableFindings": [
+        "1 base-report-heavy Insight parent(s) demoted"
+      ],
+      "destination": "insight",
+      "diagnosticReasons": [],
+      "gateResults": [
+        {
+          "details": {
+            "itemCount": 5
+          },
+          "name": "insightEventPool",
+          "reason": "rankable Insight event pool",
+          "score": 0.8333,
+          "status": "PASS"
+        },
+        {
+          "details": {},
+          "name": "angleCoverage",
+          "reason": "ranked Insight set has weak visible angle coverage",
+          "score": 0.45,
+          "status": "WARN"
+        }
+      ],
+      "gateSummary": {
+        "avgAnglesPerParent": 0.0,
+        "baseReportHeavyParents": 1,
+        "duplicateChildrenSuppressed": 0,
+        "inputCandidateCount": 5,
+        "parentClusters": 5,
+        "strongParents": 5,
+        "suppressedCandidateCount": 0,
+        "weakParentsDemoted": 0
+      },
+      "qualityGrade": "F",
+      "qualityScore": 0.3769,
+      "qualityStatus": "WARN",
+      "rankedItems": [
+        {
+          "category": "insightEvent",
+          "gates": [
+            {
+              "details": {
+                "storyCount": 2
+              },
+              "name": "eventCoherence",
+              "reason": "event sketch has repeated story count",
+              "score": 0.62,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "baseReportRatio": 0.0,
+                "distinctAngles": 2
+              },
+              "name": "angleDiversity",
+              "reason": "usable angle diversity",
+              "score": 0.78,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "sourceGroupCount": 2
+              },
+              "name": "sourceDiversity",
+              "reason": "multi-source event",
+              "score": 0.72,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "baseReportRatio": 0.0
+              },
+              "name": "baseReportCap",
+              "reason": "base-report ratio controlled",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "childCount": 2
+              },
+              "name": "weakTree",
+              "reason": "child tree has enough depth",
+              "score": 0.5,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "duplicateChildren",
+              "reason": "no child objects to dedup",
+              "score": 0.7,
+              "status": "PASS"
+            }
+          ],
+          "id": "sketch:2d197d53bc",
+          "item": {
+            "angleCount": 2,
+            "baseReportRatio": 0.0,
+            "childScores": [],
+            "id": "sketch:2d197d53bc",
+            "representativeId": "45714c468795d7f2",
+            "representativeTitle": "Israel strikes Beirut's southern suburbs days after ceasefire agreement",
+            "scoreBreakdown": {
+              "angleDiversityScore": 0.78,
+              "eventImportanceScore": 0.59,
+              "freshnessScore": 0.0,
+              "noveltyDeltaScore": 0.55,
+              "sourceAuthorityScore": 0.62,
+              "sourceDiversityScore": 0.72,
+              "temporalEvolutionScore": 0.37
+            },
+            "slotCount": 1,
+            "slots": [
+              "minus12h"
+            ],
+            "sourceGroupCount": 2,
+            "sourceGroups": [
+              "bbc",
+              "the_hindu"
+            ],
+            "storyCount": 2,
+            "storyIds": [
+              "45714c468795d7f2",
+              "88fa38b376d956c6"
+            ],
+            "topAngles": [
+              {
+                "angle": "fact_update",
+                "count": 1
+              },
+              {
+                "angle": "official_response",
+                "count": 1
+              }
+            ],
+            "topTokens": [
+              "israel",
+              "strikes",
+              "beirut",
+              "southern",
+              "suburb"
+            ],
+            "topicKey": "israel|strikes|beirut"
+          },
+          "locationKey": "event",
+          "rankingReasons": [
+            "event sketch has repeated story count",
+            "usable angle diversity",
+            "multi-source event"
+          ],
+          "score": 0.5965,
+          "title": "Israel strikes Beirut's southern suburbs days after ceasefire agreement"
+        },
+        {
+          "category": "insightEvent",
+          "gates": [
+            {
+              "details": {
+                "storyCount": 2
+              },
+              "name": "eventCoherence",
+              "reason": "event sketch has repeated story count",
+              "score": 0.62,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "baseReportRatio": 0.0,
+                "distinctAngles": 1
+              },
+              "name": "angleDiversity",
+              "reason": "weak child angle diversity",
+              "score": 0.25,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "sourceGroupCount": 1
+              },
+              "name": "sourceDiversity",
+              "reason": "one-source event candidate",
+              "score": 0.35,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "baseReportRatio": 0.0
+              },
+              "name": "baseReportCap",
+              "reason": "base-report ratio controlled",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "childCount": 2
+              },
+              "name": "weakTree",
+              "reason": "child tree has enough depth",
+              "score": 0.5,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "duplicateChildren",
+              "reason": "no child objects to dedup",
+              "score": 0.7,
+              "status": "PASS"
+            }
+          ],
+          "id": "sketch:203f063190",
+          "item": {
+            "angleCount": 1,
+            "baseReportRatio": 0.0,
+            "childScores": [],
+            "id": "sketch:203f063190",
+            "representativeId": "f27e4f87ad50d4a7",
+            "representativeTitle": "5PM Headlines | 7th JUNE 2026 | Odia News | Breaking News | Kanak News - Kanak News Odisha",
+            "scoreBreakdown": {
+              "angleDiversityScore": 0.25,
+              "eventImportanceScore": 0.59,
+              "freshnessScore": 0.0,
+              "noveltyDeltaScore": 0.44999999999999996,
+              "sourceAuthorityScore": 0.38,
+              "sourceDiversityScore": 0.35,
+              "temporalEvolutionScore": 0.37
+            },
+            "slotCount": 1,
+            "slots": [
+              "now"
+            ],
+            "sourceGroupCount": 1,
+            "sourceGroups": [
+              "google_news"
+            ],
+            "storyCount": 2,
+            "storyIds": [
+              "f27e4f87ad50d4a7",
+              "e8e3e9fb3ef8d03a"
+            ],
+            "topAngles": [
+              {
+                "angle": "fact_update",
+                "count": 2
+              }
+            ],
+            "topTokens": [
+              "kanak",
+              "headlines",
+              "june",
+              "odia"
+            ],
+            "topicKey": "kanak|headlines|june"
+          },
+          "locationKey": "event",
+          "rankingReasons": [
+            "event sketch has repeated story count",
+            "weak child angle diversity",
+            "one-source event candidate"
+          ],
+          "score": 0.389,
+          "title": "5PM Headlines | 7th JUNE 2026 | Odia News | Breaking News | Kanak News - Kanak News Odisha"
+        },
+        {
+          "category": "insightEvent",
+          "gates": [
+            {
+              "details": {
+                "storyCount": 2
+              },
+              "name": "eventCoherence",
+              "reason": "event sketch has repeated story count",
+              "score": 0.62,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "baseReportRatio": 0.0,
+                "distinctAngles": 1
+              },
+              "name": "angleDiversity",
+              "reason": "weak child angle diversity",
+              "score": 0.25,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "sourceGroupCount": 1
+              },
+              "name": "sourceDiversity",
+              "reason": "one-source event candidate",
+              "score": 0.35,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "baseReportRatio": 0.0
+              },
+              "name": "baseReportCap",
+              "reason": "base-report ratio controlled",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "childCount": 2
+              },
+              "name": "weakTree",
+              "reason": "child tree has enough depth",
+              "score": 0.5,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "duplicateChildren",
+              "reason": "no child objects to dedup",
+              "score": 0.7,
+              "status": "PASS"
+            }
+          ],
+          "id": "sketch:fcde5c7120",
+          "item": {
+            "angleCount": 1,
+            "baseReportRatio": 0.0,
+            "childScores": [],
+            "id": "sketch:fcde5c7120",
+            "representativeId": "cefd0947496f8de7",
+            "representativeTitle": "Buy Bajaj Finance; target of Rs 9000: Emkay Global Financial",
+            "scoreBreakdown": {
+              "angleDiversityScore": 0.25,
+              "eventImportanceScore": 0.59,
+              "freshnessScore": 0.0,
+              "noveltyDeltaScore": 0.44999999999999996,
+              "sourceAuthorityScore": 0.38,
+              "sourceDiversityScore": 0.35,
+              "temporalEvolutionScore": 0.37
+            },
+            "slotCount": 1,
+            "slots": [
+              "minus24h"
+            ],
+            "sourceGroupCount": 1,
+            "sourceGroups": [
+              "moneycontrol"
+            ],
+            "storyCount": 2,
+            "storyIds": [
+              "cefd0947496f8de7",
+              "d0020e471404281a"
+            ],
+            "topAngles": [
+              {
+                "angle": "market_reaction",
+                "count": 2
+              }
+            ],
+            "topTokens": [
+              "bajaj",
+              "finance",
+              "target",
+              "emkay"
+            ],
+            "topicKey": "bajaj|finance|target"
+          },
+          "locationKey": "event",
+          "rankingReasons": [
+            "event sketch has repeated story count",
+            "weak child angle diversity",
+            "one-source event candidate"
+          ],
+          "score": 0.389,
+          "title": "Buy Bajaj Finance; target of Rs 9000: Emkay Global Financial"
+        },
+        {
+          "category": "insightEvent",
+          "gates": [
+            {
+              "details": {
+                "storyCount": 2
+              },
+              "name": "eventCoherence",
+              "reason": "event sketch has repeated story count",
+              "score": 0.62,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "baseReportRatio": 0.0,
+                "distinctAngles": 1
+              },
+              "name": "angleDiversity",
+              "reason": "weak child angle diversity",
+              "score": 0.25,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "sourceGroupCount": 1
+              },
+              "name": "sourceDiversity",
+              "reason": "one-source event candidate",
+              "score": 0.35,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "baseReportRatio": 0.0
+              },
+              "name": "baseReportCap",
+              "reason": "base-report ratio controlled",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "childCount": 2
+              },
+              "name": "weakTree",
+              "reason": "child tree has enough depth",
+              "score": 0.5,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "duplicateChildren",
+              "reason": "no child objects to dedup",
+              "score": 0.7,
+              "status": "PASS"
+            }
+          ],
+          "id": "sketch:59ab66c49c",
+          "item": {
+            "angleCount": 1,
+            "baseReportRatio": 0.0,
+            "childScores": [],
+            "id": "sketch:59ab66c49c",
+            "representativeId": "a7d4aa8ae32f2cc4",
+            "representativeTitle": "World’s hottest market has Korea bulls reaching for protection",
+            "scoreBreakdown": {
+              "angleDiversityScore": 0.25,
+              "eventImportanceScore": 0.59,
+              "freshnessScore": 0.0,
+              "noveltyDeltaScore": 0.44999999999999996,
+              "sourceAuthorityScore": 0.38,
+              "sourceDiversityScore": 0.35,
+              "temporalEvolutionScore": 0.37
+            },
+            "slotCount": 1,
+            "slots": [
+              "now"
+            ],
+            "sourceGroupCount": 1,
+            "sourceGroups": [
+              "economic_times"
+            ],
+            "storyCount": 2,
+            "storyIds": [
+              "a7d4aa8ae32f2cc4",
+              "a79214f3294036ee"
+            ],
+            "topAngles": [
+              {
+                "angle": "market_reaction",
+                "count": 2
+              }
+            ],
+            "topTokens": [
+              "market",
+              "protection",
+              "world",
+              "hottest"
+            ],
+            "topicKey": "market|protection|world"
+          },
+          "locationKey": "event",
+          "rankingReasons": [
+            "event sketch has repeated story count",
+            "weak child angle diversity",
+            "one-source event candidate"
+          ],
+          "score": 0.389,
+          "title": "World’s hottest market has Korea bulls reaching for protection"
+        },
+        {
+          "category": "insightEvent",
+          "gates": [
+            {
+              "details": {
+                "storyCount": 2
+              },
+              "name": "eventCoherence",
+              "reason": "event sketch has repeated story count",
+              "score": 0.62,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "baseReportRatio": 1.0,
+                "distinctAngles": 0
+              },
+              "name": "angleDiversity",
+              "reason": "weak child angle diversity",
+              "score": 0.25,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "sourceGroupCount": 1
+              },
+              "name": "sourceDiversity",
+              "reason": "one-source event candidate",
+              "score": 0.35,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "baseReportRatio": 1.0
+              },
+              "name": "baseReportCap",
+              "reason": "base-report dominated event candidate",
+              "score": 0.25,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "childCount": 2
+              },
+              "name": "weakTree",
+              "reason": "child tree has enough depth",
+              "score": 0.5,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "duplicateChildren",
+              "reason": "no child objects to dedup",
+              "score": 0.7,
+              "status": "PASS"
+            }
+          ],
+          "id": "sketch:bbd7147cc9",
+          "item": {
+            "angleCount": 1,
+            "baseReportRatio": 1.0,
+            "childScores": [],
+            "id": "sketch:bbd7147cc9",
+            "representativeId": "b9f6d9b467e7ef2e",
+            "representativeTitle": "top news of the day | may 20 2026 - The Hindu",
+            "scoreBreakdown": {
+              "angleDiversityScore": 0.25,
+              "eventImportanceScore": 0.59,
+              "freshnessScore": 0.0,
+              "noveltyDeltaScore": 0.44999999999999996,
+              "sourceAuthorityScore": 0.38,
+              "sourceDiversityScore": 0.35,
+              "temporalEvolutionScore": 0.37
+            },
+            "slotCount": 1,
+            "slots": [
+              "now"
+            ],
+            "sourceGroupCount": 1,
+            "sourceGroups": [
+              "google_news"
+            ],
+            "storyCount": 2,
+            "storyIds": [
+              "b9f6d9b467e7ef2e",
+              "ae7f751c70f2e97a"
+            ],
+            "topAngles": [
+              {
+                "angle": "base_report",
+                "count": 2
+              }
+            ],
+            "topTokens": [
+              "hindu"
+            ],
+            "topicKey": "hindu"
+          },
+          "locationKey": "event",
+          "rankingReasons": [
+            "event sketch has repeated story count",
+            "weak child angle diversity",
+            "one-source event candidate"
+          ],
+          "score": 0.1751,
+          "title": "top news of the day | may 20 2026 - The Hindu"
+        }
+      ],
+      "rankingProfile": "insight-v2-event-angle-tree",
+      "scoreBreakdown": {
+        "angleDiversityScore": 0.356,
+        "eventImportanceScore": 0.59,
+        "freshnessScore": 0.0,
+        "noveltyDeltaScore": 0.47,
+        "sourceAuthorityScore": 0.428,
+        "sourceDiversityScore": 0.424,
+        "temporalEvolutionScore": 0.37
+      }
+    },
+    "localTravel": {
+      "actionableFindings": [
+        "no active local/travel disruption item",
+        "no family-relevant local/travel item",
+        "no ranked local/travel item for muscat",
+        "no ranked local/travel item for chennai",
+        "no ranked local/travel item for trichy"
+      ],
+      "destination": "localTravel",
+      "diagnosticReasons": [],
+      "gateResults": [
+        {
+          "details": {
+            "suppressedCount": 0
+          },
+          "name": "localTravelPool",
+          "reason": "no rankable local/travel items",
+          "score": 0.0,
+          "status": "FAIL"
+        },
+        {
+          "details": {},
+          "name": "disruptionCoverage",
+          "reason": "disruption coverage available",
+          "score": 0.82,
+          "status": "PASS"
+        }
+      ],
+      "gateSummary": {
+        "categoryCounts": {},
+        "disruptionItemCount": 0,
+        "familyRelevantItemCount": 0,
+        "inputItemCount": 0,
+        "locationCounts": {},
+        "locationsCovered": [],
+        "rankedItemCount": 0,
+        "suppressedItemCount": 0,
+        "travelItemCount": 0,
+        "utilityItemCount": 0
+      },
+      "qualityGrade": "F",
+      "qualityScore": 0.0,
+      "qualityStatus": "FAIL",
+      "rankedItems": [],
+      "rankingProfile": "localTravel-v1-location-utility-disruption",
+      "scoreBreakdown": {
+        "authorityScore": 0.0,
+        "disruptionSeverity": 0.0,
+        "familyRelevance": 0.0,
+        "locationPrecision": 0.0,
+        "recencyScore": 0.0,
+        "sourceDiversity": 0.0,
+        "utilityScore": 0.0
+      }
+    },
+    "upAhead": {
+      "actionableFindings": [
+        "341 invalid/expired/duplicate Up Ahead item(s) suppressed",
+        "no active alert items in ranked Up Ahead set",
+        "no ranked Up Ahead item for trichy"
+      ],
+      "destination": "upAhead",
+      "diagnosticReasons": [
+        "Early Amazon Prime Day Deals Are Live Now Ahead of the Official Sale - CNET: location failed — offline/local item lacks configured location match",
+        "‘Outsiders have it easier’: Imtiaz Ali says ‘nepo kids’ Ranbir Kapoor, Alia Bhatt face ‘added toughness’ in Bollywood: futureValidity failed — missing eventStartAt/displayUntil",
+        "‘Outsiders have it easier’: Imtiaz Ali says ‘nepo kids’ Ranbir Kapoor, Alia Bhatt face ‘added toughness’ in Bollywood: location failed — offline/local item lacks configured location match",
+        "OTT Releases This Week (6th June to 12th June) - Vi: futureValidity failed — missing eventStartAt/displayUntil",
+        "OTT Releases This Week (6th June to 12th June) - Vi: location failed — offline/local item lacks configured location match",
+        "Farah Khan is ‘officially highest-earning YouTuber’, says Varun Dhawan as she gifts luxury watches worth lakhs, diamonds: futureValidity failed — missing eventStartAt/displayUntil",
+        "Farah Khan is ‘officially highest-earning YouTuber’, says Varun Dhawan as she gifts luxury watches worth lakhs, diamonds: location failed — offline/local item lacks configured location match",
+        "Mother’s Day 2026 Flight Sale - IndianEagle: location failed — offline/local item lacks configured location match",
+        "Tamil Nadu weather today: IMD issues orange alert for 3 districts, predicts heavy rainfall in coming days - MSN: futureValidity failed — expired display window",
+        "Tamil Nadu weather today: IMD issues orange alert for 3 districts, predicts heavy rainfall in coming days - MSN: alertUrgency failed — alert expired",
+        "5 Amazon Tech Finds With Deep Discounts In June 2026 - bgr.com: location failed — offline/local item lacks configured location match",
+        "You don’t have to wait — here are 51+ Prime Day early deals you can already shop - NBC News: location failed — offline/local item lacks configured location match",
+        "OTT Releases This Week Tamil (இந்த வாரம் தமிழ் OTT வெளியீல்கள்) –6th June to 12th June - Vi: futureValidity failed — missing eventStartAt/displayUntil",
+        "OTT Releases This Week Tamil (இந்த வாரம் தமிழ் OTT வெளியீல்கள்) –6th June to 12th June - Vi: location failed — offline/local item lacks configured location match",
+        "Support your local artist, says Naga illustrator Canato Jimo: futureValidity failed — expired display window",
+        "Support your local artist, says Naga illustrator Canato Jimo: alertUrgency failed — alert expired",
+        "One more arrestedin EB dept. hard disk theft case; all missing drives recovered: futureValidity failed — expired display window",
+        "One more arrestedin EB dept. hard disk theft case; all missing drives recovered: alertUrgency failed — alert expired",
+        "CM Vijay directs urban localbodies to intensify morning checks, revenue collection: futureValidity failed — expired display window",
+        "CM Vijay directs urban localbodies to intensify morning checks, revenue collection: alertUrgency failed — alert expired"
+      ],
+      "gateResults": [
+        {
+          "details": {
+            "itemCount": 2
+          },
+          "name": "upAheadPool",
+          "reason": "rankable Up Ahead pool",
+          "score": 0.25,
+          "status": "PASS"
+        },
+        {
+          "details": {
+            "categoryCounts": {
+              "movies": 1,
+              "shopping": 1
+            }
+          },
+          "name": "categoryCoverage",
+          "reason": "category coverage available",
+          "score": 0.5,
+          "status": "PASS"
+        }
+      ],
+      "gateSummary": {
+        "alerts": 0,
+        "categoryCounts": {
+          "movies": 1,
+          "shopping": 1
+        },
+        "events": 1,
+        "festivals": 0,
+        "inputItemCount": 343,
+        "locationCounts": {
+          "chennai": 1,
+          "muscat": 1
+        },
+        "locationsCovered": [
+          "chennai",
+          "muscat"
+        ],
+        "offlineOffers": 1,
+        "onlineOffers": 0,
+        "plannerAdvisoryItems": 1,
+        "rankedItemCount": 2,
+        "suppressedItemCount": 341
+      },
+      "qualityGrade": "D",
+      "qualityScore": 0.6171,
+      "qualityStatus": "WARN",
+      "rankedItems": [
+        {
+          "category": "shopping",
+          "gates": [
+            {
+              "details": {
+                "dedupKey": "8febdb3b8acb3ab9"
+              },
+              "name": "dedup",
+              "reason": "unique item",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "displayUntil": 1780884096000
+              },
+              "name": "futureValidity",
+              "reason": "valid undated item with active display window",
+              "score": 0.65,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "matchScore": 0.72,
+                "matchedLocation": "chennai",
+                "relevance": "secondary",
+                "scope": "region"
+              },
+              "name": "location",
+              "reason": "location matches configured profile",
+              "score": 0.72,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "hasPlace": false,
+                "hasTime": true
+              },
+              "name": "actionability",
+              "reason": "item has enough action fields",
+              "score": 0.85,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "hoursLeft": 7.76
+              },
+              "name": "offerValidity",
+              "reason": "offer expires soon",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "alertUrgency",
+              "reason": "not an alert",
+              "score": 0.6,
+              "status": "PASS"
+            }
+          ],
+          "id": "55302be817a5a85c",
+          "item": {
+            "actionabilityScore": 0.65,
+            "category": "shopping",
+            "city": null,
+            "dateConfidence": "unknown",
+            "dateSource": "none",
+            "eventEndAt": null,
+            "eventStartAt": null,
+            "expiryAt": 1780884096000,
+            "id": "55302be817a5a85c",
+            "language": "en",
+            "localityScore": 0.3,
+            "normalizedCategory": "shopping",
+            "plannerEligible": true,
+            "publishedAt": 1780711296000,
+            "region": null,
+            "scoreBreakdown": {
+              "actionabilityScore": 0.8500000000000001,
+              "categoryPriorityScore": 0.68,
+              "lifecycleScore": 0.65,
+              "locationScore": 0.72,
+              "plannerFitScore": 0.35,
+              "sourceConfidenceScore": 0.58,
+              "urgencyOrExpiryScore": 1.0
+            },
+            "source": "Google News Shopping",
+            "sourceGroup": "google_news",
+            "summary": "<a href=\"https://news.google.com/rss/articles/CBMimgFBVV95cUxQZmI1Nmw0Tl9jRzREY3otdEdNM3JmMHVfQnBYbWxtcDA0dFFTVm1XS3FPT2cyY205bzkxRm1UVVY3dVBaMW9QZkZLanNlb3FfUVRibUMxZUYzZkE0c1VBZlN0OWdsMjVIa0xPQ1F3OWlBSVduNVoybEtkSXVtcVZKLTdKa3hwVEtoRThLV2hxajgxeFVnOWQ4TnBR?oc=5\" target=\"_blank\">The Best Prime Day 2026 Tech Deals We've Found So Far: Shop Amazon’s Ultimate Summer Sale Early</a>&nbsp;&nbsp;<font color=\"#6f6f6f\">PCMag</font>",
+            "suppressionReason": null,
+            "title": "The Best Prime Day 2026 Tech Deals We've Found So Far: Shop Amazon’s Ultimate Summer Sale Early - PCMag",
+            "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxQZmI1Nmw0Tl9jRzREY3otdEdNM3JmMHVfQnBYbWxtcDA0dFFTVm1XS3FPT2cyY205bzkxRm1UVVY3dVBaMW9QZkZLanNlb3FfUVRibUMxZUYzZkE0c1VBZlN0OWdsMjVIa0xPQ1F3OWlBSVduNVoybEtkSXVtcVZKLTdKa3hwVEtoRThLV2hxajgxeFVnOWQ4TnBR?oc=5"
+          },
+          "locationKey": "chennai",
+          "rankingReasons": [
+            "shopping",
+            "valid undated item with active display window",
+            "location matches configured profile",
+            "planner advisory fit"
+          ],
+          "score": 0.7115,
+          "title": "The Best Prime Day 2026 Tech Deals We've Found So Far: Shop Amazon’s Ultimate Summer Sale Early - PCMag"
+        },
+        {
+          "category": "movies",
+          "gates": [
+            {
+              "details": {
+                "dedupKey": "825895463a3bf384"
+              },
+              "name": "dedup",
+              "reason": "unique item",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "eventStartAt": 1781222400000
+              },
+              "name": "futureValidity",
+              "reason": "inside lifecycle horizon",
+              "score": 0.45,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "matchScore": 0.72,
+                "matchedLocation": "muscat",
+                "relevance": "secondary",
+                "scope": "region"
+              },
+              "name": "location",
+              "reason": "location matches configured profile",
+              "score": 0.72,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "hasPlace": false,
+                "hasTime": true
+              },
+              "name": "actionability",
+              "reason": "item has enough action fields",
+              "score": 0.85,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "offerValidity",
+              "reason": "not an offer",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "alertUrgency",
+              "reason": "not an alert",
+              "score": 0.6,
+              "status": "PASS"
+            }
+          ],
+          "id": "b20f647811571670",
+          "item": {
+            "actionabilityScore": 0.5,
+            "category": "movies",
+            "city": null,
+            "dateConfidence": "exact",
+            "dateSource": "title",
+            "eventEndAt": null,
+            "eventStartAt": 1781222400000,
+            "expiryAt": 1781308799000,
+            "id": "b20f647811571670",
+            "language": "en",
+            "localityScore": 0.5,
+            "normalizedCategory": "movies",
+            "plannerEligible": false,
+            "publishedAt": 1779178694000,
+            "region": "india",
+            "scoreBreakdown": {
+              "actionabilityScore": 0.8500000000000001,
+              "categoryPriorityScore": 0.76,
+              "lifecycleScore": 0.45,
+              "locationScore": 0.72,
+              "plannerFitScore": 0.0,
+              "sourceConfidenceScore": 0.58,
+              "urgencyOrExpiryScore": 0.45
+            },
+            "source": "Hindustan Times Bollywood",
+            "sourceGroup": "hindustan_times",
+            "summary": "The film's music, crafted by AR Rahman and Irshad Kamil, complements its nostalgic narrative. It will be released in theaters on June 12, 2026.",
+            "suppressionReason": null,
+            "title": "Main Vaapas Aaunga trailer: Diljit Dosanjh, Sharvari, Vedang Raina depict unfulfilled romance amid partition story",
+            "url": "https://www.hindustantimes.com/entertainment/bollywood/main-vaapas-aaunga-trailer-diljit-dosanjh-sharvari-vedang-raina-depict-soulful-unfinished-romance-amid-partition-stor-101779175401172.html"
+          },
+          "locationKey": "muscat",
+          "rankingReasons": [
+            "movies",
+            "inside lifecycle horizon",
+            "location matches configured profile"
+          ],
+          "score": 0.601,
+          "title": "Main Vaapas Aaunga trailer: Diljit Dosanjh, Sharvari, Vedang Raina depict unfulfilled romance amid partition story"
+        }
+      ],
+      "rankingProfile": "upAhead-v2-lifecycle-location-category",
+      "scoreBreakdown": {
+        "actionabilityScore": 0.85,
+        "categoryPriorityScore": 0.72,
+        "lifecycleScore": 0.55,
+        "locationScore": 0.72,
+        "plannerFitScore": 0.175,
+        "sourceConfidenceScore": 0.58,
+        "urgencyOrExpiryScore": 0.725
+      }
+    }
+  },
+  "generatedAt": 1780856166890,
+  "implementedDestinations": [
+    "upAhead",
+    "buzz",
+    "localTravel",
+    "insight"
+  ],
+  "pendingDestinations": [
+    "main",
+    "weather",
+    "market",
+    "planner",
+    "newspaper",
+    "following"
+  ],
+  "rankingVersion": "tab-specific-quality-ranking-v1",
+  "schemaVersion": 1,
+  "summary": {
+    "actionRequired": [
+      "341 invalid/expired/duplicate Up Ahead item(s) suppressed",
+      "no active alert items in ranked Up Ahead set",
+      "no ranked Up Ahead item for trichy",
+      "no local Buzz item in ranked set",
+      "no travel Buzz item in ranked set",
+      "no active local/travel disruption item",
+      "no family-relevant local/travel item",
+      "no ranked local/travel item for muscat",
+      "no ranked local/travel item for chennai",
+      "no ranked local/travel item for trichy",
+      "1 base-report-heavy Insight parent(s) demoted"
+    ],
+    "destinationScores": {
+      "buzz": 0.0,
+      "insight": 0.3769,
+      "localTravel": 0.0,
+      "upAhead": 0.6171
+    },
+    "destinationStatuses": {
+      "buzz": "FAIL",
+      "insight": "WARN",
+      "localTravel": "FAIL",
+      "upAhead": "WARN"
+    },
+    "overallScore": 0.2485,
+    "overallStatus": "FAIL",
+    "rankingProfiles": {
+      "buzz": "buzz-v2-trend-local-travel",
+      "insight": "insight-v2-event-angle-tree",
+      "localTravel": "localTravel-v1-location-utility-disruption",
+      "upAhead": "upAhead-v2-lifecycle-location-category"
+    },
+    "topFindings": [
+      "Early Amazon Prime Day Deals Are Live Now Ahead of the Official Sale - CNET: location failed — offline/local item lacks configured location match",
+      "‘Outsiders have it easier’: Imtiaz Ali says ‘nepo kids’ Ranbir Kapoor, Alia Bhatt face ‘added toughness’ in Bollywood: futureValidity failed — missing eventStartAt/displayUntil",
+      "‘Outsiders have it easier’: Imtiaz Ali says ‘nepo kids’ Ranbir Kapoor, Alia Bhatt face ‘added toughness’ in Bollywood: location failed — offline/local item lacks configured location match",
+      "OTT Releases This Week (6th June to 12th June) - Vi: futureValidity failed — missing eventStartAt/displayUntil",
+      "OTT Releases This Week (6th June to 12th June) - Vi: location failed — offline/local item lacks configured location match",
+      "Farah Khan is ‘officially highest-earning YouTuber’, says Varun Dhawan as she gifts luxury watches worth lakhs, diamonds: futureValidity failed — missing eventStartAt/displayUntil",
+      "Farah Khan is ‘officially highest-earning YouTuber’, says Varun Dhawan as she gifts luxury watches worth lakhs, diamonds: location failed — offline/local item lacks configured location match",
+      "Mother’s Day 2026 Flight Sale - IndianEagle: location failed — offline/local item lacks configured location match",
+      "Tamil Nadu weather today: IMD issues orange alert for 3 districts, predicts heavy rainfall in coming days - MSN: futureValidity failed — expired display window",
+      "Tamil Nadu weather today: IMD issues orange alert for 3 districts, predicts heavy rainfall in coming days - MSN: alertUrgency failed — alert expired",
+      "5 Amazon Tech Finds With Deep Discounts In June 2026 - bgr.com: location failed — offline/local item lacks configured location match",
+      "You don’t have to wait — here are 51+ Prime Day early deals you can already shop - NBC News: location failed — offline/local item lacks configured location match",
+      "OTT Releases This Week Tamil (இந்த வாரம் தமிழ் OTT வெளியீல்கள்) –6th June to 12th June - Vi: futureValidity failed — missing eventStartAt/displayUntil",
+      "OTT Releases This Week Tamil (இந்த வாரம் தமிழ் OTT வெளியீல்கள்) –6th June to 12th June - Vi: location failed — offline/local item lacks configured location match",
+      "Support your local artist, says Naga illustrator Canato Jimo: futureValidity failed — expired display window",
+      "Support your local artist, says Naga illustrator Canato Jimo: alertUrgency failed — alert expired",
+      "One more arrestedin EB dept. hard disk theft case; all missing drives recovered: futureValidity failed — expired display window",
+      "One more arrestedin EB dept. hard disk theft case; all missing drives recovered: alertUrgency failed — alert expired",
+      "CM Vijay directs urban localbodies to intensify morning checks, revenue collection: futureValidity failed — expired display window",
+      "CM Vijay directs urban localbodies to intensify morning checks, revenue collection: alertUrgency failed — alert expired"
+    ]
+  }
+}

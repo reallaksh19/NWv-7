@@ -53,7 +53,7 @@
     },
     "insight": {
       "actionableFindings": [
-        "1 base-report-heavy Insight parent(s) demoted"
+        "Insight event/angle ranking has no critical demotion finding"
       ],
       "destination": "insight",
       "diagnosticReasons": [],
@@ -77,7 +77,7 @@
       ],
       "gateSummary": {
         "avgAnglesPerParent": 0.0,
-        "baseReportHeavyParents": 1,
+        "baseReportHeavyParents": 0,
         "duplicateChildrenSuppressed": 0,
         "inputCandidateCount": 6,
         "parentClusters": 6,
@@ -86,7 +86,7 @@
         "weakParentsDemoted": 0
       },
       "qualityGrade": "F",
-      "qualityScore": 0.371,
+      "qualityScore": 0.39,
       "qualityStatus": "WARN",
       "rankedItems": [
         {
@@ -94,7 +94,7 @@
           "gates": [
             {
               "details": {
-                "storyCount": 2
+                "storyCount": 3
               },
               "name": "eventCoherence",
               "reason": "event sketch has repeated story count",
@@ -103,7 +103,7 @@
             },
             {
               "details": {
-                "baseReportRatio": 0.0,
+                "baseReportRatio": 0.3333,
                 "distinctAngles": 2
               },
               "name": "angleDiversity",
@@ -113,7 +113,7 @@
             },
             {
               "details": {
-                "sourceGroupCount": 2
+                "sourceGroupCount": 3
               },
               "name": "sourceDiversity",
               "reason": "multi-source event",
@@ -122,7 +122,7 @@
             },
             {
               "details": {
-                "baseReportRatio": 0.0
+                "baseReportRatio": 0.3333
               },
               "name": "baseReportCap",
               "reason": "base-report ratio controlled",
@@ -131,11 +131,11 @@
             },
             {
               "details": {
-                "childCount": 2
+                "childCount": 3
               },
               "name": "weakTree",
               "reason": "child tree has enough depth",
-              "score": 0.5,
+              "score": 0.75,
               "status": "PASS"
             },
             {
@@ -148,36 +148,43 @@
           ],
           "id": "sketch:2d197d53bc",
           "item": {
-            "angleCount": 2,
-            "baseReportRatio": 0.0,
+            "angleCount": 3,
+            "baseReportRatio": 0.3333,
             "childScores": [],
             "id": "sketch:2d197d53bc",
-            "representativeId": "45714c468795d7f2",
-            "representativeTitle": "Israel strikes Beirut's southern suburbs days after ceasefire agreement",
+            "representativeId": "1a05441d2116ca6b",
+            "representativeTitle": "Israel strikes Beirut's southern suburbs days after US-supported ceasefire deal",
             "scoreBreakdown": {
               "angleDiversityScore": 0.78,
-              "eventImportanceScore": 0.59,
+              "eventImportanceScore": 0.71,
               "freshnessScore": 0.0,
-              "noveltyDeltaScore": 0.55,
+              "noveltyDeltaScore": 0.65,
               "sourceAuthorityScore": 0.62,
               "sourceDiversityScore": 0.72,
-              "temporalEvolutionScore": 0.37
+              "temporalEvolutionScore": 0.49
             },
-            "slotCount": 1,
+            "slotCount": 2,
             "slots": [
-              "minus12h"
+              "minus12h",
+              "minus24h"
             ],
-            "sourceGroupCount": 2,
+            "sourceGroupCount": 3,
             "sourceGroups": [
               "bbc",
+              "business_line",
               "the_hindu"
             ],
-            "storyCount": 2,
+            "storyCount": 3,
             "storyIds": [
+              "1a05441d2116ca6b",
               "45714c468795d7f2",
               "88fa38b376d956c6"
             ],
             "topAngles": [
+              {
+                "angle": "base_report",
+                "count": 1
+              },
               {
                 "angle": "fact_update",
                 "count": 1
@@ -202,8 +209,123 @@
             "usable angle diversity",
             "multi-source event"
           ],
-          "score": 0.5965,
-          "title": "Israel strikes Beirut's southern suburbs days after ceasefire agreement"
+          "score": 0.6485,
+          "title": "Israel strikes Beirut's southern suburbs days after US-supported ceasefire deal"
+        },
+        {
+          "category": "insightEvent",
+          "gates": [
+            {
+              "details": {
+                "storyCount": 4
+              },
+              "name": "eventCoherence",
+              "reason": "event sketch has repeated story count",
+              "score": 0.62,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "baseReportRatio": 0.0,
+                "distinctAngles": 1
+              },
+              "name": "angleDiversity",
+              "reason": "weak child angle diversity",
+              "score": 0.25,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "sourceGroupCount": 1
+              },
+              "name": "sourceDiversity",
+              "reason": "one-source event candidate",
+              "score": 0.35,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "baseReportRatio": 0.0
+              },
+              "name": "baseReportCap",
+              "reason": "base-report ratio controlled",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "childCount": 4
+              },
+              "name": "weakTree",
+              "reason": "child tree has enough depth",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "duplicateChildren",
+              "reason": "no child objects to dedup",
+              "score": 0.7,
+              "status": "PASS"
+            }
+          ],
+          "id": "sketch:313fbb8095",
+          "item": {
+            "angleCount": 1,
+            "baseReportRatio": 0.0,
+            "childScores": [],
+            "id": "sketch:313fbb8095",
+            "representativeId": "0dd8feb7fe02d6b2",
+            "representativeTitle": "Breaking News Live Updates: 23 Opposition parties to attend INDIA Bloc meet in Delhi today - The Economic Times",
+            "scoreBreakdown": {
+              "angleDiversityScore": 0.25,
+              "eventImportanceScore": 0.83,
+              "freshnessScore": 0.0,
+              "noveltyDeltaScore": 0.44999999999999996,
+              "sourceAuthorityScore": 0.38,
+              "sourceDiversityScore": 0.35,
+              "temporalEvolutionScore": 0.37
+            },
+            "slotCount": 1,
+            "slots": [
+              "now"
+            ],
+            "sourceGroupCount": 1,
+            "sourceGroups": [
+              "google_news"
+            ],
+            "storyCount": 4,
+            "storyIds": [
+              "0dd8feb7fe02d6b2",
+              "69ff31860d7a65f1",
+              "c0b89c693126f623",
+              "55cf58dd032da79f"
+            ],
+            "topAngles": [
+              {
+                "angle": "fact_update",
+                "count": 4
+              }
+            ],
+            "topTokens": [
+              "breaking",
+              "live",
+              "updates",
+              "opposition",
+              "fire",
+              "strong",
+              "govt"
+            ],
+            "topicKey": "breaking|live|updates"
+          },
+          "locationKey": "event",
+          "rankingReasons": [
+            "event sketch has repeated story count",
+            "weak child angle diversity",
+            "one-source event candidate"
+          ],
+          "score": 0.449,
+          "title": "Breaking News Live Updates: 23 Opposition parties to attend INDIA Bloc meet in Delhi today - The Economic Times"
         },
         {
           "category": "insightEvent",
@@ -549,7 +671,7 @@
             },
             {
               "details": {
-                "baseReportRatio": 0.0,
+                "baseReportRatio": 0.5,
                 "distinctAngles": 1
               },
               "name": "angleDiversity",
@@ -568,12 +690,12 @@
             },
             {
               "details": {
-                "baseReportRatio": 0.0
+                "baseReportRatio": 0.5
               },
               "name": "baseReportCap",
-              "reason": "base-report ratio controlled",
-              "score": 1.0,
-              "status": "PASS"
+              "reason": "base-report heavy but usable",
+              "score": 0.55,
+              "status": "WARN"
             },
             {
               "details": {
@@ -592,156 +714,55 @@
               "status": "PASS"
             }
           ],
-          "id": "sketch:eb6f0bcb07",
+          "id": "sketch:ebf43b44ba",
           "item": {
-            "angleCount": 1,
-            "baseReportRatio": 0.0,
+            "angleCount": 2,
+            "baseReportRatio": 0.5,
             "childScores": [],
-            "id": "sketch:eb6f0bcb07",
-            "representativeId": "5a87029180955892",
-            "representativeTitle": "🔴Live | ସନ୍ଧ୍ୟା ୭ଟାର ବଡ଼ ଖବର | 7PM News | Prime Time | Breaking News | 7th June 2026 | Kanak News - Kanak News Odisha",
+            "id": "sketch:ebf43b44ba",
+            "representativeId": "981009561d167721",
+            "representativeTitle": "INDIA Bloc Meet Live Updates: Pointed Fingers Or Alliance Unity? All Eyes On Delhi Meeting",
             "scoreBreakdown": {
               "angleDiversityScore": 0.25,
               "eventImportanceScore": 0.59,
               "freshnessScore": 0.0,
-              "noveltyDeltaScore": 0.44999999999999996,
+              "noveltyDeltaScore": 0.55,
               "sourceAuthorityScore": 0.38,
               "sourceDiversityScore": 0.35,
-              "temporalEvolutionScore": 0.37
+              "temporalEvolutionScore": 0.49
             },
-            "slotCount": 1,
+            "slotCount": 2,
             "slots": [
+              "minus4h",
               "now"
             ],
             "sourceGroupCount": 1,
             "sourceGroups": [
-              "google_news"
+              "ndtv"
             ],
             "storyCount": 2,
             "storyIds": [
-              "5a87029180955892",
-              "10c2e6ca1686dccb"
+              "981009561d167721",
+              "0ef03fd77722b907"
             ],
             "topAngles": [
               {
                 "angle": "fact_update",
-                "count": 2
-              }
-            ],
-            "topTokens": [
-              "kanak",
-              "live",
-              "prime",
-              "time"
-            ],
-            "topicKey": "kanak|live|prime"
-          },
-          "locationKey": "event",
-          "rankingReasons": [
-            "event sketch has repeated story count",
-            "weak child angle diversity",
-            "one-source event candidate"
-          ],
-          "score": 0.389,
-          "title": "🔴Live | ସନ୍ଧ୍ୟା ୭ଟାର ବଡ଼ ଖବର | 7PM News | Prime Time | Breaking News | 7th June 2026 | Kanak News - Kanak News Odisha"
-        },
-        {
-          "category": "insightEvent",
-          "gates": [
-            {
-              "details": {
-                "storyCount": 2
+                "count": 1
               },
-              "name": "eventCoherence",
-              "reason": "event sketch has repeated story count",
-              "score": 0.62,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "baseReportRatio": 1.0,
-                "distinctAngles": 0
-              },
-              "name": "angleDiversity",
-              "reason": "weak child angle diversity",
-              "score": 0.25,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "sourceGroupCount": 1
-              },
-              "name": "sourceDiversity",
-              "reason": "one-source event candidate",
-              "score": 0.35,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "baseReportRatio": 1.0
-              },
-              "name": "baseReportCap",
-              "reason": "base-report dominated event candidate",
-              "score": 0.25,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "childCount": 2
-              },
-              "name": "weakTree",
-              "reason": "child tree has enough depth",
-              "score": 0.5,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "duplicateChildren",
-              "reason": "no child objects to dedup",
-              "score": 0.7,
-              "status": "PASS"
-            }
-          ],
-          "id": "sketch:bbd7147cc9",
-          "item": {
-            "angleCount": 1,
-            "baseReportRatio": 1.0,
-            "childScores": [],
-            "id": "sketch:bbd7147cc9",
-            "representativeId": "b9f6d9b467e7ef2e",
-            "representativeTitle": "top news of the day | may 20 2026 - The Hindu",
-            "scoreBreakdown": {
-              "angleDiversityScore": 0.25,
-              "eventImportanceScore": 0.59,
-              "freshnessScore": 0.0,
-              "noveltyDeltaScore": 0.44999999999999996,
-              "sourceAuthorityScore": 0.38,
-              "sourceDiversityScore": 0.35,
-              "temporalEvolutionScore": 0.37
-            },
-            "slotCount": 1,
-            "slots": [
-              "now"
-            ],
-            "sourceGroupCount": 1,
-            "sourceGroups": [
-              "google_news"
-            ],
-            "storyCount": 2,
-            "storyIds": [
-              "b9f6d9b467e7ef2e",
-              "ae7f751c70f2e97a"
-            ],
-            "topAngles": [
               {
                 "angle": "base_report",
-                "count": 2
+                "count": 1
               }
             ],
             "topTokens": [
-              "hindu"
+              "india",
+              "bloc",
+              "meet",
+              "live",
+              "tomorrow"
             ],
-            "topicKey": "hindu"
+            "topicKey": "india|bloc|meet"
           },
           "locationKey": "event",
           "rankingReasons": [
@@ -749,19 +770,19 @@
             "weak child angle diversity",
             "one-source event candidate"
           ],
-          "score": 0.1751,
-          "title": "top news of the day | may 20 2026 - The Hindu"
+          "score": 0.2261,
+          "title": "INDIA Bloc Meet Live Updates: Pointed Fingers Or Alliance Unity? All Eyes On Delhi Meeting"
         }
       ],
       "rankingProfile": "insight-v2-event-angle-tree",
       "scoreBreakdown": {
         "angleDiversityScore": 0.3383,
-        "eventImportanceScore": 0.59,
+        "eventImportanceScore": 0.65,
         "freshnessScore": 0.0,
-        "noveltyDeltaScore": 0.4667,
+        "noveltyDeltaScore": 0.5,
         "sourceAuthorityScore": 0.42,
         "sourceDiversityScore": 0.4117,
-        "temporalEvolutionScore": 0.37
+        "temporalEvolutionScore": 0.41
       }
     },
     "localTravel": {
@@ -821,15 +842,22 @@
     },
     "upAhead": {
       "actionableFindings": [
-        "341 invalid/expired/duplicate Up Ahead item(s) suppressed",
+        "342 invalid/expired/duplicate Up Ahead item(s) suppressed",
         "no active alert items in ranked Up Ahead set",
-        "no ranked Up Ahead item for trichy"
+        "no active offer items in ranked Up Ahead set",
+        "no ranked Up Ahead item for chennai",
+        "no ranked Up Ahead item for trichy",
+        "ranked Up Ahead set is category-dominated"
       ],
       "destination": "upAhead",
       "diagnosticReasons": [
+        "Early Amazon Prime Day Deals Are Live Now Ahead of the Official Sale - CNET: futureValidity failed — expired display window",
         "Early Amazon Prime Day Deals Are Live Now Ahead of the Official Sale - CNET: location failed — offline/local item lacks configured location match",
+        "Early Amazon Prime Day Deals Are Live Now Ahead of the Official Sale - CNET: offerValidity failed — offer expired",
         "‘Outsiders have it easier’: Imtiaz Ali says ‘nepo kids’ Ranbir Kapoor, Alia Bhatt face ‘added toughness’ in Bollywood: futureValidity failed — missing eventStartAt/displayUntil",
         "‘Outsiders have it easier’: Imtiaz Ali says ‘nepo kids’ Ranbir Kapoor, Alia Bhatt face ‘added toughness’ in Bollywood: location failed — offline/local item lacks configured location match",
+        "The Best Prime Day 2026 Tech Deals We've Found So Far: Shop Amazon’s Ultimate Summer Sale Early - PCMag: futureValidity failed — expired display window",
+        "The Best Prime Day 2026 Tech Deals We've Found So Far: Shop Amazon’s Ultimate Summer Sale Early - PCMag: offerValidity failed — offer expired",
         "OTT Releases This Week (6th June to 12th June) - Vi: futureValidity failed — missing eventStartAt/displayUntil",
         "OTT Releases This Week (6th June to 12th June) - Vi: location failed — offline/local item lacks configured location match",
         "Farah Khan is ‘officially highest-earning YouTuber’, says Varun Dhawan as she gifts luxury watches worth lakhs, diamonds: futureValidity failed — missing eventStartAt/displayUntil",
@@ -842,165 +870,54 @@
         "5 Amazon Tech Finds With Deep Discounts In June 2026 - bgr.com: futureValidity failed — expired display window",
         "5 Amazon Tech Finds With Deep Discounts In June 2026 - bgr.com: location failed — offline/local item lacks configured location match",
         "5 Amazon Tech Finds With Deep Discounts In June 2026 - bgr.com: offerValidity failed — offer expired",
-        "You don’t have to wait — here are 51+ Prime Day early deals you can already shop - NBC News: futureValidity failed — expired display window",
-        "You don’t have to wait — here are 51+ Prime Day early deals you can already shop - NBC News: location failed — offline/local item lacks configured location match",
-        "You don’t have to wait — here are 51+ Prime Day early deals you can already shop - NBC News: offerValidity failed — offer expired",
-        "OTT Releases This Week Tamil (இந்த வாரம் தமிழ் OTT வெளியீல்கள்) –6th June to 12th June - Vi: futureValidity failed — missing eventStartAt/displayUntil",
-        "OTT Releases This Week Tamil (இந்த வாரம் தமிழ் OTT வெளியீல்கள்) –6th June to 12th June - Vi: location failed — offline/local item lacks configured location match"
+        "You don’t have to wait — here are 51+ Prime Day early deals you can already shop - NBC News: futureValidity failed — expired display window"
       ],
       "gateResults": [
         {
           "details": {
-            "itemCount": 2
+            "itemCount": 1
           },
           "name": "upAheadPool",
           "reason": "rankable Up Ahead pool",
-          "score": 0.25,
+          "score": 0.125,
           "status": "PASS"
         },
         {
           "details": {
             "categoryCounts": {
-              "movies": 1,
-              "shopping": 1
+              "movies": 1
             }
           },
           "name": "categoryCoverage",
-          "reason": "category coverage available",
+          "reason": "thin category coverage",
           "score": 0.5,
-          "status": "PASS"
+          "status": "WARN"
         }
       ],
       "gateSummary": {
         "alerts": 0,
         "categoryCounts": {
-          "movies": 1,
-          "shopping": 1
+          "movies": 1
         },
         "events": 1,
         "festivals": 0,
         "inputItemCount": 343,
         "locationCounts": {
-          "chennai": 1,
           "muscat": 1
         },
         "locationsCovered": [
-          "chennai",
           "muscat"
         ],
-        "offlineOffers": 1,
+        "offlineOffers": 0,
         "onlineOffers": 0,
-        "plannerAdvisoryItems": 1,
-        "rankedItemCount": 2,
-        "suppressedItemCount": 341
+        "plannerAdvisoryItems": 0,
+        "rankedItemCount": 1,
+        "suppressedItemCount": 342
       },
-      "qualityGrade": "D",
-      "qualityScore": 0.6171,
+      "qualityGrade": "F",
+      "qualityScore": 0.5466,
       "qualityStatus": "WARN",
       "rankedItems": [
-        {
-          "category": "shopping",
-          "gates": [
-            {
-              "details": {
-                "dedupKey": "8febdb3b8acb3ab9"
-              },
-              "name": "dedup",
-              "reason": "unique item",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "displayUntil": 1780884096000
-              },
-              "name": "futureValidity",
-              "reason": "valid undated item with active display window",
-              "score": 0.65,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "matchScore": 0.72,
-                "matchedLocation": "chennai",
-                "relevance": "secondary",
-                "scope": "region"
-              },
-              "name": "location",
-              "reason": "location matches configured profile",
-              "score": 0.72,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "hasPlace": false,
-                "hasTime": true
-              },
-              "name": "actionability",
-              "reason": "item has enough action fields",
-              "score": 0.85,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "hoursLeft": 1.95
-              },
-              "name": "offerValidity",
-              "reason": "offer expires soon",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "alertUrgency",
-              "reason": "not an alert",
-              "score": 0.6,
-              "status": "PASS"
-            }
-          ],
-          "id": "55302be817a5a85c",
-          "item": {
-            "actionabilityScore": 0.65,
-            "category": "shopping",
-            "city": null,
-            "dateConfidence": "unknown",
-            "dateSource": "none",
-            "eventEndAt": null,
-            "eventStartAt": null,
-            "expiryAt": 1780884096000,
-            "id": "55302be817a5a85c",
-            "language": "en",
-            "localityScore": 0.3,
-            "normalizedCategory": "shopping",
-            "plannerEligible": true,
-            "publishedAt": 1780711296000,
-            "region": null,
-            "scoreBreakdown": {
-              "actionabilityScore": 0.8500000000000001,
-              "categoryPriorityScore": 0.68,
-              "lifecycleScore": 0.65,
-              "locationScore": 0.72,
-              "plannerFitScore": 0.35,
-              "sourceConfidenceScore": 0.58,
-              "urgencyOrExpiryScore": 1.0
-            },
-            "source": "Google News Shopping",
-            "sourceGroup": "google_news",
-            "summary": "<a href=\"https://news.google.com/rss/articles/CBMimgFBVV95cUxQZmI1Nmw0Tl9jRzREY3otdEdNM3JmMHVfQnBYbWxtcDA0dFFTVm1XS3FPT2cyY205bzkxRm1UVVY3dVBaMW9QZkZLanNlb3FfUVRibUMxZUYzZkE0c1VBZlN0OWdsMjVIa0xPQ1F3OWlBSVduNVoybEtkSXVtcVZKLTdKa3hwVEtoRThLV2hxajgxeFVnOWQ4TnBR?oc=5\" target=\"_blank\">The Best Prime Day 2026 Tech Deals We've Found So Far: Shop Amazon’s Ultimate Summer Sale Early</a>&nbsp;&nbsp;<font color=\"#6f6f6f\">PCMag</font>",
-            "suppressionReason": null,
-            "title": "The Best Prime Day 2026 Tech Deals We've Found So Far: Shop Amazon’s Ultimate Summer Sale Early - PCMag",
-            "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxQZmI1Nmw0Tl9jRzREY3otdEdNM3JmMHVfQnBYbWxtcDA0dFFTVm1XS3FPT2cyY205bzkxRm1UVVY3dVBaMW9QZkZLanNlb3FfUVRibUMxZUYzZkE0c1VBZlN0OWdsMjVIa0xPQ1F3OWlBSVduNVoybEtkSXVtcVZKLTdKa3hwVEtoRThLV2hxajgxeFVnOWQ4TnBR?oc=5"
-          },
-          "locationKey": "chennai",
-          "rankingReasons": [
-            "shopping",
-            "valid undated item with active display window",
-            "location matches configured profile",
-            "planner advisory fit"
-          ],
-          "score": 0.7115,
-          "title": "The Best Prime Day 2026 Tech Deals We've Found So Far: Shop Amazon’s Ultimate Summer Sale Early - PCMag"
-        },
         {
           "category": "movies",
           "gates": [
@@ -1019,7 +936,7 @@
               },
               "name": "futureValidity",
               "reason": "inside lifecycle horizon",
-              "score": 0.45,
+              "score": 0.4661,
               "status": "PASS"
             },
             {
@@ -1079,7 +996,7 @@
             "scoreBreakdown": {
               "actionabilityScore": 0.8500000000000001,
               "categoryPriorityScore": 0.76,
-              "lifecycleScore": 0.45,
+              "lifecycleScore": 0.46610562169312164,
               "locationScore": 0.72,
               "plannerFitScore": 0.0,
               "sourceConfidenceScore": 0.58,
@@ -1098,23 +1015,23 @@
             "inside lifecycle horizon",
             "location matches configured profile"
           ],
-          "score": 0.601,
+          "score": 0.605,
           "title": "Main Vaapas Aaunga trailer: Diljit Dosanjh, Sharvari, Vedang Raina depict unfulfilled romance amid partition story"
         }
       ],
       "rankingProfile": "upAhead-v2-lifecycle-location-category",
       "scoreBreakdown": {
         "actionabilityScore": 0.85,
-        "categoryPriorityScore": 0.72,
-        "lifecycleScore": 0.55,
+        "categoryPriorityScore": 0.76,
+        "lifecycleScore": 0.4661,
         "locationScore": 0.72,
-        "plannerFitScore": 0.175,
+        "plannerFitScore": 0.0,
         "sourceConfidenceScore": 0.58,
-        "urgencyOrExpiryScore": 0.725
+        "urgencyOrExpiryScore": 0.45
       }
     }
   },
-  "generatedAt": 1780877090702,
+  "generatedAt": 1780899500680,
   "implementedDestinations": [
     "upAhead",
     "buzz",
@@ -1133,9 +1050,12 @@
   "schemaVersion": 1,
   "summary": {
     "actionRequired": [
-      "341 invalid/expired/duplicate Up Ahead item(s) suppressed",
+      "342 invalid/expired/duplicate Up Ahead item(s) suppressed",
       "no active alert items in ranked Up Ahead set",
+      "no active offer items in ranked Up Ahead set",
+      "no ranked Up Ahead item for chennai",
       "no ranked Up Ahead item for trichy",
+      "ranked Up Ahead set is category-dominated",
       "no local Buzz item in ranked set",
       "no travel Buzz item in ranked set",
       "no active local/travel disruption item",
@@ -1143,13 +1063,13 @@
       "no ranked local/travel item for muscat",
       "no ranked local/travel item for chennai",
       "no ranked local/travel item for trichy",
-      "1 base-report-heavy Insight parent(s) demoted"
+      "Insight event/angle ranking has no critical demotion finding"
     ],
     "destinationScores": {
       "buzz": 0.0,
-      "insight": 0.371,
+      "insight": 0.39,
       "localTravel": 0.0,
-      "upAhead": 0.6171
+      "upAhead": 0.5466
     },
     "destinationStatuses": {
       "buzz": "FAIL",
@@ -1157,7 +1077,7 @@
       "localTravel": "FAIL",
       "upAhead": "WARN"
     },
-    "overallScore": 0.247,
+    "overallScore": 0.2341,
     "overallStatus": "FAIL",
     "rankingProfiles": {
       "buzz": "buzz-v2-trend-local-travel",
@@ -1166,9 +1086,13 @@
       "upAhead": "upAhead-v2-lifecycle-location-category"
     },
     "topFindings": [
+      "Early Amazon Prime Day Deals Are Live Now Ahead of the Official Sale - CNET: futureValidity failed — expired display window",
       "Early Amazon Prime Day Deals Are Live Now Ahead of the Official Sale - CNET: location failed — offline/local item lacks configured location match",
+      "Early Amazon Prime Day Deals Are Live Now Ahead of the Official Sale - CNET: offerValidity failed — offer expired",
       "‘Outsiders have it easier’: Imtiaz Ali says ‘nepo kids’ Ranbir Kapoor, Alia Bhatt face ‘added toughness’ in Bollywood: futureValidity failed — missing eventStartAt/displayUntil",
       "‘Outsiders have it easier’: Imtiaz Ali says ‘nepo kids’ Ranbir Kapoor, Alia Bhatt face ‘added toughness’ in Bollywood: location failed — offline/local item lacks configured location match",
+      "The Best Prime Day 2026 Tech Deals We've Found So Far: Shop Amazon’s Ultimate Summer Sale Early - PCMag: futureValidity failed — expired display window",
+      "The Best Prime Day 2026 Tech Deals We've Found So Far: Shop Amazon’s Ultimate Summer Sale Early - PCMag: offerValidity failed — offer expired",
       "OTT Releases This Week (6th June to 12th June) - Vi: futureValidity failed — missing eventStartAt/displayUntil",
       "OTT Releases This Week (6th June to 12th June) - Vi: location failed — offline/local item lacks configured location match",
       "Farah Khan is ‘officially highest-earning YouTuber’, says Varun Dhawan as she gifts luxury watches worth lakhs, diamonds: futureValidity failed — missing eventStartAt/displayUntil",
@@ -1181,11 +1105,7 @@
       "5 Amazon Tech Finds With Deep Discounts In June 2026 - bgr.com: futureValidity failed — expired display window",
       "5 Amazon Tech Finds With Deep Discounts In June 2026 - bgr.com: location failed — offline/local item lacks configured location match",
       "5 Amazon Tech Finds With Deep Discounts In June 2026 - bgr.com: offerValidity failed — offer expired",
-      "You don’t have to wait — here are 51+ Prime Day early deals you can already shop - NBC News: futureValidity failed — expired display window",
-      "You don’t have to wait — here are 51+ Prime Day early deals you can already shop - NBC News: location failed — offline/local item lacks configured location match",
-      "You don’t have to wait — here are 51+ Prime Day early deals you can already shop - NBC News: offerValidity failed — offer expired",
-      "OTT Releases This Week Tamil (இந்த வாரம் தமிழ் OTT வெளியீல்கள்) –6th June to 12th June - Vi: futureValidity failed — missing eventStartAt/displayUntil",
-      "OTT Releases This Week Tamil (இந்த வாரம் தமிழ் OTT வெளியீல்கள்) –6th June to 12th June - Vi: location failed — offline/local item lacks configured location match"
+      "You don’t have to wait — here are 51+ Prime Day early deals you can already shop - NBC News: futureValidity failed — expired display window"
     ]
   }
 }

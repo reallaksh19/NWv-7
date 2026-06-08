@@ -10,18 +10,18 @@
 - Base report share: `0`
 - Multi-angle parents: `0`
 - Weak parents: `6`
-- Story count: `207`
-- Source groups: `10`
-- Content hash: `e3a6bd6ace173390`
+- Story count: `273`
+- Source groups: `11`
+- Content hash: `004ca98695ad16df`
 
 ## Top parents
 
 | # | Headline | Children | Angles | Weak | Score |
 |---:|---|---:|---|---|---:|
 | 1 | NTA releases NEET-UG 2026 re-exam city intimation slip; test on June 21 | 2 | regional_followup | NO | 0.6601766666666666 |
-| 2 | Union Minister On Success Of J&K's Lavender Fields, Breaking Startup Myths | 2 | fact_update | NO | 0.6422467197849984 |
-| 3 | Trump says he would not unfreeze Iran's assets before peace deal is done | 2 | official_response | NO | 0.5759232802150018 |
-| 4 | Nuclear fears resurface, Kyiv says Russian attack ‘deliberate' | 2 | official_response | NO | 0.5075933333333333 |
+| 2 | Nuclear fears resurface, Kyiv says Russian attack ‘deliberate' | 2 | official_response | NO | 0.6395800531183315 |
+| 3 | Union Minister On Success Of J&K's Lavender Fields, Breaking Startup Myths | 2 | fact_update | NO | 0.6422467197849984 |
+| 4 | Trump says he would not unfreeze Iran's assets before peace deal is done | 2 | official_response | NO | 0.5759232802150018 |
 | 5 | NSE investor accounts cross 26 crore milestone as mobile trading and tier-2/3 cities drive participation | 1 | market_reaction | YES | 0.7226911614783158 |
 | 6 | 15 penny stocks surge up to 80% in 3 months. Do you own any? | 1 | fact_update | YES | 0.7226911614783158 |
 | 7 | Swiggy among 9 largecap stocks with up to 45% upside potential. Do you own any? | 1 | market_reaction | YES | 0.6965578281449826 |

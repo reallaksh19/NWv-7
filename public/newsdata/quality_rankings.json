@@ -60,11 +60,11 @@
       "gateResults": [
         {
           "details": {
-            "itemCount": 5
+            "itemCount": 6
           },
           "name": "insightEventPool",
           "reason": "rankable Insight event pool",
-          "score": 0.8333,
+          "score": 1.0,
           "status": "PASS"
         },
         {
@@ -79,14 +79,14 @@
         "avgAnglesPerParent": 0.0,
         "baseReportHeavyParents": 1,
         "duplicateChildrenSuppressed": 0,
-        "inputCandidateCount": 5,
-        "parentClusters": 5,
-        "strongParents": 5,
+        "inputCandidateCount": 6,
+        "parentClusters": 6,
+        "strongParents": 6,
         "suppressedCandidateCount": 0,
         "weakParentsDemoted": 0
       },
       "qualityGrade": "F",
-      "qualityScore": 0.3803,
+      "qualityScore": 0.371,
       "qualityStatus": "WARN",
       "rankedItems": [
         {
@@ -204,6 +204,116 @@
           ],
           "score": 0.5965,
           "title": "Israel strikes Beirut's southern suburbs days after ceasefire agreement"
+        },
+        {
+          "category": "insightEvent",
+          "gates": [
+            {
+              "details": {
+                "storyCount": 2
+              },
+              "name": "eventCoherence",
+              "reason": "event sketch has repeated story count",
+              "score": 0.62,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "baseReportRatio": 0.0,
+                "distinctAngles": 1
+              },
+              "name": "angleDiversity",
+              "reason": "weak child angle diversity",
+              "score": 0.25,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "sourceGroupCount": 1
+              },
+              "name": "sourceDiversity",
+              "reason": "one-source event candidate",
+              "score": 0.35,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "baseReportRatio": 0.0
+              },
+              "name": "baseReportCap",
+              "reason": "base-report ratio controlled",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "childCount": 2
+              },
+              "name": "weakTree",
+              "reason": "child tree has enough depth",
+              "score": 0.5,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "duplicateChildren",
+              "reason": "no child objects to dedup",
+              "score": 0.7,
+              "status": "PASS"
+            }
+          ],
+          "id": "sketch:fcde5c7120",
+          "item": {
+            "angleCount": 1,
+            "baseReportRatio": 0.0,
+            "childScores": [],
+            "id": "sketch:fcde5c7120",
+            "representativeId": "cefd0947496f8de7",
+            "representativeTitle": "Buy Bajaj Finance; target of Rs 9000: Emkay Global Financial",
+            "scoreBreakdown": {
+              "angleDiversityScore": 0.25,
+              "eventImportanceScore": 0.59,
+              "freshnessScore": 0.0,
+              "noveltyDeltaScore": 0.44999999999999996,
+              "sourceAuthorityScore": 0.38,
+              "sourceDiversityScore": 0.35,
+              "temporalEvolutionScore": 0.37
+            },
+            "slotCount": 1,
+            "slots": [
+              "minus24h"
+            ],
+            "sourceGroupCount": 1,
+            "sourceGroups": [
+              "moneycontrol"
+            ],
+            "storyCount": 2,
+            "storyIds": [
+              "cefd0947496f8de7",
+              "d0020e471404281a"
+            ],
+            "topAngles": [
+              {
+                "angle": "market_reaction",
+                "count": 2
+              }
+            ],
+            "topTokens": [
+              "bajaj",
+              "finance",
+              "target",
+              "emkay"
+            ],
+            "topicKey": "bajaj|finance|target"
+          },
+          "locationKey": "event",
+          "rankingReasons": [
+            "event sketch has repeated story count",
+            "weak child angle diversity",
+            "one-source event candidate"
+          ],
+          "score": 0.389,
+          "title": "Buy Bajaj Finance; target of Rs 9000: Emkay Global Financial"
         },
         {
           "category": "insightEvent",
@@ -540,7 +650,7 @@
           "gates": [
             {
               "details": {
-                "storyCount": 3
+                "storyCount": 2
               },
               "name": "eventCoherence",
               "reason": "event sketch has repeated story count",
@@ -577,11 +687,11 @@
             },
             {
               "details": {
-                "childCount": 3
+                "childCount": 2
               },
               "name": "weakTree",
               "reason": "child tree has enough depth",
-              "score": 0.75,
+              "score": 0.5,
               "status": "PASS"
             },
             {
@@ -602,7 +712,7 @@
             "representativeTitle": "top news of the day | may 20 2026 - The Hindu",
             "scoreBreakdown": {
               "angleDiversityScore": 0.25,
-              "eventImportanceScore": 0.71,
+              "eventImportanceScore": 0.59,
               "freshnessScore": 0.0,
               "noveltyDeltaScore": 0.44999999999999996,
               "sourceAuthorityScore": 0.38,
@@ -617,16 +727,15 @@
             "sourceGroups": [
               "google_news"
             ],
-            "storyCount": 3,
+            "storyCount": 2,
             "storyIds": [
               "b9f6d9b467e7ef2e",
-              "ae7f751c70f2e97a",
-              "4fae47360e015627"
+              "ae7f751c70f2e97a"
             ],
             "topAngles": [
               {
                 "angle": "base_report",
-                "count": 3
+                "count": 2
               }
             ],
             "topTokens": [
@@ -640,18 +749,18 @@
             "weak child angle diversity",
             "one-source event candidate"
           ],
-          "score": 0.1885,
+          "score": 0.1751,
           "title": "top news of the day | may 20 2026 - The Hindu"
         }
       ],
       "rankingProfile": "insight-v2-event-angle-tree",
       "scoreBreakdown": {
-        "angleDiversityScore": 0.356,
-        "eventImportanceScore": 0.614,
+        "angleDiversityScore": 0.3383,
+        "eventImportanceScore": 0.59,
         "freshnessScore": 0.0,
-        "noveltyDeltaScore": 0.47,
-        "sourceAuthorityScore": 0.428,
-        "sourceDiversityScore": 0.424,
+        "noveltyDeltaScore": 0.4667,
+        "sourceAuthorityScore": 0.42,
+        "sourceDiversityScore": 0.4117,
         "temporalEvolutionScore": 0.37
       }
     },
@@ -725,7 +834,9 @@
         "OTT Releases This Week (6th June to 12th June) - Vi: location failed — offline/local item lacks configured location match",
         "Farah Khan is ‘officially highest-earning YouTuber’, says Varun Dhawan as she gifts luxury watches worth lakhs, diamonds: futureValidity failed — missing eventStartAt/displayUntil",
         "Farah Khan is ‘officially highest-earning YouTuber’, says Varun Dhawan as she gifts luxury watches worth lakhs, diamonds: location failed — offline/local item lacks configured location match",
+        "Mother’s Day 2026 Flight Sale - IndianEagle: futureValidity failed — expired display window",
         "Mother’s Day 2026 Flight Sale - IndianEagle: location failed — offline/local item lacks configured location match",
+        "Mother’s Day 2026 Flight Sale - IndianEagle: offerValidity failed — offer expired",
         "Tamil Nadu weather today: IMD issues orange alert for 3 districts, predicts heavy rainfall in coming days - MSN: futureValidity failed — expired display window",
         "Tamil Nadu weather today: IMD issues orange alert for 3 districts, predicts heavy rainfall in coming days - MSN: alertUrgency failed — alert expired",
         "5 Amazon Tech Finds With Deep Discounts In June 2026 - bgr.com: futureValidity failed — expired display window",
@@ -735,9 +846,7 @@
         "You don’t have to wait — here are 51+ Prime Day early deals you can already shop - NBC News: location failed — offline/local item lacks configured location match",
         "You don’t have to wait — here are 51+ Prime Day early deals you can already shop - NBC News: offerValidity failed — offer expired",
         "OTT Releases This Week Tamil (இந்த வாரம் தமிழ் OTT வெளியீல்கள்) –6th June to 12th June - Vi: futureValidity failed — missing eventStartAt/displayUntil",
-        "OTT Releases This Week Tamil (இந்த வாரம் தமிழ் OTT வெளியீல்கள்) –6th June to 12th June - Vi: location failed — offline/local item lacks configured location match",
-        "Support your local artist, says Naga illustrator Canato Jimo: futureValidity failed — expired display window",
-        "Support your local artist, says Naga illustrator Canato Jimo: alertUrgency failed — alert expired"
+        "OTT Releases This Week Tamil (இந்த வாரம் தமிழ் OTT வெளியீல்கள்) –6th June to 12th June - Vi: location failed — offline/local item lacks configured location match"
       ],
       "gateResults": [
         {
@@ -834,7 +943,7 @@
             },
             {
               "details": {
-                "hoursLeft": 4.87
+                "hoursLeft": 1.95
               },
               "name": "offerValidity",
               "reason": "offer expires soon",
@@ -1005,7 +1114,7 @@
       }
     }
   },
-  "generatedAt": 1780866581885,
+  "generatedAt": 1780877090702,
   "implementedDestinations": [
     "upAhead",
     "buzz",
@@ -1038,7 +1147,7 @@
     ],
     "destinationScores": {
       "buzz": 0.0,
-      "insight": 0.3803,
+      "insight": 0.371,
       "localTravel": 0.0,
       "upAhead": 0.6171
     },
@@ -1048,7 +1157,7 @@
       "localTravel": "FAIL",
       "upAhead": "WARN"
     },
-    "overallScore": 0.2494,
+    "overallScore": 0.247,
     "overallStatus": "FAIL",
     "rankingProfiles": {
       "buzz": "buzz-v2-trend-local-travel",
@@ -1064,7 +1173,9 @@
       "OTT Releases This Week (6th June to 12th June) - Vi: location failed — offline/local item lacks configured location match",
       "Farah Khan is ‘officially highest-earning YouTuber’, says Varun Dhawan as she gifts luxury watches worth lakhs, diamonds: futureValidity failed — missing eventStartAt/displayUntil",
       "Farah Khan is ‘officially highest-earning YouTuber’, says Varun Dhawan as she gifts luxury watches worth lakhs, diamonds: location failed — offline/local item lacks configured location match",
+      "Mother’s Day 2026 Flight Sale - IndianEagle: futureValidity failed — expired display window",
       "Mother’s Day 2026 Flight Sale - IndianEagle: location failed — offline/local item lacks configured location match",
+      "Mother’s Day 2026 Flight Sale - IndianEagle: offerValidity failed — offer expired",
       "Tamil Nadu weather today: IMD issues orange alert for 3 districts, predicts heavy rainfall in coming days - MSN: futureValidity failed — expired display window",
       "Tamil Nadu weather today: IMD issues orange alert for 3 districts, predicts heavy rainfall in coming days - MSN: alertUrgency failed — alert expired",
       "5 Amazon Tech Finds With Deep Discounts In June 2026 - bgr.com: futureValidity failed — expired display window",
@@ -1074,9 +1185,7 @@
       "You don’t have to wait — here are 51+ Prime Day early deals you can already shop - NBC News: location failed — offline/local item lacks configured location match",
       "You don’t have to wait — here are 51+ Prime Day early deals you can already shop - NBC News: offerValidity failed — offer expired",
       "OTT Releases This Week Tamil (இந்த வாரம் தமிழ் OTT வெளியீல்கள்) –6th June to 12th June - Vi: futureValidity failed — missing eventStartAt/displayUntil",
-      "OTT Releases This Week Tamil (இந்த வாரம் தமிழ் OTT வெளியீல்கள்) –6th June to 12th June - Vi: location failed — offline/local item lacks configured location match",
-      "Support your local artist, says Naga illustrator Canato Jimo: futureValidity failed — expired display window",
-      "Support your local artist, says Naga illustrator Canato Jimo: alertUrgency failed — alert expired"
+      "OTT Releases This Week Tamil (இந்த வாரம் தமிழ் OTT வெளியீல்கள்) –6th June to 12th June - Vi: location failed — offline/local item lacks configured location match"
     ]
   }
 }

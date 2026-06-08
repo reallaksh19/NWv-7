@@ -1,92 +1,80 @@
 {
   "status": "PASS",
   "benchmarkVersion": "real-insight-snapshot-quality-v1",
-  "generatedAt": 1780899499689,
-  "contentHash": "7d617d1ee040978b",
+  "generatedAt": 1780918042908,
+  "contentHash": "a0badecacca31f17",
   "schemaVersion": 3,
   "collectorVersion": "insight-collector-json-v4",
-  "storyCount": 377,
-  "sourceGroupCount": 11,
-  "grade": "D",
+  "storyCount": 450,
+  "sourceGroupCount": 10,
+  "grade": "C",
   "parentCount": 10,
-  "avgAngles": 1.2,
-  "avgTemporalTiers": 1.4,
-  "avgEvolutionRoles": 1.5,
-  "baseReportShare": 0.058823529411764705,
-  "multiAngleCount": 2,
-  "weakParentCount": 3,
+  "avgAngles": 1.4,
+  "avgTemporalTiers": 1.6,
+  "avgEvolutionRoles": 1.8,
+  "baseReportShare": 0.05,
+  "multiAngleCount": 4,
+  "weakParentCount": 0,
   "runtimeQualityGate": {
-    "attempted": true,
+    "attempted": false,
     "recovered": false,
-    "reason": "relaxed-tree recovery could not produce acceptable output",
+    "reason": "first-pass acceptable",
     "before": {
-      "grade": "D",
-      "tone": "danger",
-      "title": "Weak insight signal",
-      "signalScore": 37,
+      "grade": "C",
+      "tone": "warn",
+      "title": "Thin but usable signal",
+      "signalScore": 52,
       "sourceLabel": "Live",
       "rankedCount": 10,
-      "storyCount": 350,
+      "storyCount": 426,
       "risingCount": 0,
-      "thinCount": 3,
-      "multiAngleCount": 2,
-      "lowAngleCount": 8,
+      "thinCount": 0,
+      "multiAngleCount": 4,
+      "lowAngleCount": 6,
       "strongAngleCount": 0,
-      "avgAngles": 1.2,
-      "avgChildren": 1.7,
-      "avgScore": 0.6605820310456609,
-      "sourceDiversityCoverage": 7,
+      "avgAngles": 1.4,
+      "avgChildren": 2,
+      "avgScore": 0.652972031870999,
+      "sourceDiversityCoverage": 10,
       "snapshotCoverage": 4,
-      "coverageLabel": "2/10",
+      "coverageLabel": "4/10",
       "warnings": [
-        "8 cluster(s) have fewer than two visible child angles.",
+        "6 cluster(s) have fewer than two visible child angles.",
         "No cluster currently exposes three or more visible child angles.",
-        "3 cluster(s) are below source-diversity target.",
         "6 cluster(s) have weak snapshot coverage.",
-        "3 cluster(s) are marked thin.",
-        "271 duplicate/near-duplicate item(s) were hidden or downgraded."
+        "243 duplicate/near-duplicate item(s) were hidden or downgraded."
       ]
     },
     "after": {
-      "grade": "D",
-      "tone": "danger",
-      "title": "Weak insight signal",
-      "signalScore": 37,
+      "grade": "C",
+      "tone": "warn",
+      "title": "Thin but usable signal",
+      "signalScore": 52,
       "sourceLabel": "Live",
       "rankedCount": 10,
-      "storyCount": 350,
+      "storyCount": 426,
       "risingCount": 0,
-      "thinCount": 3,
-      "multiAngleCount": 2,
-      "lowAngleCount": 8,
+      "thinCount": 0,
+      "multiAngleCount": 4,
+      "lowAngleCount": 6,
       "strongAngleCount": 0,
-      "avgAngles": 1.2,
-      "avgChildren": 1.7,
-      "avgScore": 0.6605820310456609,
-      "sourceDiversityCoverage": 7,
+      "avgAngles": 1.4,
+      "avgChildren": 2,
+      "avgScore": 0.652972031870999,
+      "sourceDiversityCoverage": 10,
       "snapshotCoverage": 4,
-      "coverageLabel": "2/10",
+      "coverageLabel": "4/10",
       "warnings": [
-        "8 cluster(s) have fewer than two visible child angles.",
+        "6 cluster(s) have fewer than two visible child angles.",
         "No cluster currently exposes three or more visible child angles.",
-        "3 cluster(s) are below source-diversity target.",
         "6 cluster(s) have weak snapshot coverage.",
-        "3 cluster(s) are marked thin.",
-        "1 duplicate/near-duplicate item(s) were hidden or downgraded."
+        "243 duplicate/near-duplicate item(s) were hidden or downgraded."
       ]
-    },
-    "recoveryConfig": {
-      "MIN_CHILD_INFO_GAIN": 0.08,
-      "WEAK_TREE_CHILD_MIN": 2,
-      "MIN_SOURCES_PER_TREE": 2,
-      "MAX_PER_SOURCE_GROUP": 3,
-      "MAX_PER_ANGLE": 4,
-      "TIER_D_EXCLUDE": false
     }
   },
   "parents": [
     {
-      "parentId": "cluster_19_a53d12a46479e5ec",
+      "parentId": "cluster_110_a53d12a46479e5ec",
       "headline": "Tamil Nadu government rolls out online registration of select documents",
       "score": 0.6823967197849983,
       "postTreeScore": 1.0624,
@@ -107,10 +95,10 @@
       "weakTree": false
     },
     {
-      "parentId": "cluster_113_1a05441d2116ca6b",
+      "parentId": "cluster_203_1a05441d2116ca6b",
       "headline": "Israel strikes Beirut's southern suburbs days after US-supported ceasefire deal",
-      "score": 0.60551,
-      "postTreeScore": 1.0055,
+      "score": 0.6814967197849984,
+      "postTreeScore": 1.0615,
       "childCount": 2,
       "angles": [
         "fact_update",
@@ -128,10 +116,51 @@
       "weakTree": false
     },
     {
-      "parentId": "cluster_237_e75b5a306bb43977",
+      "parentId": "cluster_46_81f61b0785976209",
+      "headline": "24 Indian seafarers seek urgent help after vessel reportedly attacked off Oman coast",
+      "score": 0.6614800531183316,
+      "postTreeScore": 1.0615,
+      "childCount": 2,
+      "angles": [
+        "regional_followup",
+        "official_response"
+      ],
+      "temporalTiers": [
+        "breaking"
+      ],
+      "evolutionRoles": [
+        "first_report",
+        "official_response"
+      ],
+      "baseReportShare": 0,
+      "weakTree": false
+    },
+    {
+      "parentId": "cluster_73_9c15af1fe7aa4824",
+      "headline": "Private jet crash kills two pilots in Dominican Republic",
+      "score": 0.5385933333333333,
+      "postTreeScore": 0.9386,
+      "childCount": 2,
+      "angles": [
+        "fact_update",
+        "official_response"
+      ],
+      "temporalTiers": [
+        "breaking",
+        "established"
+      ],
+      "evolutionRoles": [
+        "first_report",
+        "corroboration"
+      ],
+      "baseReportShare": 0,
+      "weakTree": false
+    },
+    {
+      "parentId": "cluster_327_e75b5a306bb43977",
       "headline": "NTA releases NEET-UG 2026 re-exam city intimation slip; test on June 21",
-      "score": 0.6601766666666666,
-      "postTreeScore": 0.7502,
+      "score": 0.736163386451665,
+      "postTreeScore": 0.8062,
       "childCount": 2,
       "angles": [
         "regional_followup"
@@ -147,10 +176,10 @@
       "weakTree": false
     },
     {
-      "parentId": "cluster_72_478fad47461e06a4",
+      "parentId": "cluster_163_478fad47461e06a4",
       "headline": "Six Injured In Stabbing At New York's Penn Station",
-      "score": 0.6519266666666668,
-      "postTreeScore": 0.7419,
+      "score": 0.7199133864516649,
+      "postTreeScore": 0.7899,
       "childCount": 2,
       "angles": [
         "fact_update"
@@ -167,7 +196,27 @@
       "weakTree": false
     },
     {
-      "parentId": "cluster_243_a925c40e3cbae7a4",
+      "parentId": "cluster_291_ec7d81654e096bc4",
+      "headline": "Trump says he would not unfreeze Iran's assets before peace deal is done",
+      "score": 0.6758967197849983,
+      "postTreeScore": 0.7459,
+      "childCount": 2,
+      "angles": [
+        "official_response"
+      ],
+      "temporalTiers": [
+        "breaking",
+        "developing"
+      ],
+      "evolutionRoles": [
+        "first_report",
+        "corroboration"
+      ],
+      "baseReportShare": 0,
+      "weakTree": false
+    },
+    {
+      "parentId": "cluster_333_a925c40e3cbae7a4",
       "headline": "Union Minister On Success Of J&K's Lavender Fields, Breaking Startup Myths",
       "score": 0.6422467197849984,
       "postTreeScore": 0.7122,
@@ -185,30 +234,29 @@
       "weakTree": false
     },
     {
-      "parentId": "cluster_201_ec7d81654e096bc4",
-      "headline": "Trump says he would not unfreeze Iran's assets before peace deal is done",
-      "score": 0.59991,
-      "postTreeScore": 0.6899,
+      "parentId": "cluster_15_0d63b384ace3c33e",
+      "headline": "Rupee slumps as elevated crude, Treasury yields support dollar",
+      "score": 0.60626,
+      "postTreeScore": 0.6963,
       "childCount": 2,
       "angles": [
-        "official_response"
+        "market_reaction"
       ],
       "temporalTiers": [
         "breaking",
-        "developing"
+        "established"
       ],
       "evolutionRoles": [
-        "first_report",
-        "corroboration"
+        "market_reaction"
       ],
       "baseReportShare": 0,
       "weakTree": false
     },
     {
-      "parentId": "cluster_258_ee89a906f7056c29",
-      "headline": "Nuclear fears resurface, Kyiv says Russian attack ‘deliberate'",
-      "score": 0.5955800531183317,
-      "postTreeScore": 0.6656,
+      "parentId": "cluster_1_1840875dba21529a",
+      "headline": "India says fire reported on oil tanker with 24 Indian sailors, all crew safe",
+      "score": 0.5852732802150018,
+      "postTreeScore": 0.6753,
       "childCount": 2,
       "angles": [
         "official_response"
@@ -217,76 +265,27 @@
         "breaking"
       ],
       "evolutionRoles": [
+        "first_report",
         "official_response"
       ],
       "baseReportShare": 0,
       "weakTree": false
-    },
-    {
-      "parentId": "cluster_24_284e0e14738171dc",
-      "headline": "TCS shares slip 2%, down 12% in 4 straight sessions. What’s triggering the decline?",
-      "score": 0.7226911614783158,
-      "postTreeScore": 0.4227,
-      "childCount": 1,
-      "angles": [
-        "market_reaction"
-      ],
-      "temporalTiers": [
-        "breaking"
-      ],
-      "evolutionRoles": [
-        "market_reaction"
-      ],
-      "baseReportShare": 0,
-      "weakTree": true
-    },
-    {
-      "parentId": "cluster_67_371606d7ee8ee432",
-      "headline": "Wipro shares crack 5%, down 8% in two sessions. What’s behind the selloff?",
-      "score": 0.7226911614783158,
-      "postTreeScore": 0.4227,
-      "childCount": 1,
-      "angles": [
-        "market_reaction"
-      ],
-      "temporalTiers": [
-        "breaking"
-      ],
-      "evolutionRoles": [
-        "fact_update"
-      ],
-      "baseReportShare": 0,
-      "weakTree": true
-    },
-    {
-      "parentId": "cluster_281_ce3dc876e0696acb",
-      "headline": "NSE investor accounts cross 26 crore milestone as mobile trading and tier-2/3 cities drive participation",
-      "score": 0.7226911614783158,
-      "postTreeScore": 0.4227,
-      "childCount": 1,
-      "angles": [
-        "market_reaction"
-      ],
-      "temporalTiers": [
-        "breaking"
-      ],
-      "evolutionRoles": [
-        "fact_update"
-      ],
-      "baseReportShare": 0,
-      "weakTree": true
     }
   ],
-  "warnings": [
-    "Real snapshot still produces low Insight grade."
-  ],
+  "warnings": [],
   "errors": [],
   "ratchetGate": {
     "status": "FAIL",
     "gateVersion": "real-insight-snapshot-ratchet-v1",
-    "grade": "D",
-    "score": 4,
+    "grade": "C",
+    "score": 76,
     "passed": [
+      {
+        "id": "grade-floor",
+        "label": "Real snapshot grade floor",
+        "actual": "C",
+        "required": "A/B/C"
+      },
       {
         "id": "parent-count",
         "label": "Parent cluster count",
@@ -294,15 +293,27 @@
         "required": ">= 3"
       },
       {
+        "id": "avg-angle-count",
+        "label": "Average visible angle count",
+        "actual": 1.4,
+        "required": ">= 1.4"
+      },
+      {
+        "id": "avg-evolution-role-count",
+        "label": "Average evolution role count",
+        "actual": 1.8,
+        "required": ">= 1.6"
+      },
+      {
         "id": "base-report-share",
         "label": "Base report share",
-        "actual": 0.059,
+        "actual": 0.05,
         "required": "<= 0.55"
       },
       {
         "id": "multi-angle-parent-count",
         "label": "Multi-angle parent count",
-        "actual": 2,
+        "actual": 4,
         "required": ">= 1"
       },
       {
@@ -320,57 +331,33 @@
       {
         "id": "weak-parent-ratio",
         "label": "Weak parent ratio",
-        "actual": 0.3,
+        "actual": 0,
         "required": "<= 0.5"
       }
     ],
     "failed": [
       {
-        "id": "grade-floor",
-        "label": "Real snapshot grade floor",
-        "actual": "D",
-        "required": "A/B/C",
-        "severity": "fail",
-        "fix": "Do not accept D/F real snapshot output. Improve child selection, parent rerank, or data intake."
-      },
-      {
-        "id": "avg-angle-count",
-        "label": "Average visible angle count",
-        "actual": 1.2,
-        "required": ">= 1.4",
-        "severity": "fail",
-        "fix": "Angle-diverse child selection is not strong enough on real data."
-      },
-      {
         "id": "avg-temporal-tier-count",
         "label": "Average temporal tier count",
-        "actual": 1.4,
+        "actual": 1.6,
         "required": ">= 1.8",
         "severity": "fail",
         "fix": "C+E output should cover multiple event-time tiers, not only source buckets."
-      },
-      {
-        "id": "avg-evolution-role-count",
-        "label": "Average evolution role count",
-        "actual": 1.5,
-        "required": ">= 1.6",
-        "severity": "fail",
-        "fix": "C+E output should include distinct event evolution roles."
       }
     ],
     "summary": {
       "parentCount": 10,
-      "avgAngles": 1.2,
-      "avgTemporalTiers": 1.4,
-      "avgEvolutionRoles": 1.5,
-      "baseReportShare": 0.059,
-      "multiAngleCount": 2,
-      "weakParentCount": 3,
-      "weakParentRatio": 0.3,
+      "avgAngles": 1.4,
+      "avgTemporalTiers": 1.6,
+      "avgEvolutionRoles": 1.8,
+      "baseReportShare": 0.05,
+      "multiAngleCount": 4,
+      "weakParentCount": 0,
+      "weakParentRatio": 0,
       "topParentAngles": 2,
       "topParentChildren": 2,
-      "storyCount": 377,
-      "sourceGroupCount": 11
+      "storyCount": 450,
+      "sourceGroupCount": 10
     }
   }
 }

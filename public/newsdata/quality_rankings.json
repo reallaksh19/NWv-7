@@ -53,14 +53,14 @@
     },
     "insight": {
       "actionableFindings": [
-        "Insight event/angle ranking has no critical demotion finding"
+        "1 base-report-heavy Insight parent(s) demoted"
       ],
       "destination": "insight",
       "diagnosticReasons": [],
       "gateResults": [
         {
           "details": {
-            "itemCount": 9
+            "itemCount": 10
           },
           "name": "insightEventPool",
           "reason": "rankable Insight event pool",
@@ -77,16 +77,16 @@
       ],
       "gateSummary": {
         "avgAnglesPerParent": 0.0,
-        "baseReportHeavyParents": 0,
+        "baseReportHeavyParents": 1,
         "duplicateChildrenSuppressed": 0,
-        "inputCandidateCount": 9,
-        "parentClusters": 9,
-        "strongParents": 9,
+        "inputCandidateCount": 10,
+        "parentClusters": 10,
+        "strongParents": 10,
         "suppressedCandidateCount": 0,
         "weakParentsDemoted": 0
       },
       "qualityGrade": "F",
-      "qualityScore": 0.4078,
+      "qualityScore": 0.4011,
       "qualityStatus": "WARN",
       "rankedItems": [
         {
@@ -546,7 +546,7 @@
           "gates": [
             {
               "details": {
-                "storyCount": 6
+                "storyCount": 7
               },
               "name": "eventCoherence",
               "reason": "event sketch has repeated story count",
@@ -583,7 +583,7 @@
             },
             {
               "details": {
-                "childCount": 6
+                "childCount": 7
               },
               "name": "weakTree",
               "reason": "child tree has enough depth",
@@ -623,10 +623,11 @@
             "sourceGroups": [
               "google_news"
             ],
-            "storyCount": 6,
+            "storyCount": 7,
             "storyIds": [
               "cc32457931e29168",
               "0dd8feb7fe02d6b2",
+              "4ee739c53b939a61",
               "69ff31860d7a65f1",
               "86e809c754b9139e",
               "c0b89c693126f623",
@@ -635,7 +636,7 @@
             "topAngles": [
               {
                 "angle": "fact_update",
-                "count": 6
+                "count": 7
               }
             ],
             "topTokens": [
@@ -644,9 +645,9 @@
               "updates",
               "indian",
               "opposition",
+              "neelkanth",
               "fire",
-              "brazil",
-              "strong"
+              "brazil"
             ],
             "topicKey": "breaking|live|updates"
           },
@@ -1104,17 +1105,124 @@
           ],
           "score": 0.2764,
           "title": "6.1 magnitude earthquake hits offshore Cuba; tremors felt in Florida"
+        },
+        {
+          "category": "insightEvent",
+          "gates": [
+            {
+              "details": {
+                "storyCount": 2
+              },
+              "name": "eventCoherence",
+              "reason": "event sketch has repeated story count",
+              "score": 0.62,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "baseReportRatio": 1.0,
+                "distinctAngles": 0
+              },
+              "name": "angleDiversity",
+              "reason": "weak child angle diversity",
+              "score": 0.25,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "sourceGroupCount": 1
+              },
+              "name": "sourceDiversity",
+              "reason": "one-source event candidate",
+              "score": 0.35,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "baseReportRatio": 1.0
+              },
+              "name": "baseReportCap",
+              "reason": "base-report dominated event candidate",
+              "score": 0.25,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "childCount": 2
+              },
+              "name": "weakTree",
+              "reason": "child tree has enough depth",
+              "score": 0.5,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "duplicateChildren",
+              "reason": "no child objects to dedup",
+              "score": 0.7,
+              "status": "PASS"
+            }
+          ],
+          "id": "sketch:bbd7147cc9",
+          "item": {
+            "angleCount": 1,
+            "baseReportRatio": 1.0,
+            "childScores": [],
+            "id": "sketch:bbd7147cc9",
+            "representativeId": "1a396f47152b128d",
+            "representativeTitle": "Top news of the day: May 26, 2026 - The Hindu",
+            "scoreBreakdown": {
+              "angleDiversityScore": 0.25,
+              "eventImportanceScore": 0.59,
+              "freshnessScore": 0.0,
+              "noveltyDeltaScore": 0.44999999999999996,
+              "sourceAuthorityScore": 0.38,
+              "sourceDiversityScore": 0.35,
+              "temporalEvolutionScore": 0.37
+            },
+            "slotCount": 1,
+            "slots": [
+              "now"
+            ],
+            "sourceGroupCount": 1,
+            "sourceGroups": [
+              "google_news"
+            ],
+            "storyCount": 2,
+            "storyIds": [
+              "1a396f47152b128d",
+              "55bc91c985238054"
+            ],
+            "topAngles": [
+              {
+                "angle": "base_report",
+                "count": 2
+              }
+            ],
+            "topTokens": [
+              "hindu"
+            ],
+            "topicKey": "hindu"
+          },
+          "locationKey": "event",
+          "rankingReasons": [
+            "event sketch has repeated story count",
+            "weak child angle diversity",
+            "one-source event candidate"
+          ],
+          "score": 0.1751,
+          "title": "Top news of the day: May 26, 2026 - The Hindu"
         }
       ],
       "rankingProfile": "insight-v2-event-angle-tree",
       "scoreBreakdown": {
-        "angleDiversityScore": 0.3089,
-        "eventImportanceScore": 0.6489,
+        "angleDiversityScore": 0.303,
+        "eventImportanceScore": 0.643,
         "freshnessScore": 0.0,
-        "noveltyDeltaScore": 0.4722,
-        "sourceAuthorityScore": 0.4867,
-        "sourceDiversityScore": 0.5144,
-        "temporalEvolutionScore": 0.4233
+        "noveltyDeltaScore": 0.47,
+        "sourceAuthorityScore": 0.476,
+        "sourceDiversityScore": 0.498,
+        "temporalEvolutionScore": 0.418
       }
     },
     "localTravel": {
@@ -1174,19 +1282,22 @@
     },
     "upAhead": {
       "actionableFindings": [
-        "7 invalid/expired/duplicate Up Ahead item(s) suppressed",
+        "9 invalid/expired/duplicate Up Ahead item(s) suppressed",
         "no active offer items in ranked Up Ahead set",
         "no ranked Up Ahead item for muscat"
       ],
       "destination": "upAhead",
       "diagnosticReasons": [
         "Walmart finally revealed its sale dates—and it starts before Prime Day - USA Today: location failed — offline/local item lacks configured location match",
+        "Prime Day Is Coming on June 23, and Walmart Has Just Announced Deals of Its Own - CNET: location failed — offline/local item lacks configured location match",
         "Amazon Raises C$14 Billion in Record Canadian Dollar Bond Sale - NDTV Profit: location failed — offline/local item lacks configured location match",
         "When is Prime Day? Amazon announces dates of 2026 sale. - Mashable: location failed — offline/local item lacks configured location match",
-        "Prime Day Is Coming on June 23, and Walmart Has Just Announced Deals of Its Own - CNET: location failed — offline/local item lacks configured location match",
         "Best Buy Tech Fest 2026: Dates and details - Mashable: location failed — offline/local item lacks configured location match",
+        "Amazon Prime Day Echo Alexa deals 2026: What to expect - Mashable: location failed — offline/local item lacks configured location match",
         "5 Older Amazon Echo Devices Still Worth Buying In 2026 - bgr.com: location failed — offline/local item lacks configured location match",
-        "Riyadh Air’s India Flights Are Coming in 2026: What Travellers Need to Know - Wego Travel Blog: location failed — offline/local item lacks configured location match"
+        "Riyadh Air’s India Flights Are Coming in 2026: What Travellers Need to Know - Wego Travel Blog: location failed — offline/local item lacks configured location match",
+        "Flipkart Big Billion Days Sale 2026 ✅ | Amazon GIF Sale Price Drop On Samsung S Series Phones. (ZKSVqmZZpB) - Fathom Journal: futureValidity failed — expired display window",
+        "Flipkart Big Billion Days Sale 2026 ✅ | Amazon GIF Sale Price Drop On Samsung S Series Phones. (ZKSVqmZZpB) - Fathom Journal: offerValidity failed — offer expired"
       ],
       "gateResults": [
         {
@@ -1219,10 +1330,10 @@
         },
         "events": 0,
         "festivals": 0,
-        "inputItemCount": 44,
+        "inputItemCount": 51,
         "locationCounts": {
-          "chennai": 15,
-          "trichy": 15
+          "chennai": 16,
+          "trichy": 14
         },
         "locationsCovered": [
           "chennai",
@@ -1232,10 +1343,10 @@
         "onlineOffers": 0,
         "plannerAdvisoryItems": 30,
         "rankedItemCount": 30,
-        "suppressedItemCount": 7
+        "suppressedItemCount": 9
       },
       "qualityGrade": "B",
-      "qualityScore": 0.8586,
+      "qualityScore": 0.8589,
       "qualityStatus": "WARN",
       "rankedItems": [
         {
@@ -1467,121 +1578,6 @@
           ],
           "score": 0.8705,
           "title": "Shut but open: closure of TASMAC liquor shops in Tamil Nadu"
-        },
-        {
-          "category": "weather_alerts",
-          "gates": [
-            {
-              "details": {
-                "dedupKey": "b3006d479ce3cf9e"
-              },
-              "name": "dedup",
-              "reason": "unique item",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "displayUntil": 1780988888000
-              },
-              "name": "futureValidity",
-              "reason": "valid undated item with active display window",
-              "score": 0.65,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "matchScore": 1.0,
-                "matchedLocation": "chennai",
-                "relevance": "primary",
-                "scope": "exactCity"
-              },
-              "name": "location",
-              "reason": "location matches configured profile",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "hasPlace": true,
-                "hasTime": true
-              },
-              "name": "actionability",
-              "reason": "item has enough action fields",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "offerValidity",
-              "reason": "not an offer",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "severe": true
-              },
-              "name": "alertUrgency",
-              "reason": "severe/active alert",
-              "score": 1.0,
-              "status": "PASS"
-            }
-          ],
-          "id": "9a7362fee6cf369f",
-          "item": {
-            "actionabilityScore": 0.7,
-            "category": "weather_alerts",
-            "city": "Chennai",
-            "contentClass": "upahead_alert",
-            "dateConfidence": "unknown",
-            "dateSource": "none",
-            "eventEndAt": null,
-            "eventStartAt": null,
-            "expiryAt": 1780988888000,
-            "id": "9a7362fee6cf369f",
-            "language": "en",
-            "lifecycle": {
-              "archiveUntil": 1781593688000,
-              "contentClass": "upahead_alert",
-              "displayUntil": 1780988888000,
-              "isActionValid": true,
-              "isVisible": true,
-              "plannerEligibleByLifecycle": true,
-              "plannerPastGraceHours": 6,
-              "retentionReason": "expiryAt",
-              "withinSevenDayHorizon": true
-            },
-            "localityScore": 1.0,
-            "normalizedCategory": "weather_alerts",
-            "plannerEligible": true,
-            "publishedAt": 1780902488000,
-            "region": "tn",
-            "scoreBreakdown": {
-              "actionabilityScore": 1.0,
-              "categoryPriorityScore": 0.98,
-              "lifecycleScore": 0.65,
-              "locationScore": 1.0,
-              "plannerFitScore": 1.0,
-              "sourceConfidenceScore": 0.58,
-              "urgencyOrExpiryScore": 1.0
-            },
-            "source": "Google News Chennai Weather",
-            "sourceGroup": "google_news",
-            "summary": "<a href=\"https://news.google.com/rss/articles/CBMi7AFBVV95cUxQSTVWekNINVFwNHR4Nk1xdDhrN1ExVU82b0Uxb1JzWF9VRnBWYTZxbXRNZTcwbnlVb2JPT3l5X09obnhtQkRyZ3l2UDVianMyZk5oZ0NtbTlvMUVMUC03TWktdzl5QjN6LWNiaXdzQmNQcExHMklYM19iQ2w3aXVKVWVBU1BwS21nVW1MTTRMeDRKSldNbzdpSDJRLWtvTkhWT291ZmZ2SDFYdnpVR0dTVDhfQmRkSFZLSmxlelpYcW1TZ3pIcjJ3X09qSzRzNjYyTHJJN3h4MlJLd284c0taR1o3bVJmdkMxU1J2bNIB8gFBVV95cUxNM2w0RVhlcWpBcnpGMVhvQUNJYm9STk9BWjFyYUtDV2pLZDlEdmNUQ2JIMlNsNDJMcGFzWmlodGt3d0wtbjZVN2oxMkMxU2V6ZTEyaHJLYkZFUHA2ZXVxaEJGQm1xSHdtN0dtMjU4MkpNeUR6OVpZTlZsMV96blJnbVMxUmRNd1cyX1JmRDliMXd0eVhhM0Fkc08xcVREanFHVWZyVTE5eE5KeXVYUHpMMVdrZmFyT3ZuME5MVTczcEhXRVJMelU5S1RTSDQzcGhSTHBId2txcVVxSDJUbjVyLXk4NnlSSWtaNUhGMWVlZFl2QQ?oc=5\" target=\"_blank\">Heavy rain alert: These cities to see severe weather today as monsoon hits</a>&nbsp;&nbsp;<font color=\"#6f6f6f\">India Today</font>",
-            "suppressionReason": null,
-            "title": "Heavy rain alert: These cities to see severe weather today as monsoon hits - India Today",
-            "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxQSTVWekNINVFwNHR4Nk1xdDhrN1ExVU82b0Uxb1JzWF9VRnBWYTZxbXRNZTcwbnlVb2JPT3l5X09obnhtQkRyZ3l2UDVianMyZk5oZ0NtbTlvMUVMUC03TWktdzl5QjN6LWNiaXdzQmNQcExHMklYM19iQ2w3aXVKVWVBU1BwS21nVW1MTTRMeDRKSldNbzdpSDJRLWtvTkhWT291ZmZ2SDFYdnpVR0dTVDhfQmRkSFZLSmxlelpYcW1TZ3pIcjJ3X09qSzRzNjYyTHJJN3h4MlJLd284c0taR1o3bVJmdkMxU1J2bNIB8gFBVV95cUxNM2w0RVhlcWpBcnpGMVhvQUNJYm9STk9BWjFyYUtDV2pLZDlEdmNUQ2JIMlNsNDJMcGFzWmlodGt3d0wtbjZVN2oxMkMxU2V6ZTEyaHJLYkZFUHA2ZXVxaEJGQm1xSHdtN0dtMjU4MkpNeUR6OVpZTlZsMV96blJnbVMxUmRNd1cyX1JmRDliMXd0eVhhM0Fkc08xcVREanFHVWZyVTE5eE5KeXVYUHpMMVdrZmFyT3ZuME5MVTczcEhXRVJMelU5S1RTSDQzcGhSTHBId2txcVVxSDJUbjVyLXk4NnlSSWtaNUhGMWVlZFl2QQ?oc=5"
-          },
-          "locationKey": "chennai",
-          "rankingReasons": [
-            "weather_alerts",
-            "valid undated item with active display window",
-            "location matches configured profile",
-            "planner advisory fit"
-          ],
-          "score": 0.8675,
-          "title": "Heavy rain alert: These cities to see severe weather today as monsoon hits - India Today"
         },
         {
           "category": "weather_alerts",
@@ -3543,6 +3539,121 @@
           "gates": [
             {
               "details": {
+                "dedupKey": "9bda794b5ded6464"
+              },
+              "name": "dedup",
+              "reason": "unique item",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "displayUntil": 1781077978000
+              },
+              "name": "futureValidity",
+              "reason": "valid undated item with active display window",
+              "score": 0.65,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "matchScore": 1.0,
+                "matchedLocation": "chennai",
+                "relevance": "primary",
+                "scope": "exactCity"
+              },
+              "name": "location",
+              "reason": "location matches configured profile",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "hasPlace": true,
+                "hasTime": true
+              },
+              "name": "actionability",
+              "reason": "item has enough action fields",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "offerValidity",
+              "reason": "not an offer",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "severe": false
+              },
+              "name": "alertUrgency",
+              "reason": "active alert",
+              "score": 0.78,
+              "status": "PASS"
+            }
+          ],
+          "id": "fc3ff0b5ed0c7858",
+          "item": {
+            "actionabilityScore": 0.7,
+            "category": "alerts",
+            "city": "Chennai",
+            "contentClass": "upahead_alert",
+            "dateConfidence": "unknown",
+            "dateSource": "none",
+            "eventEndAt": null,
+            "eventStartAt": null,
+            "expiryAt": 1781077978000,
+            "id": "fc3ff0b5ed0c7858",
+            "language": "en",
+            "lifecycle": {
+              "archiveUntil": 1781682778000,
+              "contentClass": "upahead_alert",
+              "displayUntil": 1781077978000,
+              "isActionValid": true,
+              "isVisible": true,
+              "plannerEligibleByLifecycle": true,
+              "plannerPastGraceHours": 6,
+              "retentionReason": "expiryAt",
+              "withinSevenDayHorizon": true
+            },
+            "localityScore": 1.0,
+            "normalizedCategory": "alerts",
+            "plannerEligible": true,
+            "publishedAt": 1780991578000,
+            "region": "tn",
+            "scoreBreakdown": {
+              "actionabilityScore": 1.0,
+              "categoryPriorityScore": 1.0,
+              "lifecycleScore": 0.65,
+              "locationScore": 1.0,
+              "plannerFitScore": 1.0,
+              "sourceConfidenceScore": 0.58,
+              "urgencyOrExpiryScore": 0.78
+            },
+            "source": "The Hindu Chennai",
+            "sourceGroup": "the_hindu",
+            "summary": "At around 2.30 a.m., nearly 100 residents laid siege to the EB office in Arumbakkam, demanding immediate restoration of power; similar protests were witnessed in Washermenpet, Tiruvottiyur, Ambattur, Madhavaram, Manali, Avadi, Poonamallee, Thirunindravur, Medavakkam, and Velachery",
+            "suppressionReason": null,
+            "title": "Power cuts leave Chennai residents fuming; protests erupt across city",
+            "url": "https://www.thehindu.com/news/cities/chennai/power-outages-leave-chennai-residents-fuming-protests-erupt-across-city-june-8-2026/article71079661.ece"
+          },
+          "locationKey": "chennai",
+          "rankingReasons": [
+            "alerts",
+            "valid undated item with active display window",
+            "location matches configured profile",
+            "planner advisory fit"
+          ],
+          "score": 0.8485,
+          "title": "Power cuts leave Chennai residents fuming; protests erupt across city"
+        },
+        {
+          "category": "alerts",
+          "gates": [
+            {
+              "details": {
                 "dedupKey": "1dde4f38869fc00e"
               },
               "name": "dedup",
@@ -4344,6 +4455,121 @@
           "title": "Union demands increase in wages for contract workers"
         },
         {
+          "category": "weather_alerts",
+          "gates": [
+            {
+              "details": {
+                "dedupKey": "5ffaf61cf6fd3efd"
+              },
+              "name": "dedup",
+              "reason": "unique item",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "displayUntil": 1781023951000
+              },
+              "name": "futureValidity",
+              "reason": "valid undated item with active display window",
+              "score": 0.65,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "matchScore": 1.0,
+                "matchedLocation": "chennai",
+                "relevance": "primary",
+                "scope": "exactCity"
+              },
+              "name": "location",
+              "reason": "location matches configured profile",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "hasPlace": true,
+                "hasTime": true
+              },
+              "name": "actionability",
+              "reason": "item has enough action fields",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "offerValidity",
+              "reason": "not an offer",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "severe": false
+              },
+              "name": "alertUrgency",
+              "reason": "active alert",
+              "score": 0.78,
+              "status": "PASS"
+            }
+          ],
+          "id": "367729fd125c9d9e",
+          "item": {
+            "actionabilityScore": 0.7,
+            "category": "weather_alerts",
+            "city": "Chennai",
+            "contentClass": "upahead_alert",
+            "dateConfidence": "unknown",
+            "dateSource": "none",
+            "eventEndAt": null,
+            "eventStartAt": null,
+            "expiryAt": 1781023951000,
+            "id": "367729fd125c9d9e",
+            "language": "en",
+            "lifecycle": {
+              "archiveUntil": 1781628751000,
+              "contentClass": "upahead_alert",
+              "displayUntil": 1781023951000,
+              "isActionValid": true,
+              "isVisible": true,
+              "plannerEligibleByLifecycle": true,
+              "plannerPastGraceHours": 6,
+              "retentionReason": "expiryAt",
+              "withinSevenDayHorizon": true
+            },
+            "localityScore": 1.0,
+            "normalizedCategory": "weather_alerts",
+            "plannerEligible": true,
+            "publishedAt": 1780937551000,
+            "region": "tn",
+            "scoreBreakdown": {
+              "actionabilityScore": 1.0,
+              "categoryPriorityScore": 0.98,
+              "lifecycleScore": 0.65,
+              "locationScore": 1.0,
+              "plannerFitScore": 1.0,
+              "sourceConfidenceScore": 0.58,
+              "urgencyOrExpiryScore": 0.78
+            },
+            "source": "Google News Chennai Weather",
+            "sourceGroup": "google_news",
+            "summary": "<a href=\"https://news.google.com/rss/articles/CBMiyAFBVV95cUxQOEhrSWxZQ1h2WEFodm8wZ1hEaWtySGlHUUliSHJTVmMtbnpMSTlNQlZOYlpuV2ZzWkxhT0FuLV9HZUtocjZFTEFUdnNTYW9UVFFIME5ZcTd3bUdnZTRERGxQbmYyNWRmWDZaYWlIVGdKV3pWRVdKTWllaFo0NHRzOVpSVkowNzRrd3pHUnRxclBkNkFKdnBBaDBIamVxRXB5cnNqeW1kUUEwV1lzVDRXWEt5cl9WR0N4UjZCcEJFc080Q2ZBNlNsMw?oc=5\" target=\"_blank\">Tamil Nadu weather today: IMD issues orange alert for five districts across state</a>&nbsp;&nbsp;<font color=\"#6f6f6f\">MSN</font>",
+            "suppressionReason": null,
+            "title": "Tamil Nadu weather today: IMD issues orange alert for five districts across state - MSN",
+            "url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxQOEhrSWxZQ1h2WEFodm8wZ1hEaWtySGlHUUliSHJTVmMtbnpMSTlNQlZOYlpuV2ZzWkxhT0FuLV9HZUtocjZFTEFUdnNTYW9UVFFIME5ZcTd3bUdnZTRERGxQbmYyNWRmWDZaYWlIVGdKV3pWRVdKTWllaFo0NHRzOVpSVkowNzRrd3pHUnRxclBkNkFKdnBBaDBIamVxRXB5cnNqeW1kUUEwV1lzVDRXWEt5cl9WR0N4UjZCcEJFc080Q2ZBNlNsMw?oc=5"
+          },
+          "locationKey": "chennai",
+          "rankingReasons": [
+            "weather_alerts",
+            "valid undated item with active display window",
+            "location matches configured profile",
+            "planner advisory fit"
+          ],
+          "score": 0.8455,
+          "title": "Tamil Nadu weather today: IMD issues orange alert for five districts across state - MSN"
+        },
+        {
           "category": "alerts",
           "gates": [
             {
@@ -4357,7 +4583,7 @@
             },
             {
               "details": {
-                "displayUntil": 1781027794000
+                "displayUntil": 1781070928000
               },
               "name": "futureValidity",
               "reason": "valid undated item with active display window",
@@ -4413,13 +4639,13 @@
             "dateSource": "none",
             "eventEndAt": null,
             "eventStartAt": null,
-            "expiryAt": 1781027794000,
+            "expiryAt": 1781070928000,
             "id": "0abdf871042c4b72",
             "language": "en",
             "lifecycle": {
-              "archiveUntil": 1781632594000,
+              "archiveUntil": 1781675728000,
               "contentClass": "upahead_alert",
-              "displayUntil": 1781027794000,
+              "displayUntil": 1781070928000,
               "isActionValid": true,
               "isVisible": true,
               "plannerEligibleByLifecycle": true,
@@ -4430,7 +4656,7 @@
             "localityScore": 1.0,
             "normalizedCategory": "alerts",
             "plannerEligible": true,
-            "publishedAt": 1780941394000,
+            "publishedAt": 1780984528000,
             "region": "tn",
             "scoreBreakdown": {
               "actionabilityScore": 1.0,
@@ -4572,121 +4798,6 @@
           ],
           "score": 0.7925,
           "title": "Delay in UGD work continues to trouble Khajamalai residents"
-        },
-        {
-          "category": "alerts",
-          "gates": [
-            {
-              "details": {
-                "dedupKey": "e801affef1bcae35"
-              },
-              "name": "dedup",
-              "reason": "unique item",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "displayUntil": 1781013152000
-              },
-              "name": "futureValidity",
-              "reason": "valid undated item with active display window",
-              "score": 0.65,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "matchScore": 0.72,
-                "matchedLocation": "online",
-                "relevance": "onlineOnly",
-                "scope": "online"
-              },
-              "name": "location",
-              "reason": "online/global item allowed without city match",
-              "score": 0.72,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "hasPlace": true,
-                "hasTime": true
-              },
-              "name": "actionability",
-              "reason": "item has enough action fields",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "offerValidity",
-              "reason": "not an offer",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "severe": false
-              },
-              "name": "alertUrgency",
-              "reason": "active alert",
-              "score": 0.78,
-              "status": "PASS"
-            }
-          ],
-          "id": "0fe7edbf8fcf6020",
-          "item": {
-            "actionabilityScore": 0.7,
-            "category": "alerts",
-            "city": "Trichy",
-            "contentClass": "upahead_alert",
-            "dateConfidence": "unknown",
-            "dateSource": "none",
-            "eventEndAt": null,
-            "eventStartAt": null,
-            "expiryAt": 1781013152000,
-            "id": "0fe7edbf8fcf6020",
-            "language": "en",
-            "lifecycle": {
-              "archiveUntil": 1781617952000,
-              "contentClass": "upahead_alert",
-              "displayUntil": 1781013152000,
-              "isActionValid": true,
-              "isVisible": true,
-              "plannerEligibleByLifecycle": true,
-              "plannerPastGraceHours": 6,
-              "retentionReason": "expiryAt",
-              "withinSevenDayHorizon": true
-            },
-            "localityScore": 0.9,
-            "normalizedCategory": "alerts",
-            "plannerEligible": true,
-            "publishedAt": 1780926752000,
-            "region": "tn",
-            "scoreBreakdown": {
-              "actionabilityScore": 1.0,
-              "categoryPriorityScore": 1.0,
-              "lifecycleScore": 0.65,
-              "locationScore": 0.72,
-              "plannerFitScore": 1.0,
-              "sourceConfidenceScore": 0.58,
-              "urgencyOrExpiryScore": 0.78
-            },
-            "source": "The Hindu Trichy",
-            "sourceGroup": "the_hindu",
-            "summary": "The war in West Asia has triggered a steep rise in the price of various inputs and the packaging material, squeezing the margins for the makers of the famous Manapparai murukku",
-            "suppressionReason": null,
-            "title": "Murukku makers face price rise crunch in Manapparai",
-            "url": "https://www.thehindu.com/news/cities/Tiruchirapalli/murukku-makers-face-price-rise-crunch-in-manapparai/article71076856.ece"
-          },
-          "locationKey": "trichy",
-          "rankingReasons": [
-            "alerts",
-            "valid undated item with active display window",
-            "online/global item allowed without city match",
-            "planner advisory fit"
-          ],
-          "score": 0.7925,
-          "title": "Murukku makers face price rise crunch in Manapparai"
         }
       ],
       "rankingProfile": "upAhead-v2-lifecycle-location-category",
@@ -4694,14 +4805,14 @@
         "actionabilityScore": 1.0,
         "categoryPriorityScore": 0.9987,
         "lifecycleScore": 0.65,
-        "locationScore": 0.972,
+        "locationScore": 0.9813,
         "plannerFitScore": 1.0,
         "sourceConfidenceScore": 0.58,
-        "urgencyOrExpiryScore": 0.8093
+        "urgencyOrExpiryScore": 0.802
       }
     }
   },
-  "generatedAt": 1780983907819,
+  "generatedAt": 1780999859734,
   "implementedDestinations": [
     "upAhead",
     "buzz",
@@ -4720,7 +4831,7 @@
   "schemaVersion": 1,
   "summary": {
     "actionRequired": [
-      "7 invalid/expired/duplicate Up Ahead item(s) suppressed",
+      "9 invalid/expired/duplicate Up Ahead item(s) suppressed",
       "no active offer items in ranked Up Ahead set",
       "no ranked Up Ahead item for muscat",
       "no local Buzz item in ranked set",
@@ -4730,13 +4841,13 @@
       "no ranked local/travel item for muscat",
       "no ranked local/travel item for chennai",
       "no ranked local/travel item for trichy",
-      "Insight event/angle ranking has no critical demotion finding"
+      "1 base-report-heavy Insight parent(s) demoted"
     ],
     "destinationScores": {
       "buzz": 0.0,
-      "insight": 0.4078,
+      "insight": 0.4011,
       "localTravel": 0.0,
-      "upAhead": 0.8586
+      "upAhead": 0.8589
     },
     "destinationStatuses": {
       "buzz": "FAIL",
@@ -4744,7 +4855,7 @@
       "localTravel": "FAIL",
       "upAhead": "WARN"
     },
-    "overallScore": 0.3166,
+    "overallScore": 0.315,
     "overallStatus": "FAIL",
     "rankingProfiles": {
       "buzz": "buzz-v2-trend-local-travel",
@@ -4754,12 +4865,15 @@
     },
     "topFindings": [
       "Walmart finally revealed its sale dates—and it starts before Prime Day - USA Today: location failed — offline/local item lacks configured location match",
+      "Prime Day Is Coming on June 23, and Walmart Has Just Announced Deals of Its Own - CNET: location failed — offline/local item lacks configured location match",
       "Amazon Raises C$14 Billion in Record Canadian Dollar Bond Sale - NDTV Profit: location failed — offline/local item lacks configured location match",
       "When is Prime Day? Amazon announces dates of 2026 sale. - Mashable: location failed — offline/local item lacks configured location match",
-      "Prime Day Is Coming on June 23, and Walmart Has Just Announced Deals of Its Own - CNET: location failed — offline/local item lacks configured location match",
       "Best Buy Tech Fest 2026: Dates and details - Mashable: location failed — offline/local item lacks configured location match",
+      "Amazon Prime Day Echo Alexa deals 2026: What to expect - Mashable: location failed — offline/local item lacks configured location match",
       "5 Older Amazon Echo Devices Still Worth Buying In 2026 - bgr.com: location failed — offline/local item lacks configured location match",
-      "Riyadh Air’s India Flights Are Coming in 2026: What Travellers Need to Know - Wego Travel Blog: location failed — offline/local item lacks configured location match"
+      "Riyadh Air’s India Flights Are Coming in 2026: What Travellers Need to Know - Wego Travel Blog: location failed — offline/local item lacks configured location match",
+      "Flipkart Big Billion Days Sale 2026 ✅ | Amazon GIF Sale Price Drop On Samsung S Series Phones. (ZKSVqmZZpB) - Fathom Journal: futureValidity failed — expired display window",
+      "Flipkart Big Billion Days Sale 2026 ✅ | Amazon GIF Sale Price Drop On Samsung S Series Phones. (ZKSVqmZZpB) - Fathom Journal: offerValidity failed — offer expired"
     ]
   }
 }

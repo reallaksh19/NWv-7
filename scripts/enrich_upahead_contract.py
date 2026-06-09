@@ -123,6 +123,20 @@ def lifecycle_for_item(item: dict[str, Any], now_ms: int) -> dict[str, Any]:
     }
 
 
+def should_publish_item(item: dict[str, Any], lifecycle: dict[str, Any]) -> bool:
+    """Return whether the item belongs in the published Up Ahead snapshot.
+
+    The fetcher can ingest broad RSS/search results, including date-bearing rows
+    far outside the seven-day Up Ahead horizon. Those rows are useful as source
+    evidence but must not be published into public/data/up_ahead.json, because
+    the browser and validator treat dated Up Ahead rows as actionable candidates.
+    Undated alerts/offers are still governed by displayUntil fallback windows.
+    """
+    if _ms(item.get("eventStartAt")) is not None:
+        return bool(lifecycle.get("withinSevenDayHorizon"))
+    return bool(lifecycle.get("isActionValid"))
+
+
 def enrich_items(items: list[dict[str, Any]], now_ms: int) -> list[dict[str, Any]]:
     output = []
     for item in items or []:
@@ -130,6 +144,8 @@ def enrich_items(items: list[dict[str, Any]], now_ms: int) -> list[dict[str, Any
             continue
         enriched = dict(item)
         lifecycle = lifecycle_for_item(enriched, now_ms)
+        if not should_publish_item(enriched, lifecycle):
+            continue
         enriched["contentClass"] = lifecycle["contentClass"]
         enriched["lifecycle"] = lifecycle
         output.append(enriched)
@@ -159,7 +175,8 @@ def build_lifecycle_summary(items: list[dict[str, Any]]) -> dict[str, Any]:
 
 def enrich_snapshot(snapshot: dict[str, Any], now_ms: int | None = None) -> dict[str, Any]:
     ts = int(now_ms if now_ms is not None else snapshot.get("fetchedAt") or time.time() * 1000)
-    items = enrich_items(snapshot.get("items", []), ts)
+    input_items = snapshot.get("items", [])
+    items = enrich_items(input_items, ts)
     enriched = dict(snapshot)
     enriched["schemaVersion"] = int(enriched.get("schemaVersion") or 1)
     enriched["contractVersion"] = "upahead-lifecycle-v1"
@@ -173,6 +190,7 @@ def enrich_snapshot(snapshot: dict[str, Any], now_ms: int | None = None) -> dict
     }
     enriched["items"] = items
     enriched["lifecycleSummary"] = build_lifecycle_summary(items)
+    enriched["lifecyclePrunedCount"] = max(0, len(input_items or []) - len(items))
     return enriched
 
 
@@ -190,6 +208,7 @@ def main() -> int:
         "visibleItemCount": enriched["lifecycleSummary"]["visibleItemCount"],
         "plannerEligibleByLifecycleCount": enriched["lifecycleSummary"]["plannerEligibleByLifecycleCount"],
         "horizonViolationCount": enriched["lifecycleSummary"]["horizonViolationCount"],
+        "lifecyclePrunedCount": enriched.get("lifecyclePrunedCount", 0),
     }, indent=2))
     return 0
 

@@ -74,6 +74,24 @@ def test_enriched_snapshot_has_horizon_and_lifecycle_summary():
     assert enriched["lifecycleSummary"]["itemCount"] == 2
 
 
+def test_enrichment_prunes_dated_items_outside_7_day_horizon():
+    snapshot = {
+        "schemaVersion": 1,
+        "fetchedAt": NOW,
+        "contentHash": "abc",
+        "items": [
+            item(id="inside", eventStartAt=NOW + DAY_MS, expiryAt=NOW + DAY_MS),
+            item(id="far-future", eventStartAt=NOW + 8 * DAY_MS, expiryAt=NOW + 8 * DAY_MS),
+            item(id="too-old", eventStartAt=NOW - 2 * DAY_MS, expiryAt=NOW + H_MS),
+        ],
+    }
+    enriched = enrich_snapshot(snapshot, NOW)
+    ids = {x["id"] for x in enriched["items"]}
+    assert ids == {"inside"}
+    assert enriched["lifecyclePrunedCount"] == 2
+    assert enriched["lifecycleSummary"]["horizonViolationCount"] == 0
+
+
 def test_validator_fails_missing_lifecycle_contract():
     report = gate.validate_snapshot({
         "schemaVersion": 1,
@@ -90,7 +108,11 @@ def test_validator_passes_enriched_snapshot_shape():
         "schemaVersion": 1,
         "fetchedAt": NOW,
         "contentHash": "abc",
-        "items": [item(id="event-1"), item(id="offer-1", category="shopping", eventStartAt=None, expiryAt=None)],
+        "items": [
+            item(id="event-1"),
+            item(id="offer-1", category="shopping", eventStartAt=None, expiryAt=None),
+            item(id="far-future", eventStartAt=NOW + 8 * DAY_MS, expiryAt=NOW + 8 * DAY_MS),
+        ],
     }, NOW)
     report = gate.validate_snapshot(enriched, NOW)
     assert report["status"] in ("PASS", "WARN")

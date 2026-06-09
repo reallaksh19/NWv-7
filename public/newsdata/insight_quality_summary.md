@@ -3,13 +3,13 @@
 - Status: **WARN**
 - Schema: `3`
 - Collector: `insight-collector-json-v4`
-- Content hash: `cec84919c24151b7`
-- Stories: `585`
-- Usable 36h stories: `548`
-- Source groups: `11`
+- Content hash: `ce2f0c8177ff5965`
+- Stories: `554`
+- Usable 36h stories: `542`
+- Source groups: `10`
 - Angle hint coverage: `100%`
-- Non-base angle stories: `403`
-- Event sketches: `11`
+- Non-base angle stories: `383`
+- Event sketches: `10`
 - Multi-source sketches: `4`
 
 ## Slot health
@@ -18,27 +18,27 @@
 |---|---:|---:|---:|---|
 | now | 60 | 60 | 3 | False |
 | minus4h | 39 | 39 | 2 | True |
-| minus12h | 80 | 80 | 4 | False |
-| minus24h | 55 | 55 | 3 | False |
+| minus12h | 69 | 69 | 4 | False |
+| minus24h | 39 | 39 | 2 | True |
 
 ## Warnings
 
-- feed 'ndtv' has returned zero items for 5 consecutive runs
-- feed 'hindustan_times' has returned zero items for 14 consecutive runs
-- feed 'financial_express' has returned zero items for 40 consecutive runs
-- feed 'dtnext' has returned zero items for 11 consecutive runs
-- feed 'oman_observer' has returned zero items for 11 consecutive runs (last zero at 1780949439933)
-- feed 'muscat_daily' has returned zero items for 35 consecutive runs (last zero at 1780949439933)
+- feed 'ndtv' has returned zero items for 6 consecutive runs
+- feed 'hindustan_times' has returned zero items for 15 consecutive runs
+- feed 'financial_express' has returned zero items for 41 consecutive runs
+- feed 'dtnext' has returned zero items for 12 consecutive runs
+- feed 'oman_observer' has returned zero items for 12 consecutive runs (last zero at 1780963391469)
+- feed 'muscat_daily' has returned zero items for 36 consecutive runs (last zero at 1780963391469)
 
 ## Top angles
 
-- base_report: 182
-- official_response: 138
-- fact_update: 97
-- market_reaction: 69
-- regional_followup: 40
-- investigative_detail: 35
-- reaction_public: 13
+- base_report: 171
+- official_response: 134
+- fact_update: 94
+- market_reaction: 61
+- regional_followup: 38
+- investigative_detail: 34
+- reaction_public: 11
 - expert_analysis: 4
 - background_context: 3
 - correction: 2

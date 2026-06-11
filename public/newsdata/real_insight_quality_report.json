@@ -1,18 +1,18 @@
 {
   "status": "PASS",
   "benchmarkVersion": "real-insight-snapshot-quality-v1",
-  "generatedAt": 1781176289829,
-  "contentHash": "b80728054287d5d9",
+  "generatedAt": 1781190327849,
+  "contentHash": "91f31950a0b1a49d",
   "schemaVersion": 3,
   "collectorVersion": "insight-collector-json-v4",
-  "storyCount": 613,
-  "sourceGroupCount": 11,
-  "grade": "B",
+  "storyCount": 657,
+  "sourceGroupCount": 10,
+  "grade": "C",
   "parentCount": 10,
   "avgAngles": 2,
   "avgTemporalTiers": 1.9,
-  "avgEvolutionRoles": 2,
-  "baseReportShare": 0.35,
+  "avgEvolutionRoles": 1.9,
+  "baseReportShare": 0.3,
   "multiAngleCount": 10,
   "weakParentCount": 0,
   "runtimeQualityGate": {
@@ -20,13 +20,13 @@
     "recovered": false,
     "reason": "first-pass acceptable",
     "before": {
-      "grade": "B",
-      "tone": "info",
-      "title": "Useful insight signal",
-      "signalScore": 67,
+      "grade": "C",
+      "tone": "warn",
+      "title": "Thin but usable signal",
+      "signalScore": 64,
       "sourceLabel": "Live",
       "rankedCount": 10,
-      "storyCount": 563,
+      "storyCount": 608,
       "risingCount": 0,
       "thinCount": 0,
       "multiAngleCount": 10,
@@ -34,24 +34,24 @@
       "strongAngleCount": 0,
       "avgAngles": 2,
       "avgChildren": 2,
-      "avgScore": 0.6513200265591659,
+      "avgScore": 0.6449380212473328,
       "sourceDiversityCoverage": 10,
-      "snapshotCoverage": 5,
+      "snapshotCoverage": 3,
       "coverageLabel": "10/10",
       "warnings": [
         "No cluster currently exposes three or more visible child angles.",
-        "5 cluster(s) have weak snapshot coverage.",
-        "500 duplicate/near-duplicate item(s) were hidden or downgraded."
+        "7 cluster(s) have weak snapshot coverage.",
+        "490 duplicate/near-duplicate item(s) were hidden or downgraded."
       ]
     },
     "after": {
-      "grade": "B",
-      "tone": "info",
-      "title": "Useful insight signal",
-      "signalScore": 67,
+      "grade": "C",
+      "tone": "warn",
+      "title": "Thin but usable signal",
+      "signalScore": 64,
       "sourceLabel": "Live",
       "rankedCount": 10,
-      "storyCount": 563,
+      "storyCount": 608,
       "risingCount": 0,
       "thinCount": 0,
       "multiAngleCount": 10,
@@ -59,20 +59,20 @@
       "strongAngleCount": 0,
       "avgAngles": 2,
       "avgChildren": 2,
-      "avgScore": 0.6513200265591659,
+      "avgScore": 0.6449380212473328,
       "sourceDiversityCoverage": 10,
-      "snapshotCoverage": 5,
+      "snapshotCoverage": 3,
       "coverageLabel": "10/10",
       "warnings": [
         "No cluster currently exposes three or more visible child angles.",
-        "5 cluster(s) have weak snapshot coverage.",
-        "500 duplicate/near-duplicate item(s) were hidden or downgraded."
+        "7 cluster(s) have weak snapshot coverage.",
+        "490 duplicate/near-duplicate item(s) were hidden or downgraded."
       ]
     }
   },
   "parents": [
     {
-      "parentId": "cluster_88_1c019c155a54b5fe",
+      "parentId": "cluster_152_1c019c155a54b5fe",
       "headline": "SpaceX's $1.77 Trillion IPO Could Create 4,400 Employee Millionaires",
       "score": 0.7472300531183317,
       "postTreeScore": 1.1272,
@@ -93,28 +93,7 @@
       "weakTree": false
     },
     {
-      "parentId": "cluster_106_5070730af7d04730",
-      "headline": "Iranian missiles strike near US Fifth Fleet HQ in Bahrain",
-      "score": 0.7243967197849983,
-      "postTreeScore": 1.1244,
-      "childCount": 2,
-      "angles": [
-        "market_reaction",
-        "base_report"
-      ],
-      "temporalTiers": [
-        "breaking",
-        "analysis"
-      ],
-      "evolutionRoles": [
-        "first_report",
-        "corroboration"
-      ],
-      "baseReportShare": 0.5,
-      "weakTree": false
-    },
-    {
-      "parentId": "cluster_86_58fcd4b0ad10ba4d",
+      "parentId": "cluster_150_58fcd4b0ad10ba4d",
       "headline": "Indian-Origin Financier Mahender Makhijani Used Sex Parties To Defraud US Bank Of $100 Million",
       "score": 0.692313386451665,
       "postTreeScore": 1.0723,
@@ -135,7 +114,28 @@
       "weakTree": false
     },
     {
-      "parentId": "cluster_188_6729f44285a6781f",
+      "parentId": "cluster_170_5070730af7d04730",
+      "headline": "Iranian missiles strike near US Fifth Fleet HQ in Bahrain",
+      "score": 0.6803967197849983,
+      "postTreeScore": 1.0604,
+      "childCount": 2,
+      "angles": [
+        "market_reaction",
+        "base_report"
+      ],
+      "temporalTiers": [
+        "breaking",
+        "analysis"
+      ],
+      "evolutionRoles": [
+        "first_report",
+        "corroboration"
+      ],
+      "baseReportShare": 0.5,
+      "weakTree": false
+    },
+    {
+      "parentId": "cluster_252_6729f44285a6781f",
       "headline": "Trump administration cracks down on ‘birth tourism’, revokes hundreds of visas",
       "score": 0.6803967197849983,
       "postTreeScore": 1.0604,
@@ -156,7 +156,28 @@
       "weakTree": false
     },
     {
-      "parentId": "cluster_357_c893b7d0baaad649",
+      "parentId": "cluster_171_75f2338e1cefd79e",
+      "headline": "FBI Seizes 13 Websites Used By China To Target US Workers With Sensitive Information",
+      "score": 0.6721467197849983,
+      "postTreeScore": 1.0521,
+      "childCount": 2,
+      "angles": [
+        "base_report",
+        "official_response"
+      ],
+      "temporalTiers": [
+        "developing",
+        "breaking"
+      ],
+      "evolutionRoles": [
+        "corroboration",
+        "official_response"
+      ],
+      "baseReportShare": 0.5,
+      "weakTree": false
+    },
+    {
+      "parentId": "cluster_421_c893b7d0baaad649",
       "headline": "Manslaughter charges laid over deadly Hong Kong fire",
       "score": 0.6172599999999999,
       "postTreeScore": 1.0173,
@@ -177,7 +198,7 @@
       "weakTree": false
     },
     {
-      "parentId": "cluster_425_8ebba94f87ed2758",
+      "parentId": "cluster_489_8ebba94f87ed2758",
       "headline": "Gold falls below pre-duty-hike levels as overseas prices drop",
       "score": 0.6172599999999999,
       "postTreeScore": 1.0173,
@@ -197,7 +218,7 @@
       "weakTree": false
     },
     {
-      "parentId": "cluster_282_9a7529ce2f33208b",
+      "parentId": "cluster_346_9a7529ce2f33208b",
       "headline": "Knife attack victim’s family calls for calm after anti-immigrant violence in Belfast",
       "score": 0.6265800531183316,
       "postTreeScore": 1.0066,
@@ -218,49 +239,7 @@
       "weakTree": false
     },
     {
-      "parentId": "cluster_107_75f2338e1cefd79e",
-      "headline": "FBI Seizes 13 Websites Used By China To Target US Workers With Sensitive Information",
-      "score": 0.6041599999999999,
-      "postTreeScore": 1.0042,
-      "childCount": 2,
-      "angles": [
-        "base_report",
-        "official_response"
-      ],
-      "temporalTiers": [
-        "developing",
-        "breaking"
-      ],
-      "evolutionRoles": [
-        "corroboration",
-        "official_response"
-      ],
-      "baseReportShare": 0.5,
-      "weakTree": false
-    },
-    {
-      "parentId": "cluster_303_1551accbf0dae697",
-      "headline": "Who is Haji Najibullah? Ex-Taliban commander sentenced to 42 years for killings of US soldiers",
-      "score": 0.6220800531183317,
-      "postTreeScore": 1.0021,
-      "childCount": 2,
-      "angles": [
-        "fact_update",
-        "base_report"
-      ],
-      "temporalTiers": [
-        "breaking",
-        "reaction"
-      ],
-      "evolutionRoles": [
-        "first_report",
-        "corroboration"
-      ],
-      "baseReportShare": 0.5,
-      "weakTree": false
-    },
-    {
-      "parentId": "cluster_35_5b57f1e38db2b354",
+      "parentId": "cluster_98_5b57f1e38db2b354",
       "headline": "Sonowal",
       "score": 0.5815232802150019,
       "postTreeScore": 0.9815,
@@ -279,6 +258,26 @@
       ],
       "baseReportShare": 0,
       "weakTree": false
+    },
+    {
+      "parentId": "cluster_109_0996a1931df4f44f",
+      "headline": "Bangkok shrine bombing case 2015: Thailand sentences Chinese Uyghurs to death",
+      "score": 0.5342732802150019,
+      "postTreeScore": 0.9143,
+      "childCount": 2,
+      "angles": [
+        "fact_update",
+        "official_response"
+      ],
+      "temporalTiers": [
+        "breaking",
+        "developing"
+      ],
+      "evolutionRoles": [
+        "official_response"
+      ],
+      "baseReportShare": 0,
+      "weakTree": false
     }
   ],
   "warnings": [],
@@ -286,13 +285,13 @@
   "ratchetGate": {
     "status": "PASS",
     "gateVersion": "real-insight-snapshot-ratchet-v1",
-    "grade": "B",
+    "grade": "C",
     "score": 100,
     "passed": [
       {
         "id": "grade-floor",
         "label": "Real snapshot grade floor",
-        "actual": "B",
+        "actual": "C",
         "required": "A/B/C"
       },
       {
@@ -316,13 +315,13 @@
       {
         "id": "avg-evolution-role-count",
         "label": "Average evolution role count",
-        "actual": 2,
+        "actual": 1.9,
         "required": ">= 1.6"
       },
       {
         "id": "base-report-share",
         "label": "Base report share",
-        "actual": 0.35,
+        "actual": 0.3,
         "required": "<= 0.55"
       },
       {
@@ -355,15 +354,15 @@
       "parentCount": 10,
       "avgAngles": 2,
       "avgTemporalTiers": 1.9,
-      "avgEvolutionRoles": 2,
-      "baseReportShare": 0.35,
+      "avgEvolutionRoles": 1.9,
+      "baseReportShare": 0.3,
       "multiAngleCount": 10,
       "weakParentCount": 0,
       "weakParentRatio": 0,
       "topParentAngles": 2,
       "topParentChildren": 2,
-      "storyCount": 613,
-      "sourceGroupCount": 11
+      "storyCount": 657,
+      "sourceGroupCount": 10
     }
   }
 }

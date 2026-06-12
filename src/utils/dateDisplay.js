@@ -1,3 +1,5 @@
+import { toLocalDateKey } from './dateKey.js';
+
 function toValidDate(value) {
   if (!value) return null;
   const parsed = new Date(value);
@@ -5,10 +7,10 @@ function toValidDate(value) {
 }
 
 export function toDateKey(value, fallback = 'undated') {
-  const parsed = toValidDate(value);
-  if (!parsed) return fallback;
-  parsed.setHours(0, 0, 0, 0);
-  return parsed.toISOString().slice(0, 10);
+  // Local-calendar date key: setHours(0,0,0,0) + toISOString() yielded the
+  // previous UTC day for ahead-of-UTC zones (IST), splitting keys from the
+  // local keys produced by the intelligence layer (dateAware/canonicalItemBuilder).
+  return toLocalDateKey(value) || fallback;
 }
 
 export function formatPlannerDateLabel(dateKey, fallback = 'Date TBD') {

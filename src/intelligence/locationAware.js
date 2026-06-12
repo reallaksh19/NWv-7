@@ -51,20 +51,11 @@ export function detectCanonicalLocation(text, options = {}) {
     };
   }
 
-  if (mode === 'online' && allowOnlineBypass && isOnlineFriendlyCategory(category) && !isLocalOnlyText(normalizedText)) {
-    return {
-      locationCanonical: null,
-      locationConfidence: 1,
-      matchedAlias: null,
-      matchedAliases: [],
-      decisionTrace: ['online_location_bypass', `category:${category}`],
-      acceptance: 'accept'
-    };
-  }
+  const bypassRequested = mode === 'online' && allowOnlineBypass && isOnlineFriendlyCategory(category) && !isLocalOnlyText(normalizedText);
 
   let best = null;
   const matchedAliases = [];
-  
+
   for (const city of selectedCities) {
     const payload = library[city];
     if (!payload) continue;
@@ -73,7 +64,7 @@ export function detectCanonicalLocation(text, options = {}) {
     for (const alias of aliases) {
       const score = scoreMatch(alias, city, normalizedText);
       if (!score) continue;
-      
+
       matchedAliases.push({ city, alias, score });
 
       const candidate = {
@@ -87,6 +78,27 @@ export function detectCanonicalLocation(text, options = {}) {
         best = candidate;
       }
     }
+  }
+
+  if (bypassRequested) {
+    // A neighbourhood-level alias (e.g. "T Nagar", not the city name itself)
+    // implies a physical-store offer: keep the location instead of treating it
+    // as a city-agnostic online deal. Bare city mentions still bypass, since
+    // online/airline offers routinely name cities ("fare sale from Chennai").
+    const neighbourhoodHit = matchedAliases.find(
+      m => m.alias.toLowerCase() !== m.city.toLowerCase()
+    );
+    if (!neighbourhoodHit) {
+      return {
+        locationCanonical: null,
+        locationConfidence: 1,
+        matchedAlias: null,
+        matchedAliases: [],
+        decisionTrace: ['online_location_bypass', `category:${category}`],
+        acceptance: 'accept'
+      };
+    }
+    decisionTrace.push(`online_bypass_vetoed:${neighbourhoodHit.alias}`);
   }
 
   if (!best) {

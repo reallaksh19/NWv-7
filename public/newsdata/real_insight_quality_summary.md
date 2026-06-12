@@ -5,14 +5,14 @@
 - Grade: `C`
 - Parents: `10`
 - Average angles: `1.8`
-- Average temporal tiers: `1.8`
+- Average temporal tiers: `1.9`
 - Average evolution roles: `1.9`
 - Base report share: `0.14285714285714285`
 - Multi-angle parents: `8`
 - Weak parents: `0`
-- Story count: `582`
+- Story count: `655`
 - Source groups: `10`
-- Content hash: `c5d6ce0246fd204a`
+- Content hash: `2f5e531e97c0ee46`
 
 ## Top parents
 
@@ -25,9 +25,9 @@
 | 5 | TN Assembly Speaker issues notices to 4 former AIADMK MLAs on disqualification issue | 2 | base_report, official_response | NO | 0.61441 |
 | 6 | Telangana CM condoles demise of renowned shooting coach Jaspal Rana | 2 | fact_update, regional_followup | NO | 0.6243300531183317 |
 | 7 | Bangkok shrine bombing case 2015: Thailand sentences Chinese Uyghurs to death | 2 | fact_update, official_response | NO | 0.60226 |
-| 8 | Thailand princess Bajrakitiyabha dies at 47 | 2 | base_report, fact_update | NO | 0.5445933333333333 |
+| 8 | Thailand princess Bajrakitiyabha dies at 47 | 2 | base_report, fact_update | NO | 0.5645933333333333 |
 | 9 | PM Modi at NITI Aayog meeting | 3 | official_response | NO | 0.6681487346782662 |
-| 10 | Canada introduces Bill to restrict social media access for under-16s | 2 | official_response | NO | 0.6714967197849984 |
+| 10 | spokesperson | 2 | fact_update | NO | 0.6814967197849984 |
 
 ## Real Snapshot Ratchet Gate
 
@@ -37,7 +37,7 @@
 - Score: `100`
 - Parents: `10`
 - Average angles: `1.8`
-- Average temporal tiers: `1.8`
+- Average temporal tiers: `1.9`
 - Average evolution roles: `1.9`
 - Base report share: `0.143`
 - Multi-angle parents: `8`
@@ -53,7 +53,7 @@
 - Real snapshot grade floor: `C` / `A/B/C`
 - Parent cluster count: `10` / `>= 3`
 - Average visible angle count: `1.8` / `>= 1.4`
-- Average temporal tier count: `1.8` / `>= 1.8`
+- Average temporal tier count: `1.9` / `>= 1.8`
 - Average evolution role count: `1.9` / `>= 1.6`
 - Base report share: `0.143` / `<= 0.55`
 - Multi-angle parent count: `8` / `>= 1`

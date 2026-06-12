@@ -1,3 +1,5 @@
+import { toLocalDateKey } from './dateKey.js';
+
 function pad2(value) {
     return String(value).padStart(2, '0');
 }
@@ -35,14 +37,10 @@ function toDate(value) {
 }
 
 function toDateKey(value) {
-    if (!value) return null;
-
-    if (/^\d{4}-\d{2}-\d{2}$/.test(String(value))) {
-        return String(value);
-    }
-
-    const parsed = toDate(value);
-    return parsed ? parsed.toISOString().slice(0, 10) : null;
+    // Local-calendar key so all-day ICS events land on the user's local day,
+    // consistent with planner date keys (UTC extraction shifted IST early-
+    // morning timestamps to the previous day).
+    return toLocalDateKey(value);
 }
 
 function formatDateKeyForICS(dateKey) {

@@ -1,11 +1,11 @@
 import { analyzeDateText, classifyPlannerWindow } from '../intelligence/dateAware.js';
 import { annotateItemLocation } from '../intelligence/locationAware.js';
+import { toLocalDateKey } from './dateKey.js';
 
 function formatDateKey(input) {
-  const d = new Date(input);
-  if (Number.isNaN(d.getTime())) return null;
-  d.setHours(0, 0, 0, 0);
-  return d.toISOString().slice(0, 10);
+  // Local-calendar key; the previous setHours+toISOString combo emitted the
+  // prior UTC day for IST, desyncing bridge keys from dateAware's local keys.
+  return toLocalDateKey(input);
 }
 
 export function enrichCanonicalItemForPlanner(item, options = {}) {

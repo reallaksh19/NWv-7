@@ -165,7 +165,7 @@ function generateWeeklyPlan(timeline = []) {
   for (let i = 0; i < 7; i += 1) {
     const d = new Date(today);
     d.setDate(d.getDate() + i);
-    const dateKey = d.toISOString().slice(0, 10);
+    const dateKey = normalizeDateKey(d);
     const timelineItems = (timelineByDate.get(dateKey) || [])
       .filter(item => !blacklist.has(getItemKey(item)))
       .filter(item => item.plannerEligible !== false)

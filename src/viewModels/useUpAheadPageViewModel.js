@@ -19,6 +19,7 @@ import plannerStorage, {
 import { getRuntimeCapabilities } from '../runtime/runtimeCapabilities';
 import { getUpAheadEvidence } from '../services/upAheadEvidence';
 import { getUpAheadBriefing } from '../services/upAheadBriefing';
+import { toLocalDateKey } from '../utils/dateKey';
 
 const DEFAULT_UPAHEAD_SETTINGS = {
   categories: {
@@ -42,15 +43,10 @@ const CIVIC_MAX_AGE_MS         = 365 * 24 * 60 * 60 * 1000; // 1 year (drop clea
 const CIVIC_MAX_ITEMS          = 20;                        // cap civic notices shown
 
 function normalizePlanDate(dateStr) {
-  if (!dateStr) return new Date().toISOString().slice(0, 10);
-
-  const parsed = new Date(dateStr);
-
-  if (!Number.isNaN(parsed.getTime())) {
-    return parsed.toISOString().slice(0, 10);
-  }
-
-  return dateStr;
+  // Local-calendar keys, consistent with dateAware/plannerStorage; UTC
+  // extraction shifted early-morning IST timestamps to the previous day.
+  if (!dateStr) return toLocalDateKey(new Date());
+  return toLocalDateKey(dateStr) || dateStr;
 }
 
 function asArray(value) {

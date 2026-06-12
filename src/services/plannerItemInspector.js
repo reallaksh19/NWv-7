@@ -1,19 +1,14 @@
+import { toLocalDateKey } from '../utils/dateKey.js';
+
 function asText(value, fallback = '') {
   const text = String(value || '').trim();
   return text || fallback;
 }
 
 function toDateKey(value) {
-  if (!value) return 'undated';
-
-  if (/^\d{4}-\d{2}-\d{2}$/.test(String(value))) {
-    return String(value);
-  }
-
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return 'undated';
-
-  return parsed.toISOString().slice(0, 10);
+  // Local-calendar key (UTC extraction shifted early-morning IST timestamps
+  // to the previous day, mismatching plannerStorage's local keys).
+  return toLocalDateKey(value) || 'undated';
 }
 
 function formatDisplayDate(dateKey) {

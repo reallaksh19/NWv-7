@@ -60,7 +60,7 @@
       "gateResults": [
         {
           "details": {
-            "itemCount": 7
+            "itemCount": 8
           },
           "name": "insightEventPool",
           "reason": "rankable Insight event pool",
@@ -79,14 +79,14 @@
         "avgAnglesPerParent": 0.0,
         "baseReportHeavyParents": 1,
         "duplicateChildrenSuppressed": 0,
-        "inputCandidateCount": 7,
-        "parentClusters": 7,
-        "strongParents": 7,
+        "inputCandidateCount": 8,
+        "parentClusters": 8,
+        "strongParents": 8,
         "suppressedCandidateCount": 0,
         "weakParentsDemoted": 0
       },
       "qualityGrade": "F",
-      "qualityScore": 0.4312,
+      "qualityScore": 0.4243,
       "qualityStatus": "WARN",
       "rankedItems": [
         {
@@ -437,6 +437,228 @@
           "gates": [
             {
               "details": {
+                "storyCount": 3
+              },
+              "name": "eventCoherence",
+              "reason": "event sketch has repeated story count",
+              "score": 0.62,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "baseReportRatio": 0.0,
+                "distinctAngles": 1
+              },
+              "name": "angleDiversity",
+              "reason": "weak child angle diversity",
+              "score": 0.25,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "sourceGroupCount": 1
+              },
+              "name": "sourceDiversity",
+              "reason": "one-source event candidate",
+              "score": 0.35,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "baseReportRatio": 0.0
+              },
+              "name": "baseReportCap",
+              "reason": "base-report ratio controlled",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "childCount": 3
+              },
+              "name": "weakTree",
+              "reason": "child tree has enough depth",
+              "score": 0.75,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "duplicateChildren",
+              "reason": "no child objects to dedup",
+              "score": 0.7,
+              "status": "PASS"
+            }
+          ],
+          "id": "sketch:13f6dbcced",
+          "item": {
+            "angleCount": 1,
+            "baseReportRatio": 0.0,
+            "childScores": [],
+            "id": "sketch:13f6dbcced",
+            "representativeId": "27e096848044b602",
+            "representativeTitle": "Breaking news: Lt General Dhiraj Seth appointed new Chief of Indian Army - India.Com",
+            "scoreBreakdown": {
+              "angleDiversityScore": 0.25,
+              "eventImportanceScore": 0.71,
+              "freshnessScore": 0.0,
+              "noveltyDeltaScore": 0.44999999999999996,
+              "sourceAuthorityScore": 0.38,
+              "sourceDiversityScore": 0.35,
+              "temporalEvolutionScore": 0.37
+            },
+            "slotCount": 1,
+            "slots": [
+              "now"
+            ],
+            "sourceGroupCount": 1,
+            "sourceGroups": [
+              "google_news"
+            ],
+            "storyCount": 3,
+            "storyIds": [
+              "27e096848044b602",
+              "bd03ae9e7d5f7aea",
+              "be92fcad321cac4c"
+            ],
+            "topAngles": [
+              {
+                "angle": "fact_update",
+                "count": 3
+              }
+            ],
+            "topTokens": [
+              "breaking",
+              "general",
+              "dhiraj",
+              "seth"
+            ],
+            "topicKey": "breaking|general|dhiraj"
+          },
+          "locationKey": "event",
+          "rankingReasons": [
+            "event sketch has repeated story count",
+            "weak child angle diversity",
+            "one-source event candidate"
+          ],
+          "score": 0.419,
+          "title": "Breaking news: Lt General Dhiraj Seth appointed new Chief of Indian Army - India.Com"
+        },
+        {
+          "category": "insightEvent",
+          "gates": [
+            {
+              "details": {
+                "storyCount": 2
+              },
+              "name": "eventCoherence",
+              "reason": "event sketch has repeated story count",
+              "score": 0.62,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "baseReportRatio": 0.0,
+                "distinctAngles": 1
+              },
+              "name": "angleDiversity",
+              "reason": "weak child angle diversity",
+              "score": 0.25,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "sourceGroupCount": 1
+              },
+              "name": "sourceDiversity",
+              "reason": "one-source event candidate",
+              "score": 0.35,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "baseReportRatio": 0.0
+              },
+              "name": "baseReportCap",
+              "reason": "base-report ratio controlled",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "childCount": 2
+              },
+              "name": "weakTree",
+              "reason": "child tree has enough depth",
+              "score": 0.5,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "duplicateChildren",
+              "reason": "no child objects to dedup",
+              "score": 0.7,
+              "status": "PASS"
+            }
+          ],
+          "id": "sketch:d41f461157",
+          "item": {
+            "angleCount": 1,
+            "baseReportRatio": 0.0,
+            "childScores": [],
+            "id": "sketch:d41f461157",
+            "representativeId": "85934870c68c091a",
+            "representativeTitle": "Operation Sindoor demonstrated IAF capability to destroy enemy infrastructure with accuracy and precision: Defence Minister",
+            "scoreBreakdown": {
+              "angleDiversityScore": 0.25,
+              "eventImportanceScore": 0.59,
+              "freshnessScore": 0.0,
+              "noveltyDeltaScore": 0.44999999999999996,
+              "sourceAuthorityScore": 0.38,
+              "sourceDiversityScore": 0.35,
+              "temporalEvolutionScore": 0.49
+            },
+            "slotCount": 2,
+            "slots": [
+              "minus4h",
+              "now"
+            ],
+            "sourceGroupCount": 1,
+            "sourceGroups": [
+              "the_hindu"
+            ],
+            "storyCount": 2,
+            "storyIds": [
+              "85934870c68c091a",
+              "6725064bc0c7501b"
+            ],
+            "topAngles": [
+              {
+                "angle": "official_response",
+                "count": 2
+              }
+            ],
+            "topTokens": [
+              "defence",
+              "women",
+              "operation",
+              "sindoor"
+            ],
+            "topicKey": "defence|women|operation"
+          },
+          "locationKey": "event",
+          "rankingReasons": [
+            "event sketch has repeated story count",
+            "weak child angle diversity",
+            "one-source event candidate"
+          ],
+          "score": 0.401,
+          "title": "Operation Sindoor demonstrated IAF capability to destroy enemy infrastructure with accuracy and precision: Defence Minister"
+        },
+        {
+          "category": "insightEvent",
+          "gates": [
+            {
+              "details": {
                 "storyCount": 2
               },
               "name": "eventCoherence",
@@ -542,116 +764,6 @@
           ],
           "score": 0.389,
           "title": "Breaking News: India Lodges Strong Protest With U.S. Over Jalveer Strike | India-U.S. Relations - News18"
-        },
-        {
-          "category": "insightEvent",
-          "gates": [
-            {
-              "details": {
-                "storyCount": 2
-              },
-              "name": "eventCoherence",
-              "reason": "event sketch has repeated story count",
-              "score": 0.62,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "baseReportRatio": 0.0,
-                "distinctAngles": 1
-              },
-              "name": "angleDiversity",
-              "reason": "weak child angle diversity",
-              "score": 0.25,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "sourceGroupCount": 1
-              },
-              "name": "sourceDiversity",
-              "reason": "one-source event candidate",
-              "score": 0.35,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "baseReportRatio": 0.0
-              },
-              "name": "baseReportCap",
-              "reason": "base-report ratio controlled",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "childCount": 2
-              },
-              "name": "weakTree",
-              "reason": "child tree has enough depth",
-              "score": 0.5,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "duplicateChildren",
-              "reason": "no child objects to dedup",
-              "score": 0.7,
-              "status": "PASS"
-            }
-          ],
-          "id": "sketch:13f6dbcced",
-          "item": {
-            "angleCount": 1,
-            "baseReportRatio": 0.0,
-            "childScores": [],
-            "id": "sketch:13f6dbcced",
-            "representativeId": "27e096848044b602",
-            "representativeTitle": "Breaking news: Lt General Dhiraj Seth appointed new Chief of Indian Army - India.Com",
-            "scoreBreakdown": {
-              "angleDiversityScore": 0.25,
-              "eventImportanceScore": 0.59,
-              "freshnessScore": 0.0,
-              "noveltyDeltaScore": 0.44999999999999996,
-              "sourceAuthorityScore": 0.38,
-              "sourceDiversityScore": 0.35,
-              "temporalEvolutionScore": 0.37
-            },
-            "slotCount": 1,
-            "slots": [
-              "now"
-            ],
-            "sourceGroupCount": 1,
-            "sourceGroups": [
-              "google_news"
-            ],
-            "storyCount": 2,
-            "storyIds": [
-              "27e096848044b602",
-              "be92fcad321cac4c"
-            ],
-            "topAngles": [
-              {
-                "angle": "fact_update",
-                "count": 2
-              }
-            ],
-            "topTokens": [
-              "breaking",
-              "general",
-              "dhiraj",
-              "seth"
-            ],
-            "topicKey": "breaking|general|dhiraj"
-          },
-          "locationKey": "event",
-          "rankingReasons": [
-            "event sketch has repeated story count",
-            "weak child angle diversity",
-            "one-source event candidate"
-          ],
-          "score": 0.389,
-          "title": "Breaking news: Lt General Dhiraj Seth appointed new Chief of Indian Army - India.Com"
         },
         {
           "category": "insightEvent",
@@ -882,13 +994,13 @@
       ],
       "rankingProfile": "insight-v2-event-angle-tree",
       "scoreBreakdown": {
-        "angleDiversityScore": 0.4014,
-        "eventImportanceScore": 0.6071,
+        "angleDiversityScore": 0.3825,
+        "eventImportanceScore": 0.62,
         "freshnessScore": 0.0,
-        "noveltyDeltaScore": 0.4929,
-        "sourceAuthorityScore": 0.5171,
-        "sourceDiversityScore": 0.5614,
-        "temporalEvolutionScore": 0.4386
+        "noveltyDeltaScore": 0.4875,
+        "sourceAuthorityScore": 0.5,
+        "sourceDiversityScore": 0.535,
+        "temporalEvolutionScore": 0.445
       }
     },
     "localTravel": {
@@ -948,7 +1060,7 @@
     },
     "upAhead": {
       "actionableFindings": [
-        "12 invalid/expired/duplicate Up Ahead item(s) suppressed",
+        "14 invalid/expired/duplicate Up Ahead item(s) suppressed",
         "no active offer items in ranked Up Ahead set",
         "no ranked Up Ahead item for muscat"
       ],
@@ -959,17 +1071,20 @@
         "Shop Amazon’s Ultimate Summer Sale Early With the Best Prime Day 2026 Tech Deals We've Found So Far - PCMag: location failed — offline/local item lacks configured location match",
         "Amazon Prime Day 2026: When You Can Start Shopping, Early Deals and More - TODAY.com: location failed — offline/local item lacks configured location match",
         "You don’t have to wait — here are 51+ Prime Day early deals you can already shop - NBC News: location failed — offline/local item lacks configured location match",
-        "Blackout at Papanasam railway station leaves passengers exasperated: futureValidity failed — expired display window",
-        "Blackout at Papanasam railway station leaves passengers exasperated: alertUrgency failed — alert expired",
-        "Fisheries varsity extends UG application deadline: futureValidity failed — expired display window",
-        "Fisheries varsity extends UG application deadline: alertUrgency failed — alert expired",
-        "What Are the Best Early Prime Day Deals? We Took a Deep Dive to Find 55+ of Them - CNET: location failed — offline/local item lacks configured location match",
+        "Tiruchi Railway Division bags eight efficiency shields: futureValidity failed — expired display window",
+        "Tiruchi Railway Division bags eight efficiency shields: alertUrgency failed — alert expired",
+        "Tiruchi Railway Junction to get six additional escalators by month-end: futureValidity failed — expired display window",
+        "Tiruchi Railway Junction to get six additional escalators by month-end: alertUrgency failed — alert expired",
+        "Minister directs officials to check the accident rate in Ariyalur: futureValidity failed — expired display window",
+        "Minister directs officials to check the accident rate in Ariyalur: alertUrgency failed — alert expired",
+        "Weaving a livelihood for the visually challenged: futureValidity failed — expired display window",
+        "Weaving a livelihood for the visually challenged: alertUrgency failed — alert expired",
         "The Best Early 2026 Prime Day Deals ELLE Editors Are Already Buying - ELLE: location failed — offline/local item lacks configured location match",
         "Amazon Prime Day 2026 is June 23–26. Get a $200 Amazon gift card and extra rewards with the right credit card - CNBC: location failed — offline/local item lacks configured location match",
+        "Everything We’re Shopping In Lululemon’s “We Made Too Much” Section This Week - Forbes: location failed — offline/local item lacks configured location match",
         "Here’s the Best World Cup Merch on Amazon, According to Our Editors - Men's Health: location failed — offline/local item lacks configured location match",
-        "Amazon's Record C$14 Billion Bond Sale Pressures Canadian Credit Market - TradingView: futureValidity failed — expired display window",
-        "Amazon's Record C$14 Billion Bond Sale Pressures Canadian Credit Market - TradingView: location failed — offline/local item lacks configured location match",
-        "Amazon's Record C$14 Billion Bond Sale Pressures Canadian Credit Market - TradingView: offerValidity failed — offer expired"
+        "Best Buy has better gaming deals right now than Amazon's early Prime Day sale - ZDNET: futureValidity failed — expired display window",
+        "Best Buy has better gaming deals right now than Amazon's early Prime Day sale - ZDNET: offerValidity failed — offer expired"
       ],
       "gateResults": [
         {
@@ -1002,7 +1117,7 @@
         },
         "events": 0,
         "festivals": 0,
-        "inputItemCount": 51,
+        "inputItemCount": 52,
         "locationCounts": {
           "chennai": 21,
           "trichy": 9
@@ -1015,10 +1130,10 @@
         "onlineOffers": 0,
         "plannerAdvisoryItems": 30,
         "rankedItemCount": 30,
-        "suppressedItemCount": 12
+        "suppressedItemCount": 14
       },
       "qualityGrade": "B",
-      "qualityScore": 0.8574,
+      "qualityScore": 0.8539,
       "qualityStatus": "WARN",
       "rankedItems": [
         {
@@ -1716,6 +1831,121 @@
           "gates": [
             {
               "details": {
+                "dedupKey": "29a2a6d4b275a8ac"
+              },
+              "name": "dedup",
+              "reason": "unique item",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "displayUntil": 1781436243000
+              },
+              "name": "futureValidity",
+              "reason": "valid undated item with active display window",
+              "score": 0.65,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "matchScore": 1.0,
+                "matchedLocation": "trichy",
+                "relevance": "primary",
+                "scope": "exactCity"
+              },
+              "name": "location",
+              "reason": "location matches configured profile",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "hasPlace": true,
+                "hasTime": true
+              },
+              "name": "actionability",
+              "reason": "item has enough action fields",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "offerValidity",
+              "reason": "not an offer",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "severe": false
+              },
+              "name": "alertUrgency",
+              "reason": "active alert",
+              "score": 0.78,
+              "status": "PASS"
+            }
+          ],
+          "id": "b6848319cd8da4fb",
+          "item": {
+            "actionabilityScore": 0.7,
+            "category": "alerts",
+            "city": "Trichy",
+            "contentClass": "upahead_alert",
+            "dateConfidence": "unknown",
+            "dateSource": "none",
+            "eventEndAt": null,
+            "eventStartAt": null,
+            "expiryAt": 1781436243000,
+            "id": "b6848319cd8da4fb",
+            "language": "en",
+            "lifecycle": {
+              "archiveUntil": 1782041043000,
+              "contentClass": "upahead_alert",
+              "displayUntil": 1781436243000,
+              "isActionValid": true,
+              "isVisible": true,
+              "plannerEligibleByLifecycle": true,
+              "plannerPastGraceHours": 6,
+              "retentionReason": "expiryAt",
+              "withinSevenDayHorizon": true
+            },
+            "localityScore": 0.9,
+            "normalizedCategory": "alerts",
+            "plannerEligible": true,
+            "publishedAt": 1781349843000,
+            "region": "tn",
+            "scoreBreakdown": {
+              "actionabilityScore": 1.0,
+              "categoryPriorityScore": 1.0,
+              "lifecycleScore": 0.65,
+              "locationScore": 1.0,
+              "plannerFitScore": 1.0,
+              "sourceConfidenceScore": 0.58,
+              "urgencyOrExpiryScore": 0.78
+            },
+            "source": "The Hindu Trichy",
+            "sourceGroup": "the_hindu",
+            "summary": "",
+            "suppressionReason": null,
+            "title": "EDII-TN holds meeting of institutional heads in Tiruchi",
+            "url": "https://www.thehindu.com/news/cities/Tiruchirapalli/management-school-holds-meeting-of-institutional-heads-in-tiruchi/article71096915.ece"
+          },
+          "locationKey": "trichy",
+          "rankingReasons": [
+            "alerts",
+            "valid undated item with active display window",
+            "location matches configured profile",
+            "planner advisory fit"
+          ],
+          "score": 0.8485,
+          "title": "EDII-TN holds meeting of institutional heads in Tiruchi"
+        },
+        {
+          "category": "alerts",
+          "gates": [
+            {
+              "details": {
                 "dedupKey": "e478da78531f1748"
               },
               "name": "dedup",
@@ -1825,121 +2055,6 @@
           ],
           "score": 0.8485,
           "title": "Former ambassadors Vijay Gokhale and T.S. Tirumurti to discuss China-U.S. relations"
-        },
-        {
-          "category": "alerts",
-          "gates": [
-            {
-              "details": {
-                "dedupKey": "9f69a0844b73cad5"
-              },
-              "name": "dedup",
-              "reason": "unique item",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "displayUntil": 1781355332000
-              },
-              "name": "futureValidity",
-              "reason": "valid undated item with active display window",
-              "score": 0.65,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "matchScore": 1.0,
-                "matchedLocation": "trichy",
-                "relevance": "primary",
-                "scope": "exactCity"
-              },
-              "name": "location",
-              "reason": "location matches configured profile",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "hasPlace": true,
-                "hasTime": true
-              },
-              "name": "actionability",
-              "reason": "item has enough action fields",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "offerValidity",
-              "reason": "not an offer",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "severe": false
-              },
-              "name": "alertUrgency",
-              "reason": "active alert",
-              "score": 0.78,
-              "status": "PASS"
-            }
-          ],
-          "id": "17b159a7459417d8",
-          "item": {
-            "actionabilityScore": 0.7,
-            "category": "alerts",
-            "city": "Trichy",
-            "contentClass": "upahead_alert",
-            "dateConfidence": "unknown",
-            "dateSource": "none",
-            "eventEndAt": null,
-            "eventStartAt": null,
-            "expiryAt": 1781355332000,
-            "id": "17b159a7459417d8",
-            "language": "en",
-            "lifecycle": {
-              "archiveUntil": 1781960132000,
-              "contentClass": "upahead_alert",
-              "displayUntil": 1781355332000,
-              "isActionValid": true,
-              "isVisible": true,
-              "plannerEligibleByLifecycle": true,
-              "plannerPastGraceHours": 6,
-              "retentionReason": "expiryAt",
-              "withinSevenDayHorizon": true
-            },
-            "localityScore": 0.9,
-            "normalizedCategory": "alerts",
-            "plannerEligible": true,
-            "publishedAt": 1781268932000,
-            "region": "tn",
-            "scoreBreakdown": {
-              "actionabilityScore": 1.0,
-              "categoryPriorityScore": 1.0,
-              "lifecycleScore": 0.65,
-              "locationScore": 1.0,
-              "plannerFitScore": 1.0,
-              "sourceConfidenceScore": 0.58,
-              "urgencyOrExpiryScore": 0.78
-            },
-            "source": "The Hindu Trichy",
-            "sourceGroup": "the_hindu",
-            "summary": "",
-            "suppressionReason": null,
-            "title": "Govt. college guest lecturers fear job loss as admissions dwindle",
-            "url": "https://www.thehindu.com/news/cities/Tiruchirapalli/govt-college-guest-lecturers-fear-job-loss-as-admissions-dwindle/article71093711.ece"
-          },
-          "locationKey": "trichy",
-          "rankingReasons": [
-            "alerts",
-            "valid undated item with active display window",
-            "location matches configured profile",
-            "planner advisory fit"
-          ],
-          "score": 0.8485,
-          "title": "Govt. college guest lecturers fear job loss as admissions dwindle"
         },
         {
           "category": "alerts",
@@ -2521,121 +2636,6 @@
           "gates": [
             {
               "details": {
-                "dedupKey": "cbfe98d2958c0dad"
-              },
-              "name": "dedup",
-              "reason": "unique item",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "displayUntil": 1781435408000
-              },
-              "name": "futureValidity",
-              "reason": "valid undated item with active display window",
-              "score": 0.65,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "matchScore": 1.0,
-                "matchedLocation": "trichy",
-                "relevance": "primary",
-                "scope": "exactCity"
-              },
-              "name": "location",
-              "reason": "location matches configured profile",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "hasPlace": true,
-                "hasTime": true
-              },
-              "name": "actionability",
-              "reason": "item has enough action fields",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "offerValidity",
-              "reason": "not an offer",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "severe": false
-              },
-              "name": "alertUrgency",
-              "reason": "active alert",
-              "score": 0.78,
-              "status": "PASS"
-            }
-          ],
-          "id": "b6848319cd8da4fb",
-          "item": {
-            "actionabilityScore": 0.7,
-            "category": "alerts",
-            "city": "Trichy",
-            "contentClass": "upahead_alert",
-            "dateConfidence": "unknown",
-            "dateSource": "none",
-            "eventEndAt": null,
-            "eventStartAt": null,
-            "expiryAt": 1781435408000,
-            "id": "b6848319cd8da4fb",
-            "language": "en",
-            "lifecycle": {
-              "archiveUntil": 1782040208000,
-              "contentClass": "upahead_alert",
-              "displayUntil": 1781435408000,
-              "isActionValid": true,
-              "isVisible": true,
-              "plannerEligibleByLifecycle": true,
-              "plannerPastGraceHours": 6,
-              "retentionReason": "expiryAt",
-              "withinSevenDayHorizon": true
-            },
-            "localityScore": 0.9,
-            "normalizedCategory": "alerts",
-            "plannerEligible": true,
-            "publishedAt": 1781349008000,
-            "region": "tn",
-            "scoreBreakdown": {
-              "actionabilityScore": 1.0,
-              "categoryPriorityScore": 1.0,
-              "lifecycleScore": 0.65,
-              "locationScore": 1.0,
-              "plannerFitScore": 1.0,
-              "sourceConfidenceScore": 0.58,
-              "urgencyOrExpiryScore": 0.78
-            },
-            "source": "The Hindu Trichy",
-            "sourceGroup": "the_hindu",
-            "summary": "",
-            "suppressionReason": null,
-            "title": "Management school holds meeting of institutional heads in Tiruchi",
-            "url": "https://www.thehindu.com/news/cities/Tiruchirapalli/management-school-holds-meeting-of-institutional-heads-in-tiruchi/article71096915.ece"
-          },
-          "locationKey": "trichy",
-          "rankingReasons": [
-            "alerts",
-            "valid undated item with active display window",
-            "location matches configured profile",
-            "planner advisory fit"
-          ],
-          "score": 0.8485,
-          "title": "Management school holds meeting of institutional heads in Tiruchi"
-        },
-        {
-          "category": "alerts",
-          "gates": [
-            {
-              "details": {
                 "dedupKey": "7feec43d87888ad2"
               },
               "name": "dedup",
@@ -2751,121 +2751,6 @@
           "gates": [
             {
               "details": {
-                "dedupKey": "6fc24765c5fda12e"
-              },
-              "name": "dedup",
-              "reason": "unique item",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "displayUntil": 1781357110000
-              },
-              "name": "futureValidity",
-              "reason": "valid undated item with active display window",
-              "score": 0.65,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "matchScore": 1.0,
-                "matchedLocation": "trichy",
-                "relevance": "primary",
-                "scope": "exactCity"
-              },
-              "name": "location",
-              "reason": "location matches configured profile",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "hasPlace": true,
-                "hasTime": true
-              },
-              "name": "actionability",
-              "reason": "item has enough action fields",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "offerValidity",
-              "reason": "not an offer",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "severe": false
-              },
-              "name": "alertUrgency",
-              "reason": "active alert",
-              "score": 0.78,
-              "status": "PASS"
-            }
-          ],
-          "id": "99716c332711c388",
-          "item": {
-            "actionabilityScore": 0.7,
-            "category": "alerts",
-            "city": "Trichy",
-            "contentClass": "upahead_alert",
-            "dateConfidence": "unknown",
-            "dateSource": "none",
-            "eventEndAt": null,
-            "eventStartAt": null,
-            "expiryAt": 1781357110000,
-            "id": "99716c332711c388",
-            "language": "en",
-            "lifecycle": {
-              "archiveUntil": 1781961910000,
-              "contentClass": "upahead_alert",
-              "displayUntil": 1781357110000,
-              "isActionValid": true,
-              "isVisible": true,
-              "plannerEligibleByLifecycle": true,
-              "plannerPastGraceHours": 6,
-              "retentionReason": "expiryAt",
-              "withinSevenDayHorizon": true
-            },
-            "localityScore": 0.9,
-            "normalizedCategory": "alerts",
-            "plannerEligible": true,
-            "publishedAt": 1781270710000,
-            "region": "tn",
-            "scoreBreakdown": {
-              "actionabilityScore": 1.0,
-              "categoryPriorityScore": 1.0,
-              "lifecycleScore": 0.65,
-              "locationScore": 1.0,
-              "plannerFitScore": 1.0,
-              "sourceConfidenceScore": 0.58,
-              "urgencyOrExpiryScore": 0.78
-            },
-            "source": "The Hindu Trichy",
-            "sourceGroup": "the_hindu",
-            "summary": "",
-            "suppressionReason": null,
-            "title": "Minister directs officials to check the accident rate in Ariyalur",
-            "url": "https://www.thehindu.com/news/cities/Tiruchirapalli/minister-directs-officials-to-check-the-accident-rate-in-ariyalur/article71093753.ece"
-          },
-          "locationKey": "trichy",
-          "rankingReasons": [
-            "alerts",
-            "valid undated item with active display window",
-            "location matches configured profile",
-            "planner advisory fit"
-          ],
-          "score": 0.8485,
-          "title": "Minister directs officials to check the accident rate in Ariyalur"
-        },
-        {
-          "category": "alerts",
-          "gates": [
-            {
-              "details": {
                 "dedupKey": "40cb9c6186b79d8d"
               },
               "name": "dedup",
@@ -2975,6 +2860,121 @@
           ],
           "score": 0.8485,
           "title": "NGT orders urgent action to curb sewage pollution in Korattur, Madambakkam lakes"
+        },
+        {
+          "category": "alerts",
+          "gates": [
+            {
+              "details": {
+                "dedupKey": "e207f46559c263e0"
+              },
+              "name": "dedup",
+              "reason": "unique item",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "displayUntil": 1781441899000
+              },
+              "name": "futureValidity",
+              "reason": "valid undated item with active display window",
+              "score": 0.65,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "matchScore": 1.0,
+                "matchedLocation": "trichy",
+                "relevance": "primary",
+                "scope": "exactCity"
+              },
+              "name": "location",
+              "reason": "location matches configured profile",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "hasPlace": true,
+                "hasTime": true
+              },
+              "name": "actionability",
+              "reason": "item has enough action fields",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "offerValidity",
+              "reason": "not an offer",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "severe": false
+              },
+              "name": "alertUrgency",
+              "reason": "active alert",
+              "score": 0.78,
+              "status": "PASS"
+            }
+          ],
+          "id": "1552fd28521bdba9",
+          "item": {
+            "actionabilityScore": 0.7,
+            "category": "alerts",
+            "city": "Trichy",
+            "contentClass": "upahead_alert",
+            "dateConfidence": "unknown",
+            "dateSource": "none",
+            "eventEndAt": null,
+            "eventStartAt": null,
+            "expiryAt": 1781441899000,
+            "id": "1552fd28521bdba9",
+            "language": "en",
+            "lifecycle": {
+              "archiveUntil": 1782046699000,
+              "contentClass": "upahead_alert",
+              "displayUntil": 1781441899000,
+              "isActionValid": true,
+              "isVisible": true,
+              "plannerEligibleByLifecycle": true,
+              "plannerPastGraceHours": 6,
+              "retentionReason": "expiryAt",
+              "withinSevenDayHorizon": true
+            },
+            "localityScore": 0.9,
+            "normalizedCategory": "alerts",
+            "plannerEligible": true,
+            "publishedAt": 1781355499000,
+            "region": "tn",
+            "scoreBreakdown": {
+              "actionabilityScore": 1.0,
+              "categoryPriorityScore": 1.0,
+              "lifecycleScore": 0.65,
+              "locationScore": 1.0,
+              "plannerFitScore": 1.0,
+              "sourceConfidenceScore": 0.58,
+              "urgencyOrExpiryScore": 0.78
+            },
+            "source": "The Hindu Trichy",
+            "sourceGroup": "the_hindu",
+            "summary": "JewelStart, a dedicated gem and jewellery incubation hub, will be established at NIT Tiruchi to support innovation, entrepreneurship, and technology-driven growth in the gem and jewellery sector",
+            "suppressionReason": null,
+            "title": "NIT-T’s CEDI signs MoU with gem export promotion council for jewellery joint venture",
+            "url": "https://www.thehindu.com/news/cities/Tiruchirapalli/nit-ts-cedi-signs-mou-with-gem-export-promotion-council-for-jewellery-joint-venture/article71097649.ece"
+          },
+          "locationKey": "trichy",
+          "rankingReasons": [
+            "alerts",
+            "valid undated item with active display window",
+            "location matches configured profile",
+            "planner advisory fit"
+          ],
+          "score": 0.8485,
+          "title": "NIT-T’s CEDI signs MoU with gem export promotion council for jewellery joint venture"
         },
         {
           "category": "alerts",
@@ -3441,6 +3441,121 @@
           "gates": [
             {
               "details": {
+                "dedupKey": "0206abd10564a2dc"
+              },
+              "name": "dedup",
+              "reason": "unique item",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "displayUntil": 1781439837000
+              },
+              "name": "futureValidity",
+              "reason": "valid undated item with active display window",
+              "score": 0.65,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "matchScore": 1.0,
+                "matchedLocation": "trichy",
+                "relevance": "primary",
+                "scope": "exactCity"
+              },
+              "name": "location",
+              "reason": "location matches configured profile",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "hasPlace": true,
+                "hasTime": true
+              },
+              "name": "actionability",
+              "reason": "item has enough action fields",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "offerValidity",
+              "reason": "not an offer",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "severe": false
+              },
+              "name": "alertUrgency",
+              "reason": "active alert",
+              "score": 0.78,
+              "status": "PASS"
+            }
+          ],
+          "id": "e9e036bc412c9897",
+          "item": {
+            "actionabilityScore": 0.7,
+            "category": "alerts",
+            "city": "Trichy",
+            "contentClass": "upahead_alert",
+            "dateConfidence": "unknown",
+            "dateSource": "none",
+            "eventEndAt": null,
+            "eventStartAt": null,
+            "expiryAt": 1781439837000,
+            "id": "e9e036bc412c9897",
+            "language": "en",
+            "lifecycle": {
+              "archiveUntil": 1782044637000,
+              "contentClass": "upahead_alert",
+              "displayUntil": 1781439837000,
+              "isActionValid": true,
+              "isVisible": true,
+              "plannerEligibleByLifecycle": true,
+              "plannerPastGraceHours": 6,
+              "retentionReason": "expiryAt",
+              "withinSevenDayHorizon": true
+            },
+            "localityScore": 0.9,
+            "normalizedCategory": "alerts",
+            "plannerEligible": true,
+            "publishedAt": 1781353437000,
+            "region": "tn",
+            "scoreBreakdown": {
+              "actionabilityScore": 1.0,
+              "categoryPriorityScore": 1.0,
+              "lifecycleScore": 0.65,
+              "locationScore": 1.0,
+              "plannerFitScore": 1.0,
+              "sourceConfidenceScore": 0.58,
+              "urgencyOrExpiryScore": 0.78
+            },
+            "source": "The Hindu Trichy",
+            "sourceGroup": "the_hindu",
+            "summary": "The machine is a hexacopter-based drone equipped with six high-performance motors, each capable of generating up to 15 kg of thrust, can rise up to a height of 100 metres",
+            "suppressionReason": null,
+            "title": "Start-up demonstrates facade cleaning drone at NIT-T",
+            "url": "https://www.thehindu.com/news/national/tamil-nadu/start-up-demonstrates-facade-cleaning-drone-at-nit-t/article71097568.ece"
+          },
+          "locationKey": "trichy",
+          "rankingReasons": [
+            "alerts",
+            "valid undated item with active display window",
+            "location matches configured profile",
+            "planner advisory fit"
+          ],
+          "score": 0.8485,
+          "title": "Start-up demonstrates facade cleaning drone at NIT-T"
+        },
+        {
+          "category": "alerts",
+          "gates": [
+            {
+              "details": {
                 "dedupKey": "b8857347962013a4"
               },
               "name": "dedup",
@@ -3665,236 +3780,6 @@
           ],
           "score": 0.8485,
           "title": "Tamil Nadu’s first pink police booth launched in Ponneri"
-        },
-        {
-          "category": "alerts",
-          "gates": [
-            {
-              "details": {
-                "dedupKey": "af9d4c7b76e379e8"
-              },
-              "name": "dedup",
-              "reason": "unique item",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "displayUntil": 1781358221000
-              },
-              "name": "futureValidity",
-              "reason": "valid undated item with active display window",
-              "score": 0.65,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "matchScore": 1.0,
-                "matchedLocation": "trichy",
-                "relevance": "primary",
-                "scope": "exactCity"
-              },
-              "name": "location",
-              "reason": "location matches configured profile",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "hasPlace": true,
-                "hasTime": true
-              },
-              "name": "actionability",
-              "reason": "item has enough action fields",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "offerValidity",
-              "reason": "not an offer",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "severe": false
-              },
-              "name": "alertUrgency",
-              "reason": "active alert",
-              "score": 0.78,
-              "status": "PASS"
-            }
-          ],
-          "id": "bad5e5c39f8d8838",
-          "item": {
-            "actionabilityScore": 0.7,
-            "category": "alerts",
-            "city": "Trichy",
-            "contentClass": "upahead_alert",
-            "dateConfidence": "unknown",
-            "dateSource": "none",
-            "eventEndAt": null,
-            "eventStartAt": null,
-            "expiryAt": 1781358221000,
-            "id": "bad5e5c39f8d8838",
-            "language": "en",
-            "lifecycle": {
-              "archiveUntil": 1781963021000,
-              "contentClass": "upahead_alert",
-              "displayUntil": 1781358221000,
-              "isActionValid": true,
-              "isVisible": true,
-              "plannerEligibleByLifecycle": true,
-              "plannerPastGraceHours": 6,
-              "retentionReason": "expiryAt",
-              "withinSevenDayHorizon": true
-            },
-            "localityScore": 0.9,
-            "normalizedCategory": "alerts",
-            "plannerEligible": true,
-            "publishedAt": 1781271821000,
-            "region": "tn",
-            "scoreBreakdown": {
-              "actionabilityScore": 1.0,
-              "categoryPriorityScore": 1.0,
-              "lifecycleScore": 0.65,
-              "locationScore": 1.0,
-              "plannerFitScore": 1.0,
-              "sourceConfidenceScore": 0.58,
-              "urgencyOrExpiryScore": 0.78
-            },
-            "source": "The Hindu Trichy",
-            "sourceGroup": "the_hindu",
-            "summary": "",
-            "suppressionReason": null,
-            "title": "Tiruchi Railway Division bags eight efficiency shields",
-            "url": "https://www.thehindu.com/news/cities/Tiruchirapalli/tiruchi-railway-division-bags-eight-efficiency-shields/article71093948.ece"
-          },
-          "locationKey": "trichy",
-          "rankingReasons": [
-            "alerts",
-            "valid undated item with active display window",
-            "location matches configured profile",
-            "planner advisory fit"
-          ],
-          "score": 0.8485,
-          "title": "Tiruchi Railway Division bags eight efficiency shields"
-        },
-        {
-          "category": "alerts",
-          "gates": [
-            {
-              "details": {
-                "dedupKey": "414dd6478b9401cf"
-              },
-              "name": "dedup",
-              "reason": "unique item",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "displayUntil": 1781357696000
-              },
-              "name": "futureValidity",
-              "reason": "valid undated item with active display window",
-              "score": 0.65,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "matchScore": 1.0,
-                "matchedLocation": "trichy",
-                "relevance": "primary",
-                "scope": "exactCity"
-              },
-              "name": "location",
-              "reason": "location matches configured profile",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "hasPlace": true,
-                "hasTime": true
-              },
-              "name": "actionability",
-              "reason": "item has enough action fields",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "offerValidity",
-              "reason": "not an offer",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "severe": false
-              },
-              "name": "alertUrgency",
-              "reason": "active alert",
-              "score": 0.78,
-              "status": "PASS"
-            }
-          ],
-          "id": "98a8e5a3827936e2",
-          "item": {
-            "actionabilityScore": 0.7,
-            "category": "alerts",
-            "city": "Trichy",
-            "contentClass": "upahead_alert",
-            "dateConfidence": "unknown",
-            "dateSource": "none",
-            "eventEndAt": null,
-            "eventStartAt": null,
-            "expiryAt": 1781357696000,
-            "id": "98a8e5a3827936e2",
-            "language": "en",
-            "lifecycle": {
-              "archiveUntil": 1781962496000,
-              "contentClass": "upahead_alert",
-              "displayUntil": 1781357696000,
-              "isActionValid": true,
-              "isVisible": true,
-              "plannerEligibleByLifecycle": true,
-              "plannerPastGraceHours": 6,
-              "retentionReason": "expiryAt",
-              "withinSevenDayHorizon": true
-            },
-            "localityScore": 0.9,
-            "normalizedCategory": "alerts",
-            "plannerEligible": true,
-            "publishedAt": 1781271296000,
-            "region": "tn",
-            "scoreBreakdown": {
-              "actionabilityScore": 1.0,
-              "categoryPriorityScore": 1.0,
-              "lifecycleScore": 0.65,
-              "locationScore": 1.0,
-              "plannerFitScore": 1.0,
-              "sourceConfidenceScore": 0.58,
-              "urgencyOrExpiryScore": 0.78
-            },
-            "source": "The Hindu Trichy",
-            "sourceGroup": "the_hindu",
-            "summary": "Tiruchi Railway Division takes innovative measure to check accidents at all the 139 non-interlocked level-crossing gates; Pattukottai-Aranthangi-Karaikudi section electrification to be completed before the end of this financial year",
-            "suppressionReason": null,
-            "title": "Tiruchi Railway Junction to get six additional escalators by month-end",
-            "url": "https://www.thehindu.com/news/cities/Tiruchirapalli/tiruchi-railway-junction-to-get-six-additional-escalators-by-month-end/article71093802.ece"
-          },
-          "locationKey": "trichy",
-          "rankingReasons": [
-            "alerts",
-            "valid undated item with active display window",
-            "location matches configured profile",
-            "planner advisory fit"
-          ],
-          "score": 0.8485,
-          "title": "Tiruchi Railway Junction to get six additional escalators by month-end"
         },
         {
           "category": "alerts",
@@ -4131,7 +4016,7 @@
           "gates": [
             {
               "details": {
-                "dedupKey": "f7e2d757c5c9b1c5"
+                "dedupKey": "a723ffc036edb530"
               },
               "name": "dedup",
               "reason": "unique item",
@@ -4140,7 +4025,7 @@
             },
             {
               "details": {
-                "displayUntil": 1781356586000
+                "displayUntil": 1781437362000
               },
               "name": "futureValidity",
               "reason": "valid undated item with active display window",
@@ -4186,7 +4071,7 @@
               "status": "PASS"
             }
           ],
-          "id": "acfa968ae88e156b",
+          "id": "16fc036e83a50234",
           "item": {
             "actionabilityScore": 0.7,
             "category": "alerts",
@@ -4196,13 +4081,13 @@
             "dateSource": "none",
             "eventEndAt": null,
             "eventStartAt": null,
-            "expiryAt": 1781356586000,
-            "id": "acfa968ae88e156b",
+            "expiryAt": 1781437362000,
+            "id": "16fc036e83a50234",
             "language": "en",
             "lifecycle": {
-              "archiveUntil": 1781961386000,
+              "archiveUntil": 1782042162000,
               "contentClass": "upahead_alert",
-              "displayUntil": 1781356586000,
+              "displayUntil": 1781437362000,
               "isActionValid": true,
               "isVisible": true,
               "plannerEligibleByLifecycle": true,
@@ -4213,7 +4098,7 @@
             "localityScore": 1.0,
             "normalizedCategory": "alerts",
             "plannerEligible": true,
-            "publishedAt": 1781270186000,
+            "publishedAt": 1781350962000,
             "region": "tn",
             "scoreBreakdown": {
               "actionabilityScore": 1.0,
@@ -4226,10 +4111,10 @@
             },
             "source": "The Hindu Chennai",
             "sourceGroup": "the_hindu",
-            "summary": "Lit The Light Trust, in association with Voluntary Health Services in Taramani, has launched a livelihood project to support the visually challenged who are adept at wire chair canning",
+            "summary": "Preliminary inquiries by the police revealed that Dharini had been undergoing treatment for depression since childhood and that her condition had deteriorated after the birth of her daughter",
             "suppressionReason": null,
-            "title": "Weaving a livelihood for the visually challenged",
-            "url": "https://www.thehindu.com/news/cities/chennai/weaving-a-livelihood-for-the-visually-challenged/article71093833.ece"
+            "title": "Woman kills three-month-old daughter before ending own life in Chennai",
+            "url": "https://www.thehindu.com/news/cities/chennai/woman-kills-three-month-old-daughter-before-ending-own-life/article71097372.ece"
           },
           "locationKey": "chennai",
           "rankingReasons": [
@@ -4239,7 +4124,7 @@
             "planner advisory fit"
           ],
           "score": 0.8485,
-          "title": "Weaving a livelihood for the visually challenged"
+          "title": "Woman kills three-month-old daughter before ending own life in Chennai"
         },
         {
           "category": "alerts",
@@ -4355,6 +4240,236 @@
           ],
           "score": 0.8485,
           "title": "Woman treated for recurrent heart rhythm disorder at Apollo Hospitals"
+        },
+        {
+          "category": "alerts",
+          "gates": [
+            {
+              "details": {
+                "dedupKey": "f626cf64e0e500df"
+              },
+              "name": "dedup",
+              "reason": "unique item",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "displayUntil": 1781441436000
+              },
+              "name": "futureValidity",
+              "reason": "valid undated item with active display window",
+              "score": 0.65,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "matchScore": 0.72,
+                "matchedLocation": "online",
+                "relevance": "onlineOnly",
+                "scope": "online"
+              },
+              "name": "location",
+              "reason": "online/global item allowed without city match",
+              "score": 0.72,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "hasPlace": true,
+                "hasTime": true
+              },
+              "name": "actionability",
+              "reason": "item has enough action fields",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "offerValidity",
+              "reason": "not an offer",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "severe": false
+              },
+              "name": "alertUrgency",
+              "reason": "active alert",
+              "score": 0.78,
+              "status": "PASS"
+            }
+          ],
+          "id": "355fde8bf567d27d",
+          "item": {
+            "actionabilityScore": 0.7,
+            "category": "alerts",
+            "city": "Trichy",
+            "contentClass": "upahead_alert",
+            "dateConfidence": "unknown",
+            "dateSource": "none",
+            "eventEndAt": null,
+            "eventStartAt": null,
+            "expiryAt": 1781441436000,
+            "id": "355fde8bf567d27d",
+            "language": "en",
+            "lifecycle": {
+              "archiveUntil": 1782046236000,
+              "contentClass": "upahead_alert",
+              "displayUntil": 1781441436000,
+              "isActionValid": true,
+              "isVisible": true,
+              "plannerEligibleByLifecycle": true,
+              "plannerPastGraceHours": 6,
+              "retentionReason": "expiryAt",
+              "withinSevenDayHorizon": true
+            },
+            "localityScore": 0.9,
+            "normalizedCategory": "alerts",
+            "plannerEligible": true,
+            "publishedAt": 1781355036000,
+            "region": "tn",
+            "scoreBreakdown": {
+              "actionabilityScore": 1.0,
+              "categoryPriorityScore": 1.0,
+              "lifecycleScore": 0.65,
+              "locationScore": 0.72,
+              "plannerFitScore": 1.0,
+              "sourceConfidenceScore": 0.58,
+              "urgencyOrExpiryScore": 0.78
+            },
+            "source": "The Hindu Trichy",
+            "sourceGroup": "the_hindu",
+            "summary": "Database of the animals to be created with the assignment of 12 digit identification number; staff of Animal Husbandry Department to visit villages for enumeration",
+            "suppressionReason": null,
+            "title": "Animal Husbandry Department to intensify digital tagging of cows and buffaloes in Tiruchi district",
+            "url": "https://www.thehindu.com/news/cities/Tiruchirapalli/animal-husbandry-department-to-intensify-digital-tagging-of-cows-and-buffaloes-in-tiruchi-district/article71097677.ece"
+          },
+          "locationKey": "trichy",
+          "rankingReasons": [
+            "alerts",
+            "valid undated item with active display window",
+            "online/global item allowed without city match",
+            "planner advisory fit"
+          ],
+          "score": 0.7925,
+          "title": "Animal Husbandry Department to intensify digital tagging of cows and buffaloes in Tiruchi district"
+        },
+        {
+          "category": "alerts",
+          "gates": [
+            {
+              "details": {
+                "dedupKey": "c5d112cf5d4ba809"
+              },
+              "name": "dedup",
+              "reason": "unique item",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "displayUntil": 1781440804000
+              },
+              "name": "futureValidity",
+              "reason": "valid undated item with active display window",
+              "score": 0.65,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "matchScore": 0.55,
+                "matchedLocation": "global",
+                "relevance": "global",
+                "scope": "global"
+              },
+              "name": "location",
+              "reason": "online/global item allowed without city match",
+              "score": 0.55,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "hasPlace": true,
+                "hasTime": true
+              },
+              "name": "actionability",
+              "reason": "item has enough action fields",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "offerValidity",
+              "reason": "not an offer",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "severe": false
+              },
+              "name": "alertUrgency",
+              "reason": "active alert",
+              "score": 0.78,
+              "status": "PASS"
+            }
+          ],
+          "id": "63aef1a36cb47733",
+          "item": {
+            "actionabilityScore": 0.7,
+            "category": "alerts",
+            "city": "Trichy",
+            "contentClass": "upahead_alert",
+            "dateConfidence": "unknown",
+            "dateSource": "none",
+            "eventEndAt": null,
+            "eventStartAt": null,
+            "expiryAt": 1781440804000,
+            "id": "63aef1a36cb47733",
+            "language": "en",
+            "lifecycle": {
+              "archiveUntil": 1782045604000,
+              "contentClass": "upahead_alert",
+              "displayUntil": 1781440804000,
+              "isActionValid": true,
+              "isVisible": true,
+              "plannerEligibleByLifecycle": true,
+              "plannerPastGraceHours": 6,
+              "retentionReason": "expiryAt",
+              "withinSevenDayHorizon": true
+            },
+            "localityScore": 0.9,
+            "normalizedCategory": "alerts",
+            "plannerEligible": true,
+            "publishedAt": 1781354404000,
+            "region": "tn",
+            "scoreBreakdown": {
+              "actionabilityScore": 1.0,
+              "categoryPriorityScore": 1.0,
+              "lifecycleScore": 0.65,
+              "locationScore": 0.55,
+              "plannerFitScore": 1.0,
+              "sourceConfidenceScore": 0.58,
+              "urgencyOrExpiryScore": 0.78
+            },
+            "source": "The Hindu Trichy",
+            "sourceGroup": "the_hindu",
+            "summary": "NoC has been obtained for increasing the height of the tower to 53 metres; Tiruchi airport clocked high growth in aircraft movement and international passenger traffic in 12 years",
+            "suppressionReason": null,
+            "title": "New ATC tower at Tiruchi airport to get commissioned by June next year",
+            "url": "https://www.thehindu.com/news/cities/Tiruchirapalli/new-atc-tower-at-tiruchi-airport-to-get-commissioned-by-june-next-year/article71097615.ece"
+          },
+          "locationKey": "trichy",
+          "rankingReasons": [
+            "alerts",
+            "valid undated item with active display window",
+            "online/global item allowed without city match",
+            "planner advisory fit"
+          ],
+          "score": 0.7585,
+          "title": "New ATC tower at Tiruchi airport to get commissioned by June next year"
         },
         {
           "category": "alerts",
@@ -4477,14 +4592,14 @@
         "actionabilityScore": 1.0,
         "categoryPriorityScore": 0.9993,
         "lifecycleScore": 0.65,
-        "locationScore": 0.985,
+        "locationScore": 0.9607,
         "plannerFitScore": 1.0,
         "sourceConfidenceScore": 0.58,
         "urgencyOrExpiryScore": 0.7873
       }
     }
   },
-  "generatedAt": 1781352649660,
+  "generatedAt": 1781361561498,
   "implementedDestinations": [
     "upAhead",
     "buzz",
@@ -4503,7 +4618,7 @@
   "schemaVersion": 1,
   "summary": {
     "actionRequired": [
-      "12 invalid/expired/duplicate Up Ahead item(s) suppressed",
+      "14 invalid/expired/duplicate Up Ahead item(s) suppressed",
       "no active offer items in ranked Up Ahead set",
       "no ranked Up Ahead item for muscat",
       "no local Buzz item in ranked set",
@@ -4517,9 +4632,9 @@
     ],
     "destinationScores": {
       "buzz": 0.0,
-      "insight": 0.4312,
+      "insight": 0.4243,
       "localTravel": 0.0,
-      "upAhead": 0.8574
+      "upAhead": 0.8539
     },
     "destinationStatuses": {
       "buzz": "FAIL",
@@ -4527,7 +4642,7 @@
       "localTravel": "FAIL",
       "upAhead": "WARN"
     },
-    "overallScore": 0.3222,
+    "overallScore": 0.3196,
     "overallStatus": "FAIL",
     "rankingProfiles": {
       "buzz": "buzz-v2-trend-local-travel",
@@ -4541,17 +4656,20 @@
       "Shop Amazon’s Ultimate Summer Sale Early With the Best Prime Day 2026 Tech Deals We've Found So Far - PCMag: location failed — offline/local item lacks configured location match",
       "Amazon Prime Day 2026: When You Can Start Shopping, Early Deals and More - TODAY.com: location failed — offline/local item lacks configured location match",
       "You don’t have to wait — here are 51+ Prime Day early deals you can already shop - NBC News: location failed — offline/local item lacks configured location match",
-      "Blackout at Papanasam railway station leaves passengers exasperated: futureValidity failed — expired display window",
-      "Blackout at Papanasam railway station leaves passengers exasperated: alertUrgency failed — alert expired",
-      "Fisheries varsity extends UG application deadline: futureValidity failed — expired display window",
-      "Fisheries varsity extends UG application deadline: alertUrgency failed — alert expired",
-      "What Are the Best Early Prime Day Deals? We Took a Deep Dive to Find 55+ of Them - CNET: location failed — offline/local item lacks configured location match",
+      "Tiruchi Railway Division bags eight efficiency shields: futureValidity failed — expired display window",
+      "Tiruchi Railway Division bags eight efficiency shields: alertUrgency failed — alert expired",
+      "Tiruchi Railway Junction to get six additional escalators by month-end: futureValidity failed — expired display window",
+      "Tiruchi Railway Junction to get six additional escalators by month-end: alertUrgency failed — alert expired",
+      "Minister directs officials to check the accident rate in Ariyalur: futureValidity failed — expired display window",
+      "Minister directs officials to check the accident rate in Ariyalur: alertUrgency failed — alert expired",
+      "Weaving a livelihood for the visually challenged: futureValidity failed — expired display window",
+      "Weaving a livelihood for the visually challenged: alertUrgency failed — alert expired",
       "The Best Early 2026 Prime Day Deals ELLE Editors Are Already Buying - ELLE: location failed — offline/local item lacks configured location match",
       "Amazon Prime Day 2026 is June 23–26. Get a $200 Amazon gift card and extra rewards with the right credit card - CNBC: location failed — offline/local item lacks configured location match",
+      "Everything We’re Shopping In Lululemon’s “We Made Too Much” Section This Week - Forbes: location failed — offline/local item lacks configured location match",
       "Here’s the Best World Cup Merch on Amazon, According to Our Editors - Men's Health: location failed — offline/local item lacks configured location match",
-      "Amazon's Record C$14 Billion Bond Sale Pressures Canadian Credit Market - TradingView: futureValidity failed — expired display window",
-      "Amazon's Record C$14 Billion Bond Sale Pressures Canadian Credit Market - TradingView: location failed — offline/local item lacks configured location match",
-      "Amazon's Record C$14 Billion Bond Sale Pressures Canadian Credit Market - TradingView: offerValidity failed — offer expired"
+      "Best Buy has better gaming deals right now than Amazon's early Prime Day sale - ZDNET: futureValidity failed — expired display window",
+      "Best Buy has better gaming deals right now than Amazon's early Prime Day sale - ZDNET: offerValidity failed — offer expired"
     ]
   }
 }

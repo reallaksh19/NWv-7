@@ -60,7 +60,7 @@
       "gateResults": [
         {
           "details": {
-            "itemCount": 12
+            "itemCount": 10
           },
           "name": "insightEventPool",
           "reason": "rankable Insight event pool",
@@ -79,14 +79,14 @@
         "avgAnglesPerParent": 0.0,
         "baseReportHeavyParents": 1,
         "duplicateChildrenSuppressed": 0,
-        "inputCandidateCount": 12,
-        "parentClusters": 12,
-        "strongParents": 12,
+        "inputCandidateCount": 10,
+        "parentClusters": 10,
+        "strongParents": 10,
         "suppressedCandidateCount": 0,
         "weakParentsDemoted": 0
       },
       "qualityGrade": "F",
-      "qualityScore": 0.4114,
+      "qualityScore": 0.4094,
       "qualityStatus": "WARN",
       "rankedItems": [
         {
@@ -204,122 +204,6 @@
           ],
           "score": 0.6085,
           "title": "U.S. Justice Department clears Paramount's acquisition of Warner Bros"
-        },
-        {
-          "category": "insightEvent",
-          "gates": [
-            {
-              "details": {
-                "storyCount": 2
-              },
-              "name": "eventCoherence",
-              "reason": "event sketch has repeated story count",
-              "score": 0.62,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "baseReportRatio": 0.0,
-                "distinctAngles": 2
-              },
-              "name": "angleDiversity",
-              "reason": "usable angle diversity",
-              "score": 0.78,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "sourceGroupCount": 2
-              },
-              "name": "sourceDiversity",
-              "reason": "multi-source event",
-              "score": 0.72,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "baseReportRatio": 0.0
-              },
-              "name": "baseReportCap",
-              "reason": "base-report ratio controlled",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "childCount": 2
-              },
-              "name": "weakTree",
-              "reason": "child tree has enough depth",
-              "score": 0.5,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "duplicateChildren",
-              "reason": "no child objects to dedup",
-              "score": 0.7,
-              "status": "PASS"
-            }
-          ],
-          "id": "sketch:4f13259832",
-          "item": {
-            "angleCount": 2,
-            "baseReportRatio": 0.0,
-            "childScores": [],
-            "id": "sketch:4f13259832",
-            "representativeId": "11057648d5017c74",
-            "representativeTitle": "City Union Bank increases FCNR(B) deposit rates to 7.10%",
-            "scoreBreakdown": {
-              "angleDiversityScore": 0.78,
-              "eventImportanceScore": 0.59,
-              "freshnessScore": 0.0,
-              "noveltyDeltaScore": 0.55,
-              "sourceAuthorityScore": 0.62,
-              "sourceDiversityScore": 0.72,
-              "temporalEvolutionScore": 0.37
-            },
-            "slotCount": 1,
-            "slots": [
-              "minus24h"
-            ],
-            "sourceGroupCount": 2,
-            "sourceGroups": [
-              "business_line",
-              "moneycontrol"
-            ],
-            "storyCount": 2,
-            "storyIds": [
-              "11057648d5017c74",
-              "a1315fa8cdf3f088"
-            ],
-            "topAngles": [
-              {
-                "angle": "correction",
-                "count": 1
-              },
-              {
-                "angle": "market_reaction",
-                "count": 1
-              }
-            ],
-            "topTokens": [
-              "city",
-              "union",
-              "bank",
-              "increases",
-              "target"
-            ],
-            "topicKey": "city|union|bank"
-          },
-          "locationKey": "event",
-          "rankingReasons": [
-            "event sketch has repeated story count",
-            "usable angle diversity",
-            "multi-source event"
-          ],
-          "score": 0.5965,
-          "title": "City Union Bank increases FCNR(B) deposit rates to 7.10%"
         },
         {
           "category": "insightEvent",
@@ -553,7 +437,7 @@
           "gates": [
             {
               "details": {
-                "storyCount": 3
+                "storyCount": 4
               },
               "name": "eventCoherence",
               "reason": "event sketch has repeated story count",
@@ -590,11 +474,11 @@
             },
             {
               "details": {
-                "childCount": 3
+                "childCount": 4
               },
               "name": "weakTree",
               "reason": "child tree has enough depth",
-              "score": 0.75,
+              "score": 1.0,
               "status": "PASS"
             },
             {
@@ -611,11 +495,11 @@
             "baseReportRatio": 0.0,
             "childScores": [],
             "id": "sketch:313fbb8095",
-            "representativeId": "5932a747c4554d83",
-            "representativeTitle": "Breaking News Live Updates: India emerges as world's fastest growing major economy under PM Modi, says JP Nadda - The Economic Times",
+            "representativeId": "f8baac3a110a4b80",
+            "representativeTitle": "Breaking News Live Updates: PM Narendra Modi lands in Nice for France visit, to hold talks with Macron an... - The Economic Times",
             "scoreBreakdown": {
               "angleDiversityScore": 0.25,
-              "eventImportanceScore": 0.71,
+              "eventImportanceScore": 0.83,
               "freshnessScore": 0.0,
               "noveltyDeltaScore": 0.44999999999999996,
               "sourceAuthorityScore": 0.38,
@@ -630,8 +514,9 @@
             "sourceGroups": [
               "google_news"
             ],
-            "storyCount": 3,
+            "storyCount": 4,
             "storyIds": [
+              "f8baac3a110a4b80",
               "5932a747c4554d83",
               "c0b89c693126f623",
               "55cf58dd032da79f"
@@ -639,13 +524,14 @@
             "topAngles": [
               {
                 "angle": "fact_update",
-                "count": 3
+                "count": 4
               }
             ],
             "topTokens": [
               "breaking",
               "live",
               "updates",
+              "narendra",
               "india",
               "strong",
               "govt"
@@ -658,8 +544,8 @@
             "weak child angle diversity",
             "one-source event candidate"
           ],
-          "score": 0.419,
-          "title": "Breaking News Live Updates: India emerges as world's fastest growing major economy under PM Modi, says JP Nadda - The Economic Times"
+          "score": 0.449,
+          "title": "Breaking News Live Updates: PM Narendra Modi lands in Nice for France visit, to hold talks with Macron an... - The Economic Times"
         },
         {
           "category": "insightEvent",
@@ -1119,116 +1005,6 @@
             },
             {
               "details": {
-                "baseReportRatio": 0.0,
-                "distinctAngles": 1
-              },
-              "name": "angleDiversity",
-              "reason": "weak child angle diversity",
-              "score": 0.25,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "sourceGroupCount": 1
-              },
-              "name": "sourceDiversity",
-              "reason": "one-source event candidate",
-              "score": 0.35,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "baseReportRatio": 0.0
-              },
-              "name": "baseReportCap",
-              "reason": "base-report ratio controlled",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "childCount": 2
-              },
-              "name": "weakTree",
-              "reason": "child tree has enough depth",
-              "score": 0.5,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "duplicateChildren",
-              "reason": "no child objects to dedup",
-              "score": 0.7,
-              "status": "PASS"
-            }
-          ],
-          "id": "sketch:fcde5c7120",
-          "item": {
-            "angleCount": 1,
-            "baseReportRatio": 0.0,
-            "childScores": [],
-            "id": "sketch:fcde5c7120",
-            "representativeId": "cefd0947496f8de7",
-            "representativeTitle": "Buy Bajaj Finance; target of Rs 9000: Emkay Global Financial",
-            "scoreBreakdown": {
-              "angleDiversityScore": 0.25,
-              "eventImportanceScore": 0.59,
-              "freshnessScore": 0.0,
-              "noveltyDeltaScore": 0.44999999999999996,
-              "sourceAuthorityScore": 0.38,
-              "sourceDiversityScore": 0.35,
-              "temporalEvolutionScore": 0.37
-            },
-            "slotCount": 1,
-            "slots": [
-              "minus24h"
-            ],
-            "sourceGroupCount": 1,
-            "sourceGroups": [
-              "moneycontrol"
-            ],
-            "storyCount": 2,
-            "storyIds": [
-              "cefd0947496f8de7",
-              "d0020e471404281a"
-            ],
-            "topAngles": [
-              {
-                "angle": "market_reaction",
-                "count": 2
-              }
-            ],
-            "topTokens": [
-              "bajaj",
-              "finance",
-              "target",
-              "emkay"
-            ],
-            "topicKey": "bajaj|finance|target"
-          },
-          "locationKey": "event",
-          "rankingReasons": [
-            "event sketch has repeated story count",
-            "weak child angle diversity",
-            "one-source event candidate"
-          ],
-          "score": 0.389,
-          "title": "Buy Bajaj Finance; target of Rs 9000: Emkay Global Financial"
-        },
-        {
-          "category": "insightEvent",
-          "gates": [
-            {
-              "details": {
-                "storyCount": 2
-              },
-              "name": "eventCoherence",
-              "reason": "event sketch has repeated story count",
-              "score": 0.62,
-              "status": "PASS"
-            },
-            {
-              "details": {
                 "baseReportRatio": 0.5,
                 "distinctAngles": 1
               },
@@ -1443,13 +1219,13 @@
       ],
       "rankingProfile": "insight-v2-event-angle-tree",
       "scoreBreakdown": {
-        "angleDiversityScore": 0.3825,
-        "eventImportanceScore": 0.61,
+        "angleDiversityScore": 0.356,
+        "eventImportanceScore": 0.626,
         "freshnessScore": 0.0,
-        "noveltyDeltaScore": 0.4833,
-        "sourceAuthorityScore": 0.48,
-        "sourceDiversityScore": 0.5042,
-        "temporalEvolutionScore": 0.42
+        "noveltyDeltaScore": 0.48,
+        "sourceAuthorityScore": 0.476,
+        "sourceDiversityScore": 0.498,
+        "temporalEvolutionScore": 0.43
       }
     },
     "localTravel": {
@@ -1509,27 +1285,22 @@
     },
     "upAhead": {
       "actionableFindings": [
-        "10 invalid/expired/duplicate Up Ahead item(s) suppressed",
+        "9 invalid/expired/duplicate Up Ahead item(s) suppressed",
         "no active offer items in ranked Up Ahead set",
         "no ranked Up Ahead item for muscat"
       ],
       "destination": "upAhead",
       "diagnosticReasons": [
+        "Amazon Is Getting a Head Start on Prime Day With Secret Early Deals Up to 76% Off—Shop Travel Staples From $8 - Travel + Leisure: location failed — offline/local item lacks configured location match",
         "Why did Amazon Prime Day shift to June? Here's what the company has said (and not said). - Mashable: location failed — offline/local item lacks configured location match",
         "Oprah, 72, Is My Summer Style Icon—I'm Shopping Her Favorite Jeans, Sneakers, and Bags From $6 at Amazon - instyle.com: location failed — offline/local item lacks configured location match",
         "Shop Amazon’s Ultimate Summer Sale Early With the Best Prime Day 2026 Tech Deals We've Found So Far - PCMag: location failed — offline/local item lacks configured location match",
         "Amazon Prime Day 2026: When You Can Start Shopping, Early Deals and More - TODAY.com: location failed — offline/local item lacks configured location match",
         "You don’t have to wait — here are 51+ Prime Day early deals you can already shop - NBC News: location failed — offline/local item lacks configured location match",
-        "In-charge Vice-Chancellor takes charge at CUTN: futureValidity failed — expired display window",
-        "In-charge Vice-Chancellor takes charge at CUTN: alertUrgency failed — alert expired",
         "The Best Early 2026 Prime Day Deals ELLE Editors Are Already Buying - ELLE: location failed — offline/local item lacks configured location match",
         "Amazon Prime Day 2026 is June 23–26. Get a $200 Amazon gift card and extra rewards with the right credit card - CNBC: location failed — offline/local item lacks configured location match",
-        "Everything We’re Shopping In Lululemon’s “We Made Too Much” Section This Week - Forbes: futureValidity failed — expired display window",
-        "Everything We’re Shopping In Lululemon’s “We Made Too Much” Section This Week - Forbes: location failed — offline/local item lacks configured location match",
-        "Everything We’re Shopping In Lululemon’s “We Made Too Much” Section This Week - Forbes: offerValidity failed — offer expired",
-        "Here’s the Best World Cup Merch on Amazon, According to Our Editors - Men's Health: futureValidity failed — expired display window",
-        "Here’s the Best World Cup Merch on Amazon, According to Our Editors - Men's Health: location failed — offline/local item lacks configured location match",
-        "Here’s the Best World Cup Merch on Amazon, According to Our Editors - Men's Health: offerValidity failed — offer expired"
+        "Air India launches ‘Namaste World’ sale with up to 20% discount - The News Mill: futureValidity failed — expired display window",
+        "Air India launches ‘Namaste World’ sale with up to 20% discount - The News Mill: offerValidity failed — offer expired"
       ],
       "gateResults": [
         {
@@ -1562,10 +1333,10 @@
         },
         "events": 0,
         "festivals": 0,
-        "inputItemCount": 52,
+        "inputItemCount": 54,
         "locationCounts": {
-          "chennai": 21,
-          "trichy": 9
+          "chennai": 22,
+          "trichy": 8
         },
         "locationsCovered": [
           "chennai",
@@ -1575,7 +1346,7 @@
         "onlineOffers": 0,
         "plannerAdvisoryItems": 30,
         "rankedItemCount": 30,
-        "suppressedItemCount": 10
+        "suppressedItemCount": 9
       },
       "qualityGrade": "B",
       "qualityScore": 0.8595,
@@ -1810,6 +1581,236 @@
           ],
           "score": 0.8485,
           "title": "12 mini taluk offices to come up in Chennai for easier access to revenue department services"
+        },
+        {
+          "category": "alerts",
+          "gates": [
+            {
+              "details": {
+                "dedupKey": "4861b6b14bae1f76"
+              },
+              "name": "dedup",
+              "reason": "unique item",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "displayUntil": 1781453474000
+              },
+              "name": "futureValidity",
+              "reason": "valid undated item with active display window",
+              "score": 0.65,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "matchScore": 1.0,
+                "matchedLocation": "chennai",
+                "relevance": "primary",
+                "scope": "exactCity"
+              },
+              "name": "location",
+              "reason": "location matches configured profile",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "hasPlace": true,
+                "hasTime": true
+              },
+              "name": "actionability",
+              "reason": "item has enough action fields",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "offerValidity",
+              "reason": "not an offer",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "severe": false
+              },
+              "name": "alertUrgency",
+              "reason": "active alert",
+              "score": 0.78,
+              "status": "PASS"
+            }
+          ],
+          "id": "e06298a986d9da46",
+          "item": {
+            "actionabilityScore": 0.7,
+            "category": "alerts",
+            "city": "Chennai",
+            "contentClass": "upahead_alert",
+            "dateConfidence": "unknown",
+            "dateSource": "none",
+            "eventEndAt": null,
+            "eventStartAt": null,
+            "expiryAt": 1781453474000,
+            "id": "e06298a986d9da46",
+            "language": "en",
+            "lifecycle": {
+              "archiveUntil": 1782058274000,
+              "contentClass": "upahead_alert",
+              "displayUntil": 1781453474000,
+              "isActionValid": true,
+              "isVisible": true,
+              "plannerEligibleByLifecycle": true,
+              "plannerPastGraceHours": 6,
+              "retentionReason": "expiryAt",
+              "withinSevenDayHorizon": true
+            },
+            "localityScore": 1.0,
+            "normalizedCategory": "alerts",
+            "plannerEligible": true,
+            "publishedAt": 1781367074000,
+            "region": "tn",
+            "scoreBreakdown": {
+              "actionabilityScore": 1.0,
+              "categoryPriorityScore": 1.0,
+              "lifecycleScore": 0.65,
+              "locationScore": 1.0,
+              "plannerFitScore": 1.0,
+              "sourceConfidenceScore": 0.58,
+              "urgencyOrExpiryScore": 0.78
+            },
+            "source": "The Hindu Chennai",
+            "sourceGroup": "the_hindu",
+            "summary": "On June 13, an old tree, reportedly unsteady for a long time, crashed damaging a compound wall, a car inside and two other cars outside. Fortunately, no one was injured, reports D. Vinothkumar",
+            "suppressionReason": null,
+            "title": "A scary thud at Thiruvengadam Street",
+            "url": "https://www.thehindu.com/news/cities/chennai/a-scary-thud-at-thiruvengadam-street/article71098581.ece"
+          },
+          "locationKey": "chennai",
+          "rankingReasons": [
+            "alerts",
+            "valid undated item with active display window",
+            "location matches configured profile",
+            "planner advisory fit"
+          ],
+          "score": 0.8485,
+          "title": "A scary thud at Thiruvengadam Street"
+        },
+        {
+          "category": "alerts",
+          "gates": [
+            {
+              "details": {
+                "dedupKey": "b14a559fa529f007"
+              },
+              "name": "dedup",
+              "reason": "unique item",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "displayUntil": 1781450563000
+              },
+              "name": "futureValidity",
+              "reason": "valid undated item with active display window",
+              "score": 0.65,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "matchScore": 1.0,
+                "matchedLocation": "chennai",
+                "relevance": "primary",
+                "scope": "exactCity"
+              },
+              "name": "location",
+              "reason": "location matches configured profile",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "hasPlace": true,
+                "hasTime": true
+              },
+              "name": "actionability",
+              "reason": "item has enough action fields",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "offerValidity",
+              "reason": "not an offer",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "severe": false
+              },
+              "name": "alertUrgency",
+              "reason": "active alert",
+              "score": 0.78,
+              "status": "PASS"
+            }
+          ],
+          "id": "e9bacab0bd1f4751",
+          "item": {
+            "actionabilityScore": 0.7,
+            "category": "alerts",
+            "city": "Chennai",
+            "contentClass": "upahead_alert",
+            "dateConfidence": "unknown",
+            "dateSource": "none",
+            "eventEndAt": null,
+            "eventStartAt": null,
+            "expiryAt": 1781450563000,
+            "id": "e9bacab0bd1f4751",
+            "language": "en",
+            "lifecycle": {
+              "archiveUntil": 1782055363000,
+              "contentClass": "upahead_alert",
+              "displayUntil": 1781450563000,
+              "isActionValid": true,
+              "isVisible": true,
+              "plannerEligibleByLifecycle": true,
+              "plannerPastGraceHours": 6,
+              "retentionReason": "expiryAt",
+              "withinSevenDayHorizon": true
+            },
+            "localityScore": 1.0,
+            "normalizedCategory": "alerts",
+            "plannerEligible": true,
+            "publishedAt": 1781364163000,
+            "region": "tn",
+            "scoreBreakdown": {
+              "actionabilityScore": 1.0,
+              "categoryPriorityScore": 1.0,
+              "lifecycleScore": 0.65,
+              "locationScore": 1.0,
+              "plannerFitScore": 1.0,
+              "sourceConfidenceScore": 0.58,
+              "urgencyOrExpiryScore": 0.78
+            },
+            "source": "The Hindu Chennai",
+            "sourceGroup": "the_hindu",
+            "summary": "When this free service was launched six months ago, it was an instant hit; but the full measure of its benefit was made manifest only during the extreme heat spikes this summer",
+            "suppressionReason": null,
+            "title": "Buggy rides at Egmore museum a big help during summer",
+            "url": "https://www.thehindu.com/news/cities/chennai/buggy-rides-ategmoremuseum-a-big-help-during-summer/article71098380.ece"
+          },
+          "locationKey": "chennai",
+          "rankingReasons": [
+            "alerts",
+            "valid undated item with active display window",
+            "location matches configured profile",
+            "planner advisory fit"
+          ],
+          "score": 0.8485,
+          "title": "Buggy rides at Egmore museum a big help during summer"
         },
         {
           "category": "alerts",
@@ -3771,6 +3772,121 @@
           "gates": [
             {
               "details": {
+                "dedupKey": "c40e1aef4af3da25"
+              },
+              "name": "dedup",
+              "reason": "unique item",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "displayUntil": 1781451869000
+              },
+              "name": "futureValidity",
+              "reason": "valid undated item with active display window",
+              "score": 0.65,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "matchScore": 1.0,
+                "matchedLocation": "chennai",
+                "relevance": "primary",
+                "scope": "exactCity"
+              },
+              "name": "location",
+              "reason": "location matches configured profile",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "hasPlace": true,
+                "hasTime": true
+              },
+              "name": "actionability",
+              "reason": "item has enough action fields",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "offerValidity",
+              "reason": "not an offer",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "severe": false
+              },
+              "name": "alertUrgency",
+              "reason": "active alert",
+              "score": 0.78,
+              "status": "PASS"
+            }
+          ],
+          "id": "e01a7d6594318b0b",
+          "item": {
+            "actionabilityScore": 0.7,
+            "category": "alerts",
+            "city": "Chennai",
+            "contentClass": "upahead_alert",
+            "dateConfidence": "unknown",
+            "dateSource": "none",
+            "eventEndAt": null,
+            "eventStartAt": null,
+            "expiryAt": 1781451869000,
+            "id": "e01a7d6594318b0b",
+            "language": "en",
+            "lifecycle": {
+              "archiveUntil": 1782056669000,
+              "contentClass": "upahead_alert",
+              "displayUntil": 1781451869000,
+              "isActionValid": true,
+              "isVisible": true,
+              "plannerEligibleByLifecycle": true,
+              "plannerPastGraceHours": 6,
+              "retentionReason": "expiryAt",
+              "withinSevenDayHorizon": true
+            },
+            "localityScore": 1.0,
+            "normalizedCategory": "alerts",
+            "plannerEligible": true,
+            "publishedAt": 1781365469000,
+            "region": "tn",
+            "scoreBreakdown": {
+              "actionabilityScore": 1.0,
+              "categoryPriorityScore": 1.0,
+              "lifecycleScore": 0.65,
+              "locationScore": 1.0,
+              "plannerFitScore": 1.0,
+              "sourceConfidenceScore": 0.58,
+              "urgencyOrExpiryScore": 0.78
+            },
+            "source": "The Hindu Chennai",
+            "sourceGroup": "the_hindu",
+            "summary": "Chennai cannot do without air-conditioners, but their run time can be reduced if one designed their living space green and topped it with soft furnishings that have the visible imprint of nature. Here are roadside conversations with makers of bamboo and vetiver curtains",
+            "suppressionReason": null,
+            "title": "Rooting for green cooling solutions",
+            "url": "https://www.thehindu.com/news/cities/chennai/rooting-for-green-cooling-solutions/article71098485.ece"
+          },
+          "locationKey": "chennai",
+          "rankingReasons": [
+            "alerts",
+            "valid undated item with active display window",
+            "location matches configured profile",
+            "planner advisory fit"
+          ],
+          "score": 0.8485,
+          "title": "Rooting for green cooling solutions"
+        },
+        {
+          "category": "alerts",
+          "gates": [
+            {
+              "details": {
                 "dedupKey": "df3b3c02541a5db0"
               },
               "name": "dedup",
@@ -4685,351 +4801,6 @@
           ],
           "score": 0.8485,
           "title": "Velachery-Tambaram road to be renamed after Major Varadarajan"
-        },
-        {
-          "category": "alerts",
-          "gates": [
-            {
-              "details": {
-                "dedupKey": "a723ffc036edb530"
-              },
-              "name": "dedup",
-              "reason": "unique item",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "displayUntil": 1781437362000
-              },
-              "name": "futureValidity",
-              "reason": "valid undated item with active display window",
-              "score": 0.65,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "matchScore": 1.0,
-                "matchedLocation": "chennai",
-                "relevance": "primary",
-                "scope": "exactCity"
-              },
-              "name": "location",
-              "reason": "location matches configured profile",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "hasPlace": true,
-                "hasTime": true
-              },
-              "name": "actionability",
-              "reason": "item has enough action fields",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "offerValidity",
-              "reason": "not an offer",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "severe": false
-              },
-              "name": "alertUrgency",
-              "reason": "active alert",
-              "score": 0.78,
-              "status": "PASS"
-            }
-          ],
-          "id": "16fc036e83a50234",
-          "item": {
-            "actionabilityScore": 0.7,
-            "category": "alerts",
-            "city": "Chennai",
-            "contentClass": "upahead_alert",
-            "dateConfidence": "unknown",
-            "dateSource": "none",
-            "eventEndAt": null,
-            "eventStartAt": null,
-            "expiryAt": 1781437362000,
-            "id": "16fc036e83a50234",
-            "language": "en",
-            "lifecycle": {
-              "archiveUntil": 1782042162000,
-              "contentClass": "upahead_alert",
-              "displayUntil": 1781437362000,
-              "isActionValid": true,
-              "isVisible": true,
-              "plannerEligibleByLifecycle": true,
-              "plannerPastGraceHours": 6,
-              "retentionReason": "expiryAt",
-              "withinSevenDayHorizon": true
-            },
-            "localityScore": 1.0,
-            "normalizedCategory": "alerts",
-            "plannerEligible": true,
-            "publishedAt": 1781350962000,
-            "region": "tn",
-            "scoreBreakdown": {
-              "actionabilityScore": 1.0,
-              "categoryPriorityScore": 1.0,
-              "lifecycleScore": 0.65,
-              "locationScore": 1.0,
-              "plannerFitScore": 1.0,
-              "sourceConfidenceScore": 0.58,
-              "urgencyOrExpiryScore": 0.78
-            },
-            "source": "The Hindu Chennai",
-            "sourceGroup": "the_hindu",
-            "summary": "Preliminary inquiries by the police revealed that Dharini had been undergoing treatment for depression since childhood and that her condition had deteriorated after the birth of her daughter",
-            "suppressionReason": null,
-            "title": "Woman kills three-month-old daughter before ending own life in Chennai",
-            "url": "https://www.thehindu.com/news/cities/chennai/woman-kills-three-month-old-daughter-before-ending-own-life/article71097372.ece"
-          },
-          "locationKey": "chennai",
-          "rankingReasons": [
-            "alerts",
-            "valid undated item with active display window",
-            "location matches configured profile",
-            "planner advisory fit"
-          ],
-          "score": 0.8485,
-          "title": "Woman kills three-month-old daughter before ending own life in Chennai"
-        },
-        {
-          "category": "alerts",
-          "gates": [
-            {
-              "details": {
-                "dedupKey": "3f386f07ef13fb88"
-              },
-              "name": "dedup",
-              "reason": "unique item",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "displayUntil": 1781378881000
-              },
-              "name": "futureValidity",
-              "reason": "valid undated item with active display window",
-              "score": 0.65,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "matchScore": 1.0,
-                "matchedLocation": "chennai",
-                "relevance": "primary",
-                "scope": "exactCity"
-              },
-              "name": "location",
-              "reason": "location matches configured profile",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "hasPlace": true,
-                "hasTime": true
-              },
-              "name": "actionability",
-              "reason": "item has enough action fields",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "offerValidity",
-              "reason": "not an offer",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "severe": false
-              },
-              "name": "alertUrgency",
-              "reason": "active alert",
-              "score": 0.78,
-              "status": "PASS"
-            }
-          ],
-          "id": "783bb81302c059b7",
-          "item": {
-            "actionabilityScore": 0.7,
-            "category": "alerts",
-            "city": "Chennai",
-            "contentClass": "upahead_alert",
-            "dateConfidence": "unknown",
-            "dateSource": "none",
-            "eventEndAt": null,
-            "eventStartAt": null,
-            "expiryAt": 1781378881000,
-            "id": "783bb81302c059b7",
-            "language": "en",
-            "lifecycle": {
-              "archiveUntil": 1781983681000,
-              "contentClass": "upahead_alert",
-              "displayUntil": 1781378881000,
-              "isActionValid": true,
-              "isVisible": true,
-              "plannerEligibleByLifecycle": true,
-              "plannerPastGraceHours": 6,
-              "retentionReason": "expiryAt",
-              "withinSevenDayHorizon": true
-            },
-            "localityScore": 1.0,
-            "normalizedCategory": "alerts",
-            "plannerEligible": true,
-            "publishedAt": 1781292481000,
-            "region": "tn",
-            "scoreBreakdown": {
-              "actionabilityScore": 1.0,
-              "categoryPriorityScore": 1.0,
-              "lifecycleScore": 0.65,
-              "locationScore": 1.0,
-              "plannerFitScore": 1.0,
-              "sourceConfidenceScore": 0.58,
-              "urgencyOrExpiryScore": 0.78
-            },
-            "source": "The Hindu Chennai",
-            "sourceGroup": "the_hindu",
-            "summary": "",
-            "suppressionReason": null,
-            "title": "Woman treated for recurrent heart rhythm disorder at Apollo Hospitals",
-            "url": "https://www.thehindu.com/news/cities/chennai/woman-treated-for-recurrent-heart-rhythm-disorder-at-apollo-hospitals/article71093998.ece"
-          },
-          "locationKey": "chennai",
-          "rankingReasons": [
-            "alerts",
-            "valid undated item with active display window",
-            "location matches configured profile",
-            "planner advisory fit"
-          ],
-          "score": 0.8485,
-          "title": "Woman treated for recurrent heart rhythm disorder at Apollo Hospitals"
-        },
-        {
-          "category": "alerts",
-          "gates": [
-            {
-              "details": {
-                "dedupKey": "f91aca3b7e167589"
-              },
-              "name": "dedup",
-              "reason": "unique item",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "displayUntil": 1781445556000
-              },
-              "name": "futureValidity",
-              "reason": "valid undated item with active display window",
-              "score": 0.65,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "matchScore": 1.0,
-                "matchedLocation": "trichy",
-                "relevance": "primary",
-                "scope": "exactCity"
-              },
-              "name": "location",
-              "reason": "location matches configured profile",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "hasPlace": true,
-                "hasTime": true
-              },
-              "name": "actionability",
-              "reason": "item has enough action fields",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "offerValidity",
-              "reason": "not an offer",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "severe": false
-              },
-              "name": "alertUrgency",
-              "reason": "active alert",
-              "score": 0.78,
-              "status": "PASS"
-            }
-          ],
-          "id": "f1fe6833ac9e1c28",
-          "item": {
-            "actionabilityScore": 0.7,
-            "category": "alerts",
-            "city": "Trichy",
-            "contentClass": "upahead_alert",
-            "dateConfidence": "unknown",
-            "dateSource": "none",
-            "eventEndAt": null,
-            "eventStartAt": null,
-            "expiryAt": 1781445556000,
-            "id": "f1fe6833ac9e1c28",
-            "language": "en",
-            "lifecycle": {
-              "archiveUntil": 1782050356000,
-              "contentClass": "upahead_alert",
-              "displayUntil": 1781445556000,
-              "isActionValid": true,
-              "isVisible": true,
-              "plannerEligibleByLifecycle": true,
-              "plannerPastGraceHours": 6,
-              "retentionReason": "expiryAt",
-              "withinSevenDayHorizon": true
-            },
-            "localityScore": 0.9,
-            "normalizedCategory": "alerts",
-            "plannerEligible": true,
-            "publishedAt": 1781359156000,
-            "region": "tn",
-            "scoreBreakdown": {
-              "actionabilityScore": 1.0,
-              "categoryPriorityScore": 1.0,
-              "lifecycleScore": 0.65,
-              "locationScore": 1.0,
-              "plannerFitScore": 1.0,
-              "sourceConfidenceScore": 0.58,
-              "urgencyOrExpiryScore": 0.78
-            },
-            "source": "The Hindu Trichy",
-            "sourceGroup": "the_hindu",
-            "summary": "",
-            "suppressionReason": null,
-            "title": "‘Blood donors play vital role in strengthening health care’",
-            "url": "https://www.thehindu.com/news/cities/Tiruchirapalli/blood-donors-play-vital-role-in-strengthening-health-care/article71097795.ece"
-          },
-          "locationKey": "trichy",
-          "rankingReasons": [
-            "alerts",
-            "valid undated item with active display window",
-            "location matches configured profile",
-            "planner advisory fit"
-          ],
-          "score": 0.8485,
-          "title": "‘Blood donors play vital role in strengthening health care’"
         }
       ],
       "rankingProfile": "upAhead-v2-lifecycle-location-category",
@@ -5044,7 +4815,7 @@
       }
     }
   },
-  "generatedAt": 1781367242415,
+  "generatedAt": 1781374019050,
   "implementedDestinations": [
     "upAhead",
     "buzz",
@@ -5063,7 +4834,7 @@
   "schemaVersion": 1,
   "summary": {
     "actionRequired": [
-      "10 invalid/expired/duplicate Up Ahead item(s) suppressed",
+      "9 invalid/expired/duplicate Up Ahead item(s) suppressed",
       "no active offer items in ranked Up Ahead set",
       "no ranked Up Ahead item for muscat",
       "no local Buzz item in ranked set",
@@ -5077,7 +4848,7 @@
     ],
     "destinationScores": {
       "buzz": 0.0,
-      "insight": 0.4114,
+      "insight": 0.4094,
       "localTravel": 0.0,
       "upAhead": 0.8595
     },
@@ -5087,7 +4858,7 @@
       "localTravel": "FAIL",
       "upAhead": "WARN"
     },
-    "overallScore": 0.3177,
+    "overallScore": 0.3172,
     "overallStatus": "FAIL",
     "rankingProfiles": {
       "buzz": "buzz-v2-trend-local-travel",
@@ -5096,21 +4867,16 @@
       "upAhead": "upAhead-v2-lifecycle-location-category"
     },
     "topFindings": [
+      "Amazon Is Getting a Head Start on Prime Day With Secret Early Deals Up to 76% Off—Shop Travel Staples From $8 - Travel + Leisure: location failed — offline/local item lacks configured location match",
       "Why did Amazon Prime Day shift to June? Here's what the company has said (and not said). - Mashable: location failed — offline/local item lacks configured location match",
       "Oprah, 72, Is My Summer Style Icon—I'm Shopping Her Favorite Jeans, Sneakers, and Bags From $6 at Amazon - instyle.com: location failed — offline/local item lacks configured location match",
       "Shop Amazon’s Ultimate Summer Sale Early With the Best Prime Day 2026 Tech Deals We've Found So Far - PCMag: location failed — offline/local item lacks configured location match",
       "Amazon Prime Day 2026: When You Can Start Shopping, Early Deals and More - TODAY.com: location failed — offline/local item lacks configured location match",
       "You don’t have to wait — here are 51+ Prime Day early deals you can already shop - NBC News: location failed — offline/local item lacks configured location match",
-      "In-charge Vice-Chancellor takes charge at CUTN: futureValidity failed — expired display window",
-      "In-charge Vice-Chancellor takes charge at CUTN: alertUrgency failed — alert expired",
       "The Best Early 2026 Prime Day Deals ELLE Editors Are Already Buying - ELLE: location failed — offline/local item lacks configured location match",
       "Amazon Prime Day 2026 is June 23–26. Get a $200 Amazon gift card and extra rewards with the right credit card - CNBC: location failed — offline/local item lacks configured location match",
-      "Everything We’re Shopping In Lululemon’s “We Made Too Much” Section This Week - Forbes: futureValidity failed — expired display window",
-      "Everything We’re Shopping In Lululemon’s “We Made Too Much” Section This Week - Forbes: location failed — offline/local item lacks configured location match",
-      "Everything We’re Shopping In Lululemon’s “We Made Too Much” Section This Week - Forbes: offerValidity failed — offer expired",
-      "Here’s the Best World Cup Merch on Amazon, According to Our Editors - Men's Health: futureValidity failed — expired display window",
-      "Here’s the Best World Cup Merch on Amazon, According to Our Editors - Men's Health: location failed — offline/local item lacks configured location match",
-      "Here’s the Best World Cup Merch on Amazon, According to Our Editors - Men's Health: offerValidity failed — offer expired"
+      "Air India launches ‘Namaste World’ sale with up to 20% discount - The News Mill: futureValidity failed — expired display window",
+      "Air India launches ‘Namaste World’ sale with up to 20% discount - The News Mill: offerValidity failed — offer expired"
     ]
   }
 }

@@ -5,29 +5,29 @@
 - Grade: `C`
 - Parents: `10`
 - Average angles: `1.4`
-- Average temporal tiers: `1.8`
-- Average evolution roles: `1.9`
-- Base report share: `0.09090909090909091`
+- Average temporal tiers: `1.9`
+- Average evolution roles: `1.6`
+- Base report share: `0.08695652173913043`
 - Multi-angle parents: `4`
 - Weak parents: `0`
-- Story count: `522`
-- Source groups: `9`
-- Content hash: `01984a2a136bba9a`
+- Story count: `528`
+- Source groups: `11`
+- Content hash: `78a2aa10302c8454`
 
 ## Top parents
 
 | # | Headline | Children | Angles | Weak | Score |
 |---:|---|---:|---|---|---:|
-| 1 | Donald Trump accuses Iran of attacking Indian ships; Tehran rejects charge as ‘baseless’ | 2 | official_response, regional_followup | NO | 0.6934967197849984 |
-| 2 | LT Gen Dhiraj Seth appointed next Army Chief | 4 | fact_update, base_report | NO | 0.5968623727449995 |
-| 3 | One year on, families of Air India crash victims demand answers, accountability | 2 | official_response, background_context | NO | 0.6403300531183316 |
-| 4 | U.S. Justice Department clears Paramount's acquisition of Warner Bros | 2 | expert_analysis, official_response | NO | 0.6714967197849984 |
-| 5 | Elon Musk becomes world's first trillionaire as SpaceX soars in stock market debut | 2 | market_reaction | NO | 0.6721766666666666 |
-| 6 | Amit Shah directs MHA support to panel studying demographic changes, especially in border areas | 2 | official_response | NO | 0.62351 |
-| 7 | Palestine Action activists jailed over raid on Israeli defence firm in UK; court cites 'terror connection' | 2 | investigative_detail | NO | 0.6265800531183316 |
-| 8 | PM Modi arrives in France for first leg of two-nation visit | 2 | official_response | NO | 0.5003394400283357 |
-| 9 | Alcohol industry raises alarm over Telangana’s revised payment mechanism for TGBCL supplies | 2 | fact_update | NO | 0.673563386451665 |
-| 10 | Cabinet Secretary | 2 | fact_update | NO | 0.6714967197849984 |
+| 1 | RUHS CUET 2026 Counselling Registration Begins On June 16, Check Complete Schedule | 2 | market_reaction, fact_update | NO | 0.7292467197849983 |
+| 2 | LT Gen Dhiraj Seth appointed next Army Chief | 4 | fact_update, base_report | NO | 0.6607706657689975 |
+| 3 | U.S. Justice Department clears Paramount's acquisition of Warner Bros | 2 | expert_analysis, official_response | NO | 0.6714967197849984 |
+| 4 | Tata's iPhone parts factory contaminated farmland water, alleges TNPCB | 2 | regional_followup, investigative_detail | NO | 0.62816 |
+| 5 | Will Switzerland cap its population at 10 million? What it means for immigrants | 3 | fact_update | NO | 0.6883239879583166 |
+| 6 | Jaishankar speaks to Rubio, lodges strong protest over US Navy attacks that killed 3 Indians | 2 | fact_update | NO | 0.6664967197849982 |
+| 7 | Higher Education Minister | 2 | official_response | NO | 0.6591467197849983 |
+| 8 | Assam Cabinet decides to stop Aadhaar issuance to those aged above 18: CM | 2 | official_response | NO | 0.6504967197849982 |
+| 9 | Amit Shah directs MHA support to panel studying demographic changes, especially in border areas | 2 | official_response | NO | 0.62351 |
+| 10 | Palestine Action activists jailed over raid on Israeli defence firm in UK; court cites 'terror connection' | 2 | investigative_detail | NO | 0.6265800531183316 |
 
 ## Real Snapshot Ratchet Gate
 
@@ -37,9 +37,9 @@
 - Score: `100`
 - Parents: `10`
 - Average angles: `1.4`
-- Average temporal tiers: `1.8`
-- Average evolution roles: `1.9`
-- Base report share: `0.091`
+- Average temporal tiers: `1.9`
+- Average evolution roles: `1.6`
+- Base report share: `0.087`
 - Multi-angle parents: `4`
 - Top parent angles: `2`
 - Top parent children: `2`
@@ -53,9 +53,9 @@
 - Real snapshot grade floor: `C` / `A/B/C`
 - Parent cluster count: `10` / `>= 3`
 - Average visible angle count: `1.4` / `>= 1.4`
-- Average temporal tier count: `1.8` / `>= 1.8`
-- Average evolution role count: `1.9` / `>= 1.6`
-- Base report share: `0.091` / `<= 0.55`
+- Average temporal tier count: `1.9` / `>= 1.8`
+- Average evolution role count: `1.6` / `>= 1.6`
+- Base report share: `0.087` / `<= 0.55`
 - Multi-angle parent count: `4` / `>= 1`
 - Top parent angle count: `2` / `>= 2`
 - Top parent child depth: `2` / `>= 2`

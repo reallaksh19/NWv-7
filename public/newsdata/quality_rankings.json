@@ -1281,24 +1281,34 @@
     },
     "upAhead": {
       "actionableFindings": [
-        "8 invalid/expired/duplicate Up Ahead item(s) suppressed",
+        "13 invalid/expired/duplicate Up Ahead item(s) suppressed",
         "no ranked Up Ahead item for muscat"
       ],
       "destination": "upAhead",
       "diagnosticReasons": [
         "Samsung Galaxy S25 Ultra Price Drop: Here is how to Get it for Rs 94,999 at Amazon Great Summer Sale 2026 - gadgetbridge.com: location failed — offline/local item lacks configured location match",
         "Amazon’s best-selling smartwatch is now on sale for its lowest price - PC Guide: location failed — offline/local item lacks configured location match",
+        "A scary thud at Thiruvengadam Street: futureValidity failed — expired display window",
+        "A scary thud at Thiruvengadam Street: alertUrgency failed — alert expired",
+        "Buggy rides at Egmore museum a big help during summer: futureValidity failed — expired display window",
+        "Buggy rides at Egmore museum a big help during summer: alertUrgency failed — alert expired",
+        "Departed for another sanctuary: a tribute to V. Guruswami the naturalist: futureValidity failed — expired display window",
+        "Departed for another sanctuary: a tribute to V. Guruswami the naturalist: alertUrgency failed — alert expired",
+        "Tiruchi, Perambalur districts host Lok Adalat: futureValidity failed — expired display window",
+        "Tiruchi, Perambalur districts host Lok Adalat: alertUrgency failed — alert expired",
         "Best Amazon Big Spring Sale TV deal 2026: Over $500 off TCL 75-inch TV - Mashable: location failed — offline/local item lacks configured location match",
         "Amazon Is Getting a Head Start on Prime Day With Secret Early Deals Up to 76% Off—Shop Travel Staples From $8 - Travel + Leisure: location failed — offline/local item lacks configured location match",
         "Why did Amazon Prime Day shift to June? Here's what the company has said (and not said). - Mashable: location failed — offline/local item lacks configured location match",
         "Oprah, 72, Is My Summer Style Icon—I'm Shopping Her Favorite Jeans, Sneakers, and Bags From $6 at Amazon - instyle.com: location failed — offline/local item lacks configured location match",
         "Amazon Prime Day 2026: When You Can Start Shopping, Early Deals and More - TODAY.com: location failed — offline/local item lacks configured location match",
-        "You don’t have to wait — here are 51+ Prime Day early deals you can already shop - NBC News: location failed — offline/local item lacks configured location match"
+        "You don’t have to wait — here are 51+ Prime Day early deals you can already shop - NBC News: location failed — offline/local item lacks configured location match",
+        "Amazon Quietly Dropped Early Prime Day Home Deals—Here's What to Buy Right Now - House Beautiful: futureValidity failed — expired display window",
+        "Amazon Quietly Dropped Early Prime Day Home Deals—Here's What to Buy Right Now - House Beautiful: offerValidity failed — offer expired"
       ],
       "gateResults": [
         {
           "details": {
-            "itemCount": 30
+            "itemCount": 26
           },
           "name": "upAheadPool",
           "reason": "rankable Up Ahead pool",
@@ -1308,29 +1318,31 @@
         {
           "details": {
             "categoryCounts": {
-              "alerts": 25,
-              "shopping": 5
+              "alerts": 21,
+              "shopping": 4,
+              "travel_deal": 1
             }
           },
           "name": "categoryCoverage",
           "reason": "category coverage available",
-          "score": 0.5,
+          "score": 0.75,
           "status": "PASS"
         }
       ],
       "gateSummary": {
-        "alerts": 25,
+        "alerts": 21,
         "categoryCounts": {
-          "alerts": 25,
-          "shopping": 5
+          "alerts": 21,
+          "shopping": 4,
+          "travel_deal": 1
         },
         "events": 0,
         "festivals": 0,
         "inputItemCount": 39,
         "locationCounts": {
-          "chennai": 24,
+          "chennai": 21,
           "online": 2,
-          "trichy": 4
+          "trichy": 3
         },
         "locationsCovered": [
           "chennai",
@@ -1339,129 +1351,14 @@
         ],
         "offlineOffers": 3,
         "onlineOffers": 2,
-        "plannerAdvisoryItems": 30,
-        "rankedItemCount": 30,
-        "suppressedItemCount": 8
+        "plannerAdvisoryItems": 25,
+        "rankedItemCount": 26,
+        "suppressedItemCount": 13
       },
       "qualityGrade": "B",
-      "qualityScore": 0.8429,
+      "qualityScore": 0.8363,
       "qualityStatus": "WARN",
       "rankedItems": [
-        {
-          "category": "alerts",
-          "gates": [
-            {
-              "details": {
-                "dedupKey": "4861b6b14bae1f76"
-              },
-              "name": "dedup",
-              "reason": "unique item",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "displayUntil": 1781453474000
-              },
-              "name": "futureValidity",
-              "reason": "valid undated item with active display window",
-              "score": 0.65,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "matchScore": 1.0,
-                "matchedLocation": "chennai",
-                "relevance": "primary",
-                "scope": "exactCity"
-              },
-              "name": "location",
-              "reason": "location matches configured profile",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "hasPlace": true,
-                "hasTime": true
-              },
-              "name": "actionability",
-              "reason": "item has enough action fields",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "offerValidity",
-              "reason": "not an offer",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "severe": false
-              },
-              "name": "alertUrgency",
-              "reason": "active alert",
-              "score": 0.78,
-              "status": "PASS"
-            }
-          ],
-          "id": "e06298a986d9da46",
-          "item": {
-            "actionabilityScore": 0.7,
-            "category": "alerts",
-            "city": "Chennai",
-            "contentClass": "upahead_alert",
-            "dateConfidence": "unknown",
-            "dateSource": "none",
-            "eventEndAt": null,
-            "eventStartAt": null,
-            "expiryAt": 1781453474000,
-            "id": "e06298a986d9da46",
-            "language": "en",
-            "lifecycle": {
-              "archiveUntil": 1782058274000,
-              "contentClass": "upahead_alert",
-              "displayUntil": 1781453474000,
-              "isActionValid": true,
-              "isVisible": true,
-              "plannerEligibleByLifecycle": true,
-              "plannerPastGraceHours": 6,
-              "retentionReason": "expiryAt",
-              "withinSevenDayHorizon": true
-            },
-            "localityScore": 1.0,
-            "normalizedCategory": "alerts",
-            "plannerEligible": true,
-            "publishedAt": 1781367074000,
-            "region": "tn",
-            "scoreBreakdown": {
-              "actionabilityScore": 1.0,
-              "categoryPriorityScore": 1.0,
-              "lifecycleScore": 0.65,
-              "locationScore": 1.0,
-              "plannerFitScore": 1.0,
-              "sourceConfidenceScore": 0.58,
-              "urgencyOrExpiryScore": 0.78
-            },
-            "source": "The Hindu Chennai",
-            "sourceGroup": "the_hindu",
-            "summary": "On June 13, an old tree, reportedly unsteady for a long time, crashed damaging a compound wall, a car inside and two other cars outside. Fortunately, no one was injured, reports D. Vinothkumar",
-            "suppressionReason": null,
-            "title": "A scary thud at Thiruvengadam Street",
-            "url": "https://www.thehindu.com/news/cities/chennai/a-scary-thud-at-thiruvengadam-street/article71098581.ece"
-          },
-          "locationKey": "chennai",
-          "rankingReasons": [
-            "alerts",
-            "valid undated item with active display window",
-            "location matches configured profile",
-            "planner advisory fit"
-          ],
-          "score": 0.8485,
-          "title": "A scary thud at Thiruvengadam Street"
-        },
         {
           "category": "alerts",
           "gates": [
@@ -1691,121 +1588,6 @@
           ],
           "score": 0.8485,
           "title": "Beyond high temperatures: understanding heat stress in Tamil Nadu"
-        },
-        {
-          "category": "alerts",
-          "gates": [
-            {
-              "details": {
-                "dedupKey": "b14a559fa529f007"
-              },
-              "name": "dedup",
-              "reason": "unique item",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "displayUntil": 1781450563000
-              },
-              "name": "futureValidity",
-              "reason": "valid undated item with active display window",
-              "score": 0.65,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "matchScore": 1.0,
-                "matchedLocation": "chennai",
-                "relevance": "primary",
-                "scope": "exactCity"
-              },
-              "name": "location",
-              "reason": "location matches configured profile",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "hasPlace": true,
-                "hasTime": true
-              },
-              "name": "actionability",
-              "reason": "item has enough action fields",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "offerValidity",
-              "reason": "not an offer",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "severe": false
-              },
-              "name": "alertUrgency",
-              "reason": "active alert",
-              "score": 0.78,
-              "status": "PASS"
-            }
-          ],
-          "id": "e9bacab0bd1f4751",
-          "item": {
-            "actionabilityScore": 0.7,
-            "category": "alerts",
-            "city": "Chennai",
-            "contentClass": "upahead_alert",
-            "dateConfidence": "unknown",
-            "dateSource": "none",
-            "eventEndAt": null,
-            "eventStartAt": null,
-            "expiryAt": 1781450563000,
-            "id": "e9bacab0bd1f4751",
-            "language": "en",
-            "lifecycle": {
-              "archiveUntil": 1782055363000,
-              "contentClass": "upahead_alert",
-              "displayUntil": 1781450563000,
-              "isActionValid": true,
-              "isVisible": true,
-              "plannerEligibleByLifecycle": true,
-              "plannerPastGraceHours": 6,
-              "retentionReason": "expiryAt",
-              "withinSevenDayHorizon": true
-            },
-            "localityScore": 1.0,
-            "normalizedCategory": "alerts",
-            "plannerEligible": true,
-            "publishedAt": 1781364163000,
-            "region": "tn",
-            "scoreBreakdown": {
-              "actionabilityScore": 1.0,
-              "categoryPriorityScore": 1.0,
-              "lifecycleScore": 0.65,
-              "locationScore": 1.0,
-              "plannerFitScore": 1.0,
-              "sourceConfidenceScore": 0.58,
-              "urgencyOrExpiryScore": 0.78
-            },
-            "source": "The Hindu Chennai",
-            "sourceGroup": "the_hindu",
-            "summary": "When this free service was launched six months ago, it was an instant hit; but the full measure of its benefit was made manifest only during the extreme heat spikes this summer",
-            "suppressionReason": null,
-            "title": "Buggy rides at Egmore museum a big help during summer",
-            "url": "https://www.thehindu.com/news/cities/chennai/buggy-rides-ategmoremuseum-a-big-help-during-summer/article71098380.ece"
-          },
-          "locationKey": "chennai",
-          "rankingReasons": [
-            "alerts",
-            "valid undated item with active display window",
-            "location matches configured profile",
-            "planner advisory fit"
-          ],
-          "score": 0.8485,
-          "title": "Buggy rides at Egmore museum a big help during summer"
         },
         {
           "category": "alerts",
@@ -2151,121 +1933,6 @@
           ],
           "score": 0.8485,
           "title": "Chennai workshops revive repair culture amid growing textile waste concerns"
-        },
-        {
-          "category": "alerts",
-          "gates": [
-            {
-              "details": {
-                "dedupKey": "4fc027bda98dfa9a"
-              },
-              "name": "dedup",
-              "reason": "unique item",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "displayUntil": 1781450085000
-              },
-              "name": "futureValidity",
-              "reason": "valid undated item with active display window",
-              "score": 0.65,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "matchScore": 1.0,
-                "matchedLocation": "chennai",
-                "relevance": "primary",
-                "scope": "exactCity"
-              },
-              "name": "location",
-              "reason": "location matches configured profile",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "hasPlace": true,
-                "hasTime": true
-              },
-              "name": "actionability",
-              "reason": "item has enough action fields",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "offerValidity",
-              "reason": "not an offer",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "severe": false
-              },
-              "name": "alertUrgency",
-              "reason": "active alert",
-              "score": 0.78,
-              "status": "PASS"
-            }
-          ],
-          "id": "89ca4301948a1f52",
-          "item": {
-            "actionabilityScore": 0.7,
-            "category": "alerts",
-            "city": "Chennai",
-            "contentClass": "upahead_alert",
-            "dateConfidence": "unknown",
-            "dateSource": "none",
-            "eventEndAt": null,
-            "eventStartAt": null,
-            "expiryAt": 1781450085000,
-            "id": "89ca4301948a1f52",
-            "language": "en",
-            "lifecycle": {
-              "archiveUntil": 1782054885000,
-              "contentClass": "upahead_alert",
-              "displayUntil": 1781450085000,
-              "isActionValid": true,
-              "isVisible": true,
-              "plannerEligibleByLifecycle": true,
-              "plannerPastGraceHours": 6,
-              "retentionReason": "expiryAt",
-              "withinSevenDayHorizon": true
-            },
-            "localityScore": 1.0,
-            "normalizedCategory": "alerts",
-            "plannerEligible": true,
-            "publishedAt": 1781363685000,
-            "region": "tn",
-            "scoreBreakdown": {
-              "actionabilityScore": 1.0,
-              "categoryPriorityScore": 1.0,
-              "lifecycleScore": 0.65,
-              "locationScore": 1.0,
-              "plannerFitScore": 1.0,
-              "sourceConfidenceScore": 0.58,
-              "urgencyOrExpiryScore": 0.78
-            },
-            "source": "The Hindu Chennai",
-            "sourceGroup": "the_hindu",
-            "summary": "",
-            "suppressionReason": null,
-            "title": "Departed for another sanctuary: a tribute to V. Guruswami the naturalist",
-            "url": "https://www.thehindu.com/news/cities/chennai/departed-for-another-sanctuary-a-tribute-to-v-guruswami-the-naturalist/article71098339.ece"
-          },
-          "locationKey": "chennai",
-          "rankingReasons": [
-            "alerts",
-            "valid undated item with active display window",
-            "location matches configured profile",
-            "planner advisory fit"
-          ],
-          "score": 0.8485,
-          "title": "Departed for another sanctuary: a tribute to V. Guruswami the naturalist"
         },
         {
           "category": "alerts",
@@ -3767,121 +3434,6 @@
           "gates": [
             {
               "details": {
-                "dedupKey": "e386c4afdfa67977"
-              },
-              "name": "dedup",
-              "reason": "unique item",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "displayUntil": 1781449994000
-              },
-              "name": "futureValidity",
-              "reason": "valid undated item with active display window",
-              "score": 0.65,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "matchScore": 1.0,
-                "matchedLocation": "trichy",
-                "relevance": "primary",
-                "scope": "exactCity"
-              },
-              "name": "location",
-              "reason": "location matches configured profile",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "hasPlace": true,
-                "hasTime": true
-              },
-              "name": "actionability",
-              "reason": "item has enough action fields",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "offerValidity",
-              "reason": "not an offer",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "severe": false
-              },
-              "name": "alertUrgency",
-              "reason": "active alert",
-              "score": 0.78,
-              "status": "PASS"
-            }
-          ],
-          "id": "20ae1e1e806ad115",
-          "item": {
-            "actionabilityScore": 0.7,
-            "category": "alerts",
-            "city": "Trichy",
-            "contentClass": "upahead_alert",
-            "dateConfidence": "unknown",
-            "dateSource": "none",
-            "eventEndAt": null,
-            "eventStartAt": null,
-            "expiryAt": 1781449994000,
-            "id": "20ae1e1e806ad115",
-            "language": "en",
-            "lifecycle": {
-              "archiveUntil": 1782054794000,
-              "contentClass": "upahead_alert",
-              "displayUntil": 1781449994000,
-              "isActionValid": true,
-              "isVisible": true,
-              "plannerEligibleByLifecycle": true,
-              "plannerPastGraceHours": 6,
-              "retentionReason": "expiryAt",
-              "withinSevenDayHorizon": true
-            },
-            "localityScore": 0.9,
-            "normalizedCategory": "alerts",
-            "plannerEligible": true,
-            "publishedAt": 1781363594000,
-            "region": "tn",
-            "scoreBreakdown": {
-              "actionabilityScore": 1.0,
-              "categoryPriorityScore": 1.0,
-              "lifecycleScore": 0.65,
-              "locationScore": 1.0,
-              "plannerFitScore": 1.0,
-              "sourceConfidenceScore": 0.58,
-              "urgencyOrExpiryScore": 0.78
-            },
-            "source": "The Hindu Trichy",
-            "sourceGroup": "the_hindu",
-            "summary": "",
-            "suppressionReason": null,
-            "title": "Tiruchi, Perambalur districts host Lok Adalat",
-            "url": "https://www.thehindu.com/news/cities/Tiruchirapalli/tiruchi-perambalur-districts-host-lok-adalat/article71098158.ece"
-          },
-          "locationKey": "trichy",
-          "rankingReasons": [
-            "alerts",
-            "valid undated item with active display window",
-            "location matches configured profile",
-            "planner advisory fit"
-          ],
-          "score": 0.8485,
-          "title": "Tiruchi, Perambalur districts host Lok Adalat"
-        },
-        {
-          "category": "alerts",
-          "gates": [
-            {
-              "details": {
                 "dedupKey": "13c7a797c26fd5bb"
               },
               "name": "dedup",
@@ -4267,7 +3819,7 @@
             },
             {
               "details": {
-                "hoursLeft": 23.83
+                "hoursLeft": 22.19
               },
               "name": "offerValidity",
               "reason": "offer expires soon",
@@ -4342,7 +3894,7 @@
           "gates": [
             {
               "details": {
-                "dedupKey": "5a384993236f58f1"
+                "dedupKey": "4e046e9c459b85d9"
               },
               "name": "dedup",
               "reason": "unique item",
@@ -4351,7 +3903,7 @@
             },
             {
               "details": {
-                "displayUntil": 1781449200000
+                "displayUntil": 1781539200000
               },
               "name": "futureValidity",
               "reason": "valid undated item with active display window",
@@ -4382,7 +3934,7 @@
             },
             {
               "details": {
-                "hoursLeft": 0.3
+                "hoursLeft": 23.66
               },
               "name": "offerValidity",
               "reason": "offer expires soon",
@@ -4397,7 +3949,7 @@
               "status": "PASS"
             }
           ],
-          "id": "f362f921fd8bffd0",
+          "id": "1783ac98df5cba60",
           "item": {
             "actionabilityScore": 0.65,
             "category": "shopping",
@@ -4407,13 +3959,13 @@
             "dateSource": "none",
             "eventEndAt": null,
             "eventStartAt": null,
-            "expiryAt": 1781449200000,
-            "id": "f362f921fd8bffd0",
+            "expiryAt": 1781539200000,
+            "id": "1783ac98df5cba60",
             "language": "en",
             "lifecycle": {
-              "archiveUntil": 1782054000000,
+              "archiveUntil": 1782144000000,
               "contentClass": "upahead_offer",
-              "displayUntil": 1781449200000,
+              "displayUntil": 1781539200000,
               "isActionValid": true,
               "isVisible": true,
               "plannerEligibleByLifecycle": true,
@@ -4424,7 +3976,7 @@
             "localityScore": 0.3,
             "normalizedCategory": "shopping",
             "plannerEligible": true,
-            "publishedAt": 1781276400000,
+            "publishedAt": 1781366400000,
             "region": null,
             "scoreBreakdown": {
               "actionabilityScore": 0.8500000000000001,
@@ -4437,10 +3989,10 @@
             },
             "source": "Google News Shopping",
             "sourceGroup": "google_news",
-            "summary": "<a href=\"https://news.google.com/rss/articles/CBMilAFBVV95cUxPVEgzcDhBRTZieE5uLUlpaDhiUVVqSFR1NWRzQlp2YjFGSDVzR2h4WHRpWUh0dl9lTnB6YzdYS2xqRWVIVy1saXllcFVZcGlYWHkzVTFnbmhlZWM4YXFlMk5naklTeWJTSnNSX2J0Z0NnT1pZOUVjUVlUcE9jY1hhV0ZvTWsybzMtVW1EbUFwalZveldP?oc=5\" target=\"_blank\">Amazon Quietly Dropped Early Prime Day Home Deals—Here's What to Buy Right Now</a>&nbsp;&nbsp;<font color=\"#6f6f6f\">House Beautiful</font>",
+            "summary": "<a href=\"https://news.google.com/rss/articles/CBMiqAFBVV95cUxQdUZvc2IxQlFiclV6TnRGdWJvLThrMFZkcHBpUjlGZkMxYlkwYmhwRkpVbUxjMzZWb19fUTd3Z19Eb2xrYXJZdzJvdmxydTd1UVBlZXpmNEozTTRyR2xlbUhzVzQ2clZ5S3o1Zi1ldWM2eDZwb2tZTDdIYVBsclhrcE9aVnlwamtPUlBwVXVnS0dSTnBEb2xqU2w5M2xsdFB1Z2MzVE9JdGI?oc=5\" target=\"_blank\">Best Comfortable Push-Up Bras on Sale Ahead of Amazon's Prime Day for Extra Lift, Shape, and Support</a>&nbsp;&nbsp;<font color=\"#6f6f6f\">E! News</font>",
             "suppressionReason": null,
-            "title": "Amazon Quietly Dropped Early Prime Day Home Deals—Here's What to Buy Right Now - House Beautiful",
-            "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxPVEgzcDhBRTZieE5uLUlpaDhiUVVqSFR1NWRzQlp2YjFGSDVzR2h4WHRpWUh0dl9lTnB6YzdYS2xqRWVIVy1saXllcFVZcGlYWHkzVTFnbmhlZWM4YXFlMk5naklTeWJTSnNSX2J0Z0NnT1pZOUVjUVlUcE9jY1hhV0ZvTWsybzMtVW1EbUFwalZveldP?oc=5"
+            "title": "Best Comfortable Push-Up Bras on Sale Ahead of Amazon's Prime Day for Extra Lift, Shape, and Support - E! News",
+            "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxQdUZvc2IxQlFiclV6TnRGdWJvLThrMFZkcHBpUjlGZkMxYlkwYmhwRkpVbUxjMzZWb19fUTd3Z19Eb2xrYXJZdzJvdmxydTd1UVBlZXpmNEozTTRyR2xlbUhzVzQ2clZ5S3o1Zi1ldWM2eDZwb2tZTDdIYVBsclhrcE9aVnlwamtPUlBwVXVnS0dSTnBEb2xqU2w5M2xsdFB1Z2MzVE9JdGI?oc=5"
           },
           "locationKey": "chennai",
           "rankingReasons": [
@@ -4450,7 +4002,7 @@
             "planner advisory fit"
           ],
           "score": 0.744,
-          "title": "Amazon Quietly Dropped Early Prime Day Home Deals—Here's What to Buy Right Now - House Beautiful"
+          "title": "Best Comfortable Push-Up Bras on Sale Ahead of Amazon's Prime Day for Extra Lift, Shape, and Support - E! News"
         },
         {
           "category": "shopping",
@@ -4497,7 +4049,7 @@
             },
             {
               "details": {
-                "hoursLeft": 16.25
+                "hoursLeft": 14.61
               },
               "name": "offerValidity",
               "reason": "offer expires soon",
@@ -4612,7 +4164,7 @@
             },
             {
               "details": {
-                "hoursLeft": 28.36
+                "hoursLeft": 26.72
               },
               "name": "offerValidity",
               "reason": "offer active within three days",
@@ -4683,11 +4235,11 @@
           "title": "Apple's M4 Mac mini is back in stock & on sale for $769, but supply is limited - AppleInsider"
         },
         {
-          "category": "shopping",
+          "category": "travel_deal",
           "gates": [
             {
               "details": {
-                "dedupKey": "4e046e9c459b85d9"
+                "dedupKey": "88710bcf0adbad40"
               },
               "name": "dedup",
               "reason": "unique item",
@@ -4696,7 +4248,7 @@
             },
             {
               "details": {
-                "displayUntil": 1781539200000
+                "displayUntil": 1781522605000
               },
               "name": "futureValidity",
               "reason": "valid undated item with active display window",
@@ -4727,11 +4279,11 @@
             },
             {
               "details": {
-                "hoursLeft": 25.3
+                "hoursLeft": 19.05
               },
               "name": "offerValidity",
-              "reason": "offer active within three days",
-              "score": 0.82,
+              "reason": "offer expires soon",
+              "score": 1.0,
               "status": "PASS"
             },
             {
@@ -4742,75 +4294,74 @@
               "status": "PASS"
             }
           ],
-          "id": "1783ac98df5cba60",
+          "id": "8424742d5dbe274a",
           "item": {
-            "actionabilityScore": 0.65,
-            "category": "shopping",
+            "actionabilityScore": 0.5,
+            "category": "airlines",
             "city": null,
             "contentClass": "upahead_offer",
             "dateConfidence": "unknown",
             "dateSource": "none",
             "eventEndAt": null,
             "eventStartAt": null,
-            "expiryAt": 1781539200000,
-            "id": "1783ac98df5cba60",
+            "expiryAt": 1781522605000,
+            "id": "8424742d5dbe274a",
             "language": "en",
             "lifecycle": {
-              "archiveUntil": 1782144000000,
+              "archiveUntil": 1782127405000,
               "contentClass": "upahead_offer",
-              "displayUntil": 1781539200000,
+              "displayUntil": 1781522605000,
               "isActionValid": true,
               "isVisible": true,
-              "plannerEligibleByLifecycle": true,
+              "plannerEligibleByLifecycle": false,
               "plannerPastGraceHours": 6,
               "retentionReason": "expiryAt",
               "withinSevenDayHorizon": true
             },
             "localityScore": 0.3,
-            "normalizedCategory": "shopping",
-            "plannerEligible": true,
-            "publishedAt": 1781366400000,
+            "normalizedCategory": "travel_deal",
+            "plannerEligible": false,
+            "publishedAt": 1781349805000,
             "region": null,
             "scoreBreakdown": {
               "actionabilityScore": 0.8500000000000001,
-              "categoryPriorityScore": 0.68,
+              "categoryPriorityScore": 0.74,
               "lifecycleScore": 0.65,
               "locationScore": 0.72,
-              "plannerFitScore": 1.0,
+              "plannerFitScore": 0.0,
               "sourceConfidenceScore": 0.58,
-              "urgencyOrExpiryScore": 0.82
+              "urgencyOrExpiryScore": 1.0
             },
-            "source": "Google News Shopping",
+            "source": "Google News Airlines",
             "sourceGroup": "google_news",
-            "summary": "<a href=\"https://news.google.com/rss/articles/CBMiqAFBVV95cUxQdUZvc2IxQlFiclV6TnRGdWJvLThrMFZkcHBpUjlGZkMxYlkwYmhwRkpVbUxjMzZWb19fUTd3Z19Eb2xrYXJZdzJvdmxydTd1UVBlZXpmNEozTTRyR2xlbUhzVzQ2clZ5S3o1Zi1ldWM2eDZwb2tZTDdIYVBsclhrcE9aVnlwamtPUlBwVXVnS0dSTnBEb2xqU2w5M2xsdFB1Z2MzVE9JdGI?oc=5\" target=\"_blank\">Best Comfortable Push-Up Bras on Sale Ahead of Amazon's Prime Day for Extra Lift, Shape, and Support</a>&nbsp;&nbsp;<font color=\"#6f6f6f\">E! News</font>",
+            "summary": "<a href=\"https://news.google.com/rss/articles/CBMihgJBVV95cUxOaldpbkdOM3R0dGRDNG1Ec1hudFVIdVNXUGF4aS14cTNOcXdMZk9rQnBHRnpadm54YzZLdFUzOUFyREpQbW8ybXAzM0dWUXJXZG0yQy02Q0R0Q2hGSF9nb096SVpBU3VnNmlLR1gxLTRVNG5wTXJwblNHTkJGWFRLNE4yamRqMFp2NHNpUTYzbGsxdDdSQndUa2FRUllDY05TZmNJZTN3UFRLU1BUdl9aNk1QWUktMVlQWkFZeG9XM0NzcjUzVHkzbnYxMHB3QmhrN3RYczNiWG5xUDZ5MzJCT243aEs0RXg5dWxzSWQwckYya0I2R3I1YTRwV1J6cUkzb1VQUHpB?oc=5\" target=\"_blank\">Riyadh Air Launches: London Live, 5 More Routes on Sale Now</a>&nbsp;&nbsp;<font color=\"#6f6f6f\">Travel Tourister</font>",
             "suppressionReason": null,
-            "title": "Best Comfortable Push-Up Bras on Sale Ahead of Amazon's Prime Day for Extra Lift, Shape, and Support - E! News",
-            "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxQdUZvc2IxQlFiclV6TnRGdWJvLThrMFZkcHBpUjlGZkMxYlkwYmhwRkpVbUxjMzZWb19fUTd3Z19Eb2xrYXJZdzJvdmxydTd1UVBlZXpmNEozTTRyR2xlbUhzVzQ2clZ5S3o1Zi1ldWM2eDZwb2tZTDdIYVBsclhrcE9aVnlwamtPUlBwVXVnS0dSTnBEb2xqU2w5M2xsdFB1Z2MzVE9JdGI?oc=5"
+            "title": "Riyadh Air Launches: London Live, 5 More Routes on Sale Now - Travel Tourister",
+            "url": "https://news.google.com/rss/articles/CBMihgJBVV95cUxOaldpbkdOM3R0dGRDNG1Ec1hudFVIdVNXUGF4aS14cTNOcXdMZk9rQnBHRnpadm54YzZLdFUzOUFyREpQbW8ybXAzM0dWUXJXZG0yQy02Q0R0Q2hGSF9nb096SVpBU3VnNmlLR1gxLTRVNG5wTXJwblNHTkJGWFRLNE4yamRqMFp2NHNpUTYzbGsxdDdSQndUa2FRUllDY05TZmNJZTN3UFRLU1BUdl9aNk1QWUktMVlQWkFZeG9XM0NzcjUzVHkzbnYxMHB3QmhrN3RYczNiWG5xUDZ5MzJCT243aEs0RXg5dWxzSWQwckYya0I2R3I1YTRwV1J6cUkzb1VQUHpB?oc=5"
           },
           "locationKey": "chennai",
           "rankingReasons": [
-            "shopping",
+            "travel_deal",
             "valid undated item with active display window",
-            "location matches configured profile",
-            "planner advisory fit"
+            "location matches configured profile"
           ],
-          "score": 0.726,
-          "title": "Best Comfortable Push-Up Bras on Sale Ahead of Amazon's Prime Day for Extra Lift, Shape, and Support - E! News"
+          "score": 0.703,
+          "title": "Riyadh Air Launches: London Live, 5 More Routes on Sale Now - Travel Tourister"
         }
       ],
       "rankingProfile": "upAhead-v2-lifecycle-location-category",
       "scoreBreakdown": {
-        "actionabilityScore": 0.975,
-        "categoryPriorityScore": 0.9467,
+        "actionabilityScore": 0.9712,
+        "categoryPriorityScore": 0.9408,
         "lifecycleScore": 0.65,
-        "locationScore": 0.944,
-        "plannerFitScore": 1.0,
+        "locationScore": 0.9354,
+        "plannerFitScore": 0.9615,
         "sourceConfidenceScore": 0.58,
-        "urgencyOrExpiryScore": 0.8047
+        "urgencyOrExpiryScore": 0.8154
       }
     }
   },
-  "generatedAt": 1781448134883,
+  "generatedAt": 1781454037796,
   "implementedDestinations": [
     "upAhead",
     "buzz",
@@ -4829,7 +4380,7 @@
   "schemaVersion": 1,
   "summary": {
     "actionRequired": [
-      "8 invalid/expired/duplicate Up Ahead item(s) suppressed",
+      "13 invalid/expired/duplicate Up Ahead item(s) suppressed",
       "no ranked Up Ahead item for muscat",
       "no local Buzz item in ranked set",
       "no travel Buzz item in ranked set",
@@ -4844,7 +4395,7 @@
       "buzz": 0.0,
       "insight": 0.4024,
       "localTravel": 0.0,
-      "upAhead": 0.8429
+      "upAhead": 0.8363
     },
     "destinationStatuses": {
       "buzz": "FAIL",
@@ -4852,7 +4403,7 @@
       "localTravel": "FAIL",
       "upAhead": "WARN"
     },
-    "overallScore": 0.3113,
+    "overallScore": 0.3097,
     "overallStatus": "FAIL",
     "rankingProfiles": {
       "buzz": "buzz-v2-trend-local-travel",
@@ -4863,12 +4414,22 @@
     "topFindings": [
       "Samsung Galaxy S25 Ultra Price Drop: Here is how to Get it for Rs 94,999 at Amazon Great Summer Sale 2026 - gadgetbridge.com: location failed — offline/local item lacks configured location match",
       "Amazon’s best-selling smartwatch is now on sale for its lowest price - PC Guide: location failed — offline/local item lacks configured location match",
+      "A scary thud at Thiruvengadam Street: futureValidity failed — expired display window",
+      "A scary thud at Thiruvengadam Street: alertUrgency failed — alert expired",
+      "Buggy rides at Egmore museum a big help during summer: futureValidity failed — expired display window",
+      "Buggy rides at Egmore museum a big help during summer: alertUrgency failed — alert expired",
+      "Departed for another sanctuary: a tribute to V. Guruswami the naturalist: futureValidity failed — expired display window",
+      "Departed for another sanctuary: a tribute to V. Guruswami the naturalist: alertUrgency failed — alert expired",
+      "Tiruchi, Perambalur districts host Lok Adalat: futureValidity failed — expired display window",
+      "Tiruchi, Perambalur districts host Lok Adalat: alertUrgency failed — alert expired",
       "Best Amazon Big Spring Sale TV deal 2026: Over $500 off TCL 75-inch TV - Mashable: location failed — offline/local item lacks configured location match",
       "Amazon Is Getting a Head Start on Prime Day With Secret Early Deals Up to 76% Off—Shop Travel Staples From $8 - Travel + Leisure: location failed — offline/local item lacks configured location match",
       "Why did Amazon Prime Day shift to June? Here's what the company has said (and not said). - Mashable: location failed — offline/local item lacks configured location match",
       "Oprah, 72, Is My Summer Style Icon—I'm Shopping Her Favorite Jeans, Sneakers, and Bags From $6 at Amazon - instyle.com: location failed — offline/local item lacks configured location match",
       "Amazon Prime Day 2026: When You Can Start Shopping, Early Deals and More - TODAY.com: location failed — offline/local item lacks configured location match",
-      "You don’t have to wait — here are 51+ Prime Day early deals you can already shop - NBC News: location failed — offline/local item lacks configured location match"
+      "You don’t have to wait — here are 51+ Prime Day early deals you can already shop - NBC News: location failed — offline/local item lacks configured location match",
+      "Amazon Quietly Dropped Early Prime Day Home Deals—Here's What to Buy Right Now - House Beautiful: futureValidity failed — expired display window",
+      "Amazon Quietly Dropped Early Prime Day Home Deals—Here's What to Buy Right Now - House Beautiful: offerValidity failed — offer expired"
     ]
   }
 }

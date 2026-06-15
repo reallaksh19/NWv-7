@@ -53,14 +53,14 @@
     },
     "insight": {
       "actionableFindings": [
-        "2 base-report-heavy Insight parent(s) demoted"
+        "1 base-report-heavy Insight parent(s) demoted"
       ],
       "destination": "insight",
       "diagnosticReasons": [],
       "gateResults": [
         {
           "details": {
-            "itemCount": 10
+            "itemCount": 9
           },
           "name": "insightEventPool",
           "reason": "rankable Insight event pool",
@@ -77,16 +77,16 @@
       ],
       "gateSummary": {
         "avgAnglesPerParent": 0.0,
-        "baseReportHeavyParents": 2,
+        "baseReportHeavyParents": 1,
         "duplicateChildrenSuppressed": 0,
-        "inputCandidateCount": 10,
-        "parentClusters": 10,
-        "strongParents": 10,
+        "inputCandidateCount": 9,
+        "parentClusters": 9,
+        "strongParents": 9,
         "suppressedCandidateCount": 0,
         "weakParentsDemoted": 0
       },
       "qualityGrade": "F",
-      "qualityScore": 0.4084,
+      "qualityScore": 0.4101,
       "qualityStatus": "WARN",
       "rankedItems": [
         {
@@ -1006,116 +1006,6 @@
           "gates": [
             {
               "details": {
-                "storyCount": 5
-              },
-              "name": "eventCoherence",
-              "reason": "event sketch has repeated story count",
-              "score": 0.62,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "baseReportRatio": 1.0,
-                "distinctAngles": 0
-              },
-              "name": "angleDiversity",
-              "reason": "weak child angle diversity",
-              "score": 0.25,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "sourceGroupCount": 1
-              },
-              "name": "sourceDiversity",
-              "reason": "one-source event candidate",
-              "score": 0.35,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "baseReportRatio": 1.0
-              },
-              "name": "baseReportCap",
-              "reason": "base-report dominated event candidate",
-              "score": 0.25,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "childCount": 5
-              },
-              "name": "weakTree",
-              "reason": "child tree has enough depth",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "duplicateChildren",
-              "reason": "no child objects to dedup",
-              "score": 0.7,
-              "status": "PASS"
-            }
-          ],
-          "id": "sketch:bbd7147cc9",
-          "item": {
-            "angleCount": 1,
-            "baseReportRatio": 1.0,
-            "childScores": [],
-            "id": "sketch:bbd7147cc9",
-            "representativeId": "f7e79d20837ae6eb",
-            "representativeTitle": "Top news of the day: May 31, 2026 - The Hindu",
-            "scoreBreakdown": {
-              "angleDiversityScore": 0.25,
-              "eventImportanceScore": 0.95,
-              "freshnessScore": 0.0,
-              "noveltyDeltaScore": 0.44999999999999996,
-              "sourceAuthorityScore": 0.38,
-              "sourceDiversityScore": 0.35,
-              "temporalEvolutionScore": 0.37
-            },
-            "slotCount": 1,
-            "slots": [
-              "now"
-            ],
-            "sourceGroupCount": 1,
-            "sourceGroups": [
-              "google_news"
-            ],
-            "storyCount": 5,
-            "storyIds": [
-              "f7e79d20837ae6eb",
-              "f274ef9a4032ff70",
-              "b23af9b5e8042845",
-              "b010f0116b18824e",
-              "55bc91c985238054"
-            ],
-            "topAngles": [
-              {
-                "angle": "base_report",
-                "count": 5
-              }
-            ],
-            "topTokens": [
-              "hindu"
-            ],
-            "topicKey": "hindu"
-          },
-          "locationKey": "event",
-          "rankingReasons": [
-            "event sketch has repeated story count",
-            "weak child angle diversity",
-            "one-source event candidate"
-          ],
-          "score": 0.2155,
-          "title": "Top news of the day: May 31, 2026 - The Hindu"
-        },
-        {
-          "category": "insightEvent",
-          "gates": [
-            {
-              "details": {
                 "storyCount": 2
               },
               "name": "eventCoherence",
@@ -1224,13 +1114,13 @@
       ],
       "rankingProfile": "insight-v2-event-angle-tree",
       "scoreBreakdown": {
-        "angleDiversityScore": 0.303,
-        "eventImportanceScore": 0.638,
+        "angleDiversityScore": 0.3089,
+        "eventImportanceScore": 0.6033,
         "freshnessScore": 0.0,
-        "noveltyDeltaScore": 0.49,
-        "sourceAuthorityScore": 0.476,
-        "sourceDiversityScore": 0.498,
-        "temporalEvolutionScore": 0.454
+        "noveltyDeltaScore": 0.4944,
+        "sourceAuthorityScore": 0.4867,
+        "sourceDiversityScore": 0.5144,
+        "temporalEvolutionScore": 0.4633
       }
     },
     "localTravel": {
@@ -1290,7 +1180,7 @@
     },
     "upAhead": {
       "actionableFindings": [
-        "9 invalid/expired/duplicate Up Ahead item(s) suppressed",
+        "10 invalid/expired/duplicate Up Ahead item(s) suppressed",
         "no active offer items in ranked Up Ahead set",
         "no ranked Up Ahead item for muscat"
       ],
@@ -1300,6 +1190,8 @@
         "Amazon Prime Day Sale 2026 coming soon? Here's when it may begin; expected discounts and deals - The Economic Times: location failed — offline/local item lacks configured location match",
         "Free Gaming Perks You Didn't Know About Ahead Of Amazon Prime Day Sale - GAMINGbible: location failed — offline/local item lacks configured location match",
         "20%-off deal on Ryzen 7-powered Geekom mini PC beats Amazon Prime Day, with huge store-wide Summer Sale to boot - Notebookcheck: location failed — offline/local item lacks configured location match",
+        "GCC takes up stormwater drain works worth ₹56.73 crore: futureValidity failed — expired display window",
+        "GCC takes up stormwater drain works worth ₹56.73 crore: alertUrgency failed — alert expired",
         "Four persons found dead along railway tracks across city: futureValidity failed — expired display window",
         "Four persons found dead along railway tracks across city: alertUrgency failed — alert expired",
         "Singappen police force rescues two-year-old child from the Marina beach: futureValidity failed — expired display window",
@@ -1352,10 +1244,10 @@
         "onlineOffers": 0,
         "plannerAdvisoryItems": 29,
         "rankedItemCount": 30,
-        "suppressedItemCount": 9
+        "suppressedItemCount": 10
       },
       "qualityGrade": "B",
-      "qualityScore": 0.8585,
+      "qualityScore": 0.8575,
       "qualityStatus": "WARN",
       "rankedItems": [
         {
@@ -1586,121 +1478,6 @@
           ],
           "score": 0.8705,
           "title": "Corporation plans canal strengthening and flood protection works across Tiruchi"
-        },
-        {
-          "category": "alerts",
-          "gates": [
-            {
-              "details": {
-                "dedupKey": "9c0aec21bbf2e090"
-              },
-              "name": "dedup",
-              "reason": "unique item",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "displayUntil": 1781550036000
-              },
-              "name": "futureValidity",
-              "reason": "valid undated item with active display window",
-              "score": 0.65,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "matchScore": 1.0,
-                "matchedLocation": "chennai",
-                "relevance": "primary",
-                "scope": "exactCity"
-              },
-              "name": "location",
-              "reason": "location matches configured profile",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "hasPlace": true,
-                "hasTime": true
-              },
-              "name": "actionability",
-              "reason": "item has enough action fields",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "offerValidity",
-              "reason": "not an offer",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "severe": true
-              },
-              "name": "alertUrgency",
-              "reason": "severe/active alert",
-              "score": 1.0,
-              "status": "PASS"
-            }
-          ],
-          "id": "e53861da10903c82",
-          "item": {
-            "actionabilityScore": 0.7,
-            "category": "alerts",
-            "city": "Chennai",
-            "contentClass": "upahead_alert",
-            "dateConfidence": "unknown",
-            "dateSource": "none",
-            "eventEndAt": null,
-            "eventStartAt": null,
-            "expiryAt": 1781550036000,
-            "id": "e53861da10903c82",
-            "language": "en",
-            "lifecycle": {
-              "archiveUntil": 1782154836000,
-              "contentClass": "upahead_alert",
-              "displayUntil": 1781550036000,
-              "isActionValid": true,
-              "isVisible": true,
-              "plannerEligibleByLifecycle": true,
-              "plannerPastGraceHours": 6,
-              "retentionReason": "expiryAt",
-              "withinSevenDayHorizon": true
-            },
-            "localityScore": 1.0,
-            "normalizedCategory": "alerts",
-            "plannerEligible": true,
-            "publishedAt": 1781463636000,
-            "region": "tn",
-            "scoreBreakdown": {
-              "actionabilityScore": 1.0,
-              "categoryPriorityScore": 1.0,
-              "lifecycleScore": 0.65,
-              "locationScore": 1.0,
-              "plannerFitScore": 1.0,
-              "sourceConfidenceScore": 0.58,
-              "urgencyOrExpiryScore": 1.0
-            },
-            "source": "The Hindu Chennai",
-            "sourceGroup": "the_hindu",
-            "summary": "The Commissioner also reviewed desilting operations being carried out using an amphibious machine in Korattur North Avenue Road and along the surplus water canal connected to Korattur Lake",
-            "suppressionReason": null,
-            "title": "GCC takes up stormwater drain works worth ₹56.73 crore",
-            "url": "https://www.thehindu.com/news/cities/chennai/gcc-takes-up-stormwater-drain-works-worth-5673-crore/article71101711.ece"
-          },
-          "locationKey": "chennai",
-          "rankingReasons": [
-            "alerts",
-            "valid undated item with active display window",
-            "location matches configured profile",
-            "planner advisory fit"
-          ],
-          "score": 0.8705,
-          "title": "GCC takes up stormwater drain works worth ₹56.73 crore"
         },
         {
           "category": "weather_alerts",
@@ -4806,6 +4583,121 @@
           ],
           "score": 0.8485,
           "title": "Udhayanidhi demands high-level meeting of police to discuss law and order in T.N."
+        },
+        {
+          "category": "alerts",
+          "gates": [
+            {
+              "details": {
+                "dedupKey": "14c22d1a0fcc6ea2"
+              },
+              "name": "dedup",
+              "reason": "unique item",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "displayUntil": 1781596389000
+              },
+              "name": "futureValidity",
+              "reason": "valid undated item with active display window",
+              "score": 0.65,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "matchScore": 1.0,
+                "matchedLocation": "chennai",
+                "relevance": "primary",
+                "scope": "exactCity"
+              },
+              "name": "location",
+              "reason": "location matches configured profile",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "hasPlace": true,
+                "hasTime": true
+              },
+              "name": "actionability",
+              "reason": "item has enough action fields",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "offerValidity",
+              "reason": "not an offer",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "severe": false
+              },
+              "name": "alertUrgency",
+              "reason": "active alert",
+              "score": 0.78,
+              "status": "PASS"
+            }
+          ],
+          "id": "03f47b0fff39877b",
+          "item": {
+            "actionabilityScore": 1.0,
+            "category": "alerts",
+            "city": "Chennai",
+            "contentClass": "upahead_alert",
+            "dateConfidence": "unknown",
+            "dateSource": "none",
+            "eventEndAt": null,
+            "eventStartAt": null,
+            "expiryAt": 1781596389000,
+            "id": "03f47b0fff39877b",
+            "language": "en",
+            "lifecycle": {
+              "archiveUntil": 1782201189000,
+              "contentClass": "upahead_alert",
+              "displayUntil": 1781596389000,
+              "isActionValid": true,
+              "isVisible": true,
+              "plannerEligibleByLifecycle": true,
+              "plannerPastGraceHours": 6,
+              "retentionReason": "expiryAt",
+              "withinSevenDayHorizon": true
+            },
+            "localityScore": 1.0,
+            "normalizedCategory": "alerts",
+            "plannerEligible": true,
+            "publishedAt": 1781509989000,
+            "region": "tn",
+            "scoreBreakdown": {
+              "actionabilityScore": 1.0,
+              "categoryPriorityScore": 1.0,
+              "lifecycleScore": 0.65,
+              "locationScore": 1.0,
+              "plannerFitScore": 1.0,
+              "sourceConfidenceScore": 0.58,
+              "urgencyOrExpiryScore": 0.78
+            },
+            "source": "The Hindu Chennai",
+            "sourceGroup": "the_hindu",
+            "summary": "Sumana Ramanan’s book The Secret Master profiles Arun Kashalkar’s Kkhayal journey, exploring classical music’s marginalizsed ecosystem. At a discussion with TM Krishna in Chennai, she spoke about the commodification and cultural shifts threatening Hindustani music, urging institutional support for gurus and more performance spaces",
+            "suppressionReason": null,
+            "title": "Understanding khayal, a form of Hindustani classical music, and its secret masters",
+            "url": "https://www.thehindu.com/entertainment/music/understanding-khayal-a-form-of-hindustani-classical-music-and-its-secret-masters/article71092829.ece"
+          },
+          "locationKey": "chennai",
+          "rankingReasons": [
+            "alerts",
+            "valid undated item with active display window",
+            "location matches configured profile",
+            "planner advisory fit"
+          ],
+          "score": 0.8485,
+          "title": "Understanding khayal, a form of Hindustani classical music, and its secret masters"
         }
       ],
       "rankingProfile": "upAhead-v2-lifecycle-location-category",
@@ -4816,11 +4708,11 @@
         "locationScore": 1.0,
         "plannerFitScore": 0.9667,
         "sourceConfidenceScore": 0.58,
-        "urgencyOrExpiryScore": 0.802
+        "urgencyOrExpiryScore": 0.7947
       }
     }
   },
-  "generatedAt": 1781547188357,
+  "generatedAt": 1781550225750,
   "implementedDestinations": [
     "upAhead",
     "buzz",
@@ -4839,7 +4731,7 @@
   "schemaVersion": 1,
   "summary": {
     "actionRequired": [
-      "9 invalid/expired/duplicate Up Ahead item(s) suppressed",
+      "10 invalid/expired/duplicate Up Ahead item(s) suppressed",
       "no active offer items in ranked Up Ahead set",
       "no ranked Up Ahead item for muscat",
       "no local Buzz item in ranked set",
@@ -4849,13 +4741,13 @@
       "no ranked local/travel item for muscat",
       "no ranked local/travel item for chennai",
       "no ranked local/travel item for trichy",
-      "2 base-report-heavy Insight parent(s) demoted"
+      "1 base-report-heavy Insight parent(s) demoted"
     ],
     "destinationScores": {
       "buzz": 0.0,
-      "insight": 0.4084,
+      "insight": 0.4101,
       "localTravel": 0.0,
-      "upAhead": 0.8585
+      "upAhead": 0.8575
     },
     "destinationStatuses": {
       "buzz": "FAIL",
@@ -4863,7 +4755,7 @@
       "localTravel": "FAIL",
       "upAhead": "WARN"
     },
-    "overallScore": 0.3167,
+    "overallScore": 0.3169,
     "overallStatus": "FAIL",
     "rankingProfiles": {
       "buzz": "buzz-v2-trend-local-travel",
@@ -4876,6 +4768,8 @@
       "Amazon Prime Day Sale 2026 coming soon? Here's when it may begin; expected discounts and deals - The Economic Times: location failed — offline/local item lacks configured location match",
       "Free Gaming Perks You Didn't Know About Ahead Of Amazon Prime Day Sale - GAMINGbible: location failed — offline/local item lacks configured location match",
       "20%-off deal on Ryzen 7-powered Geekom mini PC beats Amazon Prime Day, with huge store-wide Summer Sale to boot - Notebookcheck: location failed — offline/local item lacks configured location match",
+      "GCC takes up stormwater drain works worth ₹56.73 crore: futureValidity failed — expired display window",
+      "GCC takes up stormwater drain works worth ₹56.73 crore: alertUrgency failed — alert expired",
       "Four persons found dead along railway tracks across city: futureValidity failed — expired display window",
       "Four persons found dead along railway tracks across city: alertUrgency failed — alert expired",
       "Singappen police force rescues two-year-old child from the Marina beach: futureValidity failed — expired display window",

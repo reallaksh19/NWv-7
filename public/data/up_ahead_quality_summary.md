@@ -2,14 +2,14 @@
 
 - Status: **PASS**
 - Contract: `upahead-lifecycle-v1`
-- Items: `59`
-- Visible items: `59`
-- Planner lifecycle eligible: `58`
+- Items: `71`
+- Visible items: `71`
+- Planner lifecycle eligible: `71`
 - Lookahead days: `7`
 - Planner past grace hours: `6`
 
 ## Category counts
 
-- alerts: 40
-- shopping: 17
-- weather_alerts: 2
+- alerts: 48
+- shopping: 22
+- weather_alerts: 1

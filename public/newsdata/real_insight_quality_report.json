@@ -1,121 +1,111 @@
 {
   "status": "PASS",
   "benchmarkVersion": "real-insight-snapshot-quality-v1",
-  "generatedAt": 1781718597723,
-  "contentHash": "1175b9d3e2e5e9a4",
+  "generatedAt": 1781727016930,
+  "contentHash": "5dfa0719ae778866",
   "schemaVersion": 3,
   "collectorVersion": "insight-collector-json-v4",
-  "storyCount": 716,
+  "storyCount": 686,
   "sourceGroupCount": 10,
   "grade": "C",
   "parentCount": 10,
-  "avgAngles": 1.4,
+  "avgAngles": 1.3,
   "avgTemporalTiers": 2,
-  "avgEvolutionRoles": 1.9,
-  "baseReportShare": 0.32,
-  "multiAngleCount": 4,
+  "avgEvolutionRoles": 1.7,
+  "baseReportShare": 0.3333333333333333,
+  "multiAngleCount": 3,
   "weakParentCount": 0,
   "runtimeQualityGate": {
-    "attempted": false,
+    "attempted": true,
     "recovered": false,
-    "reason": "first-pass acceptable",
+    "reason": "relaxed-tree recovery could not produce acceptable output",
     "before": {
       "grade": "C",
       "tone": "warn",
       "title": "Thin but usable signal",
-      "signalScore": 56,
+      "signalScore": 53,
       "sourceLabel": "Live",
       "rankedCount": 10,
-      "storyCount": 641,
-      "risingCount": 2,
+      "storyCount": 621,
+      "risingCount": 1,
       "thinCount": 0,
-      "multiAngleCount": 4,
-      "lowAngleCount": 6,
+      "multiAngleCount": 3,
+      "lowAngleCount": 7,
       "strongAngleCount": 0,
-      "avgAngles": 1.4,
-      "avgChildren": 2.5,
-      "avgScore": 0.686206718288892,
+      "avgAngles": 1.3,
+      "avgChildren": 2.4,
+      "avgScore": 0.6622564034165206,
       "sourceDiversityCoverage": 10,
-      "snapshotCoverage": 3,
-      "coverageLabel": "4/10",
+      "snapshotCoverage": 5,
+      "coverageLabel": "3/10",
       "warnings": [
-        "6 cluster(s) have fewer than two visible child angles.",
+        "7 cluster(s) have fewer than two visible child angles.",
         "No cluster currently exposes three or more visible child angles.",
-        "7 cluster(s) have weak snapshot coverage.",
-        "751 duplicate/near-duplicate item(s) were hidden or downgraded."
+        "5 cluster(s) have weak snapshot coverage.",
+        "651 duplicate/near-duplicate item(s) were hidden or downgraded."
       ]
     },
     "after": {
       "grade": "C",
       "tone": "warn",
       "title": "Thin but usable signal",
-      "signalScore": 56,
+      "signalScore": 53,
       "sourceLabel": "Live",
       "rankedCount": 10,
-      "storyCount": 641,
-      "risingCount": 2,
+      "storyCount": 621,
+      "risingCount": 1,
       "thinCount": 0,
-      "multiAngleCount": 4,
-      "lowAngleCount": 6,
+      "multiAngleCount": 3,
+      "lowAngleCount": 7,
       "strongAngleCount": 0,
-      "avgAngles": 1.4,
-      "avgChildren": 2.5,
-      "avgScore": 0.686206718288892,
+      "avgAngles": 1.3,
+      "avgChildren": 2.4,
+      "avgScore": 0.6622564034165206,
       "sourceDiversityCoverage": 10,
-      "snapshotCoverage": 3,
-      "coverageLabel": "4/10",
+      "snapshotCoverage": 5,
+      "coverageLabel": "3/10",
       "warnings": [
-        "6 cluster(s) have fewer than two visible child angles.",
+        "7 cluster(s) have fewer than two visible child angles.",
         "No cluster currently exposes three or more visible child angles.",
-        "7 cluster(s) have weak snapshot coverage.",
-        "751 duplicate/near-duplicate item(s) were hidden or downgraded."
+        "5 cluster(s) have weak snapshot coverage.",
+        "1 duplicate/near-duplicate item(s) were hidden or downgraded."
       ]
+    },
+    "recoveryConfig": {
+      "MIN_CHILD_INFO_GAIN": 0.08,
+      "WEAK_TREE_CHILD_MIN": 2,
+      "MIN_SOURCES_PER_TREE": 2,
+      "MAX_PER_SOURCE_GROUP": 3,
+      "MAX_PER_ANGLE": 4,
+      "TIER_D_EXCLUDE": false
     }
   },
   "parents": [
     {
-      "parentId": "cluster_549_902c5b2156200027",
-      "headline": "India’s REITs and InvITs market may attract Rs 11.6 lakh crore by 2030: Avendus",
-      "score": 0.7685467197849984,
-      "postTreeScore": 1.1485,
-      "childCount": 2,
+      "parentId": "cluster_218_10f1d38a043a59f6",
+      "headline": "At 80, Trump is among the world's oldest leaders — but not the oldest",
+      "score": 0.6829121533602301,
+      "postTreeScore": 1.1029,
+      "childCount": 5,
       "angles": [
-        "fact_update",
-        "market_reaction"
+        "base_report",
+        "official_response"
       ],
       "temporalTiers": [
         "developing",
+        "established",
+        "reaction",
         "breaking"
       ],
       "evolutionRoles": [
-        "official_response",
-        "market_reaction"
+        "corroboration",
+        "official_response"
       ],
-      "baseReportShare": 0,
+      "baseReportShare": 0.8,
       "weakTree": false
     },
     {
-      "parentId": "cluster_597_aba43e60a10c334e",
-      "headline": "Smriti Mandhana only Indian among TIME magazine's 100 most influential sportspersons",
-      "score": 0.6735810543049341,
-      "postTreeScore": 1.0936,
-      "childCount": 3,
-      "angles": [
-        "base_report",
-        "fact_update"
-      ],
-      "temporalTiers": [
-        "breaking"
-      ],
-      "evolutionRoles": [
-        "first_report",
-        "corroboration"
-      ],
-      "baseReportShare": 0.3333333333333333,
-      "weakTree": false
-    },
-    {
-      "parentId": "cluster_213_d53348158330ce4b",
+      "parentId": "cluster_252_d53348158330ce4b",
       "headline": "US renames ‘Indo-Pacific Command’ to ‘US Pacific Command’ title in major move",
       "score": 0.6874967197849983,
       "postTreeScore": 1.0675,
@@ -136,33 +126,31 @@
       "weakTree": false
     },
     {
-      "parentId": "cluster_180_10f1d38a043a59f6",
-      "headline": "At 80, Trump is among the world's oldest leaders — but not the oldest",
-      "score": 0.6270708082090144,
-      "postTreeScore": 1.0671,
-      "childCount": 5,
+      "parentId": "cluster_6_f8feb7e26acdac74",
+      "headline": "Text of U.S.-Iran memorandum of understanding released by U.S.",
+      "score": 0.62551,
+      "postTreeScore": 1.0255,
+      "childCount": 2,
       "angles": [
         "base_report",
         "official_response"
       ],
       "temporalTiers": [
-        "developing",
-        "established",
-        "reaction",
-        "breaking"
+        "breaking",
+        "reaction"
       ],
       "evolutionRoles": [
-        "corroboration",
+        "first_report",
         "official_response"
       ],
-      "baseReportShare": 0.8,
+      "baseReportShare": 0.5,
       "weakTree": false
     },
     {
-      "parentId": "cluster_23_fd11b346e65ab2cd",
+      "parentId": "cluster_56_fd11b346e65ab2cd",
       "headline": "India’s defence production hits record ₹1.78 lakh crore in FY 2025-26",
-      "score": 0.7979583349983153,
-      "postTreeScore": 0.928,
+      "score": 0.7539583349983153,
+      "postTreeScore": 0.864,
       "childCount": 3,
       "angles": [
         "fact_update"
@@ -180,7 +168,7 @@
       "weakTree": false
     },
     {
-      "parentId": "cluster_216_084fb293c51e5357",
+      "parentId": "cluster_255_084fb293c51e5357",
       "headline": "ETF issuers rush to capitalise on AI-focused ‘MANGOS’ theme after SpaceX IPO",
       "score": 0.6814967197849984,
       "postTreeScore": 0.7515,
@@ -200,27 +188,7 @@
       "weakTree": false
     },
     {
-      "parentId": "cluster_510_6703b7c26bfe014d",
-      "headline": "‘Varanasi in Bratislava’: PM Modi visits unique exhibition crafted by Slovak artisans at Presidential Palace",
-      "score": 0.6732467197849983,
-      "postTreeScore": 0.7432,
-      "childCount": 2,
-      "angles": [
-        "official_response"
-      ],
-      "temporalTiers": [
-        "breaking",
-        "developing"
-      ],
-      "evolutionRoles": [
-        "first_report",
-        "corroboration"
-      ],
-      "baseReportShare": 0,
-      "weakTree": false
-    },
-    {
-      "parentId": "cluster_231_5a79db05228fb8f7",
+      "parentId": "cluster_270_5a79db05228fb8f7",
       "headline": "Plane Crashes On Texas Highway, Cockpit Window Broken For Rescue",
       "score": 0.6632467197849983,
       "postTreeScore": 0.7332,
@@ -239,7 +207,7 @@
       "weakTree": false
     },
     {
-      "parentId": "cluster_26_46d710e70eca2d22",
+      "parentId": "cluster_59_46d710e70eca2d22",
       "headline": "NTA DG holds firm on Telegram ban as platform tells Delhi HC blocking order is ‘unsustainable in law’",
       "score": 0.6371766666666666,
       "postTreeScore": 0.7272,
@@ -258,7 +226,7 @@
       "weakTree": false
     },
     {
-      "parentId": "cluster_234_f417ae3469b0ee03",
+      "parentId": "cluster_273_f417ae3469b0ee03",
       "headline": "Elon Musk's AI tool Grok was used in strikes against Iran, says U.S. government",
       "score": 0.6522467197849984,
       "postTreeScore": 0.7222,
@@ -275,15 +243,52 @@
       ],
       "baseReportShare": 0,
       "weakTree": false
+    },
+    {
+      "parentId": "cluster_165_5528ea75c8249309",
+      "headline": "Rupee closes flat at 94.52 vs USD as oil-led rally faces off against dollar demand; Fed verdict looms",
+      "score": 0.62426,
+      "postTreeScore": 0.7143,
+      "childCount": 2,
+      "angles": [
+        "market_reaction"
+      ],
+      "temporalTiers": [
+        "breaking",
+        "established"
+      ],
+      "evolutionRoles": [
+        "market_reaction"
+      ],
+      "baseReportShare": 0,
+      "weakTree": false
+    },
+    {
+      "parentId": "cluster_219_b38349e2bedfea47",
+      "headline": "Telegram challenges government order that temporarily blocks use",
+      "score": 0.61426,
+      "postTreeScore": 0.7043,
+      "childCount": 2,
+      "angles": [
+        "official_response"
+      ],
+      "temporalTiers": [
+        "breaking"
+      ],
+      "evolutionRoles": [
+        "official_response"
+      ],
+      "baseReportShare": 0,
+      "weakTree": false
     }
   ],
   "warnings": [],
   "errors": [],
   "ratchetGate": {
-    "status": "PASS",
+    "status": "FAIL",
     "gateVersion": "real-insight-snapshot-ratchet-v1",
     "grade": "C",
-    "score": 100,
+    "score": 76,
     "passed": [
       {
         "id": "grade-floor",
@@ -298,12 +303,6 @@
         "required": ">= 3"
       },
       {
-        "id": "avg-angle-count",
-        "label": "Average visible angle count",
-        "actual": 1.4,
-        "required": ">= 1.4"
-      },
-      {
         "id": "avg-temporal-tier-count",
         "label": "Average temporal tier count",
         "actual": 2,
@@ -312,19 +311,19 @@
       {
         "id": "avg-evolution-role-count",
         "label": "Average evolution role count",
-        "actual": 1.9,
+        "actual": 1.7,
         "required": ">= 1.6"
       },
       {
         "id": "base-report-share",
         "label": "Base report share",
-        "actual": 0.32,
+        "actual": 0.333,
         "required": "<= 0.55"
       },
       {
         "id": "multi-angle-parent-count",
         "label": "Multi-angle parent count",
-        "actual": 4,
+        "actual": 3,
         "required": ">= 1"
       },
       {
@@ -336,7 +335,7 @@
       {
         "id": "top-parent-child-depth",
         "label": "Top parent child depth",
-        "actual": 2,
+        "actual": 5,
         "required": ">= 2"
       },
       {
@@ -346,19 +345,28 @@
         "required": "<= 0.5"
       }
     ],
-    "failed": [],
+    "failed": [
+      {
+        "id": "avg-angle-count",
+        "label": "Average visible angle count",
+        "actual": 1.3,
+        "required": ">= 1.4",
+        "severity": "fail",
+        "fix": "Angle-diverse child selection is not strong enough on real data."
+      }
+    ],
     "summary": {
       "parentCount": 10,
-      "avgAngles": 1.4,
+      "avgAngles": 1.3,
       "avgTemporalTiers": 2,
-      "avgEvolutionRoles": 1.9,
-      "baseReportShare": 0.32,
-      "multiAngleCount": 4,
+      "avgEvolutionRoles": 1.7,
+      "baseReportShare": 0.333,
+      "multiAngleCount": 3,
       "weakParentCount": 0,
       "weakParentRatio": 0,
       "topParentAngles": 2,
-      "topParentChildren": 2,
-      "storyCount": 716,
+      "topParentChildren": 5,
+      "storyCount": 686,
       "sourceGroupCount": 10
     }
   }

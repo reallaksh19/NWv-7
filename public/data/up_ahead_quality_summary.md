@@ -11,7 +11,8 @@
 ## Category counts
 
 - airlines: 1
-- alerts: 37
+- alerts: 35
 - civic: 2
 - movies: 1
-- shopping: 41
+- shopping: 42
+- weather_alerts: 1

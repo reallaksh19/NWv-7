@@ -53,18 +53,18 @@
     },
     "insight": {
       "actionableFindings": [
-        "2 base-report-heavy Insight parent(s) demoted"
+        "3 base-report-heavy Insight parent(s) demoted"
       ],
       "destination": "insight",
       "diagnosticReasons": [],
       "gateResults": [
         {
           "details": {
-            "itemCount": 5
+            "itemCount": 6
           },
           "name": "insightEventPool",
           "reason": "rankable Insight event pool",
-          "score": 0.8333,
+          "score": 1.0,
           "status": "PASS"
         },
         {
@@ -77,16 +77,16 @@
       ],
       "gateSummary": {
         "avgAnglesPerParent": 0.0,
-        "baseReportHeavyParents": 2,
+        "baseReportHeavyParents": 3,
         "duplicateChildrenSuppressed": 0,
-        "inputCandidateCount": 5,
-        "parentClusters": 5,
-        "strongParents": 5,
+        "inputCandidateCount": 6,
+        "parentClusters": 6,
+        "strongParents": 6,
         "suppressedCandidateCount": 0,
         "weakParentsDemoted": 0
       },
       "qualityGrade": "F",
-      "qualityScore": 0.3726,
+      "qualityScore": 0.3674,
       "qualityStatus": "WARN",
       "rankedItems": [
         {
@@ -642,17 +642,124 @@
           ],
           "score": 0.1885,
           "title": "Top News of the day: June 4, 2026 - The Hindu"
+        },
+        {
+          "category": "insightEvent",
+          "gates": [
+            {
+              "details": {
+                "storyCount": 2
+              },
+              "name": "eventCoherence",
+              "reason": "event sketch has repeated story count",
+              "score": 0.62,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "baseReportRatio": 1.0,
+                "distinctAngles": 0
+              },
+              "name": "angleDiversity",
+              "reason": "weak child angle diversity",
+              "score": 0.25,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "sourceGroupCount": 1
+              },
+              "name": "sourceDiversity",
+              "reason": "one-source event candidate",
+              "score": 0.35,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "baseReportRatio": 1.0
+              },
+              "name": "baseReportCap",
+              "reason": "base-report dominated event candidate",
+              "score": 0.25,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "childCount": 2
+              },
+              "name": "weakTree",
+              "reason": "child tree has enough depth",
+              "score": 0.5,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "duplicateChildren",
+              "reason": "no child objects to dedup",
+              "score": 0.7,
+              "status": "PASS"
+            }
+          ],
+          "id": "sketch:bbd7147cc9",
+          "item": {
+            "angleCount": 1,
+            "baseReportRatio": 1.0,
+            "childScores": [],
+            "id": "sketch:bbd7147cc9",
+            "representativeId": "f7e79d20837ae6eb",
+            "representativeTitle": "Top news of the day: May 31, 2026 - The Hindu",
+            "scoreBreakdown": {
+              "angleDiversityScore": 0.25,
+              "eventImportanceScore": 0.59,
+              "freshnessScore": 0.0,
+              "noveltyDeltaScore": 0.44999999999999996,
+              "sourceAuthorityScore": 0.38,
+              "sourceDiversityScore": 0.35,
+              "temporalEvolutionScore": 0.37
+            },
+            "slotCount": 1,
+            "slots": [
+              "now"
+            ],
+            "sourceGroupCount": 1,
+            "sourceGroups": [
+              "google_news"
+            ],
+            "storyCount": 2,
+            "storyIds": [
+              "f7e79d20837ae6eb",
+              "55bc91c985238054"
+            ],
+            "topAngles": [
+              {
+                "angle": "base_report",
+                "count": 2
+              }
+            ],
+            "topTokens": [
+              "hindu"
+            ],
+            "topicKey": "hindu"
+          },
+          "locationKey": "event",
+          "rankingReasons": [
+            "event sketch has repeated story count",
+            "weak child angle diversity",
+            "one-source event candidate"
+          ],
+          "score": 0.1751,
+          "title": "Top news of the day: May 31, 2026 - The Hindu"
         }
       ],
       "rankingProfile": "insight-v2-event-angle-tree",
       "scoreBreakdown": {
         "angleDiversityScore": 0.25,
-        "eventImportanceScore": 0.662,
+        "eventImportanceScore": 0.65,
         "freshnessScore": 0.0,
         "noveltyDeltaScore": 0.45,
-        "sourceAuthorityScore": 0.428,
-        "sourceDiversityScore": 0.424,
-        "temporalEvolutionScore": 0.394
+        "sourceAuthorityScore": 0.42,
+        "sourceDiversityScore": 0.4117,
+        "temporalEvolutionScore": 0.39
       }
     },
     "localTravel": {
@@ -712,7 +819,7 @@
     },
     "upAhead": {
       "actionableFindings": [
-        "32 invalid/expired/duplicate Up Ahead item(s) suppressed",
+        "33 invalid/expired/duplicate Up Ahead item(s) suppressed",
         "no active offer items in ranked Up Ahead set",
         "no ranked Up Ahead item for muscat",
         "ranked Up Ahead set is category-dominated"
@@ -782,7 +889,7 @@
         "onlineOffers": 0,
         "plannerAdvisoryItems": 30,
         "rankedItemCount": 30,
-        "suppressedItemCount": 32
+        "suppressedItemCount": 33
       },
       "qualityGrade": "B",
       "qualityScore": 0.8586,
@@ -4251,7 +4358,7 @@
       }
     }
   },
-  "generatedAt": 1781814659476,
+  "generatedAt": 1781828740517,
   "implementedDestinations": [
     "upAhead",
     "buzz",
@@ -4270,7 +4377,7 @@
   "schemaVersion": 1,
   "summary": {
     "actionRequired": [
-      "32 invalid/expired/duplicate Up Ahead item(s) suppressed",
+      "33 invalid/expired/duplicate Up Ahead item(s) suppressed",
       "no active offer items in ranked Up Ahead set",
       "no ranked Up Ahead item for muscat",
       "ranked Up Ahead set is category-dominated",
@@ -4281,11 +4388,11 @@
       "no ranked local/travel item for muscat",
       "no ranked local/travel item for chennai",
       "no ranked local/travel item for trichy",
-      "2 base-report-heavy Insight parent(s) demoted"
+      "3 base-report-heavy Insight parent(s) demoted"
     ],
     "destinationScores": {
       "buzz": 0.0,
-      "insight": 0.3726,
+      "insight": 0.3674,
       "localTravel": 0.0,
       "upAhead": 0.8586
     },
@@ -4295,7 +4402,7 @@
       "localTravel": "FAIL",
       "upAhead": "WARN"
     },
-    "overallScore": 0.3078,
+    "overallScore": 0.3065,
     "overallStatus": "FAIL",
     "rankingProfiles": {
       "buzz": "buzz-v2-trend-local-travel",

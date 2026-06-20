@@ -6,13 +6,13 @@
 - Parents: `10`
 - Average angles: `1.6`
 - Average temporal tiers: `1.8`
-- Average evolution roles: `1.7`
-- Base report share: `0.35`
+- Average evolution roles: `1.6`
+- Base report share: `0.2857142857142857`
 - Multi-angle parents: `6`
 - Weak parents: `0`
-- Story count: `572`
-- Source groups: `11`
-- Content hash: `ccb3afbd83820f36`
+- Story count: `563`
+- Source groups: `10`
+- Content hash: `add059672e35f876`
 
 ## Top parents
 
@@ -23,11 +23,11 @@
 | 3 | BEST employees go on indefinite strike; public bus services hit in Mumbai | 2 | reaction_public, regional_followup | NO | 0.6732467197849983 |
 | 4 | Cycles distributed on Rahul Gandhi’s birthday in Sangareddy | 2 | official_response, base_report | NO | 0.6709967197849983 |
 | 5 | Kerala Revised Budget 2026-27 LIVE: V.D. Satheesan's Budget pledges 'New Kerala' with inclusive growth, sustainable development | 2 | correction, official_response | NO | 0.6604967197849982 |
-| 6 | Modi ‘tough cookie’, ‘great leader’ who has been in power for over 12 years, says Trump | 2 | base_report, official_response | NO | 0.5670232802150018 |
-| 7 | Zohran Mamdani Calls To Ban Horse Carriages In New York After Indian Teen's Death | 2 | base_report | NO | 0.6789967197849983 |
-| 8 | Who is Andy Burnham? The 'King of the North' who could replace Keir Starmer as UK PM | 2 | base_report | NO | 0.6687467197849983 |
-| 9 | Monsoon tracker LIVE / Heavy rain expected in 10 districts of Tamil Nadu | 2 | regional_followup | NO | 0.6324100000000001 |
-| 10 | Accenture Sparks IT Bloodbath; Investors Lose Rs 2 Trillion | 2 | market_reaction | NO | 0.6522467197849984 |
+| 6 | Modi ‘tough cookie’, ‘great leader’ who has been in power for over 12 years, says Trump | 2 | base_report, official_response | NO | 0.59101 |
+| 7 | Who is Andy Burnham? The 'King of the North' who could replace Keir Starmer as UK PM | 3 | base_report | NO | 0.6627477209716007 |
+| 8 | Monsoon tracker LIVE / Heavy rain expected in 10 districts of Tamil Nadu | 2 | regional_followup | NO | 0.6324100000000001 |
+| 9 | Accenture Sparks IT Bloodbath; Investors Lose Rs 2 Trillion | 2 | market_reaction | NO | 0.6522467197849984 |
+| 10 | Tata Electronics’ Hosur iPhone factory faces health probe after contamination complaints | 2 | investigative_detail | NO | 0.60626 |
 
 ## Real Snapshot Ratchet Gate
 
@@ -38,8 +38,8 @@
 - Parents: `10`
 - Average angles: `1.6`
 - Average temporal tiers: `1.8`
-- Average evolution roles: `1.7`
-- Base report share: `0.35`
+- Average evolution roles: `1.6`
+- Base report share: `0.286`
 - Multi-angle parents: `6`
 - Top parent angles: `2`
 - Top parent children: `2`
@@ -54,8 +54,8 @@
 - Parent cluster count: `10` / `>= 3`
 - Average visible angle count: `1.6` / `>= 1.4`
 - Average temporal tier count: `1.8` / `>= 1.8`
-- Average evolution role count: `1.7` / `>= 1.6`
-- Base report share: `0.35` / `<= 0.55`
+- Average evolution role count: `1.6` / `>= 1.6`
+- Base report share: `0.286` / `<= 0.55`
 - Multi-angle parent count: `6` / `>= 1`
 - Top parent angle count: `2` / `>= 2`
 - Top parent child depth: `2` / `>= 2`

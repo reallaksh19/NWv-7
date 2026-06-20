@@ -60,7 +60,7 @@
       "gateResults": [
         {
           "details": {
-            "itemCount": 8
+            "itemCount": 9
           },
           "name": "insightEventPool",
           "reason": "rankable Insight event pool",
@@ -79,14 +79,14 @@
         "avgAnglesPerParent": 0.0,
         "baseReportHeavyParents": 3,
         "duplicateChildrenSuppressed": 0,
-        "inputCandidateCount": 8,
-        "parentClusters": 8,
-        "strongParents": 8,
+        "inputCandidateCount": 9,
+        "parentClusters": 9,
+        "strongParents": 9,
         "suppressedCandidateCount": 0,
         "weakParentsDemoted": 0
       },
       "qualityGrade": "F",
-      "qualityScore": 0.4346,
+      "qualityScore": 0.4108,
       "qualityStatus": "WARN",
       "rankedItems": [
         {
@@ -492,6 +492,116 @@
               "status": "PASS"
             }
           ],
+          "id": "sketch:fcde5c7120",
+          "item": {
+            "angleCount": 1,
+            "baseReportRatio": 0.0,
+            "childScores": [],
+            "id": "sketch:fcde5c7120",
+            "representativeId": "cefd0947496f8de7",
+            "representativeTitle": "Buy Bajaj Finance; target of Rs 9000: Emkay Global Financial",
+            "scoreBreakdown": {
+              "angleDiversityScore": 0.25,
+              "eventImportanceScore": 0.59,
+              "freshnessScore": 0.0,
+              "noveltyDeltaScore": 0.44999999999999996,
+              "sourceAuthorityScore": 0.38,
+              "sourceDiversityScore": 0.35,
+              "temporalEvolutionScore": 0.37
+            },
+            "slotCount": 1,
+            "slots": [
+              "minus24h"
+            ],
+            "sourceGroupCount": 1,
+            "sourceGroups": [
+              "moneycontrol"
+            ],
+            "storyCount": 2,
+            "storyIds": [
+              "cefd0947496f8de7",
+              "d0020e471404281a"
+            ],
+            "topAngles": [
+              {
+                "angle": "market_reaction",
+                "count": 2
+              }
+            ],
+            "topTokens": [
+              "bajaj",
+              "finance",
+              "target",
+              "emkay"
+            ],
+            "topicKey": "bajaj|finance|target"
+          },
+          "locationKey": "event",
+          "rankingReasons": [
+            "event sketch has repeated story count",
+            "weak child angle diversity",
+            "one-source event candidate"
+          ],
+          "score": 0.389,
+          "title": "Buy Bajaj Finance; target of Rs 9000: Emkay Global Financial"
+        },
+        {
+          "category": "insightEvent",
+          "gates": [
+            {
+              "details": {
+                "storyCount": 2
+              },
+              "name": "eventCoherence",
+              "reason": "event sketch has repeated story count",
+              "score": 0.62,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "baseReportRatio": 0.0,
+                "distinctAngles": 1
+              },
+              "name": "angleDiversity",
+              "reason": "weak child angle diversity",
+              "score": 0.25,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "sourceGroupCount": 1
+              },
+              "name": "sourceDiversity",
+              "reason": "one-source event candidate",
+              "score": 0.35,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "baseReportRatio": 0.0
+              },
+              "name": "baseReportCap",
+              "reason": "base-report ratio controlled",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "childCount": 2
+              },
+              "name": "weakTree",
+              "reason": "child tree has enough depth",
+              "score": 0.5,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "duplicateChildren",
+              "reason": "no child objects to dedup",
+              "score": 0.7,
+              "status": "PASS"
+            }
+          ],
           "id": "sketch:656d320a40",
           "item": {
             "angleCount": 1,
@@ -667,119 +777,6 @@
           "gates": [
             {
               "details": {
-                "storyCount": 3
-              },
-              "name": "eventCoherence",
-              "reason": "event sketch has repeated story count",
-              "score": 0.62,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "baseReportRatio": 1.0,
-                "distinctAngles": 0
-              },
-              "name": "angleDiversity",
-              "reason": "weak child angle diversity",
-              "score": 0.25,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "sourceGroupCount": 2
-              },
-              "name": "sourceDiversity",
-              "reason": "multi-source event",
-              "score": 0.72,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "baseReportRatio": 1.0
-              },
-              "name": "baseReportCap",
-              "reason": "base-report dominated event candidate",
-              "score": 0.25,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "childCount": 3
-              },
-              "name": "weakTree",
-              "reason": "child tree has enough depth",
-              "score": 0.75,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "duplicateChildren",
-              "reason": "no child objects to dedup",
-              "score": 0.7,
-              "status": "PASS"
-            }
-          ],
-          "id": "sketch:b9e75f70f6",
-          "item": {
-            "angleCount": 1,
-            "baseReportRatio": 1.0,
-            "childScores": [],
-            "id": "sketch:b9e75f70f6",
-            "representativeId": "5e4126f82cbe2b2b",
-            "representativeTitle": "UAE sets minimum social media use age at 15",
-            "scoreBreakdown": {
-              "angleDiversityScore": 0.25,
-              "eventImportanceScore": 0.71,
-              "freshnessScore": 0.0,
-              "noveltyDeltaScore": 0.44999999999999996,
-              "sourceAuthorityScore": 0.62,
-              "sourceDiversityScore": 0.72,
-              "temporalEvolutionScore": 0.49
-            },
-            "slotCount": 2,
-            "slots": [
-              "minus12h",
-              "minus24h"
-            ],
-            "sourceGroupCount": 2,
-            "sourceGroups": [
-              "business_line",
-              "the_hindu"
-            ],
-            "storyCount": 3,
-            "storyIds": [
-              "5e4126f82cbe2b2b",
-              "759544e57498b137",
-              "f10de9e10ca83eee"
-            ],
-            "topAngles": [
-              {
-                "angle": "base_report",
-                "count": 3
-              }
-            ],
-            "topTokens": [
-              "social",
-              "media",
-              "sets",
-              "minimum"
-            ],
-            "topicKey": "social|media|sets"
-          },
-          "locationKey": "event",
-          "rankingReasons": [
-            "event sketch has repeated story count",
-            "weak child angle diversity",
-            "multi-source event"
-          ],
-          "score": 0.2351,
-          "title": "UAE sets minimum social media use age at 15"
-        },
-        {
-          "category": "insightEvent",
-          "gates": [
-            {
-              "details": {
                 "storyCount": 2
               },
               "name": "eventCoherence",
@@ -832,14 +829,14 @@
               "status": "PASS"
             }
           ],
-          "id": "sketch:8870d4962d",
+          "id": "sketch:b9e75f70f6",
           "item": {
             "angleCount": 1,
             "baseReportRatio": 1.0,
             "childScores": [],
-            "id": "sketch:8870d4962d",
-            "representativeId": "9ef15b31a8bdcb31",
-            "representativeTitle": "India’s thermal coal imports drop to 4-year low as green power rises - Daily Mirror - Sri Lanka",
+            "id": "sketch:b9e75f70f6",
+            "representativeId": "5e4126f82cbe2b2b",
+            "representativeTitle": "UAE sets minimum social media use age at 15",
             "scoreBreakdown": {
               "angleDiversityScore": 0.25,
               "eventImportanceScore": 0.59,
@@ -852,17 +849,17 @@
             "slotCount": 2,
             "slots": [
               "minus12h",
-              "now"
+              "minus24h"
             ],
             "sourceGroupCount": 2,
             "sourceGroups": [
-              "google_news",
-              "reuters"
+              "business_line",
+              "the_hindu"
             ],
             "storyCount": 2,
             "storyIds": [
-              "9ef15b31a8bdcb31",
-              "ed441b8dd632e114"
+              "5e4126f82cbe2b2b",
+              "759544e57498b137"
             ],
             "topAngles": [
               {
@@ -871,12 +868,12 @@
               }
             ],
             "topTokens": [
-              "india",
-              "thermal",
-              "coal",
-              "imports"
+              "social",
+              "media",
+              "sets",
+              "minimum"
             ],
-            "topicKey": "india|thermal|coal"
+            "topicKey": "social|media|sets"
           },
           "locationKey": "event",
           "rankingReasons": [
@@ -885,7 +882,7 @@
             "multi-source event"
           ],
           "score": 0.2216,
-          "title": "India’s thermal coal imports drop to 4-year low as green power rises - Daily Mirror - Sri Lanka"
+          "title": "UAE sets minimum social media use age at 15"
         },
         {
           "category": "insightEvent",
@@ -996,17 +993,124 @@
           ],
           "score": 0.2021,
           "title": "Top news of the day on June 17, 2026 - The Hindu"
+        },
+        {
+          "category": "insightEvent",
+          "gates": [
+            {
+              "details": {
+                "storyCount": 2
+              },
+              "name": "eventCoherence",
+              "reason": "event sketch has repeated story count",
+              "score": 0.62,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "baseReportRatio": 1.0,
+                "distinctAngles": 0
+              },
+              "name": "angleDiversity",
+              "reason": "weak child angle diversity",
+              "score": 0.25,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "sourceGroupCount": 1
+              },
+              "name": "sourceDiversity",
+              "reason": "one-source event candidate",
+              "score": 0.35,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "baseReportRatio": 1.0
+              },
+              "name": "baseReportCap",
+              "reason": "base-report dominated event candidate",
+              "score": 0.25,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "childCount": 2
+              },
+              "name": "weakTree",
+              "reason": "child tree has enough depth",
+              "score": 0.5,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "duplicateChildren",
+              "reason": "no child objects to dedup",
+              "score": 0.7,
+              "status": "PASS"
+            }
+          ],
+          "id": "sketch:bbd7147cc9",
+          "item": {
+            "angleCount": 1,
+            "baseReportRatio": 1.0,
+            "childScores": [],
+            "id": "sketch:bbd7147cc9",
+            "representativeId": "f274ef9a4032ff70",
+            "representativeTitle": "Top news of the day: May 30, 2026 - The Hindu",
+            "scoreBreakdown": {
+              "angleDiversityScore": 0.25,
+              "eventImportanceScore": 0.59,
+              "freshnessScore": 0.0,
+              "noveltyDeltaScore": 0.44999999999999996,
+              "sourceAuthorityScore": 0.38,
+              "sourceDiversityScore": 0.35,
+              "temporalEvolutionScore": 0.37
+            },
+            "slotCount": 1,
+            "slots": [
+              "now"
+            ],
+            "sourceGroupCount": 1,
+            "sourceGroups": [
+              "google_news"
+            ],
+            "storyCount": 2,
+            "storyIds": [
+              "f274ef9a4032ff70",
+              "55bc91c985238054"
+            ],
+            "topAngles": [
+              {
+                "angle": "base_report",
+                "count": 2
+              }
+            ],
+            "topTokens": [
+              "hindu"
+            ],
+            "topicKey": "hindu"
+          },
+          "locationKey": "event",
+          "rankingReasons": [
+            "event sketch has repeated story count",
+            "weak child angle diversity",
+            "one-source event candidate"
+          ],
+          "score": 0.1751,
+          "title": "Top news of the day: May 30, 2026 - The Hindu"
         }
       ],
       "rankingProfile": "insight-v2-event-angle-tree",
       "scoreBreakdown": {
-        "angleDiversityScore": 0.3163,
-        "eventImportanceScore": 0.665,
+        "angleDiversityScore": 0.3089,
+        "eventImportanceScore": 0.6433,
         "freshnessScore": 0.0,
-        "noveltyDeltaScore": 0.475,
-        "sourceAuthorityScore": 0.53,
-        "sourceDiversityScore": 0.5812,
-        "temporalEvolutionScore": 0.475
+        "noveltyDeltaScore": 0.4722,
+        "sourceAuthorityScore": 0.4867,
+        "sourceDiversityScore": 0.5144,
+        "temporalEvolutionScore": 0.45
       }
     },
     "localTravel": {
@@ -1066,7 +1170,7 @@
     },
     "upAhead": {
       "actionableFindings": [
-        "33 invalid/expired/duplicate Up Ahead item(s) suppressed",
+        "34 invalid/expired/duplicate Up Ahead item(s) suppressed",
         "no ranked Up Ahead item for muscat"
       ],
       "destination": "upAhead",
@@ -1081,6 +1185,8 @@
         "Everything You Need to Know About Prime Day 2026 - Lifehacker: location failed — offline/local item lacks configured location match",
         "Amazon Prime Day 2026: What To Buy and What To Skip - NBC News: location failed — offline/local item lacks configured location match",
         "4th Of July Sales: Shop Early Deals On Home, Fashion, Travel And More - Forbes: location failed — offline/local item lacks configured location match",
+        "After clearing TNPSC Group I exam, civil services aspirant meets her role model J. Radhakrishnan: futureValidity failed — expired display window",
+        "After clearing TNPSC Group I exam, civil services aspirant meets her role model J. Radhakrishnan: alertUrgency failed — alert expired",
         "DVAC conducts surprise checks at RTOs, MVIOs across Tamil Nadu: futureValidity failed — expired display window",
         "DVAC conducts surprise checks at RTOs, MVIOs across Tamil Nadu: alertUrgency failed — alert expired",
         "Environmental clearance for Brigade housing project in Pallikaranai revoked: futureValidity failed — expired display window",
@@ -1088,9 +1194,7 @@
         "Autorickshaw driver held for sexual harassment: futureValidity failed — expired display window",
         "Autorickshaw driver held for sexual harassment: alertUrgency failed — alert expired",
         "Veritas Foundation offers UG scholarships to 100 students across T.N.: futureValidity failed — expired display window",
-        "Veritas Foundation offers UG scholarships to 100 students across T.N.: alertUrgency failed — alert expired",
-        "One killed, over 18 injured as omni bus rams lorry near Madurantakam: futureValidity failed — expired display window",
-        "One killed, over 18 injured as omni bus rams lorry near Madurantakam: alertUrgency failed — alert expired"
+        "Veritas Foundation offers UG scholarships to 100 students across T.N.: alertUrgency failed — alert expired"
       ],
       "gateResults": [
         {
@@ -1105,8 +1209,8 @@
         {
           "details": {
             "categoryCounts": {
-              "alerts": 20,
-              "shopping": 10
+              "alerts": 19,
+              "shopping": 11
             }
           },
           "name": "categoryCoverage",
@@ -1116,10 +1220,10 @@
         }
       ],
       "gateSummary": {
-        "alerts": 20,
+        "alerts": 19,
         "categoryCounts": {
-          "alerts": 20,
-          "shopping": 10
+          "alerts": 19,
+          "shopping": 11
         },
         "events": 0,
         "festivals": 0,
@@ -1134,14 +1238,14 @@
           "online",
           "trichy"
         ],
-        "offlineOffers": 5,
+        "offlineOffers": 6,
         "onlineOffers": 5,
         "plannerAdvisoryItems": 30,
         "rankedItemCount": 30,
-        "suppressedItemCount": 33
+        "suppressedItemCount": 34
       },
       "qualityGrade": "B",
-      "qualityScore": 0.8294,
+      "qualityScore": 0.8261,
       "qualityStatus": "WARN",
       "rankedItems": [
         {
@@ -1258,121 +1362,6 @@
           ],
           "score": 0.8485,
           "title": "190 abandoned vehicles shifted to St. Thomas Mount police station premises"
-        },
-        {
-          "category": "alerts",
-          "gates": [
-            {
-              "details": {
-                "dedupKey": "58c68ae1a5a4308d"
-              },
-              "name": "dedup",
-              "reason": "unique item",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "displayUntil": 1781911880000
-              },
-              "name": "futureValidity",
-              "reason": "valid undated item with active display window",
-              "score": 0.65,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "matchScore": 1.0,
-                "matchedLocation": "chennai",
-                "relevance": "primary",
-                "scope": "exactCity"
-              },
-              "name": "location",
-              "reason": "location matches configured profile",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "hasPlace": true,
-                "hasTime": true
-              },
-              "name": "actionability",
-              "reason": "item has enough action fields",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "offerValidity",
-              "reason": "not an offer",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "severe": false
-              },
-              "name": "alertUrgency",
-              "reason": "active alert",
-              "score": 0.78,
-              "status": "PASS"
-            }
-          ],
-          "id": "8973f82c125b4c0b",
-          "item": {
-            "actionabilityScore": 0.7,
-            "category": "alerts",
-            "city": "Chennai",
-            "contentClass": "upahead_alert",
-            "dateConfidence": "unknown",
-            "dateSource": "none",
-            "eventEndAt": null,
-            "eventStartAt": null,
-            "expiryAt": 1781911880000,
-            "id": "8973f82c125b4c0b",
-            "language": "en",
-            "lifecycle": {
-              "archiveUntil": 1782516680000,
-              "contentClass": "upahead_alert",
-              "displayUntil": 1781911880000,
-              "isActionValid": true,
-              "isVisible": true,
-              "plannerEligibleByLifecycle": true,
-              "plannerPastGraceHours": 6,
-              "retentionReason": "expiryAt",
-              "withinSevenDayHorizon": true
-            },
-            "localityScore": 1.0,
-            "normalizedCategory": "alerts",
-            "plannerEligible": true,
-            "publishedAt": 1781825480000,
-            "region": "tn",
-            "scoreBreakdown": {
-              "actionabilityScore": 1.0,
-              "categoryPriorityScore": 1.0,
-              "lifecycleScore": 0.65,
-              "locationScore": 1.0,
-              "plannerFitScore": 1.0,
-              "sourceConfidenceScore": 0.58,
-              "urgencyOrExpiryScore": 0.78
-            },
-            "source": "The Hindu Chennai",
-            "sourceGroup": "the_hindu",
-            "summary": "J.J. Jenifer, who has been preparing for the civil services examination with the goal of becoming an IAS officer, cleared the TNPSC Group I examination this year",
-            "suppressionReason": null,
-            "title": "After clearing TNPSC Group I exam, civil services aspirant meets her role model J. Radhakrishnan",
-            "url": "https://www.thehindu.com/news/national/tamil-nadu/after-clearing-tnpsc-group-i-exam-civil-services-aspirant-meets-her-role-model-j-radhakrishnan/article71118876.ece"
-          },
-          "locationKey": "chennai",
-          "rankingReasons": [
-            "alerts",
-            "valid undated item with active display window",
-            "location matches configured profile",
-            "planner advisory fit"
-          ],
-          "score": 0.8485,
-          "title": "After clearing TNPSC Group I exam, civil services aspirant meets her role model J. Radhakrishnan"
         },
         {
           "category": "alerts",
@@ -3489,7 +3478,7 @@
             },
             {
               "details": {
-                "hoursLeft": 11.44
+                "hoursLeft": 8.45
               },
               "name": "offerValidity",
               "reason": "offer expires soon",
@@ -3604,7 +3593,7 @@
             },
             {
               "details": {
-                "hoursLeft": 12.39
+                "hoursLeft": 9.4
               },
               "name": "offerValidity",
               "reason": "offer expires soon",
@@ -3719,7 +3708,7 @@
             },
             {
               "details": {
-                "hoursLeft": 13.65
+                "hoursLeft": 10.66
               },
               "name": "offerValidity",
               "reason": "offer expires soon",
@@ -3834,7 +3823,7 @@
             },
             {
               "details": {
-                "hoursLeft": 7.03
+                "hoursLeft": 4.04
               },
               "name": "offerValidity",
               "reason": "offer expires soon",
@@ -3949,7 +3938,7 @@
             },
             {
               "details": {
-                "hoursLeft": 19.08
+                "hoursLeft": 16.09
               },
               "name": "offerValidity",
               "reason": "offer expires soon",
@@ -4064,7 +4053,7 @@
             },
             {
               "details": {
-                "hoursLeft": 19.51
+                "hoursLeft": 16.52
               },
               "name": "offerValidity",
               "reason": "offer expires soon",
@@ -4179,7 +4168,7 @@
             },
             {
               "details": {
-                "hoursLeft": 17.33
+                "hoursLeft": 14.34
               },
               "name": "offerValidity",
               "reason": "offer expires soon",
@@ -4294,7 +4283,7 @@
             },
             {
               "details": {
-                "hoursLeft": 42.0
+                "hoursLeft": 39.0
               },
               "name": "offerValidity",
               "reason": "offer active within three days",
@@ -4409,7 +4398,7 @@
             },
             {
               "details": {
-                "hoursLeft": 37.22
+                "hoursLeft": 34.22
               },
               "name": "offerValidity",
               "reason": "offer active within three days",
@@ -4524,7 +4513,7 @@
             },
             {
               "details": {
-                "hoursLeft": 40.52
+                "hoursLeft": 37.52
               },
               "name": "offerValidity",
               "reason": "offer active within three days",
@@ -4593,21 +4582,136 @@
           ],
           "score": 0.726,
           "title": "Prime Day is almost here: We found 50+ early deals already live on Apple, Sony, and Lego favorites - Mashable"
+        },
+        {
+          "category": "shopping",
+          "gates": [
+            {
+              "details": {
+                "dedupKey": "c7e06cf07b5929ac"
+              },
+              "name": "dedup",
+              "reason": "unique item",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "displayUntil": 1782016099000
+              },
+              "name": "futureValidity",
+              "reason": "valid undated item with active display window",
+              "score": 0.65,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "matchScore": 0.72,
+                "matchedLocation": "chennai",
+                "relevance": "secondary",
+                "scope": "region"
+              },
+              "name": "location",
+              "reason": "location matches configured profile",
+              "score": 0.72,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "hasPlace": false,
+                "hasTime": true
+              },
+              "name": "actionability",
+              "reason": "item has enough action fields",
+              "score": 0.85,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "hoursLeft": 28.34
+              },
+              "name": "offerValidity",
+              "reason": "offer active within three days",
+              "score": 0.82,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "alertUrgency",
+              "reason": "not an alert",
+              "score": 0.6,
+              "status": "PASS"
+            }
+          ],
+          "id": "57aeb6bda8dd6267",
+          "item": {
+            "actionabilityScore": 0.65,
+            "category": "shopping",
+            "city": null,
+            "contentClass": "upahead_offer",
+            "dateConfidence": "unknown",
+            "dateSource": "none",
+            "eventEndAt": null,
+            "eventStartAt": null,
+            "expiryAt": 1782016099000,
+            "id": "57aeb6bda8dd6267",
+            "language": "en",
+            "lifecycle": {
+              "archiveUntil": 1782620899000,
+              "contentClass": "upahead_offer",
+              "displayUntil": 1782016099000,
+              "isActionValid": true,
+              "isVisible": true,
+              "plannerEligibleByLifecycle": true,
+              "plannerPastGraceHours": 6,
+              "retentionReason": "expiryAt",
+              "withinSevenDayHorizon": true
+            },
+            "localityScore": 0.3,
+            "normalizedCategory": "shopping",
+            "plannerEligible": true,
+            "publishedAt": 1781843299000,
+            "region": null,
+            "scoreBreakdown": {
+              "actionabilityScore": 0.8500000000000001,
+              "categoryPriorityScore": 0.68,
+              "lifecycleScore": 0.65,
+              "locationScore": 0.72,
+              "plannerFitScore": 1.0,
+              "sourceConfidenceScore": 0.58,
+              "urgencyOrExpiryScore": 0.82
+            },
+            "source": "Google News Shopping",
+            "sourceGroup": "google_news",
+            "summary": "<a href=\"https://news.google.com/rss/articles/CBMib0FVX3lxTFBWVEpacFdVTm1lSXNBeHNDM1JycHRXZVRoQVJyalNyN2NDTmE5QkNoa2F2ZUlSdVhnSUwtMGJNcU8xakw4SERBaTV0Vm1UUWphblRyV25MZGFvT1QyU2tNZU1ManJRUldwT1dBVkozaw?oc=5\" target=\"_blank\">The Best Amazon Prime Day 2026 Deals to Shop Now</a>&nbsp;&nbsp;<font color=\"#6f6f6f\">ELLE Canada Magazine</font>",
+            "suppressionReason": null,
+            "title": "The Best Amazon Prime Day 2026 Deals to Shop Now - ELLE Canada Magazine",
+            "url": "https://news.google.com/rss/articles/CBMib0FVX3lxTFBWVEpacFdVTm1lSXNBeHNDM1JycHRXZVRoQVJyalNyN2NDTmE5QkNoa2F2ZUlSdVhnSUwtMGJNcU8xakw4SERBaTV0Vm1UUWphblRyV25MZGFvT1QyU2tNZU1ManJRUldwT1dBVkozaw?oc=5"
+          },
+          "locationKey": "chennai",
+          "rankingReasons": [
+            "shopping",
+            "valid undated item with active display window",
+            "location matches configured profile",
+            "planner advisory fit"
+          ],
+          "score": 0.726,
+          "title": "The Best Amazon Prime Day 2026 Deals to Shop Now - ELLE Canada Magazine"
         }
       ],
       "rankingProfile": "upAhead-v2-lifecycle-location-category",
       "scoreBreakdown": {
-        "actionabilityScore": 0.95,
-        "categoryPriorityScore": 0.8933,
+        "actionabilityScore": 0.945,
+        "categoryPriorityScore": 0.8827,
         "lifecycleScore": 0.65,
-        "locationScore": 0.8973,
+        "locationScore": 0.888,
         "plannerFitScore": 1.0,
         "sourceConfidenceScore": 0.58,
-        "urgencyOrExpiryScore": 0.8353
+        "urgencyOrExpiryScore": 0.8367
       }
     }
   },
-  "generatedAt": 1781903285600,
+  "generatedAt": 1781914071907,
   "implementedDestinations": [
     "upAhead",
     "buzz",
@@ -4626,7 +4730,7 @@
   "schemaVersion": 1,
   "summary": {
     "actionRequired": [
-      "33 invalid/expired/duplicate Up Ahead item(s) suppressed",
+      "34 invalid/expired/duplicate Up Ahead item(s) suppressed",
       "no ranked Up Ahead item for muscat",
       "no local Buzz item in ranked set",
       "no travel Buzz item in ranked set",
@@ -4639,9 +4743,9 @@
     ],
     "destinationScores": {
       "buzz": 0.0,
-      "insight": 0.4346,
+      "insight": 0.4108,
       "localTravel": 0.0,
-      "upAhead": 0.8294
+      "upAhead": 0.8261
     },
     "destinationStatuses": {
       "buzz": "FAIL",
@@ -4649,7 +4753,7 @@
       "localTravel": "FAIL",
       "upAhead": "WARN"
     },
-    "overallScore": 0.316,
+    "overallScore": 0.3092,
     "overallStatus": "FAIL",
     "rankingProfiles": {
       "buzz": "buzz-v2-trend-local-travel",
@@ -4668,6 +4772,8 @@
       "Everything You Need to Know About Prime Day 2026 - Lifehacker: location failed — offline/local item lacks configured location match",
       "Amazon Prime Day 2026: What To Buy and What To Skip - NBC News: location failed — offline/local item lacks configured location match",
       "4th Of July Sales: Shop Early Deals On Home, Fashion, Travel And More - Forbes: location failed — offline/local item lacks configured location match",
+      "After clearing TNPSC Group I exam, civil services aspirant meets her role model J. Radhakrishnan: futureValidity failed — expired display window",
+      "After clearing TNPSC Group I exam, civil services aspirant meets her role model J. Radhakrishnan: alertUrgency failed — alert expired",
       "DVAC conducts surprise checks at RTOs, MVIOs across Tamil Nadu: futureValidity failed — expired display window",
       "DVAC conducts surprise checks at RTOs, MVIOs across Tamil Nadu: alertUrgency failed — alert expired",
       "Environmental clearance for Brigade housing project in Pallikaranai revoked: futureValidity failed — expired display window",
@@ -4675,9 +4781,7 @@
       "Autorickshaw driver held for sexual harassment: futureValidity failed — expired display window",
       "Autorickshaw driver held for sexual harassment: alertUrgency failed — alert expired",
       "Veritas Foundation offers UG scholarships to 100 students across T.N.: futureValidity failed — expired display window",
-      "Veritas Foundation offers UG scholarships to 100 students across T.N.: alertUrgency failed — alert expired",
-      "One killed, over 18 injured as omni bus rams lorry near Madurantakam: futureValidity failed — expired display window",
-      "One killed, over 18 injured as omni bus rams lorry near Madurantakam: alertUrgency failed — alert expired"
+      "Veritas Foundation offers UG scholarships to 100 students across T.N.: alertUrgency failed — alert expired"
     ]
   }
 }

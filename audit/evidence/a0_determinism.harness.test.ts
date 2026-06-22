@@ -12,9 +12,11 @@ import { getEmbeddings } from "../../src/adapters/embeddingsAdapter.js";
 
 const SNAPSHOT_PATH = path.resolve("public/newsdata/insight_2026-05-19.json");
 const OUT_PATH = path.resolve("audit/evidence/A0-run-projection.json");
+const PROGRESS = path.resolve("audit/evidence/A0-progress.log");
 const SLOT_ORDER: SnapshotSlot[] = ["now", "minus4h", "minus12h", "minus24h", "minus36h", "minus48h"];
 const N = 10;
 
+function log(line: string) { fs.appendFileSync(PROGRESS, `${new Date().toISOString()} ${line}\n`); }
 function normalizeSlot(slot: string): SnapshotSlot {
   return (SLOT_ORDER.includes(slot as SnapshotSlot) ? slot : "now") as SnapshotSlot;
 }
@@ -76,83 +78,83 @@ function toInsightStory(raw: any, index: number, slot: SnapshotSlot, embedding: 
     summaryQuality: Number(raw?.summaryQuality || 0.75),
   } as InsightStory;
 }
-async function makeFetcher(snapshot: any) {
-  const stories = Array.isArray(snapshot?.stories) ? snapshot.stories : [];
-  const texts = stories.map((s: any) =>
-    `${String(s?.title || s?.headline || "Untitled")} ${String(s?.summary || s?.description || s?.content || "")}`);
-  const embeddings = await getEmbeddings(texts);
-  const normalized = stories.map((s: any, i: number) => toInsightStory(s, i, getStorySlot(s, snapshot), embeddings[i] || []));
-  return async (slot: SnapshotSlot): Promise<InsightStory[]> => normalized.filter(s => s.capturedAtSnapshot === slot);
-}
 function clearCache() { for (const s of SLOT_ORDER) invalidateSlot(s); }
-
-// Canonical projection of the A0 exit-gate outputs.
 function project(parents: any[]) {
   return parents.map(p => ({
-    parentId: p.parentId,
-    finalParentScore: p.finalParentScore,
-    clusterStoryIds: p.clusterStoryIds,
-    childStoryIds: p.childStoryIds,
-    hiddenDuplicateIds: p.hiddenDuplicateIds,
-    weakTree: p.weakTree,
+    parentId: p.parentId, finalParentScore: p.finalParentScore,
+    clusterStoryIds: p.clusterStoryIds, childStoryIds: p.childStoryIds,
+    hiddenDuplicateIds: p.hiddenDuplicateIds, weakTree: p.weakTree,
     scores: {
       impact: p.impactScore, persistence: p.persistenceScore, novelty: p.noveltyScore,
-      freshness: p.freshnessScore, momentum: p.crossSnapshotMomentum,
-      region: p.regionBoost, evolution: p.evolutionDiversityScore,
-      infoDelta: p.informationDeltaScore, wire: p.wirePenaltyScore,
+      freshness: p.freshnessScore, momentum: p.crossSnapshotMomentum, region: p.regionBoost,
+      evolution: p.evolutionDiversityScore, infoDelta: p.informationDeltaScore, wire: p.wirePenaltyScore,
     },
   }));
 }
 const sha = (v: unknown) => crypto.createHash("sha256").update(JSON.stringify(v)).digest("hex").slice(0, 16);
 
-async function runOnce(snapshot: any) {
-  clearCache();
-  const result = await runInsightPipeline(await makeFetcher(snapshot), DEFAULT_CONFIG);
-  return project(result.parents);
-}
-
 describe("A0 determinism harness (frozen snapshot insight_2026-05-19.json)", () => {
   it(`N=${N} runs, real clock vs frozen clock`, async () => {
+    fs.writeFileSync(PROGRESS, "");
     const snapshot = JSON.parse(fs.readFileSync(SNAPSHOT_PATH, "utf8"));
 
-    // ── Variant 1: REAL clock (Date.now() advances) ──
+    // Build embeddings + normalized stories ONCE (deterministic, identical every run).
+    const tEmbed = Date.now();
+    const stories = Array.isArray(snapshot?.stories) ? snapshot.stories : [];
+    const texts = stories.map((s: any) =>
+      `${String(s?.title || s?.headline || "Untitled")} ${String(s?.summary || s?.description || s?.content || "")}`);
+    const embeddings = await getEmbeddings(texts);
+    const normalized = stories.map((s: any, i: number) =>
+      toInsightStory(s, i, getStorySlot(s, snapshot), embeddings[i] || []));
+    log(`embed+normalize done in ${Date.now() - tEmbed}ms for ${normalized.length} stories`);
+
+    // Cheap fetcher closure that re-derives nothing.
+    const fetcher = async (slot: SnapshotSlot): Promise<InsightStory[]> =>
+      normalized.filter(s => s.capturedAtSnapshot === slot);
+
+    const runOnce = async () => {
+      clearCache();
+      const result = await runInsightPipeline(fetcher, DEFAULT_CONFIG);
+      return project(result.parents);
+    };
+
+    // Variant 1: REAL clock.
     const realHashes: string[] = [];
     let firstProjection: any = null;
     for (let i = 0; i < N; i++) {
-      const proj = await runOnce(snapshot);
+      const t = Date.now();
+      const proj = await runOnce();
       if (i === 0) firstProjection = proj;
-      realHashes.push(sha(proj));
+      const h = sha(proj);
+      realHashes.push(h);
+      log(`real run ${i} hash=${h} parents=${proj.length} ms=${Date.now() - t}`);
     }
 
-    // ── Variant 2: FROZEN clock (virtual clock simulated by pinning Date.now) ──
+    // Variant 2: FROZEN clock (virtual clock simulated by pinning Date.now).
     const FIXED = 1747645200000; // 2026-05-19T13:00:00Z
     const realDateNow = Date.now;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (Date as any).now = () => FIXED;
     const frozenHashes: string[] = [];
+    (Date as any).now = () => FIXED;
     try {
-      for (let i = 0; i < N; i++) frozenHashes.push(sha(await runOnce(snapshot)));
-    } finally {
-      (Date as any).now = realDateNow;
-    }
+      for (let i = 0; i < N; i++) {
+        const proj = await runOnce();
+        const h = sha(proj);
+        frozenHashes.push(h);
+        realDateNow.call(Date); // keep ref used
+        fs.appendFileSync(PROGRESS, `${new Date(FIXED).toISOString()} frozen run ${i} hash=${h}\n`);
+      }
+    } finally { (Date as any).now = realDateNow; }
 
     const uniqReal = [...new Set(realHashes)];
     const uniqFrozen = [...new Set(frozenHashes)];
-
     const out = {
-      snapshot: "public/newsdata/insight_2026-05-19.json",
-      contentHash: "40f989d5da9c",
-      node: process.version,
-      N,
-      parentCount: firstProjection.length,
+      snapshot: "public/newsdata/insight_2026-05-19.json", contentHash: "40f989d5da9c",
+      fileSha256: "ade1430dd96bb5f1", node: process.version, N, parentCount: firstProjection.length,
       realClock: { hashes: realHashes, uniqueCount: uniqReal.length, identical: uniqReal.length === 1 },
       frozenClock: { fixedEpochMs: FIXED, hashes: frozenHashes, uniqueCount: uniqFrozen.length, identical: uniqFrozen.length === 1 },
+      firstProjectionSample: firstProjection.slice(0, 3),
     };
     fs.writeFileSync(OUT_PATH, JSON.stringify(out, null, 2));
-    console.log("[A0]", JSON.stringify({
-      parentCount: out.parentCount,
-      realClock_identical: out.realClock.identical, realClock_uniqueHashes: uniqReal.length,
-      frozenClock_identical: out.frozenClock.identical, frozenClock_uniqueHashes: uniqFrozen.length,
-    }, null, 2));
-  }, 120000);
+    log(`DONE realIdentical=${out.realClock.identical} frozenIdentical=${out.frozenClock.identical}`);
+  }, 600000);
 });

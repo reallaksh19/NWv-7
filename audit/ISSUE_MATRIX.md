@@ -60,3 +60,16 @@
   Detection: Actions run list shows ~3 runs on 2026-06-22 vs the ~18/day the cron implies (GitHub drops scheduled runs under load). Not yet quantified over 14 days per plan §A4.
   Exit gate: 14-day fetch reliability table produced; if cadence materially below target, document and ticket
 
+# ── Determinism audit findings (Phase A0) ──
+
+- ID: I004
+  Area: Virtual-clock injection not fully plumbed (blocks B3 dated-snapshot replay)
+  Severity: Low
+  Owner file(s): src/insight/src/pipeline/temporalTier.ts (33), src/insight/src/cache/cacheManager.ts (34,69,101,148); partial param exists in src/insight/src/pipeline/normalize.ts (150,242)
+  Detection: audit/evidence/A0.1-DET-01.yaml + A0.2-NONDETERMINISM-CATALOGUE.md — output is clock-coupled (real-clock hash 37616c2e99ccca69 ≠ frozen-clock hash d803a31bed6982eb on the same snapshot); a global Date.now shim was required to pin the clock because temporalTier/cacheManager read Date.now() directly.
+  User impact: none in production (in-process runs are deterministic); blocks the B3 36h replay benchmark on dated snapshots until a clock is threaded through temporalTier + cacheManager.
+  Exit gate: injected clock parameter threaded through temporalTier.computeEventAnchor and cacheManager age checks; B3 replay reproduces a dated snapshot without monkeypatching globals
+
+# NOTE: Phase A0 itself PASSES (determinism established). See audit/evidence/A0.1-DET-01.yaml.
+# A0 exit gate MET → A1, A2.x, A3, A4(remainder), A5 are unblocked.
+

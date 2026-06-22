@@ -91,3 +91,37 @@
 
 # NOTE: Phase A1 itself PASSES (code config/contract truthfulness sound). See audit/evidence/A1.1-CONTRACT-01.yaml.
 
+# ── Stage-by-stage audit findings (Phase A2) ──
+
+- ID: I007
+  Area: scoreBreakdown is not a decomposition of finalParentScore (diagnostics truthfulness)
+  Severity: Medium
+  Owner file(s): src/insight/src/ranking/ranking.ts (360)
+  Detection: audit/evidence/A2.x-STAGE-01.yaml (A2.5) — debug.scoreBreakdown stores raw component values + a finalParentScore key (13 entries); naive sum off by up to 5.983 from the score. The 12-weight model reproduces finalParentScore exactly (Δ 0.000), so the math is right but the breakdown misrepresents it.
+  User impact: Ranked/score popups show a "breakdown" that does not add up to the displayed score → diagnostics mislead.
+  Exit gate: A5 recomputes each displayed breakdown number; UI either shows weighted contributions that sum to the score, or labels raw signals unambiguously. Dedicated cert (B4 nDCG won't catch).
+
+- ID: I008
+  Area: Weak-tree flag is angle-blind (contradicts plan/RCA angle-diversity intent)
+  Severity: Medium
+  Owner file(s): src/insight/src/tree/treeBuilder.ts (isWeakTree), src/insight/src/pipeline/pipeline.ts (454)
+  Detection: audit/evidence/A2.x-STAGE-01.yaml (A2.6) — isWeakTree = (<3 quality children: freshness≥0.45 & authority≥0.45); ignores angle count. cluster_453 (3 children, 1 angle) is non-weak. Plan §A2.6 documents weak = (<3 children OR <2 angles).
+  User impact: Single-angle event trees are presented as healthy ("not weak") despite no angle diversity — the exact failure the Angle RCA targeted.
+  Exit gate: reconcile weak-tree definition with documented intent (add angle-diversity term) OR update the contract; covered by B4 angle/diversity metric.
+
+- ID: I009
+  Area: parent.hiddenDuplicateIds empty — hidden-duplicate provenance not attached to parents (OBSERVATION)
+  Severity: Low
+  Owner file(s): src/insight/src/pipeline/pipeline.ts (452,573)
+  Detection: audit/evidence/A2.x-STAGE-01.yaml (A2.2/A2.6) — 82 stories hidden by the pipeline, but all 10 top parents carry hiddenDuplicateIds=[] (hard-dups removed pre-cluster are never in clusterStoryIds, so the filter yields empty).
+  Exit gate: confirm whether usefulVariantRescue/UI actually need per-parent hidden provenance (A2.6 recovery-path check); if so, attach it; else document that provenance lives only in result.hiddenIds.
+
+- ID: I010
+  Area: 15.3% of stories are OOV → zero embedding → embedding-invisible (F5-1 quantified)
+  Severity: Medium
+  Owner file(s): src/adapters/embeddingsAdapter.js (200-term fixed vocab), src/insight/src/dedup/dedup.ts (cosine)
+  Detection: audit/evidence/A2.x-STAGE-01.yaml (A2.2) — 134/877 stories have all-zero embeddings on insight_2026-05-19 (contentHash 40f989d5da9c); cosine returns 0 for them, so they cluster only via title/other layers. Disproportionately hyperlocal (Trichy etc.).
+  Exit gate: A3 F5-1 closure — measure OOV rate per locale + clustering degradation; expand vocab or add fallback embedding; B4 should track OOV rate.
+
+# NOTE: Phase A2 PASSES with findings (each track has a ternary verdict). F5-5 VERIFIED-FIXED (cosine zero-vector guard). See audit/evidence/A2.x-STAGE-01.yaml.
+

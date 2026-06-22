@@ -27,7 +27,7 @@ out(`  zero-vector embeddings (F5-5 guard relevance): ${zeroNorm}`);
 out(`  hiddenDuplicateIds carried on parents: ${hiddenOnParents} (vs pipeline hiddenCount ${d.hiddenCount})\n`);
 
 // ── A2.3 Angle ──
-const ALL_ANGLES = ["official_statement","data_release","ground_report","reaction","analysis","explainer","investigation","human_interest","scheduled_event","aftermath","context","unknown"];
+const ALL_ANGLES = ["base_report","official_response","market_reaction","fact_update","expert_analysis","regional_followup","correction","background_context","reaction_public","investigative_detail","opinion_editorial","unknown"];
 const angleCounts = {};
 for (const s of Object.values(SF)) angleCounts[s.angle] = (angleCounts[s.angle] || 0) + 1;
 const seen = new Set(Object.keys(angleCounts));

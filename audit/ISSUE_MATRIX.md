@@ -35,3 +35,28 @@
   Detection: Visual verification and smoke test
   Exit gate: No silent degradation, explicit feature status flags rendered
 
+# ── Insight/Automation audit findings (Phase A4) ──
+
+- ID: I001
+  Area: Deploy pipeline — published site never refreshed by prefetch commits
+  Severity: Critical
+  Owner file(s): .github/workflows/news_prefetch.yml (16-18, 198-222), .github/workflows/deploy.yml (5-10)
+  Detection: audit/evidence/A4.1-DEPLOY-01.yaml — GitHub Actions run history (deploy last ran 2026-06-12; data commits hourly) + live Pages snapshot fetch (deployed contentHash 92bee8cd0344 / fetchedAt 2026-06-12 vs repo 5a6820ccd64f / 2026-06-22)
+  Root cause: news_prefetch.yml pushes data commits as github-actions[bot] via GITHUB_TOKEN; GITHUB_TOKEN pushes do not raise workflow-trigger events, so deploy.yml's `on: push` never fires for data commits. Site frozen >10 days. Header comment claiming auto-publish is wrong.
+  Exit gate: deployed Pages newsdata refreshes within snapshot max-age of each prefetch commit; add post-deploy live-freshness probe cert (a deploy trigger such as PAT push / workflow_run / repository_dispatch is the remediation, tracked separately — no fix during audit)
+
+- ID: I002
+  Area: Main/Sections Hybrid mode empties on stale snapshot (no live fallback on static host)
+  Severity: High
+  Owner file(s): src/adapters/sectionsSnapshotFetcher.js (3-5, 210-272), src/services/rssAggregator.js (570-657), src/data/datasets/sectionsDataset.js (226-249)
+  Detection: audit/evidence/A4.2-SECTIONS-02.yaml — selectPrefetchedSectionItems on deploy-aged snapshot returns 0 items/section (control: 15/section when fresh)
+  Root cause: 12h snapshot / 36h item freshness gates discard all rows once the deployed snapshot ages out (driven by I001); allowWideFeedFetch=false blocks live RSS fallback → empty Main tab. Staleness is recorded internally but only an empty state reaches the user.
+  Exit gate: when snapshot stale on static host, render labelled-stale rows OR an explicit "data delayed" state instead of silent empty; depends on I001 being fixed for the primary symptom
+
+- ID: I003
+  Area: news_prefetch scheduled cadence shortfall (OBSERVATION — needs full 14-day table)
+  Severity: Low
+  Owner file(s): .github/workflows/news_prefetch.yml (24-28)
+  Detection: Actions run list shows ~3 runs on 2026-06-22 vs the ~18/day the cron implies (GitHub drops scheduled runs under load). Not yet quantified over 14 days per plan §A4.
+  Exit gate: 14-day fetch reliability table produced; if cadence materially below target, document and ticket
+

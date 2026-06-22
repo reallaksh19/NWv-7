@@ -73,3 +73,21 @@
 # NOTE: Phase A0 itself PASSES (determinism established). See audit/evidence/A0.1-DET-01.yaml.
 # A0 exit gate MET → A1, A2.x, A3, A4(remainder), A5 are unblocked.
 
+# ── Contract & config audit findings (Phase A1) ──
+
+- ID: I005
+  Area: Audit plan quotes stale algorithm constants (doc drift, not code)
+  Severity: Info
+  Owner file(s): audit/INSIGHT_AUDIT_PLAN.md (§A2.2 thresholds, §A2.4 SAME_EVENT, §A1 cache TTL line)
+  Detection: audit/evidence/A1.1-CONTRACT-01.yaml — code DEFAULT_CONFIG (0.96/0.985/0.88, CACHE_TTL 0/1/1.5/2/2.5/3h) matches project tuning docs (action_3_deep.md:450-451, INSIGHT_ANGLE_RCA), but the plan text quotes 0.92/0.85/0.75 and "-4h 2h/-12h 3h/-24h 4h".
+  Exit gate: reconcile the plan's quoted constants to the shipped values during A6 (so future auditors test the right numbers)
+
+- ID: I006
+  Area: destination_contract_baseline.md is stale (reports fixed gaps as open)
+  Severity: Low
+  Owner file(s): reports/destination_contract_baseline.md (8,35,99-101); regenerator scripts/audit_destination_contracts.py
+  Detection: audit/evidence/A1.1-CONTRACT-01.yaml — baseline claims collector 24h vs adapter 36h GAP, but fetch_sections_stories.py STORY_RETAIN_HOURS=36 already matches the adapter; baseline also warns quality_dashboard.json / insight_quality_report.json are unstaged, but news_prefetch.yml:205 stages both.
+  Exit gate: regenerate destination_contract_baseline from current code; CI check that it is not stale
+
+# NOTE: Phase A1 itself PASSES (code config/contract truthfulness sound). See audit/evidence/A1.1-CONTRACT-01.yaml.
+

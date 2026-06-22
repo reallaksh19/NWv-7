@@ -125,3 +125,15 @@
 
 # NOTE: Phase A2 PASSES with findings (each track has a ternary verdict). F5-5 VERIFIED-FIXED (cosine zero-vector guard). See audit/evidence/A2.x-STAGE-01.yaml.
 
+# ── Known-findings closure (Phase A3) ──
+
+- ID: I011
+  Area: Breaking/new-event clusters may not surface promptly (F5-2)
+  Severity: High
+  Owner file(s): src/insight/src/ranking/ranking.ts (persistence/momentum weights), src/insight/src/pipeline/pipeline.ts (490-493 weak-tree demotion + TOP_PARENTS slice)
+  Detection: audit/evidence/A3.1-CLOSURE-01.yaml (F5-2) — ranking weights persistence 0.20 + momentum 0.08 favor established events; a brand-new event forms a weak tree and is demoted below TOP_PARENTS. Mechanism confirmed by code+weights; surfacing latency UNVERIFIED (needs 2-snapshot incremental harness).
+  User impact: genuine breaking news can be pushed out of the top-10 and not shown — bad for a news product.
+  Exit gate: incremental two-snapshot harness measuring surfacing latency for an injected new event; add a freshness/breaking fast-path or latency cert (B4 cannot catch ordering of unseen events).
+
+# NOTE: Phase A3 PASSES — all F5-x/RCA rows terminal (F5-5 VERIFIED-FIXED; F5-3/F5-6/F5-7 RISK-ACCEPTED; F5-1→I010, F5-2→I011, F5-4 Low; RCA-R1 VERIFIED). See audit/evidence/A3.1-CLOSURE-01.yaml.
+

@@ -10,24 +10,24 @@
 - Base report share: `0.16`
 - Multi-angle parents: `10`
 - Weak parents: `0`
-- Story count: `563`
+- Story count: `633`
 - Source groups: `11`
-- Content hash: `6e71e339fe2f7935`
+- Content hash: `ac01232a3f145d2d`
 
 ## Top parents
 
 | # | Headline | Children | Angles | Weak | Score |
 |---:|---|---:|---|---|---:|
-| 1 | UK PM Keir Starmer quits | 7 | base_report, fact_update, official_response, regional_followup | NO | 0.7736271246498396 |
+| 1 | UK PM Keir Starmer quits | 7 | base_report, fact_update, official_response, regional_followup | NO | 0.7702061862132925 |
 | 2 | West Bengal eyes Calcutta Stock Exchange revival to reclaim financial hub status | 2 | market_reaction, regional_followup | NO | 0.7304133864516651 |
 | 3 | FM Swapan Dasgupta presents BJP’s maiden budget in the state | 2 | fact_update, official_response | NO | 0.6886300531183316 |
-| 4 | RBI sold net $8.9 billion in April, gold holdings unchanged | 2 | fact_update, market_reaction | NO | 0.6613933333333334 |
-| 5 | NEET Candidate Arrested For Using Hidden Mobile Phone In Exam Centre Washroom | 2 | regional_followup, official_response | NO | 0.6792467197849983 |
-| 6 | Alan Greenspan, longtime U.S. Federal Reserve chairman, dies aged 100 | 2 | official_response, fact_update | NO | 0.6412600000000002 |
-| 7 | Pondy Bazaar earned over ₹60 lakh revenue, 89% women felt safer, sales jumped 50% in ‘Healthy Streets’ project across country: study | 2 | base_report, fact_update | NO | 0.6252933333333334 |
-| 8 | India seeks tariff advantage over peers in push to finalise US trade deal - Reuters | 2 | regional_followup, base_report | NO | 0.62166 |
-| 9 | Explosion at Dakshin Energy unit in Visakhapatnam’s Pharma City kills two; more feared trapped | 2 | regional_followup, fact_update | NO | 0.6064100000000001 |
-| 10 | Who is Kunal Shah? CRED Founder Named New Head of WhatsApp as Will Cathcart Steps Down | 2 | base_report, official_response | NO | 0.5228566135483352 |
+| 4 | Alan Greenspan, longtime U.S. Federal Reserve chairman, dies aged 100 | 2 | official_response, fact_update | NO | 0.6852467197849983 |
+| 5 | RBI sold net $8.9 billion in April, gold holdings unchanged | 2 | fact_update, market_reaction | NO | 0.6613933333333334 |
+| 6 | NEET Takes Another Political Turn After Students Miss Exam In Bengaluru | 2 | regional_followup, official_response | NO | 0.6721467197849983 |
+| 7 | India seeks tariff advantage over peers in push to finalise US trade deal - Reuters | 2 | regional_followup, base_report | NO | 0.62166 |
+| 8 | Explosion at Dakshin Energy unit in Visakhapatnam’s Pharma City kills two; more feared trapped | 2 | regional_followup, fact_update | NO | 0.6064100000000001 |
+| 9 | NSA Doval at BRICS conclave | 2 | base_report, official_response | NO | 0.5815232802150019 |
+| 10 | CUET-UG 2026 results out; candidates can download scorecards from official website | 2 | base_report, official_response | NO | 0.5590232802150018 |
 
 ## Real Snapshot Ratchet Gate
 

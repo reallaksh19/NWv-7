@@ -35,6 +35,7 @@
     "dev": "vite",
     "api": "python scripts/server.py",
     "build": "vite build",
+    "bench:synth": "node benchmarks/synthetic/generate_corpus.mjs && vitest run --config benchmarks/synthetic/replay.vitest.config.ts && node benchmarks/synthetic/score.mjs && node benchmarks/synthetic/ratchet.mjs",
     "benchmark": "node scripts/run_upahead_benchmarks.js",
     "test:upahead-smoke": "node scripts/test_upahead_classification_smoke.mjs",
     "test:market-snapshot": "node scripts/test_market_snapshot_integrity.mjs",

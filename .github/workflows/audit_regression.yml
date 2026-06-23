@@ -45,3 +45,30 @@ jobs:
 
       - name: Production build
         run: npm run build
+
+  synthetic-benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Synthetic structural benchmark (generate → replay → score → ratchet)
+        # Deterministic corpus + construction-time labels (κ=1.0); ratchet fails on a
+        # material regression vs benchmarks/synthetic/BASELINE_METRICS.json.
+        run: npm run bench:synth
+      - name: Upload benchmark run bundle
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: synthetic-benchmark-run
+          path: |
+            benchmarks/runs/insight_synth_36h_v1/**/metrics.json
+            benchmarks/runs/insight_synth_36h_v1/**/alarms.json
+          if-no-files-found: warn

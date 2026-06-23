@@ -1,7 +1,7 @@
 {
   "status": "PASS",
   "benchmarkVersion": "real-insight-snapshot-quality-v1",
-  "generatedAt": 1782133992895,
+  "generatedAt": 1782179244872,
   "contentHash": "e1b9e904a018af99",
   "schemaVersion": 3,
   "collectorVersion": "insight-collector-json-v4",
@@ -14,7 +14,7 @@
   "avgEvolutionRoles": 1.9,
   "baseReportShare": 0.047619047619047616,
   "multiAngleCount": 6,
-  "weakParentCount": 0,
+  "weakParentCount": 4,
   "runtimeQualityGate": {
     "attempted": false,
     "recovered": false,
@@ -23,12 +23,12 @@
       "grade": "C",
       "tone": "warn",
       "title": "Thin but usable signal",
-      "signalScore": 58,
+      "signalScore": 50,
       "sourceLabel": "Live",
       "rankedCount": 10,
       "storyCount": 556,
       "risingCount": 0,
-      "thinCount": 0,
+      "thinCount": 4,
       "multiAngleCount": 6,
       "lowAngleCount": 4,
       "strongAngleCount": 0,
@@ -42,6 +42,7 @@
         "4 cluster(s) have fewer than two visible child angles.",
         "No cluster currently exposes three or more visible child angles.",
         "5 cluster(s) have weak snapshot coverage.",
+        "4 cluster(s) are marked thin.",
         "481 duplicate/near-duplicate item(s) were hidden or downgraded."
       ]
     },
@@ -49,12 +50,12 @@
       "grade": "C",
       "tone": "warn",
       "title": "Thin but usable signal",
-      "signalScore": 58,
+      "signalScore": 50,
       "sourceLabel": "Live",
       "rankedCount": 10,
       "storyCount": 556,
       "risingCount": 0,
-      "thinCount": 0,
+      "thinCount": 4,
       "multiAngleCount": 6,
       "lowAngleCount": 4,
       "strongAngleCount": 0,
@@ -68,6 +69,7 @@
         "4 cluster(s) have fewer than two visible child angles.",
         "No cluster currently exposes three or more visible child angles.",
         "5 cluster(s) have weak snapshot coverage.",
+        "4 cluster(s) are marked thin.",
         "481 duplicate/near-duplicate item(s) were hidden or downgraded."
       ]
     }
@@ -200,7 +202,7 @@
       "parentId": "cluster_42_35c02051817754b4",
       "headline": "Keir Starmer sixth U.K. PM to resign after Brexit",
       "score": 0.6499573212916498,
-      "postTreeScore": 0.78,
+      "postTreeScore": 0.6,
       "childCount": 3,
       "angles": [
         "official_response"
@@ -214,13 +216,13 @@
         "accountability"
       ],
       "baseReportShare": 0,
-      "weakTree": false
+      "weakTree": true
     },
     {
       "parentId": "cluster_79_95a0110d6f7525ff",
       "headline": "Rebel BJP Leader Defeats Eknath Shinde Nominee In Maharashtra Council Polls",
       "score": 0.6721467197849983,
-      "postTreeScore": 0.7421,
+      "postTreeScore": 0.5621,
       "childCount": 2,
       "angles": [
         "regional_followup"
@@ -234,13 +236,13 @@
         "corroboration"
       ],
       "baseReportShare": 0,
-      "weakTree": false
+      "weakTree": true
     },
     {
       "parentId": "cluster_54_f1799a44ed594ddf",
       "headline": "Rupee snaps six-session winning streak as firmer dollar pinches",
       "score": 0.6272599999999999,
-      "postTreeScore": 0.7173,
+      "postTreeScore": 0.5373,
       "childCount": 2,
       "angles": [
         "market_reaction"
@@ -254,13 +256,13 @@
         "market_reaction"
       ],
       "baseReportShare": 0,
-      "weakTree": false
+      "weakTree": true
     },
     {
       "parentId": "cluster_175_fd5fc420d05ff9ed",
       "headline": "After breaking WORLD RECORD, when will 15-year-old be in action again, fu - India.Com",
       "score": 0.6052599999999999,
-      "postTreeScore": 0.6953,
+      "postTreeScore": 0.5153,
       "childCount": 2,
       "angles": [
         "fact_update"
@@ -274,7 +276,7 @@
         "corroboration"
       ],
       "baseReportShare": 0,
-      "weakTree": false
+      "weakTree": true
     }
   ],
   "warnings": [],
@@ -342,7 +344,7 @@
       {
         "id": "weak-parent-ratio",
         "label": "Weak parent ratio",
-        "actual": 0,
+        "actual": 0.4,
         "required": "<= 0.5"
       }
     ],
@@ -354,8 +356,8 @@
       "avgEvolutionRoles": 1.9,
       "baseReportShare": 0.048,
       "multiAngleCount": 6,
-      "weakParentCount": 0,
-      "weakParentRatio": 0,
+      "weakParentCount": 4,
+      "weakParentRatio": 0.4,
       "topParentAngles": 2,
       "topParentChildren": 2,
       "storyCount": 604,

@@ -825,7 +825,13 @@ export function isWeakTree(children: InsightStory[], cfg: InsightConfig): boolea
     // Proxy for quality: high freshnessScore + decent authority
     return s.freshnessScore >= 0.45 && s.sourceAuthority >= 0.45;
   });
-  return qualityChildren.length < cfg.WEAK_TREE_CHILD_MIN;
+  // I008: a tree is also weak if it exposes fewer than 2 distinct angles, even
+  // with enough quality children — single-angle trees lack the angle diversity the
+  // Insight tab promises (matches the Angle RCA intent and plan §A2.6).
+  const distinctAngles = new Set(
+    children.map(s => s.angle).filter(Boolean)
+  ).size;
+  return qualityChildren.length < cfg.WEAK_TREE_CHILD_MIN || distinctAngles < 2;
 }
 
 // ── Debug helper ──────────────────────────────────────────────────────────────

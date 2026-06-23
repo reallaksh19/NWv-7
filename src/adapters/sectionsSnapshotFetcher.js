@@ -249,9 +249,13 @@ export function selectPrefetchedSectionItems(snapshot, section, limit = 10) {
     };
   }
 
-  // Snapshot fallback is intentionally strict: render only item-fresh rows.
-  // Never rehydrate a stale snapshot with stale rows just to avoid an empty UI.
-  const candidateItems = freshSectionItems;
+  // I002: prefer item-fresh rows, but rather than leave the Main tab silently
+  // empty when nothing is fresh (e.g. the deployed snapshot has aged out), fall
+  // back to the most recent rows flagged stale=true so the UI renders them under
+  // a "data delayed" marker instead of "No updates available". topStories keeps
+  // its strict early-return above. Fresh data is always preferred when present.
+  const usingStaleFallback = freshSectionItems.length === 0 && sectionItems.length > 0;
+  const candidateItems = freshSectionItems.length > 0 ? freshSectionItems : sectionItems;
 
   const items = candidateItems
     .map(item => normalizePrefetchedSectionItem(item, requestedSection, sourceSection))
@@ -263,8 +267,9 @@ export function selectPrefetchedSectionItems(snapshot, section, limit = 10) {
     sourceSection,
     quality: snapshot?.sectionQuality?.[sourceSection] || null,
     summary: getSectionsSnapshotRuntimeSummary(snapshot),
-    stale: Boolean(staleReason),
-    staleReason,
+    stale: Boolean(staleReason) || usingStaleFallback,
+    staleReason: staleReason || (usingStaleFallback ? 'section_items_stale' : null),
+    staleFallback: usingStaleFallback,
     staleItemCount: Math.max(0, sectionItems.length - freshSectionItems.length),
     lowConfidenceTimestampCount,
     itemMaxAgeMs: sourceSection === 'topStories' ? TOP_STORIES_ITEM_MAX_AGE_MS : SECTION_ITEM_MAX_AGE_MS,

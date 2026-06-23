@@ -85,7 +85,12 @@ describe('Insight ranking certification', () => {
 
     expect(debug.rankingContributionBreakdown).toBeTruthy();
     expect(Array.isArray(debug.rankingContributionBreakdown)).toBe(true);
-    expect(debug.rankingContributionBreakdown.length).toBe(8);
+    // I007: breakdown now exposes all 12 weighted factors so it reconciles to the
+    // final score (previously only 8 were shown, so it could not sum to the score).
+    expect(debug.rankingContributionBreakdown.length).toBe(12);
+    const breakdownSum = debug.rankingContributionBreakdown
+      .reduce((acc: number, item: any) => acc + Number(item.weightedContribution || 0), 0);
+    expect(breakdownSum).toBeCloseTo(score, 3);
 
     expect(debug.rankingReasonLabels).toBeTruthy();
     expect(Array.isArray(debug.rankingReasonLabels)).toBe(true);

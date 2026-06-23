@@ -9,7 +9,7 @@
 - Average evolution roles: `1.9`
 - Base report share: `0.047619047619047616`
 - Multi-angle parents: `6`
-- Weak parents: `0`
+- Weak parents: `4`
 - Story count: `604`
 - Source groups: `11`
 - Content hash: `e1b9e904a018af99`
@@ -24,10 +24,10 @@
 | 4 | Alan Greenspan, longtime U.S. Federal Reserve chairman, dies aged 100 | 2 | official_response, fact_update | NO | 0.5612732802150018 |
 | 5 | JD Vance lands in Switzerland to launch talks with Iran on its nuclear programme | 2 | base_report, expert_analysis | NO | 0.6703967197849983 |
 | 6 | FM Swapan Dasgupta presents BJP’s maiden budget in the state | 2 | fact_update, official_response | NO | 0.6886300531183316 |
-| 7 | Keir Starmer sixth U.K. PM to resign after Brexit | 3 | official_response | NO | 0.6499573212916498 |
-| 8 | Rebel BJP Leader Defeats Eknath Shinde Nominee In Maharashtra Council Polls | 2 | regional_followup | NO | 0.6721467197849983 |
-| 9 | Rupee snaps six-session winning streak as firmer dollar pinches | 2 | market_reaction | NO | 0.6272599999999999 |
-| 10 | After breaking WORLD RECORD, when will 15-year-old be in action again, fu - India.Com | 2 | fact_update | NO | 0.6052599999999999 |
+| 7 | Keir Starmer sixth U.K. PM to resign after Brexit | 3 | official_response | YES | 0.6499573212916498 |
+| 8 | Rebel BJP Leader Defeats Eknath Shinde Nominee In Maharashtra Council Polls | 2 | regional_followup | YES | 0.6721467197849983 |
+| 9 | Rupee snaps six-session winning streak as firmer dollar pinches | 2 | market_reaction | YES | 0.6272599999999999 |
+| 10 | After breaking WORLD RECORD, when will 15-year-old be in action again, fu - India.Com | 2 | fact_update | YES | 0.6052599999999999 |
 
 ## Real Snapshot Ratchet Gate
 
@@ -59,4 +59,4 @@
 - Multi-angle parent count: `6` / `>= 1`
 - Top parent angle count: `2` / `>= 2`
 - Top parent child depth: `2` / `>= 2`
-- Weak parent ratio: `0` / `<= 0.5`
+- Weak parent ratio: `0.4` / `<= 0.5`

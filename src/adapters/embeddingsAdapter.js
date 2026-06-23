@@ -86,8 +86,20 @@ function tokenize(text) {
   ]);
 }
 
+// Stable, deterministic string hash (djb2-ish) for the OOV feature-hashing fallback.
+function stableTokenHash(str) {
+  let h = 0;
+  for (let i = 0; i < str.length; i += 1) {
+    h = (h << 5) - h + str.charCodeAt(i);
+    h |= 0;
+  }
+  return Math.abs(h);
+}
+
 export async function getEmbeddings(texts) {
   if (!texts || texts.length === 0) return [];
+
+  const DIM = FIXED_VOCAB.length;
 
   return texts.map(text => {
     const tokens = tokenize(text);
@@ -96,7 +108,25 @@ export async function getEmbeddings(texts) {
     tokens.forEach(t => { freq[t] = (freq[t] || 0) + 1; });
     Object.keys(freq).forEach(t => { freq[t] = 1 + Math.log(freq[t]); });
 
-    // Project onto fixed vocabulary — always exactly 200 dimensions
-    return FIXED_VOCAB.map(term => freq[term] || 0);
+    // Project onto the fixed vocabulary (dimension = FIXED_VOCAB.length).
+    const vec = FIXED_VOCAB.map(term => freq[term] || 0);
+
+    // I010 OOV fallback: a story that matches NO vocab term projects to all zeros,
+    // so cosineSimilarity returns 0 against everything and it is invisible to dedup
+    // and clustering (~15% of a real snapshot — disproportionately hyperlocal).
+    // Give such stories a deterministic sparse vector by feature-hashing their own
+    // tokens into the SAME dimensional space: distinct OOV stories get distinct
+    // vectors and genuinely similar OOV stories cluster — WITHOUT the historical
+    // "every vector ≈ identical" collapse (that came from length/charCode features;
+    // here weights come from real per-token TF, so unrelated stories stay far apart).
+    // In-vocab stories are untouched.
+    const hasSignal = vec.some(v => v !== 0);
+    if (!hasSignal) {
+      for (const tok of Object.keys(freq)) {
+        vec[stableTokenHash(tok) % DIM] += freq[tok];
+      }
+    }
+
+    return vec;
   });
 }

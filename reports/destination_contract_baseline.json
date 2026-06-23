@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
-  "generatedAt": 1780627108193,
+  "generatedAt": 1782178764908,
   "summary": {
     "routesDetected": 14,
     "navDestinations": 12,
     "contractsDefined": 14,
-    "staticJsonFiles": 36,
+    "staticJsonFiles": 43,
     "workflows": 11,
     "migrationStatusCounts": {
       "MIGRATED": 7,
       "DERIVED": 5,
       "LOCAL_ONLY": 2
     },
-    "warningCount": 3,
+    "warningCount": 0,
     "errorCount": 0,
     "sectionsRetainGap": {
-      "collectorRetainHours": 24,
+      "collectorRetainHours": 36,
       "adapterMaxAgeHours": 36,
-      "gap": true
+      "gap": false
     }
   },
   "detected": {
@@ -148,19 +148,37 @@
       },
       "news_prefetch.yml": {
         "runs": [
+          "scripts/build_quality_rankings.py",
           "scripts/fetch_insight_stories.py",
           "scripts/fetch_sections_stories.py",
           "scripts/generate_quality_dashboard.mjs",
           "scripts/prefetch_commit_decision.py",
           "scripts/validate_insight_prefetch_output.py",
+          "scripts/validate_newsdata_freshness.py",
           "scripts/validate_quality_dashboard.mjs",
+          "scripts/validate_quality_rankings.py",
           "scripts/validate_sections_prefetch_output.py"
         ],
         "staged": [
           "public/newsdata/insight_latest.json",
           "public/newsdata/sections_latest.json",
           "public/newsdata/source_health.json",
-          "public/newsdata/prefetch_commit_manifest.json"
+          "public/newsdata/prefetch_commit_manifest.json",
+          "public/newsdata/insight_quality_report.json",
+          "public/newsdata/insight_quality_summary.md",
+          "public/newsdata/sections_quality_report.json",
+          "public/newsdata/sections_quality_summary.md",
+          "public/newsdata/newsdata_freshness_report.json",
+          "public/newsdata/newsdata_freshness_summary.md",
+          "public/newsdata/real_insight_quality_report.json",
+          "public/newsdata/real_insight_quality_summary.md",
+          "public/newsdata/quality_rankings.json",
+          "public/newsdata/quality_rankings.md",
+          "public/newsdata/quality_rankings_history.json",
+          "public/newsdata/quality_rankings_validation_report.json",
+          "public/newsdata/quality_dashboard.json",
+          "public/newsdata/quality_dashboard_history.json",
+          "public/newsdata/section_source_policy_report.json"
         ]
       },
       "travel-local-news.yml": {
@@ -173,8 +191,10 @@
       },
       "upahead_refresh.yml": {
         "runs": [
+          "scripts/enrich_upahead_contract.py",
           "scripts/fetch_festivals.py",
-          "scripts/fetch_upahead_events.py"
+          "scripts/fetch_upahead_events.py",
+          "scripts/validate_upahead_prefetch_output.py"
         ],
         "staged": [
           "public/data/",
@@ -196,27 +216,27 @@
         "schemaVersion": null
       },
       "public/data/epaper_data.json": {
-        "sizeBytes": 93502,
+        "sizeBytes": 82778,
         "schemaVersion": null
       },
       "public/data/fx_snapshot.json": {
-        "sizeBytes": 2441,
+        "sizeBytes": 2360,
         "schemaVersion": "2.0.0"
       },
       "public/data/market_metrics.json": {
-        "sizeBytes": 176970,
+        "sizeBytes": 176636,
         "schemaVersion": "2.0.0"
       },
       "public/data/market_snapshot.json": {
-        "sizeBytes": 37119,
+        "sizeBytes": 36792,
         "schemaVersion": "2.0.0"
       },
       "public/data/mutual_fund_snapshot.json": {
-        "sizeBytes": 165823,
+        "sizeBytes": 165807,
         "schemaVersion": "2.0.0"
       },
       "public/data/source_health.json": {
-        "sizeBytes": 3082,
+        "sizeBytes": 2993,
         "schemaVersion": "1.0.0"
       },
       "public/data/travel-local-chennai.json": {
@@ -260,7 +280,11 @@
         "schemaVersion": 1
       },
       "public/data/up_ahead.json": {
-        "sizeBytes": 572447,
+        "sizeBytes": 68803,
+        "schemaVersion": 1
+      },
+      "public/data/up_ahead_quality_report.json": {
+        "sizeBytes": 1147,
         "schemaVersion": 1
       },
       "public/data/user_plan.json": {
@@ -268,11 +292,11 @@
         "schemaVersion": null
       },
       "public/data/weather_snapshot.json": {
-        "sizeBytes": 87418,
+        "sizeBytes": 87184,
         "schemaVersion": "1.0.0"
       },
       "public/newsdata/breaking_latest.json": {
-        "sizeBytes": 7747,
+        "sizeBytes": 7164,
         "schemaVersion": 1
       },
       "public/newsdata/insight_2026-05-13.json": {
@@ -304,35 +328,59 @@
         "schemaVersion": 2
       },
       "public/newsdata/insight_latest.json": {
-        "sizeBytes": 1158117,
+        "sizeBytes": 1064224,
         "schemaVersion": 3
       },
       "public/newsdata/insight_quality_report.json": {
-        "sizeBytes": 2838,
+        "sizeBytes": 3308,
         "schemaVersion": 3
       },
+      "public/newsdata/newsdata_freshness_report.json": {
+        "sizeBytes": 809,
+        "schemaVersion": 1
+      },
       "public/newsdata/prefetch_commit_manifest.json": {
-        "sizeBytes": 1975,
+        "sizeBytes": 4990,
         "schemaVersion": null
       },
       "public/newsdata/quality_dashboard.json": {
-        "sizeBytes": 1473,
-        "schemaVersion": 1
+        "sizeBytes": 9397,
+        "schemaVersion": 2
       },
       "public/newsdata/quality_dashboard_history.json": {
-        "sizeBytes": 792,
+        "sizeBytes": 3438,
+        "schemaVersion": 2
+      },
+      "public/newsdata/quality_rankings.json": {
+        "sizeBytes": 177061,
+        "schemaVersion": 1
+      },
+      "public/newsdata/quality_rankings_history.json": {
+        "sizeBytes": 21770,
+        "schemaVersion": null
+      },
+      "public/newsdata/quality_rankings_validation_report.json": {
+        "sizeBytes": 484,
         "schemaVersion": 1
       },
       "public/newsdata/real_insight_quality_report.json": {
-        "sizeBytes": 9575,
+        "sizeBytes": 9500,
         "schemaVersion": 3
       },
+      "public/newsdata/section_source_policy_report.json": {
+        "sizeBytes": 15636,
+        "schemaVersion": 1
+      },
       "public/newsdata/sections_latest.json": {
-        "sizeBytes": 314368,
+        "sizeBytes": 331518,
+        "schemaVersion": 2
+      },
+      "public/newsdata/sections_quality_report.json": {
+        "sizeBytes": 4655,
         "schemaVersion": 2
       },
       "public/newsdata/source_health.json": {
-        "sizeBytes": 5541,
+        "sizeBytes": 7131,
         "schemaVersion": null
       }
     }
@@ -369,12 +417,12 @@
       "staticPresent": [
         {
           "path": "public/newsdata/sections_latest.json",
-          "sizeBytes": 314368,
+          "sizeBytes": 331518,
           "schemaVersion": 2
         },
         {
           "path": "public/newsdata/breaking_latest.json",
-          "sizeBytes": 7747,
+          "sizeBytes": 7164,
           "schemaVersion": 1
         }
       ],
@@ -424,7 +472,7 @@
       "staticPresent": [
         {
           "path": "public/newsdata/insight_latest.json",
-          "sizeBytes": 1158117,
+          "sizeBytes": 1064224,
           "schemaVersion": 3
         }
       ],
@@ -462,7 +510,7 @@
       "staticPresent": [
         {
           "path": "public/data/up_ahead.json",
-          "sizeBytes": 572447,
+          "sizeBytes": 68803,
           "schemaVersion": 1
         }
       ],
@@ -500,7 +548,7 @@
       "staticPresent": [
         {
           "path": "public/data/up_ahead.json",
-          "sizeBytes": 572447,
+          "sizeBytes": 68803,
           "schemaVersion": 1
         }
       ],
@@ -541,22 +589,22 @@
       "staticPresent": [
         {
           "path": "public/data/market_snapshot.json",
-          "sizeBytes": 37119,
+          "sizeBytes": 36792,
           "schemaVersion": "2.0.0"
         },
         {
           "path": "public/data/market_metrics.json",
-          "sizeBytes": 176970,
+          "sizeBytes": 176636,
           "schemaVersion": "2.0.0"
         },
         {
           "path": "public/data/mutual_fund_snapshot.json",
-          "sizeBytes": 165823,
+          "sizeBytes": 165807,
           "schemaVersion": "2.0.0"
         },
         {
           "path": "public/data/fx_snapshot.json",
-          "sizeBytes": 2441,
+          "sizeBytes": 2360,
           "schemaVersion": "2.0.0"
         }
       ],
@@ -596,7 +644,7 @@
       "staticPresent": [
         {
           "path": "public/data/weather_snapshot.json",
-          "sizeBytes": 87418,
+          "sizeBytes": 87184,
           "schemaVersion": "1.0.0"
         }
       ],
@@ -614,21 +662,39 @@
       "navLabel": "Buzz",
       "destinationType": "feed_trend",
       "migrationStatus": "DERIVED",
-      "expectedStaticJson": [],
-      "producers": [],
-      "workflows": [],
-      "validators": [],
+      "expectedStaticJson": [
+        "public/newsdata/sections_latest.json"
+      ],
+      "producers": [
+        "scripts/fetch_sections_stories.py"
+      ],
+      "workflows": [
+        "news_prefetch.yml"
+      ],
+      "validators": [
+        "scripts/validate_sections_prefetch_output.py"
+      ],
       "consumers": [
         "src/viewModels/useTechSocialPageViewModel.js",
         "src/data/datasets/buzzDataset.js"
       ],
-      "note": "DERIVED, not greenfield: buzzDataset.load() builds trends from loadSectionsDataset() (technology/entertainment/social + viral-filtered world/india/local) with a live rssAggregator fallback for technology. A precomputed buzz_latest.json is OPTIONAL enrichment that must fall back to this derived path, shaped to the buzzDataset/buzzSlo buckets.",
+      "note": "DERIVED, not greenfield: buzzDataset.load() builds trends from loadSectionsDataset() using entertainment/social/technology plus viral-filtered world/india/chennai/local. The same Sections snapshot is its upstream contract; a precomputed buzz_latest.json is optional enrichment only and must fall back to this path.",
       "routeDeclared": true,
       "navVisible": true,
-      "staticPresent": [],
+      "staticPresent": [
+        {
+          "path": "public/newsdata/sections_latest.json",
+          "sizeBytes": 331518,
+          "schemaVersion": 2
+        }
+      ],
       "staticMissing": [],
-      "producersWired": {},
-      "outputStaged": {}
+      "producersWired": {
+        "scripts/fetch_sections_stories.py": true
+      },
+      "outputStaged": {
+        "public/newsdata/sections_latest.json": true
+      }
     },
     {
       "destination": "Newspaper",
@@ -655,7 +721,7 @@
       "staticPresent": [
         {
           "path": "public/data/epaper_data.json",
-          "sizeBytes": 93502,
+          "sizeBytes": 82778,
           "schemaVersion": null
         }
       ],
@@ -737,12 +803,12 @@
       "staticPresent": [
         {
           "path": "public/newsdata/quality_dashboard.json",
-          "sizeBytes": 1473,
-          "schemaVersion": 1
+          "sizeBytes": 9397,
+          "schemaVersion": 2
         },
         {
           "path": "public/newsdata/insight_quality_report.json",
-          "sizeBytes": 2838,
+          "sizeBytes": 3308,
           "schemaVersion": 3
         }
       ],
@@ -751,8 +817,8 @@
         "scripts/generate_quality_dashboard.mjs": true
       },
       "outputStaged": {
-        "public/newsdata/quality_dashboard.json": false,
-        "public/newsdata/insight_quality_report.json": false
+        "public/newsdata/quality_dashboard.json": true,
+        "public/newsdata/insight_quality_report.json": true
       }
     },
     {
@@ -778,7 +844,7 @@
       "staticPresent": [
         {
           "path": "public/newsdata/source_health.json",
-          "sizeBytes": 5541,
+          "sizeBytes": 7131,
           "schemaVersion": null
         }
       ],
@@ -831,10 +897,6 @@
       "outputStaged": {}
     }
   ],
-  "warnings": [
-    "[Data Health] committed output not staged by any workflow: public/newsdata/quality_dashboard.json",
-    "[Data Health] committed output not staged by any workflow: public/newsdata/insight_quality_report.json",
-    "[Main] Sections collector retains 24h but adapter accepts 36h \u2014 12h window never populated."
-  ],
+  "warnings": [],
   "errors": []
 }

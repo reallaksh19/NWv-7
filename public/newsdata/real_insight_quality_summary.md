@@ -2,7 +2,7 @@
 
 - Status: **PASS**
 - Reason: -
-- Grade: `C`
+- Grade: `B`
 - Parents: `10`
 - Average angles: `1.6`
 - Average temporal tiers: `1.8`
@@ -33,16 +33,16 @@
 
 - Status: **PASS**
 - Gate version: `real-insight-snapshot-ratchet-v1`
-- Grade: `C`
+- Grade: `B`
 - Score: `100`
 - Parents: `10`
-- Average angles: `1.6`
-- Average temporal tiers: `1.8`
-- Average evolution roles: `1.9`
-- Base report share: `0.048`
-- Multi-angle parents: `6`
-- Top parent angles: `2`
-- Top parent children: `2`
+- Average angles: `2.2`
+- Average temporal tiers: `2`
+- Average evolution roles: `2`
+- Base report share: `0.077`
+- Multi-angle parents: `10`
+- Top parent angles: `4`
+- Top parent children: `7`
 
 ### Failed gates
 
@@ -50,7 +50,7 @@
 
 ### Passed gates
 
-- Real snapshot grade floor: `C` / `A/B/C`
+- Real snapshot grade floor: `B` / `A/B/C`
 - Parent cluster count: `10` / `>= 3`
 - Average visible angle count: `1.6` / `>= 1.4`
 - Average temporal tier count: `1.8` / `>= 1.8`

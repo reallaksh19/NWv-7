@@ -1,18 +1,18 @@
 {
   "status": "PASS",
   "benchmarkVersion": "real-insight-snapshot-quality-v1",
-  "generatedAt": 1782173022945,
-  "contentHash": "147f14a31fd20166",
+  "generatedAt": 1782193336929,
+  "contentHash": "6e71e339fe2f7935",
   "schemaVersion": 3,
   "collectorVersion": "insight-collector-json-v4",
-  "storyCount": 581,
+  "storyCount": 563,
   "sourceGroupCount": 11,
   "grade": "B",
   "parentCount": 10,
   "avgAngles": 2.2,
-  "avgTemporalTiers": 1.9,
+  "avgTemporalTiers": 2,
   "avgEvolutionRoles": 2,
-  "baseReportShare": 0.12,
+  "baseReportShare": 0.16,
   "multiAngleCount": 10,
   "weakParentCount": 0,
   "runtimeQualityGate": {
@@ -26,7 +26,7 @@
       "signalScore": 71,
       "sourceLabel": "Live",
       "rankedCount": 10,
-      "storyCount": 541,
+      "storyCount": 525,
       "risingCount": 1,
       "thinCount": 0,
       "multiAngleCount": 10,
@@ -34,13 +34,13 @@
       "strongAngleCount": 1,
       "avgAngles": 2.2,
       "avgChildren": 2.5,
-      "avgScore": 0.6469861350505985,
+      "avgScore": 0.6550790564219838,
       "sourceDiversityCoverage": 10,
       "snapshotCoverage": 6,
       "coverageLabel": "10/10",
       "warnings": [
         "4 cluster(s) have weak snapshot coverage.",
-        "444 duplicate/near-duplicate item(s) were hidden or downgraded."
+        "424 duplicate/near-duplicate item(s) were hidden or downgraded."
       ]
     },
     "after": {
@@ -50,7 +50,7 @@
       "signalScore": 71,
       "sourceLabel": "Live",
       "rankedCount": 10,
-      "storyCount": 541,
+      "storyCount": 525,
       "risingCount": 1,
       "thinCount": 0,
       "multiAngleCount": 10,
@@ -58,22 +58,22 @@
       "strongAngleCount": 1,
       "avgAngles": 2.2,
       "avgChildren": 2.5,
-      "avgScore": 0.6469861350505985,
+      "avgScore": 0.6550790564219838,
       "sourceDiversityCoverage": 10,
       "snapshotCoverage": 6,
       "coverageLabel": "10/10",
       "warnings": [
         "4 cluster(s) have weak snapshot coverage.",
-        "444 duplicate/near-duplicate item(s) were hidden or downgraded."
+        "424 duplicate/near-duplicate item(s) were hidden or downgraded."
       ]
     }
   },
   "parents": [
     {
-      "parentId": "cluster_18_6bdbe258f2e3da0e",
+      "parentId": "cluster_87_6bdbe258f2e3da0e",
       "headline": "UK PM Keir Starmer quits",
-      "score": 0.7665479109359876,
-      "postTreeScore": 1.4465,
+      "score": 0.7736271246498396,
+      "postTreeScore": 1.4536,
       "childCount": 7,
       "angles": [
         "base_report",
@@ -96,28 +96,28 @@
       "weakTree": false
     },
     {
-      "parentId": "cluster_269_f614f9d008536f6d",
-      "headline": "Death toll rises to 5 in ammonia gas leak in fish meal export unit in Tiruvallur district",
-      "score": 0.7003967197849983,
-      "postTreeScore": 1.0804,
+      "parentId": "cluster_110_6f0cf77948c609b5",
+      "headline": "West Bengal eyes Calcutta Stock Exchange revival to reclaim financial hub status",
+      "score": 0.7304133864516651,
+      "postTreeScore": 1.1104,
       "childCount": 2,
       "angles": [
-        "regional_followup",
-        "fact_update"
+        "market_reaction",
+        "regional_followup"
       ],
       "temporalTiers": [
-        "breaking",
-        "reaction"
+        "developing",
+        "breaking"
       ],
       "evolutionRoles": [
-        "first_report",
-        "fact_update"
+        "official_response",
+        "market_reaction"
       ],
       "baseReportShare": 0,
       "weakTree": false
     },
     {
-      "parentId": "cluster_242_47e6070b9bd9b12e",
+      "parentId": "cluster_311_47e6070b9bd9b12e",
       "headline": "FM Swapan Dasgupta presents BJP’s maiden budget in the state",
       "score": 0.6886300531183316,
       "postTreeScore": 1.0686,
@@ -136,7 +136,7 @@
       "weakTree": false
     },
     {
-      "parentId": "cluster_103_c45d89c5e1e6baa2",
+      "parentId": "cluster_172_c45d89c5e1e6baa2",
       "headline": "RBI sold net $8.9 billion in April, gold holdings unchanged",
       "score": 0.6613933333333334,
       "postTreeScore": 1.0614,
@@ -156,48 +156,70 @@
       "weakTree": false
     },
     {
-      "parentId": "cluster_41_6f0cf77948c609b5",
-      "headline": "West Bengal eyes Calcutta Stock Exchange revival to reclaim financial hub status",
-      "score": 0.6544266666666667,
-      "postTreeScore": 1.0544,
+      "parentId": "cluster_244_b23041911bbeda64",
+      "headline": "NEET Candidate Arrested For Using Hidden Mobile Phone In Exam Centre Washroom",
+      "score": 0.6792467197849983,
+      "postTreeScore": 1.0592,
       "childCount": 2,
       "angles": [
-        "market_reaction",
-        "regional_followup"
+        "regional_followup",
+        "official_response"
       ],
       "temporalTiers": [
-        "developing",
-        "breaking"
+        "breaking",
+        "reaction"
       ],
       "evolutionRoles": [
-        "official_response",
-        "market_reaction"
-      ],
-      "baseReportShare": 0,
-      "weakTree": false
-    },
-    {
-      "parentId": "cluster_446_02bace5537445ce9",
-      "headline": "Trump says Starmer will resign as UK prime minister",
-      "score": 0.6680967197849983,
-      "postTreeScore": 1.0481,
-      "childCount": 2,
-      "angles": [
-        "official_response",
-        "investigative_detail"
-      ],
-      "temporalTiers": [
-        "breaking"
-      ],
-      "evolutionRoles": [
-        "official_response",
+        "first_report",
         "accountability"
       ],
       "baseReportShare": 0,
       "weakTree": false
     },
     {
-      "parentId": "cluster_168_b610b87684c646c9",
+      "parentId": "cluster_193_6672bf59c666f6f0",
+      "headline": "Alan Greenspan, longtime U.S. Federal Reserve chairman, dies aged 100",
+      "score": 0.6412600000000002,
+      "postTreeScore": 1.0413,
+      "childCount": 2,
+      "angles": [
+        "official_response",
+        "fact_update"
+      ],
+      "temporalTiers": [
+        "breaking",
+        "developing"
+      ],
+      "evolutionRoles": [
+        "first_report",
+        "corroboration"
+      ],
+      "baseReportShare": 0,
+      "weakTree": false
+    },
+    {
+      "parentId": "cluster_3_f72f45546118c52e",
+      "headline": "Pondy Bazaar earned over ₹60 lakh revenue, 89% women felt safer, sales jumped 50% in ‘Healthy Streets’ project across country: study",
+      "score": 0.6252933333333334,
+      "postTreeScore": 1.0253,
+      "childCount": 2,
+      "angles": [
+        "base_report",
+        "fact_update"
+      ],
+      "temporalTiers": [
+        "breaking",
+        "reaction"
+      ],
+      "evolutionRoles": [
+        "first_report",
+        "corroboration"
+      ],
+      "baseReportShare": 0.5,
+      "weakTree": false
+    },
+    {
+      "parentId": "cluster_236_b610b87684c646c9",
       "headline": "India seeks tariff advantage over peers in push to finalise US trade deal - Reuters",
       "score": 0.62166,
       "postTreeScore": 1.0217,
@@ -218,31 +240,31 @@
       "weakTree": false
     },
     {
-      "parentId": "cluster_166_4bcbc7d7efa2eb73",
-      "headline": "India In Talks To Sell Supersonic BrahMos Missile To UAE | Akashteer Defence Sustem - News18",
-      "score": 0.5903433333333332,
-      "postTreeScore": 0.9903,
+      "parentId": "cluster_1_2260914d28bdfb3c",
+      "headline": "Explosion at Dakshin Energy unit in Visakhapatnam’s Pharma City kills two; more feared trapped",
+      "score": 0.6064100000000001,
+      "postTreeScore": 1.0064,
       "childCount": 2,
       "angles": [
-        "fact_update",
-        "investigative_detail"
+        "regional_followup",
+        "fact_update"
       ],
       "temporalTiers": [
         "developing",
         "breaking"
       ],
       "evolutionRoles": [
-        "corroboration",
-        "investigation"
+        "cause_claim",
+        "official_response"
       ],
       "baseReportShare": 0,
       "weakTree": false
     },
     {
-      "parentId": "cluster_4_575d2ffecc28e7f9",
-      "headline": "AIMIM Corporator disqualified from his post in BMC",
-      "score": 0.5570933333333334,
-      "postTreeScore": 0.9571,
+      "parentId": "cluster_63_454af38cfc199f77",
+      "headline": "Who is Kunal Shah? CRED Founder Named New Head of WhatsApp as Will Cathcart Steps Down",
+      "score": 0.5228566135483352,
+      "postTreeScore": 0.9029,
       "childCount": 2,
       "angles": [
         "base_report",
@@ -257,27 +279,6 @@
         "corroboration"
       ],
       "baseReportShare": 0.5,
-      "weakTree": false
-    },
-    {
-      "parentId": "cluster_125_6672bf59c666f6f0",
-      "headline": "Alan Greenspan, longtime U.S. Federal Reserve chairman, dies aged 100",
-      "score": 0.5612732802150018,
-      "postTreeScore": 0.9413,
-      "childCount": 2,
-      "angles": [
-        "official_response",
-        "fact_update"
-      ],
-      "temporalTiers": [
-        "breaking",
-        "developing"
-      ],
-      "evolutionRoles": [
-        "first_report",
-        "corroboration"
-      ],
-      "baseReportShare": 0,
       "weakTree": false
     }
   ],
@@ -310,7 +311,7 @@
       {
         "id": "avg-temporal-tier-count",
         "label": "Average temporal tier count",
-        "actual": 1.9,
+        "actual": 2,
         "required": ">= 1.8"
       },
       {
@@ -322,7 +323,7 @@
       {
         "id": "base-report-share",
         "label": "Base report share",
-        "actual": 0.12,
+        "actual": 0.16,
         "required": "<= 0.55"
       },
       {
@@ -354,15 +355,15 @@
     "summary": {
       "parentCount": 10,
       "avgAngles": 2.2,
-      "avgTemporalTiers": 1.9,
+      "avgTemporalTiers": 2,
       "avgEvolutionRoles": 2,
-      "baseReportShare": 0.12,
+      "baseReportShare": 0.16,
       "multiAngleCount": 10,
       "weakParentCount": 0,
       "weakParentRatio": 0,
       "topParentAngles": 4,
       "topParentChildren": 7,
-      "storyCount": 581,
+      "storyCount": 563,
       "sourceGroupCount": 11
     }
   }

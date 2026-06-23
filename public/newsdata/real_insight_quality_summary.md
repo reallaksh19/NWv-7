@@ -10,21 +10,21 @@
 - Base report share: `0.11538461538461539`
 - Multi-angle parents: `10`
 - Weak parents: `0`
-- Story count: `701`
+- Story count: `712`
 - Source groups: `10`
-- Content hash: `bcb962a6b2064417`
+- Content hash: `08d48eef4187ac1f`
 
 ## Top parents
 
 | # | Headline | Children | Angles | Weak | Score |
 |---:|---|---:|---|---|---:|
-| 1 | UK PM Keir Starmer quits | 7 | base_report, fact_update, official_response, regional_followup | NO | 0.7461900320209572 |
+| 1 | UK PM Keir Starmer quits | 7 | base_report, fact_update, official_response, regional_followup | NO | 0.7654767598211486 |
 | 2 | West Bengal eyes Calcutta Stock Exchange revival to reclaim financial hub status | 2 | market_reaction, regional_followup | NO | 0.7304133864516651 |
 | 3 | Inquiry ordered after building fire kills 15 in north India city - BBC | 3 | fact_update, regional_followup | NO | 0.6581906546249832 |
-| 4 | FM Swapan Dasgupta presents BJP’s maiden budget in the state | 2 | fact_update, official_response | NO | 0.6886300531183316 |
-| 5 | Alan Greenspan, longtime U.S. Federal Reserve chairman, dies aged 100 | 2 | official_response, fact_update | NO | 0.6852467197849983 |
-| 6 | Explosion at Dakshin Energy unit in Visakhapatnam’s Pharma City kills two; more feared trapped | 2 | regional_followup, fact_update | NO | 0.6823967197849983 |
-| 7 | RBI sold net $8.9 billion in April, gold holdings unchanged | 2 | fact_update, market_reaction | NO | 0.6613933333333334 |
+| 4 | RBI sold net $8.9 billion in April, gold holdings unchanged | 2 | fact_update, market_reaction | NO | 0.7173800531183316 |
+| 5 | FM Swapan Dasgupta presents BJP’s maiden budget in the state | 2 | fact_update, official_response | NO | 0.6886300531183316 |
+| 6 | Alan Greenspan, longtime U.S. Federal Reserve chairman, dies aged 100 | 2 | official_response, fact_update | NO | 0.6852467197849983 |
+| 7 | Explosion at Dakshin Energy unit in Visakhapatnam’s Pharma City kills two; more feared trapped | 2 | regional_followup, fact_update | NO | 0.6823967197849983 |
 | 8 | NEET Takes Another Political Turn After Students Miss Exam In Bengaluru | 2 | regional_followup, official_response | NO | 0.6721467197849983 |
 | 9 | India seeks tariff advantage over peers in push to finalise US trade deal - Reuters | 2 | regional_followup, base_report | NO | 0.62166 |
 | 10 | NSA Doval at BRICS conclave | 2 | base_report, official_response | NO | 0.61351 |

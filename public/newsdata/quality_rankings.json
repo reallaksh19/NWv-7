@@ -53,7 +53,7 @@
     },
     "insight": {
       "actionableFindings": [
-        "2 base-report-heavy Insight parent(s) demoted"
+        "3 base-report-heavy Insight parent(s) demoted"
       ],
       "destination": "insight",
       "diagnosticReasons": [],
@@ -77,7 +77,7 @@
       ],
       "gateSummary": {
         "avgAnglesPerParent": 0.0,
-        "baseReportHeavyParents": 2,
+        "baseReportHeavyParents": 3,
         "duplicateChildrenSuppressed": 0,
         "inputCandidateCount": 12,
         "parentClusters": 12,
@@ -86,7 +86,7 @@
         "weakParentsDemoted": 0
       },
       "qualityGrade": "F",
-      "qualityScore": 0.4354,
+      "qualityScore": 0.4224,
       "qualityStatus": "WARN",
       "rankedItems": [
         {
@@ -723,119 +723,6 @@
               "status": "PASS"
             }
           ],
-          "id": "sketch:ce7cb94385",
-          "item": {
-            "angleCount": 1,
-            "baseReportRatio": 0.0,
-            "childScores": [],
-            "id": "sketch:ce7cb94385",
-            "representativeId": "81026d82053b8810",
-            "representativeTitle": "CJP protesters remain at Jantar Mantar for third consecutive day",
-            "scoreBreakdown": {
-              "angleDiversityScore": 0.25,
-              "eventImportanceScore": 0.59,
-              "freshnessScore": 0.0,
-              "noveltyDeltaScore": 0.44999999999999996,
-              "sourceAuthorityScore": 0.62,
-              "sourceDiversityScore": 0.72,
-              "temporalEvolutionScore": 0.61
-            },
-            "slotCount": 3,
-            "slots": [
-              "minus24h",
-              "minus4h",
-              "now"
-            ],
-            "sourceGroupCount": 2,
-            "sourceGroups": [
-              "business_line",
-              "the_hindu"
-            ],
-            "storyCount": 2,
-            "storyIds": [
-              "81026d82053b8810",
-              "b3c9d4405c6ac9ec"
-            ],
-            "topAngles": [
-              {
-                "angle": "reaction_public",
-                "count": 2
-              }
-            ],
-            "topTokens": [
-              "protesters",
-              "remain",
-              "jantar",
-              "mantar"
-            ],
-            "topicKey": "protesters|remain|jantar"
-          },
-          "locationKey": "event",
-          "rankingReasons": [
-            "event sketch has repeated story count",
-            "weak child angle diversity",
-            "multi-source event"
-          ],
-          "score": 0.5045,
-          "title": "CJP protesters remain at Jantar Mantar for third consecutive day"
-        },
-        {
-          "category": "insightEvent",
-          "gates": [
-            {
-              "details": {
-                "storyCount": 2
-              },
-              "name": "eventCoherence",
-              "reason": "event sketch has repeated story count",
-              "score": 0.62,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "baseReportRatio": 0.0,
-                "distinctAngles": 1
-              },
-              "name": "angleDiversity",
-              "reason": "weak child angle diversity",
-              "score": 0.25,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "sourceGroupCount": 2
-              },
-              "name": "sourceDiversity",
-              "reason": "multi-source event",
-              "score": 0.72,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "baseReportRatio": 0.0
-              },
-              "name": "baseReportCap",
-              "reason": "base-report ratio controlled",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "childCount": 2
-              },
-              "name": "weakTree",
-              "reason": "child tree has enough depth",
-              "score": 0.5,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "duplicateChildren",
-              "reason": "no child objects to dedup",
-              "score": 0.7,
-              "status": "PASS"
-            }
-          ],
           "id": "sketch:6a087d3e3c",
           "item": {
             "angleCount": 1,
@@ -896,7 +783,7 @@
           "gates": [
             {
               "details": {
-                "storyCount": 4
+                "storyCount": 3
               },
               "name": "eventCoherence",
               "reason": "event sketch has repeated story count",
@@ -933,11 +820,11 @@
             },
             {
               "details": {
-                "childCount": 4
+                "childCount": 3
               },
               "name": "weakTree",
               "reason": "child tree has enough depth",
-              "score": 1.0,
+              "score": 0.75,
               "status": "PASS"
             },
             {
@@ -958,7 +845,7 @@
             "representativeTitle": "India News LIVE Updates, 23 June 2026: 2 feared dead in Andhra fire, 4 arrested for Lucknow lapses - The Indian Express",
             "scoreBreakdown": {
               "angleDiversityScore": 0.25,
-              "eventImportanceScore": 0.83,
+              "eventImportanceScore": 0.71,
               "freshnessScore": 0.0,
               "noveltyDeltaScore": 0.44999999999999996,
               "sourceAuthorityScore": 0.38,
@@ -973,17 +860,16 @@
             "sourceGroups": [
               "google_news"
             ],
-            "storyCount": 4,
+            "storyCount": 3,
             "storyIds": [
               "510846e1acfb39da",
               "86bca7bf4008bddc",
-              "41106178f6bf3bb9",
               "e69d70e553a73b5f"
             ],
             "topAngles": [
               {
                 "angle": "fact_update",
-                "count": 4
+                "count": 3
               }
             ],
             "topTokens": [
@@ -1000,7 +886,7 @@
             "weak child angle diversity",
             "one-source event candidate"
           ],
-          "score": 0.449,
+          "score": 0.419,
           "title": "India News LIVE Updates, 23 June 2026: 2 feared dead in Andhra fire, 4 arrested for Lucknow lapses - The Indian Express"
         },
         {
@@ -1241,7 +1127,7 @@
           "gates": [
             {
               "details": {
-                "storyCount": 5
+                "storyCount": 4
               },
               "name": "eventCoherence",
               "reason": "event sketch has repeated story count",
@@ -1278,7 +1164,7 @@
             },
             {
               "details": {
-                "childCount": 5
+                "childCount": 4
               },
               "name": "weakTree",
               "reason": "child tree has enough depth",
@@ -1299,11 +1185,11 @@
             "baseReportRatio": 1.0,
             "childScores": [],
             "id": "sketch:c1c58008d6",
-            "representativeId": "4cca4280284d2e54",
-            "representativeTitle": "Top news of the day on June 17, 2026 - The Hindu",
+            "representativeId": "c6223898b19831d2",
+            "representativeTitle": "Top News of the day: June 4, 2026 - The Hindu",
             "scoreBreakdown": {
               "angleDiversityScore": 0.25,
-              "eventImportanceScore": 0.95,
+              "eventImportanceScore": 0.83,
               "freshnessScore": 0.0,
               "noveltyDeltaScore": 0.44999999999999996,
               "sourceAuthorityScore": 0.38,
@@ -1318,9 +1204,8 @@
             "sourceGroups": [
               "google_news"
             ],
-            "storyCount": 5,
+            "storyCount": 4,
             "storyIds": [
-              "4cca4280284d2e54",
               "c6223898b19831d2",
               "1efb28cd448db91a",
               "4a3d721692edeb91",
@@ -1329,7 +1214,7 @@
             "topAngles": [
               {
                 "angle": "base_report",
-                "count": 5
+                "count": 4
               }
             ],
             "topTokens": [
@@ -1344,8 +1229,8 @@
             "weak child angle diversity",
             "one-source event candidate"
           ],
-          "score": 0.2155,
-          "title": "Top news of the day on June 17, 2026 - The Hindu"
+          "score": 0.2021,
+          "title": "Top News of the day: June 4, 2026 - The Hindu"
         },
         {
           "category": "insightEvent",
@@ -1454,17 +1339,127 @@
           ],
           "score": 0.1885,
           "title": "Top news of the day: May 30, 2026 - The Hindu"
+        },
+        {
+          "category": "insightEvent",
+          "gates": [
+            {
+              "details": {
+                "storyCount": 2
+              },
+              "name": "eventCoherence",
+              "reason": "event sketch has repeated story count",
+              "score": 0.62,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "baseReportRatio": 1.0,
+                "distinctAngles": 0
+              },
+              "name": "angleDiversity",
+              "reason": "weak child angle diversity",
+              "score": 0.25,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "sourceGroupCount": 1
+              },
+              "name": "sourceDiversity",
+              "reason": "one-source event candidate",
+              "score": 0.35,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "baseReportRatio": 1.0
+              },
+              "name": "baseReportCap",
+              "reason": "base-report dominated event candidate",
+              "score": 0.25,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "childCount": 2
+              },
+              "name": "weakTree",
+              "reason": "child tree has enough depth",
+              "score": 0.5,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "duplicateChildren",
+              "reason": "no child objects to dedup",
+              "score": 0.7,
+              "status": "PASS"
+            }
+          ],
+          "id": "sketch:03067fd72c",
+          "item": {
+            "angleCount": 1,
+            "baseReportRatio": 1.0,
+            "childScores": [],
+            "id": "sketch:03067fd72c",
+            "representativeId": "3db2aff217268cc7",
+            "representativeTitle": "Clive Davis, music mogul behind Whitney Houston and Bruce Springsteen, dies aged 94",
+            "scoreBreakdown": {
+              "angleDiversityScore": 0.25,
+              "eventImportanceScore": 0.59,
+              "freshnessScore": 0.0,
+              "noveltyDeltaScore": 0.44999999999999996,
+              "sourceAuthorityScore": 0.38,
+              "sourceDiversityScore": 0.35,
+              "temporalEvolutionScore": 0.37
+            },
+            "slotCount": 1,
+            "slots": [
+              "minus12h"
+            ],
+            "sourceGroupCount": 1,
+            "sourceGroups": [
+              "bbc"
+            ],
+            "storyCount": 2,
+            "storyIds": [
+              "3db2aff217268cc7",
+              "8a6d8062005d639b"
+            ],
+            "topAngles": [
+              {
+                "angle": "base_report",
+                "count": 2
+              }
+            ],
+            "topTokens": [
+              "clive",
+              "davis",
+              "music",
+              "mogul"
+            ],
+            "topicKey": "clive|davis|music"
+          },
+          "locationKey": "event",
+          "rankingReasons": [
+            "event sketch has repeated story count",
+            "weak child angle diversity",
+            "one-source event candidate"
+          ],
+          "score": 0.1751,
+          "title": "Clive Davis, music mogul behind Whitney Houston and Bruce Springsteen, dies aged 94"
         }
       ],
       "rankingProfile": "insight-v2-event-angle-tree",
       "scoreBreakdown": {
         "angleDiversityScore": 0.3825,
-        "eventImportanceScore": 0.66,
+        "eventImportanceScore": 0.64,
         "freshnessScore": 0.0,
         "noveltyDeltaScore": 0.5,
-        "sourceAuthorityScore": 0.5,
-        "sourceDiversityScore": 0.535,
-        "temporalEvolutionScore": 0.47
+        "sourceAuthorityScore": 0.48,
+        "sourceDiversityScore": 0.5042,
+        "temporalEvolutionScore": 0.45
       }
     },
     "localTravel": {
@@ -1524,7 +1519,7 @@
     },
     "upAhead": {
       "actionableFindings": [
-        "30 invalid/expired/duplicate Up Ahead item(s) suppressed",
+        "31 invalid/expired/duplicate Up Ahead item(s) suppressed",
         "no active offer items in ranked Up Ahead set",
         "no ranked Up Ahead item for muscat",
         "ranked Up Ahead set is category-dominated"
@@ -1583,8 +1578,8 @@
         "festivals": 0,
         "inputItemCount": 85,
         "locationCounts": {
-          "chennai": 20,
-          "trichy": 10
+          "chennai": 19,
+          "trichy": 11
         },
         "locationsCovered": [
           "chennai",
@@ -1594,7 +1589,7 @@
         "onlineOffers": 0,
         "plannerAdvisoryItems": 30,
         "rankedItemCount": 30,
-        "suppressedItemCount": 30
+        "suppressedItemCount": 31
       },
       "qualityGrade": "B",
       "qualityScore": 0.8586,
@@ -2404,121 +2399,6 @@
           ],
           "score": 0.8485,
           "title": "Chennai Traffic Police book over 2,800 violators in special enforcement drive"
-        },
-        {
-          "category": "alerts",
-          "gates": [
-            {
-              "details": {
-                "dedupKey": "2b8e1923b65bbd9f"
-              },
-              "name": "dedup",
-              "reason": "unique item",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "displayUntil": 1782232961000
-              },
-              "name": "futureValidity",
-              "reason": "valid undated item with active display window",
-              "score": 0.65,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "matchScore": 1.0,
-                "matchedLocation": "chennai",
-                "relevance": "primary",
-                "scope": "exactCity"
-              },
-              "name": "location",
-              "reason": "location matches configured profile",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "hasPlace": true,
-                "hasTime": true
-              },
-              "name": "actionability",
-              "reason": "item has enough action fields",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "offerValidity",
-              "reason": "not an offer",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "severe": false
-              },
-              "name": "alertUrgency",
-              "reason": "active alert",
-              "score": 0.78,
-              "status": "PASS"
-            }
-          ],
-          "id": "e8298d0938d3098c",
-          "item": {
-            "actionabilityScore": 0.7,
-            "category": "alerts",
-            "city": "Chennai",
-            "contentClass": "upahead_alert",
-            "dateConfidence": "unknown",
-            "dateSource": "none",
-            "eventEndAt": null,
-            "eventStartAt": null,
-            "expiryAt": 1782232961000,
-            "id": "e8298d0938d3098c",
-            "language": "en",
-            "lifecycle": {
-              "archiveUntil": 1782837761000,
-              "contentClass": "upahead_alert",
-              "displayUntil": 1782232961000,
-              "isActionValid": true,
-              "isVisible": true,
-              "plannerEligibleByLifecycle": true,
-              "plannerPastGraceHours": 6,
-              "retentionReason": "expiryAt",
-              "withinSevenDayHorizon": true
-            },
-            "localityScore": 1.0,
-            "normalizedCategory": "alerts",
-            "plannerEligible": true,
-            "publishedAt": 1782146561000,
-            "region": "tn",
-            "scoreBreakdown": {
-              "actionabilityScore": 1.0,
-              "categoryPriorityScore": 1.0,
-              "lifecycleScore": 0.65,
-              "locationScore": 1.0,
-              "plannerFitScore": 1.0,
-              "sourceConfidenceScore": 0.58,
-              "urgencyOrExpiryScore": 0.78
-            },
-            "source": "The Hindu Chennai",
-            "sourceGroup": "the_hindu",
-            "summary": "",
-            "suppressionReason": null,
-            "title": "Chennai gets new Additional Commissioner of Traffic; Madurai, Salem, Tiruppur get new Police Commissioners",
-            "url": "https://www.thehindu.com/news/cities/chennai/chennai-gets-new-additional-commissioner-of-traffic-madurai-salem-tiruppur-get-new-police-commissioners/article71134257.ece"
-          },
-          "locationKey": "chennai",
-          "rankingReasons": [
-            "alerts",
-            "valid undated item with active display window",
-            "location matches configured profile",
-            "planner advisory fit"
-          ],
-          "score": 0.8485,
-          "title": "Chennai gets new Additional Commissioner of Traffic; Madurai, Salem, Tiruppur get new Police Commissioners"
         },
         {
           "category": "alerts",
@@ -5049,6 +4929,121 @@
           ],
           "score": 0.8485,
           "title": "Transgender driver joins e-auto-rickshaw platform"
+        },
+        {
+          "category": "alerts",
+          "gates": [
+            {
+              "details": {
+                "dedupKey": "91941ce48d54709e"
+              },
+              "name": "dedup",
+              "reason": "unique item",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "displayUntil": 1782311638000
+              },
+              "name": "futureValidity",
+              "reason": "valid undated item with active display window",
+              "score": 0.65,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "matchScore": 1.0,
+                "matchedLocation": "trichy",
+                "relevance": "primary",
+                "scope": "exactCity"
+              },
+              "name": "location",
+              "reason": "location matches configured profile",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "hasPlace": true,
+                "hasTime": true
+              },
+              "name": "actionability",
+              "reason": "item has enough action fields",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "offerValidity",
+              "reason": "not an offer",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "severe": false
+              },
+              "name": "alertUrgency",
+              "reason": "active alert",
+              "score": 0.78,
+              "status": "PASS"
+            }
+          ],
+          "id": "4b50649f0154c441",
+          "item": {
+            "actionabilityScore": 0.7,
+            "category": "alerts",
+            "city": "Trichy",
+            "contentClass": "upahead_alert",
+            "dateConfidence": "unknown",
+            "dateSource": "none",
+            "eventEndAt": null,
+            "eventStartAt": null,
+            "expiryAt": 1782311638000,
+            "id": "4b50649f0154c441",
+            "language": "en",
+            "lifecycle": {
+              "archiveUntil": 1782916438000,
+              "contentClass": "upahead_alert",
+              "displayUntil": 1782311638000,
+              "isActionValid": true,
+              "isVisible": true,
+              "plannerEligibleByLifecycle": true,
+              "plannerPastGraceHours": 6,
+              "retentionReason": "expiryAt",
+              "withinSevenDayHorizon": true
+            },
+            "localityScore": 0.9,
+            "normalizedCategory": "alerts",
+            "plannerEligible": true,
+            "publishedAt": 1782225238000,
+            "region": "tn",
+            "scoreBreakdown": {
+              "actionabilityScore": 1.0,
+              "categoryPriorityScore": 1.0,
+              "lifecycleScore": 0.65,
+              "locationScore": 1.0,
+              "plannerFitScore": 1.0,
+              "sourceConfidenceScore": 0.58,
+              "urgencyOrExpiryScore": 0.78
+            },
+            "source": "The Hindu Trichy",
+            "sourceGroup": "the_hindu",
+            "summary": "",
+            "suppressionReason": null,
+            "title": "Two TNCSC officials suspended",
+            "url": "https://www.thehindu.com/news/cities/Tiruchirapalli/two-tncsc-officials-suspended/article71138256.ece"
+          },
+          "locationKey": "trichy",
+          "rankingReasons": [
+            "alerts",
+            "valid undated item with active display window",
+            "location matches configured profile",
+            "planner advisory fit"
+          ],
+          "score": 0.8485,
+          "title": "Two TNCSC officials suspended"
         }
       ],
       "rankingProfile": "upAhead-v2-lifecycle-location-category",
@@ -5063,7 +5058,7 @@
       }
     }
   },
-  "generatedAt": 1782231065585,
+  "generatedAt": 1782235007486,
   "implementedDestinations": [
     "upAhead",
     "buzz",
@@ -5082,7 +5077,7 @@
   "schemaVersion": 1,
   "summary": {
     "actionRequired": [
-      "30 invalid/expired/duplicate Up Ahead item(s) suppressed",
+      "31 invalid/expired/duplicate Up Ahead item(s) suppressed",
       "no active offer items in ranked Up Ahead set",
       "no ranked Up Ahead item for muscat",
       "ranked Up Ahead set is category-dominated",
@@ -5093,11 +5088,11 @@
       "no ranked local/travel item for muscat",
       "no ranked local/travel item for chennai",
       "no ranked local/travel item for trichy",
-      "2 base-report-heavy Insight parent(s) demoted"
+      "3 base-report-heavy Insight parent(s) demoted"
     ],
     "destinationScores": {
       "buzz": 0.0,
-      "insight": 0.4354,
+      "insight": 0.4224,
       "localTravel": 0.0,
       "upAhead": 0.8586
     },
@@ -5107,7 +5102,7 @@
       "localTravel": "FAIL",
       "upAhead": "WARN"
     },
-    "overallScore": 0.3235,
+    "overallScore": 0.3203,
     "overallStatus": "FAIL",
     "rankingProfiles": {
       "buzz": "buzz-v2-trend-local-travel",

@@ -7,17 +7,17 @@ parents=10 storiesIn=877 storiesClustered=795 hidden=82
   storiesClustered missing angle=0 sourceTier=0 slot=0
 
 ## A2.2 dedup
-  zero-vector embeddings (F5-5 guard relevance): 0
+  zero-vector embeddings (F5-5 guard relevance): 134
   hiddenDuplicateIds carried on parents: 0 (vs pipeline hiddenCount 82)
 
 ## A2.3 angle
   per-angle firing: {"official_response":262,"base_report":273,"regional_followup":9,"expert_analysis":12,"reaction_public":17,"investigative_detail":45,"fact_update":68,"market_reaction":101,"correction":5,"opinion_editorial":2,"background_context":1}
   angle labels never seen on this corpus: ["unknown"]
-  unknown rate=0.000  avgVisibleAngles/parent=2.000 (RCA target >=1.8)  multiAngleParents=10 (target >=8)
+  unknown rate=0.000  avgVisibleAngles/parent=1.900 (RCA target >=1.8)  multiAngleParents=9 (target >=8)
 
 ## A2.4 cluster order-sensitivity (normal vs reversed input)
   parents: normal=10 reversed=10
-  co-membership pairs: normal=12 reversed=12 preserved=12 -> stability=1.000
+  co-membership pairs: normal=14 reversed=14 preserved=14 -> stability=1.000
 
 ## A2.5 ranking
   components in [0,1] pre-weight: violations=0 
@@ -30,9 +30,9 @@ parents=10 storiesIn=877 storiesClustered=795 hidden=82
 ## A2.6 tree
   max children any parent=3 (cap 7)  per-angle>cap violations=0
   non-weak parents with <3 source groups: 0 
-  weak-tree flag mismatches (flag != [children<3 or angles<2]): 0
-    
+  weak-tree flag mismatches (flag != [children<3 or angles<2]): 1
+    cluster_453_8a97d7ecaf0e065a: children=3 angles=1 flag=false expect=true
 
 ## A2.7 quality (ratchet recompute on frozen corpus)
-  avgVisibleAngles=2.000 (ratchet >=1.8: PASS)  multiAngleParents=10 (ratchet >=8: PASS)
-  weakParents=9/10
+  avgVisibleAngles=1.900 (ratchet >=1.8: PASS)  multiAngleParents=9 (ratchet >=8: PASS)
+  weakParents=8/10

@@ -20,6 +20,17 @@ green baseline (insight cert suite: 24 files / 83 tests) + `vite build` + static
 
 Legend: ✅ code/doc fixed · ◻ mitigated/accepted/deferred with rationale.
 
+## Measured before/after (frozen snapshot insight_2026-05-19.json, `a2_analyze.mjs`)
+| Metric | Before | After | Fix |
+|---|---|---|---|
+| Zero-vector (embedding-blind) stories | 134 / 877 (15.3%) | **0** | I010 |
+| avg visible angles / parent | 1.90 | **2.00** | I010 side-effect (OOV stories now cluster) |
+| multi-angle parents | 9 / 10 | **10 / 10** | I010 side-effect |
+| weak parents (now angle-aware) | 8 / 10 | **9 / 10** | I008 (single-angle tree now flagged) |
+| ranking breakdown reconciles to score | no (Σ off by ≤5.98) | **yes (Σ ≈ score, asserted)** | I007 |
+
+Artifacts: `audit/evidence/A2-analysis-output.before.txt` vs `A2-analysis-output.txt`.
+
 ## Notes
 - No fix lowered any quality ratchet; the full insight cert suite stayed at 83/83.
 - I011 (breaking-news surfacing) is intentionally NOT hacked in here — changing persistence/

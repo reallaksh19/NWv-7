@@ -29,8 +29,16 @@ function matchSignals(text: string, patterns: RegExp[]): string[] {
  * Computes the event anchor used for temporal tiers. Inputs are a parent and
  * configured age window; output is the earliest known event timestamp.
  */
-export function computeEventAnchor(parent: InsightParent, maxStoryAgeHours: number): number {
-  const windowStart = Date.now() - maxStoryAgeHours * 60 * 60 * 1000;
+// I004: `now` is injectable (defaults to wall clock) so a virtual clock can be
+// supplied for deterministic replay of dated snapshots (benchmark B3). This is the
+// single wall-clock dependency that made A0's real-clock and frozen-clock runs
+// differ; making it a parameter is the seam the replay harness needs.
+export function computeEventAnchor(
+  parent: InsightParent,
+  maxStoryAgeHours: number,
+  now: number = Date.now()
+): number {
+  const windowStart = now - maxStoryAgeHours * 60 * 60 * 1000;
   if (!Number.isFinite(parent.firstSeenAt)) return windowStart;
   return parent.firstSeenAt < windowStart ? windowStart : parent.firstSeenAt;
 }

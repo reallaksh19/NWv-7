@@ -50,6 +50,9 @@ const RANKING_SCORE_LABELS: Record<RankingScoreKey, string> = {
   wirePenaltyScore: "Wire-source penalty",
 };
 
+// All 12 weighted factors, so the contribution breakdown sums to finalParentScore
+// (I007). Previously only 8 factors were exposed, leaving the displayed breakdown
+// unable to reconcile to the score.
 const RANKING_BREAKDOWN_KEYS: RankingScoreKey[] = [
   "impactScore",
   "persistenceScore",
@@ -59,6 +62,10 @@ const RANKING_BREAKDOWN_KEYS: RankingScoreKey[] = [
   "crossSnapshotMomentum",
   "editorialClarityScore",
   "regionBoost",
+  "timelineCompletenessScore",
+  "evolutionDiversityScore",
+  "informationDeltaScore",
+  "wirePenaltyScore",
 ];
 
 const IMPACT_SCORE_WEIGHTS = {

@@ -102,8 +102,10 @@ divergence source is catalogued with a remediation ticket. Virtual-clock feasibi
   no undocumented fields the UI secretly depends on).
 - `config/insight_sources.json` coverage rules (min 3 feeds/slot, min 6 Tier-A, min 8 source
   groups, min 5 topics) vs. what `scripts/insight_source_policy.py` actually enforces.
-- `config/insight_policy.json` TTLs vs. `cacheManager.ts` smart-TTL values
-  (now 1h / −4h 2h / −12h 3h / −24h 4h) — config and code currently encode TTLs in two places.
+- `config/insight_policy.json` snapshot-age TTLs (fresh 8h / stale 48h / heartbeat 3h) vs.
+  `DEFAULT_CONFIG.CACHE_TTL` per-slot values (now 0 / −4h 1h / −12h 1.5h / −24h 2h / −36h 2.5h /
+  −48h 3h) — these are distinct concerns (snapshot age vs slot cache), not duplicated values.
+  [Reconciled per audit finding I005 — earlier draft quoted now 1h / −4h 2h / −12h 3h / −24h 4h.]
 - Documented ranking weights (12 factors, README/critic doc) vs. constants in `ranking.ts` —
   confirm weights match documentation and note whether they are intended to sum to a target.
 
@@ -133,8 +135,9 @@ through the stage in isolation, and verify invariants hold on the *actual* distr
 
 ### A2.2 Dedup — 3 layers (`dedup/dedup.ts`, ~983 lines)
 - Invariants: layer ordering (URL → hash → embedding) short-circuits correctly; thresholds
-  `HARD_DUP_TITLE_SIM=0.92`, `HARD_DUP_EMBED_SIM=0.85` applied as documented; hidden duplicates
-  retain provenance (needed by usefulVariantRescue).
+  `HARD_DUP_TITLE_SIM=0.96`, `HARD_DUP_EMBED_SIM=0.985` applied as documented (values per
+  DEFAULT_CONFIG + action_3_deep.md; reconciled per I005 — earlier draft quoted 0.92 / 0.85);
+  hidden duplicates retain provenance (needed by usefulVariantRescue).
 - Specific checks: zero-vector cosine guard (F5-5); behavior when *both* stories are OOV for the
   200-term vocabulary (hyperlocal pairs — the F5-1 interaction); SHA-256 normalization rules
   (case, whitespace, punctuation) and their false-merge potential for short titles.
@@ -149,7 +152,8 @@ through the stage in isolation, and verify invariants hold on the *actual* distr
 
 ### A2.4 Clustering (`cluster/cluster.ts`, ~325 lines)
 - Invariants: greedy single-pass with running centroid (FIX M-1) — verify centroid update is an
-  incremental mean, not seed-anchored; `SAME_EVENT_THRESHOLD=0.75` applied symmetrically;
+  incremental mean, not seed-anchored; `SAME_EVENT_THRESHOLD=0.88` applied symmetrically
+  (reconciled per I005 — earlier draft quoted 0.75; 0.75 is POSSIBLE_EVENT_THRESHOLD);
   order-sensitivity quantified (greedy clustering depends on seed-sort; check how much cluster
   membership changes if input order is perturbed — this bounds achievable benchmark stability).
 - Exit: order-sensitivity measurement; centroid math verified; cluster size distribution on

@@ -371,8 +371,24 @@ function countBy(items, mapper) {
 }
 
 function getScoreBreakdownEntries(parent) {
-  const breakdown = parent?.debug?.scoreBreakdown || {};
+  // I007: prefer the weighted-contribution breakdown, whose values sum to
+  // finalParentScore, so the popup reconciles to the displayed score. The raw
+  // debug.scoreBreakdown (per-factor signal strengths) is only a legacy fallback.
+  const contributions = parent?.debug?.rankingContributionBreakdown;
+  if (Array.isArray(contributions) && contributions.length > 0) {
+    return contributions
+      .map(item => ({
+        key: item.key,
+        value: asFiniteNumber(item.weightedContribution),
+        label: item.label || String(item.key || '')
+          .replace(/Score$/i, '')
+          .replace(/([A-Z])/g, ' $1')
+          .replace(/^./, char => char.toUpperCase()),
+      }))
+      .sort((a, b) => b.value - a.value);
+  }
 
+  const breakdown = parent?.debug?.scoreBreakdown || {};
   return Object.entries(breakdown)
     .filter(([key]) => key !== 'finalParentScore')
     .map(([key, value]) => ({

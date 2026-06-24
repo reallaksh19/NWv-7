@@ -10,9 +10,9 @@
 - Base report share: `0.25`
 - Multi-angle parents: `9`
 - Weak parents: `1`
-- Story count: `708`
+- Story count: `685`
 - Source groups: `9`
-- Content hash: `74847b64791e5ed3`
+- Content hash: `58a631a6430d5be6`
 
 ## Top parents
 
@@ -20,11 +20,11 @@
 |---:|---|---:|---|---|---:|
 | 1 | India’s largest private gold mine set to yield a tonne of gold a year | 2 | regional_followup, fact_update | NO | 0.712563386451665 |
 | 2 | India nears 50% domestic coal use in import-based power plants | 2 | investigative_detail, fact_update | NO | 0.6843266666666666 |
-| 3 | Explosion at Dakshin Energy unit in Visakhapatnam’s Pharma City kills two; more feared trapped | 2 | regional_followup, fact_update | NO | 0.6823967197849983 |
-| 4 | NSA Doval at BRICS conclave | 2 | base_report, official_response | NO | 0.6814967197849984 |
-| 5 | How an 'omega block' is supercharging Europe’s deadly heatwave | 2 | market_reaction, base_report | NO | 0.6747467197849983 |
-| 6 | PDP files complaint with SPC | 2 | base_report, official_response | NO | 0.6736467197849983 |
-| 7 | Israel targeted Gaza children resulting in genocide, UN inquiry says | 2 | official_response, fact_update | NO | 0.6713133864516649 |
+| 3 | NSA Doval at BRICS conclave | 2 | base_report, official_response | NO | 0.6814967197849984 |
+| 4 | How an 'omega block' is supercharging Europe’s deadly heatwave | 2 | market_reaction, base_report | NO | 0.6747467197849983 |
+| 5 | PDP files complaint with SPC | 2 | base_report, official_response | NO | 0.6736467197849983 |
+| 6 | Israel targeted Gaza children resulting in genocide, UN inquiry says | 2 | official_response, fact_update | NO | 0.6713133864516649 |
+| 7 | Flipkart, Amazon accelerate quick commerce expansion as competition heats up in India | 2 | regional_followup, fact_update | NO | 0.6143399468816685 |
 | 8 | India slams Pakistan for 'unwarranted' remarks on J&K at UNSC’s Arria-formula meeting | 2 | official_response, base_report | NO | 0.61351 |
 | 9 | UN nuclear chief says inspectors will visit Iran sites as part of war deal | 2 | base_report, official_response | NO | 0.5492732802150018 |
 | 10 | Inquiry ordered after building fire kills 15 in north India city | 2 | regional_followup | YES | 0.6832467197849983 |

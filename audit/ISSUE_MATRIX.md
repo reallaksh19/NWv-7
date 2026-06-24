@@ -137,3 +137,29 @@
 
 # NOTE: Phase A3 PASSES — all F5-x/RCA rows terminal (F5-5 VERIFIED-FIXED; F5-3/F5-6/F5-7 RISK-ACCEPTED; F5-1→I010, F5-2→I011, F5-4 Low; RCA-R1 VERIFIED). See audit/evidence/A3.1-CLOSURE-01.yaml.
 
+# ══════════════════════════════════════════════════════════════════════════════
+# UP AHEAD AUDIT (Phases U0–U6) — audit/UPAHEAD_AUDIT_PLAN.md
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ── Determinism & clock injection (Phase U0) ──
+
+- ID: I012
+  Area: Static-host Up Ahead display projection has no injectable reference clock
+  Severity: Low
+  Owner file(s): src/services/upAheadService.js (40, 84, 135-139, 162-166, 418, 461, 602, 619), src/viewModels/useUpAheadPageViewModel.js (48, 133, 263, 284, 289, 302, 319, 343, 383-393)
+  Detection: audit/evidence/U0.3-CLK-01.yaml + U0.3-CLOCK-CATALOGUE.md — the static path (items[] -> sanitizeUpAheadData -> getVisibleUpAheadProjection, the path most deployed users hit per MODE_MATRIX:29) reads new Date()/Date.now() at 13+ sites with no asOfDate parameter; the U0 harness had to pin the clock with vitest fake timers (global shim) to reproduce a dated projection. Contrast: the LIVE intelligence path threads asOfDate end-to-end and is replayable by injection (verified by execution, audit/evidence/U0.2-INJ-01.yaml).
+  User impact: none in production (browser wall clock IS the intended reference; runs are deterministic given it — audit/evidence/U0.1-DET-01.yaml). Impact is on auditability/benchmark replay: the static projection cannot be replayed at a dated reference without controlling the global clock. Mirrors A0/I004, broader scope.
+  Exit gate: thread an injected clock (asOfDate/now) through getStartOfTodayMs/generateWeeklyPlan/getVisibleUpAheadProjection age-caps + briefing/evidence, OR the UPAHEAD_BENCHMARK_PLAN replay adopts the documented global-clock shim. No fix during audit.
+
+- ID: I013
+  Area: Two divergent date-key conventions — static display files by UTC day, planner/dateAware by local day (U9-3 class)
+  Severity: Medium
+  Owner file(s): src/services/upAheadService.js (350-351 toISOString().slice(0,10)), src/utils/dateKey.js (11-15 toLocalDateKey), src/utils/plannerStorage.js (35, 65)
+  Detection: audit/evidence/U0.4-TZ-01.yaml — same instant 2026-06-25T20:30:00Z (02:00 IST 2026-06-26) files under "2026-06-25" via sanitizeUpAheadData (static display) but "2026-06-26" via toLocalDateKey (planner) under TZ=Asia/Kolkata (keysAgree:false); under TZ=UTC both collapse to "2026-06-25". Reproducer: audit/evidence/u0_clockprobe.harness.test.mjs.
+  Root cause: transformPythonItemsToDisplay derives eventDateKey = new Date(eventStartAt).toISOString().slice(0,10) (UTC, TZ-independent) while toLocalDateKey uses process-local getFullYear/Month/Date; they disagree by one day for events timed 00:00–05:29 IST. Contradicts MODE_MATRIX:56 ("Date keys … must stay on YYYY-MM-DD local convention").
+  User impact: wrong-day placement for late-night/early-morning IST events (00:00–05:29 IST) — the timeline files them one day early and under a different key than the planner stores them, so the same event can land on two different days across the timeline vs the planner.
+  Exit gate: single local-calendar date-key convention across display + planner; U2.3 (extraction) + U2.8 (planner keys) deliver the full verdict, U2.7 covers JS↔Python parity of the convention. No fix during audit.
+
+# NOTE: Phase U0 itself PASSES (determinism established for a fixed (snapshot, clock); live-path asOfDate injection execution-verified). See audit/evidence/U0.1-DET-01.yaml + U0.2-INJ-01.yaml + audit/U0_DETERMINISM_SUMMARY.md.
+# U0 EXIT GATE MET → U1, U2.x, U3, U4 are unblocked (U5 needs U2 evidence; U6 closes).
+

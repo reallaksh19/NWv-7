@@ -28,5 +28,15 @@ Expansion over the 05-19 pass: + **recall/dedup-recall**, + bigger angle sample 
    code fix has been applied — a stable runtime repro + targeted guard + full cert/benchmark
    re-validation is required first (deliberately not a blind threshold change).
 
+## Update — Fix A applied (dedup recall)
+Added a cross-source syndication-aware canonical-title hard-dup layer (`dedup.ts`,
+no threshold change). Re-measured on this same frozen snapshot:
+- **dedup recall (near-identical): 0.419 → 0.677** (21/31 caught) — clean win (corpus-derived metric).
+- insight cert suite **89/89 green**; synthetic ratchet **PASSED**.
+- NOTE: the oracle precision/angle numbers above were pinned to the *pre-fix* clusters; the fix
+  changed membership (the 11-story Starmer cluster shrank as near-dups were hidden), so a direct
+  precision/angle re-score against the old labels is not apples-to-apples and is NOT a regression.
+  The France+Hindi false merge is unchanged — that is Fix B's target.
+
 ## Caveat
 Single uncalibrated LLM oracle; angle numbers are sensitive to oracle strictness (I labeled "why/what-went-wrong/who-is" as background_context and plain reports as base_report). Direction is robust; certify with a human κ sample before gating. The frozen snapshot + `compare_oracle_vs_actual.mjs` make every number replayable.

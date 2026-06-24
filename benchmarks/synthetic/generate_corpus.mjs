@@ -232,7 +232,8 @@ const manifest = {
   oov_story_count: oov, content_hash: sha(JSON.stringify(stories.map(s => s.id + s.title))),
   challenge_tag_counts: tagCounts,
   ground_truth_counts: { pairs: gtPairs.length, groups: gtGroups.length, angles: gtAngles.length, ranks: gtRanks.length },
-  generated_at: new Date().toISOString(),
+  // NOTE: intentionally no generated_at — the corpus is fully seed-deterministic, so the
+  // manifest must be byte-stable across regenerations (avoids spurious git churn / CI noise).
 };
 writeFileSync(`${OUT_CORPUS}/manifest.json`, JSON.stringify(manifest, null, 2));
 writeFileSync(`${OUT_GT}/ground_truth.json`, JSON.stringify({ corpus: CORPUS, provenance: { method: "construction-time (generator)", judge: "n/a-generated", kappa: 1.0, note: "labels are the generator's design intent; no judge/human needed" }, pairs: gtPairs, groups: gtGroups, angles: gtAngles, ranks: gtRanks }, null, 2));

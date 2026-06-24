@@ -28,6 +28,16 @@ Expansion over the 05-19 pass: + **recall/dedup-recall**, + bigger angle sample 
    code fix has been applied — a stable runtime repro + targeted guard + full cert/benchmark
    re-validation is required first (deliberately not a blind threshold change).
 
+## Update — Fix B applied (false merge) ✅ RESOLVED
+Root cause (deterministically reproduced): `topicTokenOverlap`'s containment metric scored
+**0.72** for the France+Hindi pair because the Hindi (foreign-language) headline reduced to a
+single generic token `"india"`, and `containment = 1/1 → 0.72` force-fired the `applyClusterOverrides`
+topic-cohesion branch. Fix (`topicCohesion.ts`): the containment bonus now requires **≥1 non-generic
+shared token**, so a lone generic geo token can't drive a merge. Re-measured on this snapshot:
+- **false merges: 1 → 0**; clustering precision (pairs) **0.985 → 1.0**.
+- France+Hindi `topicOverlap 0.72 → 0.06`, override `SAME → USE_SCORE` — no longer co-clustered.
+- insight cert suite **89/89 green** (incl. topicCohesion 3/3); synthetic ratchet **PASSED**.
+
 ## Update — Fix A applied (dedup recall)
 Added a cross-source syndication-aware canonical-title hard-dup layer (`dedup.ts`,
 no threshold change). Re-measured on this same frozen snapshot:

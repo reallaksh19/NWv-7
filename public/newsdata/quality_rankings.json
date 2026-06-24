@@ -53,7 +53,7 @@
     },
     "insight": {
       "actionableFindings": [
-        "2 base-report-heavy Insight parent(s) demoted"
+        "1 base-report-heavy Insight parent(s) demoted"
       ],
       "destination": "insight",
       "diagnosticReasons": [],
@@ -77,7 +77,7 @@
       ],
       "gateSummary": {
         "avgAnglesPerParent": 0.0,
-        "baseReportHeavyParents": 2,
+        "baseReportHeavyParents": 1,
         "duplicateChildrenSuppressed": 0,
         "inputCandidateCount": 10,
         "parentClusters": 10,
@@ -86,7 +86,7 @@
         "weakParentsDemoted": 0
       },
       "qualityGrade": "F",
-      "qualityScore": 0.3799,
+      "qualityScore": 0.3993,
       "qualityStatus": "WARN",
       "rankedItems": [
         {
@@ -262,6 +262,122 @@
               "status": "PASS"
             }
           ],
+          "id": "sketch:623a281530",
+          "item": {
+            "angleCount": 2,
+            "baseReportRatio": 0.0,
+            "childScores": [],
+            "id": "sketch:623a281530",
+            "representativeId": "690a4f47e527b3e9",
+            "representativeTitle": "Kerala High Court invalidates oaths of 20 BJP councillors in Thiruvananthapuram Corporation, fresh swearing-in done for 19",
+            "scoreBreakdown": {
+              "angleDiversityScore": 0.78,
+              "eventImportanceScore": 0.59,
+              "freshnessScore": 0.0,
+              "noveltyDeltaScore": 0.55,
+              "sourceAuthorityScore": 0.38,
+              "sourceDiversityScore": 0.35,
+              "temporalEvolutionScore": 0.49
+            },
+            "slotCount": 2,
+            "slots": [
+              "minus4h",
+              "now"
+            ],
+            "sourceGroupCount": 1,
+            "sourceGroups": [
+              "the_hindu"
+            ],
+            "storyCount": 2,
+            "storyIds": [
+              "690a4f47e527b3e9",
+              "9be2ec073c767ee1"
+            ],
+            "topAngles": [
+              {
+                "angle": "regional_followup",
+                "count": 1
+              },
+              {
+                "angle": "official_response",
+                "count": 1
+              }
+            ],
+            "topTokens": [
+              "kerala",
+              "high",
+              "court",
+              "invalidates",
+              "oaths"
+            ],
+            "topicKey": "kerala|high|court"
+          },
+          "locationKey": "event",
+          "rankingReasons": [
+            "event sketch has repeated story count",
+            "usable angle diversity",
+            "one-source event candidate"
+          ],
+          "score": 0.517,
+          "title": "Kerala High Court invalidates oaths of 20 BJP councillors in Thiruvananthapuram Corporation, fresh swearing-in done for 19"
+        },
+        {
+          "category": "insightEvent",
+          "gates": [
+            {
+              "details": {
+                "storyCount": 2
+              },
+              "name": "eventCoherence",
+              "reason": "event sketch has repeated story count",
+              "score": 0.62,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "baseReportRatio": 0.0,
+                "distinctAngles": 2
+              },
+              "name": "angleDiversity",
+              "reason": "usable angle diversity",
+              "score": 0.78,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "sourceGroupCount": 1
+              },
+              "name": "sourceDiversity",
+              "reason": "one-source event candidate",
+              "score": 0.35,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "baseReportRatio": 0.0
+              },
+              "name": "baseReportCap",
+              "reason": "base-report ratio controlled",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "childCount": 2
+              },
+              "name": "weakTree",
+              "reason": "child tree has enough depth",
+              "score": 0.5,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "duplicateChildren",
+              "reason": "no child objects to dedup",
+              "score": 0.7,
+              "status": "PASS"
+            }
+          ],
           "id": "sketch:71aa39bc7c",
           "item": {
             "angleCount": 2,
@@ -319,6 +435,119 @@
           ],
           "score": 0.505,
           "title": "Why is market rising today? Sensex rallies 900 pts, Nifty above 24,050. 6 key factors driving D-St rebound"
+        },
+        {
+          "category": "insightEvent",
+          "gates": [
+            {
+              "details": {
+                "storyCount": 2
+              },
+              "name": "eventCoherence",
+              "reason": "event sketch has repeated story count",
+              "score": 0.62,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "baseReportRatio": 0.0,
+                "distinctAngles": 1
+              },
+              "name": "angleDiversity",
+              "reason": "weak child angle diversity",
+              "score": 0.25,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "sourceGroupCount": 2
+              },
+              "name": "sourceDiversity",
+              "reason": "multi-source event",
+              "score": 0.72,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "baseReportRatio": 0.0
+              },
+              "name": "baseReportCap",
+              "reason": "base-report ratio controlled",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "childCount": 2
+              },
+              "name": "weakTree",
+              "reason": "child tree has enough depth",
+              "score": 0.5,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "duplicateChildren",
+              "reason": "no child objects to dedup",
+              "score": 0.7,
+              "status": "PASS"
+            }
+          ],
+          "id": "sketch:c1ce24be9c",
+          "item": {
+            "angleCount": 1,
+            "baseReportRatio": 0.0,
+            "childScores": [],
+            "id": "sketch:c1ce24be9c",
+            "representativeId": "7e10af6b3a5fcead",
+            "representativeTitle": "IAEA chief says Iran inspections will go ahead, working on modalities",
+            "scoreBreakdown": {
+              "angleDiversityScore": 0.25,
+              "eventImportanceScore": 0.59,
+              "freshnessScore": 0.0,
+              "noveltyDeltaScore": 0.44999999999999996,
+              "sourceAuthorityScore": 0.62,
+              "sourceDiversityScore": 0.72,
+              "temporalEvolutionScore": 0.49
+            },
+            "slotCount": 2,
+            "slots": [
+              "minus12h",
+              "minus4h"
+            ],
+            "sourceGroupCount": 2,
+            "sourceGroups": [
+              "the_hindu",
+              "times_of_india"
+            ],
+            "storyCount": 2,
+            "storyIds": [
+              "7e10af6b3a5fcead",
+              "05ba8c8dc7c7f036"
+            ],
+            "topAngles": [
+              {
+                "angle": "official_response",
+                "count": 2
+              }
+            ],
+            "topTokens": [
+              "iaea",
+              "chief",
+              "iran",
+              "inspections",
+              "nuclear"
+            ],
+            "topicKey": "iaea|chief|iran"
+          },
+          "locationKey": "event",
+          "rankingReasons": [
+            "event sketch has repeated story count",
+            "weak child angle diversity",
+            "multi-source event"
+          ],
+          "score": 0.4925,
+          "title": "IAEA chief says Iran inspections will go ahead, working on modalities"
         },
         {
           "category": "insightEvent",
@@ -430,117 +659,6 @@
           ],
           "score": 0.419,
           "title": "India News Live Updates, 24 June 2026: Tourist bus overturns on NH in Tamil Nadu’s Viluppuram; 24 injured - The Indian Express"
-        },
-        {
-          "category": "insightEvent",
-          "gates": [
-            {
-              "details": {
-                "storyCount": 3
-              },
-              "name": "eventCoherence",
-              "reason": "event sketch has repeated story count",
-              "score": 0.62,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "baseReportRatio": 0.0,
-                "distinctAngles": 1
-              },
-              "name": "angleDiversity",
-              "reason": "weak child angle diversity",
-              "score": 0.25,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "sourceGroupCount": 1
-              },
-              "name": "sourceDiversity",
-              "reason": "one-source event candidate",
-              "score": 0.35,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "baseReportRatio": 0.0
-              },
-              "name": "baseReportCap",
-              "reason": "base-report ratio controlled",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "childCount": 3
-              },
-              "name": "weakTree",
-              "reason": "child tree has enough depth",
-              "score": 0.75,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "duplicateChildren",
-              "reason": "no child objects to dedup",
-              "score": 0.7,
-              "status": "PASS"
-            }
-          ],
-          "id": "sketch:1e5e0aa09f",
-          "item": {
-            "angleCount": 1,
-            "baseReportRatio": 0.0,
-            "childScores": [],
-            "id": "sketch:1e5e0aa09f",
-            "representativeId": "a7ddb9c4f589f036",
-            "representativeTitle": "ବର୍ତ୍ତମାନର ବଡ଼ ଖବର | Top Headlines | Breaking News | Odia News | Kanak Shorts - Kanak News Odisha",
-            "scoreBreakdown": {
-              "angleDiversityScore": 0.25,
-              "eventImportanceScore": 0.71,
-              "freshnessScore": 0.0,
-              "noveltyDeltaScore": 0.44999999999999996,
-              "sourceAuthorityScore": 0.38,
-              "sourceDiversityScore": 0.35,
-              "temporalEvolutionScore": 0.37
-            },
-            "slotCount": 1,
-            "slots": [
-              "now"
-            ],
-            "sourceGroupCount": 1,
-            "sourceGroups": [
-              "google_news"
-            ],
-            "storyCount": 3,
-            "storyIds": [
-              "a7ddb9c4f589f036",
-              "d7a915ab5e522442",
-              "cc2adf99fffb0ea0"
-            ],
-            "topAngles": [
-              {
-                "angle": "fact_update",
-                "count": 3
-              }
-            ],
-            "topTokens": [
-              "kanak",
-              "headlines",
-              "breaking",
-              "odia"
-            ],
-            "topicKey": "kanak|headlines|breaking"
-          },
-          "locationKey": "event",
-          "rankingReasons": [
-            "event sketch has repeated story count",
-            "weak child angle diversity",
-            "one-source event candidate"
-          ],
-          "score": 0.419,
-          "title": "ବର୍ତ୍ତମାନର ବଡ଼ ଖବର | Top Headlines | Breaking News | Odia News | Kanak Shorts - Kanak News Odisha"
         },
         {
           "category": "insightEvent",
@@ -709,14 +827,14 @@
               "status": "PASS"
             }
           ],
-          "id": "sketch:f7b066c55b",
+          "id": "sketch:1e5e0aa09f",
           "item": {
             "angleCount": 1,
             "baseReportRatio": 0.0,
             "childScores": [],
-            "id": "sketch:f7b066c55b",
-            "representativeId": "9b4ad749dabcbe22",
-            "representativeTitle": "Waterways Leisure Tourism IPO Day 2: GMP signals flat debut - Should you apply?",
+            "id": "sketch:1e5e0aa09f",
+            "representativeId": "a7ddb9c4f589f036",
+            "representativeTitle": "ବର୍ତ୍ତମାନର ବଡ଼ ଖବର | Top Headlines | Breaking News | Odia News | Kanak Shorts - Kanak News Odisha",
             "scoreBreakdown": {
               "angleDiversityScore": 0.25,
               "eventImportanceScore": 0.59,
@@ -732,27 +850,26 @@
             ],
             "sourceGroupCount": 1,
             "sourceGroups": [
-              "economic_times"
+              "google_news"
             ],
             "storyCount": 2,
             "storyIds": [
-              "9b4ad749dabcbe22",
-              "a1f2fad9a9856033"
+              "a7ddb9c4f589f036",
+              "d7a915ab5e522442"
             ],
             "topAngles": [
               {
-                "angle": "market_reaction",
+                "angle": "fact_update",
                 "count": 2
               }
             ],
             "topTokens": [
-              "waterways",
-              "leisure",
-              "tourism",
-              "flat",
-              "response"
+              "kanak",
+              "headlines",
+              "breaking",
+              "odia"
             ],
-            "topicKey": "waterways|leisure|tourism"
+            "topicKey": "kanak|headlines|breaking"
           },
           "locationKey": "event",
           "rankingReasons": [
@@ -761,7 +878,7 @@
             "one-source event candidate"
           ],
           "score": 0.389,
-          "title": "Waterways Leisure Tourism IPO Day 2: GMP signals flat debut - Should you apply?"
+          "title": "ବର୍ତ୍ତମାନର ବଡ଼ ଖବର | Top Headlines | Breaking News | Odia News | Kanak Shorts - Kanak News Odisha"
         },
         {
           "category": "insightEvent",
@@ -1098,127 +1215,17 @@
           ],
           "score": 0.2021,
           "title": "Top news of the day June 12, 2026 - The Hindu"
-        },
-        {
-          "category": "insightEvent",
-          "gates": [
-            {
-              "details": {
-                "storyCount": 2
-              },
-              "name": "eventCoherence",
-              "reason": "event sketch has repeated story count",
-              "score": 0.62,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "baseReportRatio": 1.0,
-                "distinctAngles": 0
-              },
-              "name": "angleDiversity",
-              "reason": "weak child angle diversity",
-              "score": 0.25,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "sourceGroupCount": 1
-              },
-              "name": "sourceDiversity",
-              "reason": "one-source event candidate",
-              "score": 0.35,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "baseReportRatio": 1.0
-              },
-              "name": "baseReportCap",
-              "reason": "base-report dominated event candidate",
-              "score": 0.25,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "childCount": 2
-              },
-              "name": "weakTree",
-              "reason": "child tree has enough depth",
-              "score": 0.5,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "duplicateChildren",
-              "reason": "no child objects to dedup",
-              "score": 0.7,
-              "status": "PASS"
-            }
-          ],
-          "id": "sketch:f164278fc4",
-          "item": {
-            "angleCount": 1,
-            "baseReportRatio": 1.0,
-            "childScores": [],
-            "id": "sketch:f164278fc4",
-            "representativeId": "d4098b54b2727b8c",
-            "representativeTitle": "'He's even getting into sledging now': Stuart Broad admits he may be 'starstruck' by Vaibhav Sooryavanshi - The Times of India",
-            "scoreBreakdown": {
-              "angleDiversityScore": 0.25,
-              "eventImportanceScore": 0.59,
-              "freshnessScore": 0.0,
-              "noveltyDeltaScore": 0.44999999999999996,
-              "sourceAuthorityScore": 0.38,
-              "sourceDiversityScore": 0.35,
-              "temporalEvolutionScore": 0.37
-            },
-            "slotCount": 1,
-            "slots": [
-              "now"
-            ],
-            "sourceGroupCount": 1,
-            "sourceGroups": [
-              "google_news"
-            ],
-            "storyCount": 2,
-            "storyIds": [
-              "d4098b54b2727b8c",
-              "ddfafa9d1ffff252"
-            ],
-            "topAngles": [
-              {
-                "angle": "base_report",
-                "count": 2
-              }
-            ],
-            "topTokens": [
-              "even",
-              "getting",
-              "sledging",
-              "stuart"
-            ],
-            "topicKey": "even|getting|sledging"
-          },
-          "locationKey": "event",
-          "rankingReasons": [
-            "event sketch has repeated story count",
-            "weak child angle diversity",
-            "one-source event candidate"
-          ],
-          "score": 0.1751,
-          "title": "'He's even getting into sledging now': Stuart Broad admits he may be 'starstruck' by Vaibhav Sooryavanshi - The Times of India"
         }
       ],
       "rankingProfile": "insight-v2-event-angle-tree",
       "scoreBreakdown": {
-        "angleDiversityScore": 0.356,
-        "eventImportanceScore": 0.638,
+        "angleDiversityScore": 0.409,
+        "eventImportanceScore": 0.626,
         "freshnessScore": 0.0,
-        "noveltyDeltaScore": 0.48,
-        "sourceAuthorityScore": 0.404,
-        "sourceDiversityScore": 0.387,
-        "temporalEvolutionScore": 0.394
+        "noveltyDeltaScore": 0.49,
+        "sourceAuthorityScore": 0.428,
+        "sourceDiversityScore": 0.424,
+        "temporalEvolutionScore": 0.418
       }
     },
     "localTravel": {
@@ -1278,15 +1285,16 @@
     },
     "upAhead": {
       "actionableFindings": [
-        "42 invalid/expired/duplicate Up Ahead item(s) suppressed",
-        "no active offer items in ranked Up Ahead set",
+        "41 invalid/expired/duplicate Up Ahead item(s) suppressed",
         "no ranked Up Ahead item for muscat"
       ],
       "destination": "upAhead",
       "diagnosticReasons": [
+        "Prime Day Is Here Until Friday, but These Editor-Vetted Deals Are Starting to Sell Out - cosmopolitan.com: location failed — offline/local item lacks configured location match",
         "Prime Day MacBook deals guide 2026: Is the MacBook Neo on sale yet? - Mashable: location failed — offline/local item lacks configured location match",
         "The 9+ weirdest things we found on sale this Prime Day - NBC News: location failed — offline/local item lacks configured location match",
-        "The 9 Best Board Game Deals of Prime Day— I've Played Them All With My Family - WIRED: location failed — offline/local item lacks configured location match",
+        "The 9 Best Board Game Deals of Prime Day—I've Played Them All With My Family - WIRED: location failed — offline/local item lacks configured location match",
+        "Now’s the time to get a new smartwatch — we found 23 on sale for Prime Day - NBC News: location failed — offline/local item lacks configured location match",
         "What To Buy and What To Skip this Amazon Prime Day 2026 - NBC News: location failed — offline/local item lacks configured location match",
         "Best Prime Day headphones deals 2026: Record prices on AirPods, Sony XM6 headphones - Mashable: location failed — offline/local item lacks configured location match",
         "A Vogue Fashion Editor on the Actual Best Prime Day Deals - Vogue: location failed — offline/local item lacks configured location match",
@@ -1297,13 +1305,11 @@
         "Pottery Barn Promo Codes: Refresh Your Summer Essentials For Up To 80% Off - Forbes: location failed — offline/local item lacks configured location match",
         "I've Looked Through Hundreds of Prime Day Deals—Here Are the Ones Worth Shopping - Condé Nast Traveler: location failed — offline/local item lacks configured location match",
         "The Prime Day deals so good, we secretly shopped them at work - NBC News: location failed — offline/local item lacks configured location match",
-        "Huge Amazon Prime Days 2026 Sports Tech Deals Tracker! - DC Rainmaker: location failed — offline/local item lacks configured location match",
-        "The Kindle I use every day is on sale for Prime Day: Save $55 - Mashable: location failed — offline/local item lacks configured location match",
-        "Greater Chennai Corporation Commissioner inspects civic works in Perambur constituency: futureValidity failed — expired display window",
-        "Greater Chennai Corporation Commissioner inspects civic works in Perambur constituency: alertUrgency failed — alert expired",
-        "Plays to be staged in chamber format to mark ‘Crazy’ Mohan’s birth anniversary: futureValidity failed — expired display window",
-        "Plays to be staged in chamber format to mark ‘Crazy’ Mohan’s birth anniversary: alertUrgency failed — alert expired",
-        "Three months after MRTS extension’s launch, halts at Adambakkam station yet to begin: futureValidity failed — expired display window"
+        "T.N. DGP orders all police officers to conduct ‘Open Grievance Day’ every Wednesday, Saturday: futureValidity failed — expired display window",
+        "T.N. DGP orders all police officers to conduct ‘Open Grievance Day’ every Wednesday, Saturday: alertUrgency failed — alert expired",
+        "Nominations invited for National Mahaveer Awards 2027: futureValidity failed — expired display window",
+        "Nominations invited for National Mahaveer Awards 2027: alertUrgency failed — alert expired",
+        "Indian Bank distributes bags, notebooks to school students in Teynampet: futureValidity failed — expired display window"
       ],
       "gateResults": [
         {
@@ -1318,25 +1324,27 @@
         {
           "details": {
             "categoryCounts": {
-              "alerts": 29,
-              "civic": 1
+              "alerts": 25,
+              "civic": 1,
+              "shopping": 4
             }
           },
           "name": "categoryCoverage",
           "reason": "category coverage available",
-          "score": 0.5,
+          "score": 0.75,
           "status": "PASS"
         }
       ],
       "gateSummary": {
-        "alerts": 30,
+        "alerts": 26,
         "categoryCounts": {
-          "alerts": 29,
-          "civic": 1
+          "alerts": 25,
+          "civic": 1,
+          "shopping": 4
         },
         "events": 0,
         "festivals": 0,
-        "inputItemCount": 97,
+        "inputItemCount": 91,
         "locationCounts": {
           "chennai": 18,
           "trichy": 12
@@ -1345,14 +1353,14 @@
           "chennai",
           "trichy"
         ],
-        "offlineOffers": 0,
+        "offlineOffers": 4,
         "onlineOffers": 0,
         "plannerAdvisoryItems": 30,
         "rankedItemCount": 30,
-        "suppressedItemCount": 42
+        "suppressedItemCount": 41
       },
       "qualityGrade": "B",
-      "qualityScore": 0.8569,
+      "qualityScore": 0.8446,
       "qualityStatus": "WARN",
       "rankedItems": [
         {
@@ -2395,121 +2403,6 @@
           "gates": [
             {
               "details": {
-                "dedupKey": "4a95ab9d84c91af7"
-              },
-              "name": "dedup",
-              "reason": "unique item",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "displayUntil": 1782327438000
-              },
-              "name": "futureValidity",
-              "reason": "valid undated item with active display window",
-              "score": 0.65,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "matchScore": 1.0,
-                "matchedLocation": "chennai",
-                "relevance": "primary",
-                "scope": "exactCity"
-              },
-              "name": "location",
-              "reason": "location matches configured profile",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "hasPlace": true,
-                "hasTime": true
-              },
-              "name": "actionability",
-              "reason": "item has enough action fields",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "offerValidity",
-              "reason": "not an offer",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "severe": false
-              },
-              "name": "alertUrgency",
-              "reason": "active alert",
-              "score": 0.78,
-              "status": "PASS"
-            }
-          ],
-          "id": "bb514dec1230c1c9",
-          "item": {
-            "actionabilityScore": 0.7,
-            "category": "alerts",
-            "city": "Chennai",
-            "contentClass": "upahead_alert",
-            "dateConfidence": "unknown",
-            "dateSource": "none",
-            "eventEndAt": null,
-            "eventStartAt": null,
-            "expiryAt": 1782327438000,
-            "id": "bb514dec1230c1c9",
-            "language": "en",
-            "lifecycle": {
-              "archiveUntil": 1782932238000,
-              "contentClass": "upahead_alert",
-              "displayUntil": 1782327438000,
-              "isActionValid": true,
-              "isVisible": true,
-              "plannerEligibleByLifecycle": true,
-              "plannerPastGraceHours": 6,
-              "retentionReason": "expiryAt",
-              "withinSevenDayHorizon": true
-            },
-            "localityScore": 1.0,
-            "normalizedCategory": "alerts",
-            "plannerEligible": true,
-            "publishedAt": 1782241038000,
-            "region": "tn",
-            "scoreBreakdown": {
-              "actionabilityScore": 1.0,
-              "categoryPriorityScore": 1.0,
-              "lifecycleScore": 0.65,
-              "locationScore": 1.0,
-              "plannerFitScore": 1.0,
-              "sourceConfidenceScore": 0.58,
-              "urgencyOrExpiryScore": 0.78
-            },
-            "source": "The Hindu Chennai",
-            "sourceGroup": "the_hindu",
-            "summary": "",
-            "suppressionReason": null,
-            "title": "Indian Bank distributes bags, notebooks to school students in Teynampet",
-            "url": "https://www.thehindu.com/news/cities/chennai/indian-bank-distributes-bags-notebooks-to-school-students-in-teynampet/article71138811.ece"
-          },
-          "locationKey": "chennai",
-          "rankingReasons": [
-            "alerts",
-            "valid undated item with active display window",
-            "location matches configured profile",
-            "planner advisory fit"
-          ],
-          "score": 0.8485,
-          "title": "Indian Bank distributes bags, notebooks to school students in Teynampet"
-        },
-        {
-          "category": "alerts",
-          "gates": [
-            {
-              "details": {
                 "dedupKey": "9580939106d0e88c"
               },
               "name": "dedup",
@@ -2970,121 +2863,6 @@
           "gates": [
             {
               "details": {
-                "dedupKey": "351ade54202625a8"
-              },
-              "name": "dedup",
-              "reason": "unique item",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "displayUntil": 1782327490000
-              },
-              "name": "futureValidity",
-              "reason": "valid undated item with active display window",
-              "score": 0.65,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "matchScore": 1.0,
-                "matchedLocation": "chennai",
-                "relevance": "primary",
-                "scope": "exactCity"
-              },
-              "name": "location",
-              "reason": "location matches configured profile",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "hasPlace": true,
-                "hasTime": true
-              },
-              "name": "actionability",
-              "reason": "item has enough action fields",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "offerValidity",
-              "reason": "not an offer",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "severe": false
-              },
-              "name": "alertUrgency",
-              "reason": "active alert",
-              "score": 0.78,
-              "status": "PASS"
-            }
-          ],
-          "id": "89ff77d7050bcff4",
-          "item": {
-            "actionabilityScore": 0.7,
-            "category": "alerts",
-            "city": "Chennai",
-            "contentClass": "upahead_alert",
-            "dateConfidence": "unknown",
-            "dateSource": "none",
-            "eventEndAt": null,
-            "eventStartAt": null,
-            "expiryAt": 1782327490000,
-            "id": "89ff77d7050bcff4",
-            "language": "en",
-            "lifecycle": {
-              "archiveUntil": 1782932290000,
-              "contentClass": "upahead_alert",
-              "displayUntil": 1782327490000,
-              "isActionValid": true,
-              "isVisible": true,
-              "plannerEligibleByLifecycle": true,
-              "plannerPastGraceHours": 6,
-              "retentionReason": "expiryAt",
-              "withinSevenDayHorizon": true
-            },
-            "localityScore": 1.0,
-            "normalizedCategory": "alerts",
-            "plannerEligible": true,
-            "publishedAt": 1782241090000,
-            "region": "tn",
-            "scoreBreakdown": {
-              "actionabilityScore": 1.0,
-              "categoryPriorityScore": 1.0,
-              "lifecycleScore": 0.65,
-              "locationScore": 1.0,
-              "plannerFitScore": 1.0,
-              "sourceConfidenceScore": 0.58,
-              "urgencyOrExpiryScore": 0.78
-            },
-            "source": "The Hindu Chennai",
-            "sourceGroup": "the_hindu",
-            "summary": "",
-            "suppressionReason": null,
-            "title": "Nominations invited for National Mahaveer Awards 2027",
-            "url": "https://www.thehindu.com/news/cities/chennai/nominations-invited-for-national-mahaveer-awards-2027/article71138967.ece"
-          },
-          "locationKey": "chennai",
-          "rankingReasons": [
-            "alerts",
-            "valid undated item with active display window",
-            "location matches configured profile",
-            "planner advisory fit"
-          ],
-          "score": 0.8485,
-          "title": "Nominations invited for National Mahaveer Awards 2027"
-        },
-        {
-          "category": "alerts",
-          "gates": [
-            {
-              "details": {
                 "dedupKey": "7771e72803993171"
               },
               "name": "dedup",
@@ -3430,7 +3208,7 @@
           "gates": [
             {
               "details": {
-                "dedupKey": "70c23ec8b97cd6c3"
+                "dedupKey": "fd148d07b3fc6dfd"
               },
               "name": "dedup",
               "reason": "unique item",
@@ -3439,7 +3217,7 @@
             },
             {
               "details": {
-                "displayUntil": 1782327126000
+                "displayUntil": 1782403696000
               },
               "name": "futureValidity",
               "reason": "valid undated item with active display window",
@@ -3485,7 +3263,7 @@
               "status": "PASS"
             }
           ],
-          "id": "7824e8f014a3b13c",
+          "id": "35b7883909c458ce",
           "item": {
             "actionabilityScore": 0.7,
             "category": "alerts",
@@ -3495,13 +3273,13 @@
             "dateSource": "none",
             "eventEndAt": null,
             "eventStartAt": null,
-            "expiryAt": 1782327126000,
-            "id": "7824e8f014a3b13c",
+            "expiryAt": 1782403696000,
+            "id": "35b7883909c458ce",
             "language": "en",
             "lifecycle": {
-              "archiveUntil": 1782931926000,
+              "archiveUntil": 1783008496000,
               "contentClass": "upahead_alert",
-              "displayUntil": 1782327126000,
+              "displayUntil": 1782403696000,
               "isActionValid": true,
               "isVisible": true,
               "plannerEligibleByLifecycle": true,
@@ -3512,7 +3290,7 @@
             "localityScore": 1.0,
             "normalizedCategory": "alerts",
             "plannerEligible": true,
-            "publishedAt": 1782240726000,
+            "publishedAt": 1782317296000,
             "region": "tn",
             "scoreBreakdown": {
               "actionabilityScore": 1.0,
@@ -3525,10 +3303,10 @@
             },
             "source": "The Hindu Chennai",
             "sourceGroup": "the_hindu",
-            "summary": "Registration is open at https://www.kattaikkuttu.org/ or in person at the Sangam’s office before July 31",
+            "summary": "Many shops on Ayya Mudali Street are switching to the fish trade; the traders sell fish on the street and not inside the shops, which leads to water stagnation",
             "suppressionReason": null,
-            "title": "Registrations open for Kattaikkuttu diploma course",
-            "url": "https://www.thehindu.com/news/cities/chennai/registrations-open-for-kattaikkuttu-diploma-course/article71138425.ece"
+            "title": "Runoffs from fish shops leave Ayya Mudali Street in Chintadripet waterlogged",
+            "url": "https://www.thehindu.com/news/cities/chennai/fish-shop-runoffs-leave-ayya-mudali-street-in-chintadripet-waterlogged/article71142950.ece"
           },
           "locationKey": "chennai",
           "rankingReasons": [
@@ -3538,7 +3316,7 @@
             "planner advisory fit"
           ],
           "score": 0.8485,
-          "title": "Registrations open for Kattaikkuttu diploma course"
+          "title": "Runoffs from fish shops leave Ayya Mudali Street in Chintadripet waterlogged"
         },
         {
           "category": "alerts",
@@ -3660,236 +3438,6 @@
           "gates": [
             {
               "details": {
-                "dedupKey": "b9b11a819c27b888"
-              },
-              "name": "dedup",
-              "reason": "unique item",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "displayUntil": 1782327902000
-              },
-              "name": "futureValidity",
-              "reason": "valid undated item with active display window",
-              "score": 0.65,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "matchScore": 1.0,
-                "matchedLocation": "chennai",
-                "relevance": "primary",
-                "scope": "exactCity"
-              },
-              "name": "location",
-              "reason": "location matches configured profile",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "hasPlace": true,
-                "hasTime": true
-              },
-              "name": "actionability",
-              "reason": "item has enough action fields",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "offerValidity",
-              "reason": "not an offer",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "severe": false
-              },
-              "name": "alertUrgency",
-              "reason": "active alert",
-              "score": 0.78,
-              "status": "PASS"
-            }
-          ],
-          "id": "5d6a022b011c195a",
-          "item": {
-            "actionabilityScore": 0.7,
-            "category": "alerts",
-            "city": "Chennai",
-            "contentClass": "upahead_alert",
-            "dateConfidence": "unknown",
-            "dateSource": "none",
-            "eventEndAt": null,
-            "eventStartAt": null,
-            "expiryAt": 1782327902000,
-            "id": "5d6a022b011c195a",
-            "language": "en",
-            "lifecycle": {
-              "archiveUntil": 1782932702000,
-              "contentClass": "upahead_alert",
-              "displayUntil": 1782327902000,
-              "isActionValid": true,
-              "isVisible": true,
-              "plannerEligibleByLifecycle": true,
-              "plannerPastGraceHours": 6,
-              "retentionReason": "expiryAt",
-              "withinSevenDayHorizon": true
-            },
-            "localityScore": 1.0,
-            "normalizedCategory": "alerts",
-            "plannerEligible": true,
-            "publishedAt": 1782241502000,
-            "region": "tn",
-            "scoreBreakdown": {
-              "actionabilityScore": 1.0,
-              "categoryPriorityScore": 1.0,
-              "lifecycleScore": 0.65,
-              "locationScore": 1.0,
-              "plannerFitScore": 1.0,
-              "sourceConfidenceScore": 0.58,
-              "urgencyOrExpiryScore": 0.78
-            },
-            "source": "The Hindu Chennai",
-            "sourceGroup": "the_hindu",
-            "summary": "",
-            "suppressionReason": null,
-            "title": "T.N. DGP orders all police officers to conduct ‘Open Grievance Day’ every Wednesday, Saturday",
-            "url": "https://www.thehindu.com/news/cities/chennai/tn-dgp-orders-all-police-officers-to-conduct-open-grievance-day-every-wednesday-saturday/article71137687.ece"
-          },
-          "locationKey": "chennai",
-          "rankingReasons": [
-            "alerts",
-            "valid undated item with active display window",
-            "location matches configured profile",
-            "planner advisory fit"
-          ],
-          "score": 0.8485,
-          "title": "T.N. DGP orders all police officers to conduct ‘Open Grievance Day’ every Wednesday, Saturday"
-        },
-        {
-          "category": "alerts",
-          "gates": [
-            {
-              "details": {
-                "dedupKey": "a561fd01efbd5166"
-              },
-              "name": "dedup",
-              "reason": "unique item",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "displayUntil": 1782326816000
-              },
-              "name": "futureValidity",
-              "reason": "valid undated item with active display window",
-              "score": 0.65,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "matchScore": 1.0,
-                "matchedLocation": "chennai",
-                "relevance": "primary",
-                "scope": "exactCity"
-              },
-              "name": "location",
-              "reason": "location matches configured profile",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "hasPlace": true,
-                "hasTime": true
-              },
-              "name": "actionability",
-              "reason": "item has enough action fields",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "offerValidity",
-              "reason": "not an offer",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "severe": false
-              },
-              "name": "alertUrgency",
-              "reason": "active alert",
-              "score": 0.78,
-              "status": "PASS"
-            }
-          ],
-          "id": "0687ce68521bf3d8",
-          "item": {
-            "actionabilityScore": 0.7,
-            "category": "alerts",
-            "city": "Chennai",
-            "contentClass": "upahead_alert",
-            "dateConfidence": "unknown",
-            "dateSource": "none",
-            "eventEndAt": null,
-            "eventStartAt": null,
-            "expiryAt": 1782326816000,
-            "id": "0687ce68521bf3d8",
-            "language": "en",
-            "lifecycle": {
-              "archiveUntil": 1782931616000,
-              "contentClass": "upahead_alert",
-              "displayUntil": 1782326816000,
-              "isActionValid": true,
-              "isVisible": true,
-              "plannerEligibleByLifecycle": true,
-              "plannerPastGraceHours": 6,
-              "retentionReason": "expiryAt",
-              "withinSevenDayHorizon": true
-            },
-            "localityScore": 1.0,
-            "normalizedCategory": "alerts",
-            "plannerEligible": true,
-            "publishedAt": 1782240416000,
-            "region": "tn",
-            "scoreBreakdown": {
-              "actionabilityScore": 1.0,
-              "categoryPriorityScore": 1.0,
-              "lifecycleScore": 0.65,
-              "locationScore": 1.0,
-              "plannerFitScore": 1.0,
-              "sourceConfidenceScore": 0.58,
-              "urgencyOrExpiryScore": 0.78
-            },
-            "source": "The Hindu Chennai",
-            "sourceGroup": "the_hindu",
-            "summary": "The counselling dates for engineering admissions will also be announced on the same date, he adds",
-            "suppressionReason": null,
-            "title": "TNEA rank list will be released on July 1, says T.N. Higher Education Minister",
-            "url": "https://www.thehindu.com/news/cities/chennai/tnea-rank-list-will-be-released-on-july-1-says-tn-higher-education-minister/article71138421.ece"
-          },
-          "locationKey": "chennai",
-          "rankingReasons": [
-            "alerts",
-            "valid undated item with active display window",
-            "location matches configured profile",
-            "planner advisory fit"
-          ],
-          "score": 0.8485,
-          "title": "TNEA rank list will be released on July 1, says T.N. Higher Education Minister"
-        },
-        {
-          "category": "alerts",
-          "gates": [
-            {
-              "details": {
                 "dedupKey": "c3443e54f9d42d2a"
               },
               "name": "dedup",
@@ -3999,121 +3547,6 @@
           ],
           "score": 0.8485,
           "title": "Tiruchi Corporation speeds up stalled UGD works in Phase II and III areas"
-        },
-        {
-          "category": "alerts",
-          "gates": [
-            {
-              "details": {
-                "dedupKey": "03ccc42293444905"
-              },
-              "name": "dedup",
-              "reason": "unique item",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "displayUntil": 1782324789000
-              },
-              "name": "futureValidity",
-              "reason": "valid undated item with active display window",
-              "score": 0.65,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "matchScore": 1.0,
-                "matchedLocation": "chennai",
-                "relevance": "primary",
-                "scope": "exactCity"
-              },
-              "name": "location",
-              "reason": "location matches configured profile",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "hasPlace": true,
-                "hasTime": true
-              },
-              "name": "actionability",
-              "reason": "item has enough action fields",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "offerValidity",
-              "reason": "not an offer",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "severe": false
-              },
-              "name": "alertUrgency",
-              "reason": "active alert",
-              "score": 0.78,
-              "status": "PASS"
-            }
-          ],
-          "id": "556769e122991d0e",
-          "item": {
-            "actionabilityScore": 0.7,
-            "category": "alerts",
-            "city": "Chennai",
-            "contentClass": "upahead_alert",
-            "dateConfidence": "unknown",
-            "dateSource": "none",
-            "eventEndAt": null,
-            "eventStartAt": null,
-            "expiryAt": 1782324789000,
-            "id": "556769e122991d0e",
-            "language": "en",
-            "lifecycle": {
-              "archiveUntil": 1782929589000,
-              "contentClass": "upahead_alert",
-              "displayUntil": 1782324789000,
-              "isActionValid": true,
-              "isVisible": true,
-              "plannerEligibleByLifecycle": true,
-              "plannerPastGraceHours": 6,
-              "retentionReason": "expiryAt",
-              "withinSevenDayHorizon": true
-            },
-            "localityScore": 1.0,
-            "normalizedCategory": "alerts",
-            "plannerEligible": true,
-            "publishedAt": 1782238389000,
-            "region": "tn",
-            "scoreBreakdown": {
-              "actionabilityScore": 1.0,
-              "categoryPriorityScore": 1.0,
-              "lifecycleScore": 0.65,
-              "locationScore": 1.0,
-              "plannerFitScore": 1.0,
-              "sourceConfidenceScore": 0.58,
-              "urgencyOrExpiryScore": 0.78
-            },
-            "source": "The Hindu Chennai",
-            "sourceGroup": "the_hindu",
-            "summary": "A total of 69 persons are currently undergoing treatment in various hospitals",
-            "suppressionReason": null,
-            "title": "Tiruvallur ammonia gas leak death toll climbs to nine",
-            "url": "https://www.thehindu.com/news/national/tamil-nadu/ammonia-gas-leak-tiruvallur-death-toll-june-23-2026/article71136059.ece"
-          },
-          "locationKey": "chennai",
-          "rankingReasons": [
-            "alerts",
-            "valid undated item with active display window",
-            "location matches configured profile",
-            "planner advisory fit"
-          ],
-          "score": 0.8485,
-          "title": "Tiruvallur ammonia gas leak death toll climbs to nine"
         },
         {
           "category": "alerts",
@@ -4804,21 +4237,596 @@
           ],
           "score": 0.7925,
           "title": "Chennai Metro Rail stations on Poonamallee-Vadapalani stretch set to open, but see leaks during rain"
+        },
+        {
+          "category": "alerts",
+          "gates": [
+            {
+              "details": {
+                "dedupKey": "568f9e5c9c2fce0e"
+              },
+              "name": "dedup",
+              "reason": "unique item",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "displayUntil": 1782386075000
+              },
+              "name": "futureValidity",
+              "reason": "valid undated item with active display window",
+              "score": 0.65,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "matchScore": 0.55,
+                "matchedLocation": "global",
+                "relevance": "global",
+                "scope": "global"
+              },
+              "name": "location",
+              "reason": "online/global item allowed without city match",
+              "score": 0.55,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "hasPlace": true,
+                "hasTime": true
+              },
+              "name": "actionability",
+              "reason": "item has enough action fields",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "offerValidity",
+              "reason": "not an offer",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "severe": false
+              },
+              "name": "alertUrgency",
+              "reason": "active alert",
+              "score": 0.78,
+              "status": "PASS"
+            }
+          ],
+          "id": "27a8dd1b17ba60be",
+          "item": {
+            "actionabilityScore": 0.7,
+            "category": "alerts",
+            "city": "Chennai",
+            "contentClass": "upahead_alert",
+            "dateConfidence": "unknown",
+            "dateSource": "none",
+            "eventEndAt": null,
+            "eventStartAt": null,
+            "expiryAt": 1782386075000,
+            "id": "27a8dd1b17ba60be",
+            "language": "en",
+            "lifecycle": {
+              "archiveUntil": 1782990875000,
+              "contentClass": "upahead_alert",
+              "displayUntil": 1782386075000,
+              "isActionValid": true,
+              "isVisible": true,
+              "plannerEligibleByLifecycle": true,
+              "plannerPastGraceHours": 6,
+              "retentionReason": "expiryAt",
+              "withinSevenDayHorizon": true
+            },
+            "localityScore": 1.0,
+            "normalizedCategory": "alerts",
+            "plannerEligible": true,
+            "publishedAt": 1782299675000,
+            "region": "tn",
+            "scoreBreakdown": {
+              "actionabilityScore": 1.0,
+              "categoryPriorityScore": 1.0,
+              "lifecycleScore": 0.65,
+              "locationScore": 0.55,
+              "plannerFitScore": 1.0,
+              "sourceConfidenceScore": 0.58,
+              "urgencyOrExpiryScore": 0.78
+            },
+            "source": "The Hindu Chennai",
+            "sourceGroup": "the_hindu",
+            "summary": "",
+            "suppressionReason": null,
+            "title": "The Lab, Chennai’s new resto cafe attempts experimental global cuisine",
+            "url": "https://www.thehindu.com/food/dining/the-lab-chennais-new-resto-cafe-attempts-experimental-global-cuisine/article71036441.ece"
+          },
+          "locationKey": "chennai",
+          "rankingReasons": [
+            "alerts",
+            "valid undated item with active display window",
+            "online/global item allowed without city match",
+            "planner advisory fit"
+          ],
+          "score": 0.7585,
+          "title": "The Lab, Chennai’s new resto cafe attempts experimental global cuisine"
+        },
+        {
+          "category": "shopping",
+          "gates": [
+            {
+              "details": {
+                "dedupKey": "b042cab68c219ebf"
+              },
+              "name": "dedup",
+              "reason": "unique item",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "displayUntil": 1782373673000
+              },
+              "name": "futureValidity",
+              "reason": "valid undated item with active display window",
+              "score": 0.65,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "matchScore": 0.72,
+                "matchedLocation": "chennai",
+                "relevance": "secondary",
+                "scope": "region"
+              },
+              "name": "location",
+              "reason": "location matches configured profile",
+              "score": 0.72,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "hasPlace": false,
+                "hasTime": true
+              },
+              "name": "actionability",
+              "reason": "item has enough action fields",
+              "score": 0.85,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "hoursLeft": 12.07
+              },
+              "name": "offerValidity",
+              "reason": "offer expires soon",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "alertUrgency",
+              "reason": "not an alert",
+              "score": 0.6,
+              "status": "PASS"
+            }
+          ],
+          "id": "476c4af4b7d737c3",
+          "item": {
+            "actionabilityScore": 0.65,
+            "category": "shopping",
+            "city": null,
+            "contentClass": "upahead_offer",
+            "dateConfidence": "unknown",
+            "dateSource": "none",
+            "eventEndAt": null,
+            "eventStartAt": null,
+            "expiryAt": 1782373673000,
+            "id": "476c4af4b7d737c3",
+            "language": "en",
+            "lifecycle": {
+              "archiveUntil": 1782978473000,
+              "contentClass": "upahead_offer",
+              "displayUntil": 1782373673000,
+              "isActionValid": true,
+              "isVisible": true,
+              "plannerEligibleByLifecycle": true,
+              "plannerPastGraceHours": 6,
+              "retentionReason": "expiryAt",
+              "withinSevenDayHorizon": true
+            },
+            "localityScore": 0.3,
+            "normalizedCategory": "shopping",
+            "plannerEligible": true,
+            "publishedAt": 1782200873000,
+            "region": null,
+            "scoreBreakdown": {
+              "actionabilityScore": 0.8500000000000001,
+              "categoryPriorityScore": 0.68,
+              "lifecycleScore": 0.65,
+              "locationScore": 0.72,
+              "plannerFitScore": 1.0,
+              "sourceConfidenceScore": 0.58,
+              "urgencyOrExpiryScore": 1.0
+            },
+            "source": "Google News Shopping",
+            "sourceGroup": "google_news",
+            "summary": "<a href=\"https://news.google.com/rss/articles/CBMihgFBVV95cUxOcGxiWEo4S0xOOTNpc2wxZmhId3VvZk5ob0lZN04ySTlrUVVTRW5MeWRJNHN1c3NTOXJPdFMzMk16YWdaQXZrTHZUZm9Vb2w2TDVkaC0tT1pYU1AtQWRFYzhEXzU2WmhZcnhuWk1nRkNZQ2RrSzJwX09YR3RiLXZuNjQ4b3RHZw?oc=5\" target=\"_blank\">15+ deals at Walmart that beat out Prime Day prices right now</a>&nbsp;&nbsp;<font color=\"#6f6f6f\">NBC News</font>",
+            "suppressionReason": null,
+            "title": "15+ deals at Walmart that beat out Prime Day prices right now - NBC News",
+            "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxOcGxiWEo4S0xOOTNpc2wxZmhId3VvZk5ob0lZN04ySTlrUVVTRW5MeWRJNHN1c3NTOXJPdFMzMk16YWdaQXZrTHZUZm9Vb2w2TDVkaC0tT1pYU1AtQWRFYzhEXzU2WmhZcnhuWk1nRkNZQ2RrSzJwX09YR3RiLXZuNjQ4b3RHZw?oc=5"
+          },
+          "locationKey": "chennai",
+          "rankingReasons": [
+            "shopping",
+            "valid undated item with active display window",
+            "location matches configured profile",
+            "planner advisory fit"
+          ],
+          "score": 0.744,
+          "title": "15+ deals at Walmart that beat out Prime Day prices right now - NBC News"
+        },
+        {
+          "category": "shopping",
+          "gates": [
+            {
+              "details": {
+                "dedupKey": "863a468f598ec96e"
+              },
+              "name": "dedup",
+              "reason": "unique item",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "displayUntil": 1782384900000
+              },
+              "name": "futureValidity",
+              "reason": "valid undated item with active display window",
+              "score": 0.65,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "matchScore": 0.72,
+                "matchedLocation": "chennai",
+                "relevance": "secondary",
+                "scope": "region"
+              },
+              "name": "location",
+              "reason": "location matches configured profile",
+              "score": 0.72,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "hasPlace": false,
+                "hasTime": true
+              },
+              "name": "actionability",
+              "reason": "item has enough action fields",
+              "score": 0.85,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "hoursLeft": 15.19
+              },
+              "name": "offerValidity",
+              "reason": "offer expires soon",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "alertUrgency",
+              "reason": "not an alert",
+              "score": 0.6,
+              "status": "PASS"
+            }
+          ],
+          "id": "d27fc1091f2dcaa9",
+          "item": {
+            "actionabilityScore": 0.65,
+            "category": "shopping",
+            "city": null,
+            "contentClass": "upahead_offer",
+            "dateConfidence": "unknown",
+            "dateSource": "none",
+            "eventEndAt": null,
+            "eventStartAt": null,
+            "expiryAt": 1782384900000,
+            "id": "d27fc1091f2dcaa9",
+            "language": "en",
+            "lifecycle": {
+              "archiveUntil": 1782989700000,
+              "contentClass": "upahead_offer",
+              "displayUntil": 1782384900000,
+              "isActionValid": true,
+              "isVisible": true,
+              "plannerEligibleByLifecycle": true,
+              "plannerPastGraceHours": 6,
+              "retentionReason": "expiryAt",
+              "withinSevenDayHorizon": true
+            },
+            "localityScore": 0.3,
+            "normalizedCategory": "shopping",
+            "plannerEligible": true,
+            "publishedAt": 1782212100000,
+            "region": null,
+            "scoreBreakdown": {
+              "actionabilityScore": 0.8500000000000001,
+              "categoryPriorityScore": 0.68,
+              "lifecycleScore": 0.65,
+              "locationScore": 0.72,
+              "plannerFitScore": 1.0,
+              "sourceConfidenceScore": 0.58,
+              "urgencyOrExpiryScore": 1.0
+            },
+            "source": "Google News Shopping",
+            "sourceGroup": "google_news",
+            "summary": "<a href=\"https://news.google.com/rss/articles/CBMickFVX3lxTFAzTXZLbXd4Y3o5MWRxZ0x5ZjN4Wk54QnRwM1ZSUmF5X3lxZkNpR1N4OUoyeUdPd0tNbkFxX1FIamR3MVBhX25OYkp6c3RkQ01jVGEzZ3NWemRwd0lUWHB5VGU5SXNYUDNLaXVCUXVGMmp4UQ?oc=5\" target=\"_blank\">Amazon Prime Day 2026: Tech Deals in Canada</a>&nbsp;&nbsp;<font color=\"#6f6f6f\">Wifi Hifi Magazine</font>",
+            "suppressionReason": null,
+            "title": "Amazon Prime Day 2026: Tech Deals in Canada - Wifi Hifi Magazine",
+            "url": "https://news.google.com/rss/articles/CBMickFVX3lxTFAzTXZLbXd4Y3o5MWRxZ0x5ZjN4Wk54QnRwM1ZSUmF5X3lxZkNpR1N4OUoyeUdPd0tNbkFxX1FIamR3MVBhX25OYkp6c3RkQ01jVGEzZ3NWemRwd0lUWHB5VGU5SXNYUDNLaXVCUXVGMmp4UQ?oc=5"
+          },
+          "locationKey": "chennai",
+          "rankingReasons": [
+            "shopping",
+            "valid undated item with active display window",
+            "location matches configured profile",
+            "planner advisory fit"
+          ],
+          "score": 0.744,
+          "title": "Amazon Prime Day 2026: Tech Deals in Canada - Wifi Hifi Magazine"
+        },
+        {
+          "category": "shopping",
+          "gates": [
+            {
+              "details": {
+                "dedupKey": "95e09f95f2c4e01c"
+              },
+              "name": "dedup",
+              "reason": "unique item",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "displayUntil": 1782393260000
+              },
+              "name": "futureValidity",
+              "reason": "valid undated item with active display window",
+              "score": 0.65,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "matchScore": 0.72,
+                "matchedLocation": "chennai",
+                "relevance": "secondary",
+                "scope": "region"
+              },
+              "name": "location",
+              "reason": "location matches configured profile",
+              "score": 0.72,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "hasPlace": false,
+                "hasTime": true
+              },
+              "name": "actionability",
+              "reason": "item has enough action fields",
+              "score": 0.85,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "hoursLeft": 17.51
+              },
+              "name": "offerValidity",
+              "reason": "offer expires soon",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "alertUrgency",
+              "reason": "not an alert",
+              "score": 0.6,
+              "status": "PASS"
+            }
+          ],
+          "id": "2cb11e4024a2165c",
+          "item": {
+            "actionabilityScore": 0.65,
+            "category": "shopping",
+            "city": null,
+            "contentClass": "upahead_offer",
+            "dateConfidence": "unknown",
+            "dateSource": "none",
+            "eventEndAt": null,
+            "eventStartAt": null,
+            "expiryAt": 1782393260000,
+            "id": "2cb11e4024a2165c",
+            "language": "en",
+            "lifecycle": {
+              "archiveUntil": 1782998060000,
+              "contentClass": "upahead_offer",
+              "displayUntil": 1782393260000,
+              "isActionValid": true,
+              "isVisible": true,
+              "plannerEligibleByLifecycle": true,
+              "plannerPastGraceHours": 6,
+              "retentionReason": "expiryAt",
+              "withinSevenDayHorizon": true
+            },
+            "localityScore": 0.3,
+            "normalizedCategory": "shopping",
+            "plannerEligible": true,
+            "publishedAt": 1782220460000,
+            "region": null,
+            "scoreBreakdown": {
+              "actionabilityScore": 0.8500000000000001,
+              "categoryPriorityScore": 0.68,
+              "lifecycleScore": 0.65,
+              "locationScore": 0.72,
+              "plannerFitScore": 1.0,
+              "sourceConfidenceScore": 0.58,
+              "urgencyOrExpiryScore": 1.0
+            },
+            "source": "Google News Shopping",
+            "sourceGroup": "google_news",
+            "summary": "<a href=\"https://news.google.com/rss/articles/CBMibkFVX3lxTE1fajhHc0NldktBam9oamY4MEtfendScTZxazh2LURETWtUWVhHUWRvR2kyUVpIZUNSVnpqZTNkbUNSaGhTTHltZmNuZmdYV3JWbTByaVN3RDRjalhaazlERUhNU0RoV2VtejhkUU1R?oc=5\" target=\"_blank\">Amazon just dropped laptops of every type to clearance prices during the Prime Day sale</a>&nbsp;&nbsp;<font color=\"#6f6f6f\">Popular Science</font>",
+            "suppressionReason": null,
+            "title": "Amazon just dropped laptops of every type to clearance prices during the Prime Day sale - Popular Science",
+            "url": "https://news.google.com/rss/articles/CBMibkFVX3lxTE1fajhHc0NldktBam9oamY4MEtfendScTZxazh2LURETWtUWVhHUWRvR2kyUVpIZUNSVnpqZTNkbUNSaGhTTHltZmNuZmdYV3JWbTByaVN3RDRjalhaazlERUhNU0RoV2VtejhkUU1R?oc=5"
+          },
+          "locationKey": "chennai",
+          "rankingReasons": [
+            "shopping",
+            "valid undated item with active display window",
+            "location matches configured profile",
+            "planner advisory fit"
+          ],
+          "score": 0.744,
+          "title": "Amazon just dropped laptops of every type to clearance prices during the Prime Day sale - Popular Science"
+        },
+        {
+          "category": "shopping",
+          "gates": [
+            {
+              "details": {
+                "dedupKey": "c1eaaf9bfc68aaec"
+              },
+              "name": "dedup",
+              "reason": "unique item",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "displayUntil": 1782370937000
+              },
+              "name": "futureValidity",
+              "reason": "valid undated item with active display window",
+              "score": 0.65,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "matchScore": 0.72,
+                "matchedLocation": "chennai",
+                "relevance": "secondary",
+                "scope": "region"
+              },
+              "name": "location",
+              "reason": "location matches configured profile",
+              "score": 0.72,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "hasPlace": false,
+                "hasTime": true
+              },
+              "name": "actionability",
+              "reason": "item has enough action fields",
+              "score": 0.85,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "hoursLeft": 11.31
+              },
+              "name": "offerValidity",
+              "reason": "offer expires soon",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "alertUrgency",
+              "reason": "not an alert",
+              "score": 0.6,
+              "status": "PASS"
+            }
+          ],
+          "id": "4802cf4a5ecb367a",
+          "item": {
+            "actionabilityScore": 0.65,
+            "category": "shopping",
+            "city": null,
+            "contentClass": "upahead_offer",
+            "dateConfidence": "unknown",
+            "dateSource": "none",
+            "eventEndAt": null,
+            "eventStartAt": null,
+            "expiryAt": 1782370937000,
+            "id": "4802cf4a5ecb367a",
+            "language": "en",
+            "lifecycle": {
+              "archiveUntil": 1782975737000,
+              "contentClass": "upahead_offer",
+              "displayUntil": 1782370937000,
+              "isActionValid": true,
+              "isVisible": true,
+              "plannerEligibleByLifecycle": true,
+              "plannerPastGraceHours": 6,
+              "retentionReason": "expiryAt",
+              "withinSevenDayHorizon": true
+            },
+            "localityScore": 0.3,
+            "normalizedCategory": "shopping",
+            "plannerEligible": true,
+            "publishedAt": 1782198137000,
+            "region": null,
+            "scoreBreakdown": {
+              "actionabilityScore": 0.8500000000000001,
+              "categoryPriorityScore": 0.68,
+              "lifecycleScore": 0.65,
+              "locationScore": 0.72,
+              "plannerFitScore": 1.0,
+              "sourceConfidenceScore": 0.58,
+              "urgencyOrExpiryScore": 1.0
+            },
+            "source": "Google News Shopping",
+            "sourceGroup": "google_news",
+            "summary": "<a href=\"https://news.google.com/rss/articles/CBMiswFBVV95cUxNYmtSVXR5bkpQcXdMQmVBZXRYTWcwdm1KMW5PSmJkM0tNMV81M3BaMVV2dVhDdXBhb2RZeHFYTF8wU3hiUUYtZk1fTzV3NUV0Q3hZMFpCM2hQbEUzeDdiSWhwODZGMV9NTGtzYUlsXzdkenR3MXhBb2RkVkpjenlXdnNXNVRCU2w1a1hJWE5qR29FZFJYTVJjQkhNMWlvUmd4U0UxOHhidERHc3N4NmNNYk9IRQ?oc=5\" target=\"_blank\">Amazon's Prime Day 2026 sale kicks off with a spectacular $350 Samsung Galaxy S26 Ultra discount</a>&nbsp;&nbsp;<font color=\"#6f6f6f\">PhoneArena</font>",
+            "suppressionReason": null,
+            "title": "Amazon's Prime Day 2026 sale kicks off with a spectacular $350 Samsung Galaxy S26 Ultra discount - PhoneArena",
+            "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxNYmtSVXR5bkpQcXdMQmVBZXRYTWcwdm1KMW5PSmJkM0tNMV81M3BaMVV2dVhDdXBhb2RZeHFYTF8wU3hiUUYtZk1fTzV3NUV0Q3hZMFpCM2hQbEUzeDdiSWhwODZGMV9NTGtzYUlsXzdkenR3MXhBb2RkVkpjenlXdnNXNVRCU2w1a1hJWE5qR29FZFJYTVJjQkhNMWlvUmd4U0UxOHhidERHc3N4NmNNYk9IRQ?oc=5"
+          },
+          "locationKey": "chennai",
+          "rankingReasons": [
+            "shopping",
+            "valid undated item with active display window",
+            "location matches configured profile",
+            "planner advisory fit"
+          ],
+          "score": 0.744,
+          "title": "Amazon's Prime Day 2026 sale kicks off with a spectacular $350 Samsung Galaxy S26 Ultra discount - PhoneArena"
         }
       ],
       "rankingProfile": "upAhead-v2-lifecycle-location-category",
       "scoreBreakdown": {
-        "actionabilityScore": 1.0,
-        "categoryPriorityScore": 0.9973,
+        "actionabilityScore": 0.98,
+        "categoryPriorityScore": 0.9547,
         "lifecycleScore": 0.65,
-        "locationScore": 0.9907,
+        "locationScore": 0.9383,
         "plannerFitScore": 1.0,
         "sourceConfidenceScore": 0.58,
-        "urgencyOrExpiryScore": 0.78
+        "urgencyOrExpiryScore": 0.8093
       }
     }
   },
-  "generatedAt": 1782320655610,
+  "generatedAt": 1782330230617,
   "implementedDestinations": [
     "upAhead",
     "buzz",
@@ -4837,8 +4845,7 @@
   "schemaVersion": 1,
   "summary": {
     "actionRequired": [
-      "42 invalid/expired/duplicate Up Ahead item(s) suppressed",
-      "no active offer items in ranked Up Ahead set",
+      "41 invalid/expired/duplicate Up Ahead item(s) suppressed",
       "no ranked Up Ahead item for muscat",
       "no local Buzz item in ranked set",
       "no travel Buzz item in ranked set",
@@ -4847,13 +4854,13 @@
       "no ranked local/travel item for muscat",
       "no ranked local/travel item for chennai",
       "no ranked local/travel item for trichy",
-      "2 base-report-heavy Insight parent(s) demoted"
+      "1 base-report-heavy Insight parent(s) demoted"
     ],
     "destinationScores": {
       "buzz": 0.0,
-      "insight": 0.3799,
+      "insight": 0.3993,
       "localTravel": 0.0,
-      "upAhead": 0.8569
+      "upAhead": 0.8446
     },
     "destinationStatuses": {
       "buzz": "FAIL",
@@ -4861,7 +4868,7 @@
       "localTravel": "FAIL",
       "upAhead": "WARN"
     },
-    "overallScore": 0.3092,
+    "overallScore": 0.311,
     "overallStatus": "FAIL",
     "rankingProfiles": {
       "buzz": "buzz-v2-trend-local-travel",
@@ -4870,9 +4877,11 @@
       "upAhead": "upAhead-v2-lifecycle-location-category"
     },
     "topFindings": [
+      "Prime Day Is Here Until Friday, but These Editor-Vetted Deals Are Starting to Sell Out - cosmopolitan.com: location failed — offline/local item lacks configured location match",
       "Prime Day MacBook deals guide 2026: Is the MacBook Neo on sale yet? - Mashable: location failed — offline/local item lacks configured location match",
       "The 9+ weirdest things we found on sale this Prime Day - NBC News: location failed — offline/local item lacks configured location match",
-      "The 9 Best Board Game Deals of Prime Day— I've Played Them All With My Family - WIRED: location failed — offline/local item lacks configured location match",
+      "The 9 Best Board Game Deals of Prime Day—I've Played Them All With My Family - WIRED: location failed — offline/local item lacks configured location match",
+      "Now’s the time to get a new smartwatch — we found 23 on sale for Prime Day - NBC News: location failed — offline/local item lacks configured location match",
       "What To Buy and What To Skip this Amazon Prime Day 2026 - NBC News: location failed — offline/local item lacks configured location match",
       "Best Prime Day headphones deals 2026: Record prices on AirPods, Sony XM6 headphones - Mashable: location failed — offline/local item lacks configured location match",
       "A Vogue Fashion Editor on the Actual Best Prime Day Deals - Vogue: location failed — offline/local item lacks configured location match",
@@ -4883,13 +4892,11 @@
       "Pottery Barn Promo Codes: Refresh Your Summer Essentials For Up To 80% Off - Forbes: location failed — offline/local item lacks configured location match",
       "I've Looked Through Hundreds of Prime Day Deals—Here Are the Ones Worth Shopping - Condé Nast Traveler: location failed — offline/local item lacks configured location match",
       "The Prime Day deals so good, we secretly shopped them at work - NBC News: location failed — offline/local item lacks configured location match",
-      "Huge Amazon Prime Days 2026 Sports Tech Deals Tracker! - DC Rainmaker: location failed — offline/local item lacks configured location match",
-      "The Kindle I use every day is on sale for Prime Day: Save $55 - Mashable: location failed — offline/local item lacks configured location match",
-      "Greater Chennai Corporation Commissioner inspects civic works in Perambur constituency: futureValidity failed — expired display window",
-      "Greater Chennai Corporation Commissioner inspects civic works in Perambur constituency: alertUrgency failed — alert expired",
-      "Plays to be staged in chamber format to mark ‘Crazy’ Mohan’s birth anniversary: futureValidity failed — expired display window",
-      "Plays to be staged in chamber format to mark ‘Crazy’ Mohan’s birth anniversary: alertUrgency failed — alert expired",
-      "Three months after MRTS extension’s launch, halts at Adambakkam station yet to begin: futureValidity failed — expired display window"
+      "T.N. DGP orders all police officers to conduct ‘Open Grievance Day’ every Wednesday, Saturday: futureValidity failed — expired display window",
+      "T.N. DGP orders all police officers to conduct ‘Open Grievance Day’ every Wednesday, Saturday: alertUrgency failed — alert expired",
+      "Nominations invited for National Mahaveer Awards 2027: futureValidity failed — expired display window",
+      "Nominations invited for National Mahaveer Awards 2027: alertUrgency failed — alert expired",
+      "Indian Bank distributes bags, notebooks to school students in Teynampet: futureValidity failed — expired display window"
     ]
   }
 }

@@ -163,3 +163,53 @@
 # NOTE: Phase U0 itself PASSES (determinism established for a fixed (snapshot, clock); live-path asOfDate injection execution-verified). See audit/evidence/U0.1-DET-01.yaml + U0.2-INJ-01.yaml + audit/U0_DETERMINISM_SUMMARY.md.
 # U0 EXIT GATE MET → U1, U2.x, U3, U4 are unblocked (U5 needs U2 evidence; U6 closes).
 
+# ── Contract & config audit findings (Phase U1) ──
+
+- ID: I014
+  Area: Up Ahead keyword-table contradictions & a dead global negative (U9-2 class)
+  Severity: Medium
+  Owner file(s): src/config/settings_upahead.js (52,56,58,59,66 keyword lists), src/intelligence/classification.js (9-39 matcher, 49-52+110 signal-strip)
+  Detection: audit/evidence/U1.1-KWD-01.yaml + audit/evidence/U1-keyword-collision-report.json — mechanical scan (audit/evidence/u1_keyword_collision_scan.mjs) modeling the SHIPPED matcher (single-word \bword\b, multi-word includes()).
+  Root cause: (1) 'webinar' in BOTH events positives and events_negative -> net 0 on a lone match. (2) 'fog' in weather_alerts positives AND global negatives and NOT signal-stripped -> real fog alerts scored +1-0.65=+0.35 (safety-category term eroded). (3) 'launches' in BOTH global negatives and signals -> removeScheduleSignalNegatives strips it every time -> the corporate-launch-PR suppression NEVER fires (dead config). (4) 'trade fair' in events+shopping positives; 7 cross-category co-fire leaks (advisory/streaming/route change/exhibition/sale). NOTE: word-boundary matching NEUTRALIZES the single-token substring class the plan feared (7 inert pairs incl. holi/holiday, review/preview) — U9-2 residual risk is smaller than assumed and confined to multi-word phrases + exact duplicates + the dead negative.
+  User impact: weather-fog alerts under-scored; corporate "X launches Y" PR can leak into movies/events pools; cross-category score splits risk mis-routing.
+  Exit gate: U2.2 quantifies how many REAL frozen items flip category if each collision is fixed (sizes the risk); fix the contradictions OR document intent; §V4 per-category precision + classification-stability cert.
+
+- ID: I015
+  Area: Threshold contract drift — enforced offline planner recall 0.65 vs documented 0.75
+  Severity: Medium
+  Owner file(s): benchmarks/upahead/thresholds.js (4 plannerRecall 0.65, 7 upAheadRecall 0.75), audit/ISSUE_MATRIX.md P004 (29), scripts/run_upahead_benchmarks.js (102 enforcer)
+  Detection: audit/evidence/U1.2-THR-01.yaml — P004 exit gate documents 'offline planner recall >= 0.75' but thresholds.offline.plannerRecall=0.65 (the 0.75 in code is upAheadRecall, a different metric); run_upahead_benchmarks.js:102 asserts planner.recall against 0.65.
+  Root cause: documented contract of record (0.75) is not the enforced CI gate (0.65); they disagree by 10 points on the planner surface. All other thresholds match (plannerPrecision 0.85, online precision 0.82, duplicateLeakRate 0.03, falseLocationAcceptance 0.05).
+  User impact: a planner-recall regression anywhere in [0.65,0.75) passes CI yet violates the P004 exit gate; planner is a user-data surface, so the gate under-protects the documented bar.
+  Exit gate: reconcile thresholds.js and P004 to ONE value before the benchmark baseline is trusted; U3 P004 closure records the CURRENT planner recall against both numbers.
+
+- ID: I016
+  Area: Feed registry coverage gap — civic category missing Trichy
+  Severity: Low
+  Owner file(s): src/intelligence/feedSourceRegistry.js (82-89 civic locationMap)
+  Detection: audit/evidence/U1.3-FEED-01.yaml — coverage grid: civic={Chennai,Muscat}; Trichy present in alerts/weather_alerts/shopping/events but absent from civic.
+  Root cause: civic omits Trichy though Trichy is a first-class locale (locationLibrary + 4 other categories). (P005 trust-filter regression separately VERIFIED-NOT-PRESENT: registry is all trust:'high' per Agent-10 elevation AND the static filter was loosened from `>=3||==='high'`,slice(2) to `>=2||!=='low'`,slice(3) — Events/Shopping never emptied.)
+  User impact: Trichy users get no civic Up Ahead feed content.
+  Exit gate: add a Trichy civic feed OR document Trichy civic as unsupported; feed yield/health measured over 14 days in U4.
+
+- ID: I017
+  Area: Documentation/locator/comment drift (audit plan + code comments + Agent-10 doc)
+  Severity: Info
+  Owner file(s): audit/UPAHEAD_AUDIT_PLAN.md (106,154 OFFER_CAMPAIGNS/groupOnlineOffers locators; 96 dedup line range), src/services/upAheadService.js (9 cache cadence comment), agent_instructions/WI_Agent10_UpAhead_Feeds.md (21,66 superseded filter + hardcoded 2025)
+  Detection: audit/evidence/U1.5-DDP-01.yaml + audit/evidence/U1.6-MODE-01.yaml
+  Root cause: plan cites OFFER_CAMPAIGNS/groupOnlineOffers in deDuplication.js/settings but they live in src/viewModels/useUpAheadPageViewModel.js:173/197; dedup cited :35-42 vs actual :35-44; upAheadService.js:9 comment '6h — aligned to 5x/day pre-fetch cadence' vs MODE_MATRIX:45 'Hourly daytime'; Agent-10 doc shows the pre-fix filter (`>=3||==='high'`, slice 2) and hardcoded 2025 vs current code (`>=2||!=='low'`, slice 3, CURRENT_YEAR). Doc-only; mirrors A1 I005/I006.
+  User impact: none (documentation). Risk is auditor/maintainer confusion (testing the wrong locator/number).
+  Exit gate: reconcile plan locators + cache-cadence comment during U6; annotate Agent-10 doc as historical.
+
+- ID: I018
+  Area: Location alias collision risk (input to U2.4)
+  Severity: Low
+  Owner file(s): src/config/locationLibrary.js (15 'cantonment'; 8 'omr'/'ecr'; 22-26 short Muscat aliases; 'nagar' shared tokens across Chennai+Trichy)
+  Detection: audit/evidence/U1.4-LOC-01.yaml
+  Root cause: 'cantonment' (Trichy alias) is a generic military-area term -> mechanism-INDEPENDENT mis-attribution of any 'X cantonment' item to Trichy (confirmed). Mechanism-DEPENDENT tail pending U2.4 match-ladder execution: short aliases omr/ecr/ruwi/seeb (0.82 substring rung), shared token 'nagar' (Chennai<->Trichy contamination), 'al hail' contains weather token 'hail'.
+  User impact: non-Trichy cantonment items mis-routed into Trichy locale (P004 falseLocation surface); remainder UNVERIFIED pending U2.4.
+  Exit gate: U2.4 executes alias probes on real data per locale vs falseLocationAcceptance 0.05; remove/qualify 'cantonment'; characterize the substring-rung risks.
+
+# NOTE: Phase U1 PASSES with findings (each U1 target has a ternary-verdict evidence record U1.1-U1.6). P005 trust-filter regression VERIFIED-NOT-PRESENT (U1.3-FEED-01). Keyword word-boundary matching neutralizes the U9-2 single-token substring class (U1.1-KWD-01). See audit/evidence/U1.{1-6}-*.yaml + audit/U1_CONTRACT_SUMMARY.md.
+# U1 EXIT GATE MET → keyword-collision report delivered (input to U2.2); alias collision catalogue delivered (input to U2.4); threshold/coverage/doc drift ticketed (I014-I018).
+

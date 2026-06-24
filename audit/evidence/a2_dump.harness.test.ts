@@ -10,8 +10,8 @@ import { classifyAngle } from "../../src/insight/src/dedup/dedup.ts";
 import { invalidateSlot } from "../../src/insight/src/cache/cacheManager.ts";
 import { getEmbeddings } from "../../src/adapters/embeddingsAdapter.js";
 
-const SNAPSHOT_PATH = path.resolve("public/newsdata/insight_2026-05-19.json");
-const OUT = path.resolve("audit/evidence/A2-dump.json");
+const SNAPSHOT_PATH = path.resolve(process.env.SNAPSHOT_PATH || "public/newsdata/insight_2026-05-19.json");
+const OUT = path.resolve(process.env.DUMP_OUT || "audit/evidence/A2-dump.json");
 const PROGRESS = path.resolve("audit/evidence/A0-progress.log");
 const SLOT_ORDER: SnapshotSlot[] = ["now", "minus4h", "minus12h", "minus24h", "minus36h", "minus48h"];
 const log = (s: string) => fs.appendFileSync(PROGRESS, `${new Date().toISOString()} [A2] ${s}\n`);

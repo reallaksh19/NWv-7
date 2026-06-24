@@ -1,0 +1,112 @@
+{
+  "corpus": "insight_2026-06-23",
+  "oracle": "claude-opus-4-8 (uncalibrated)",
+  "calibration": "NONE — single uncalibrated LLM oracle. INDICATIVE, not certified.",
+  "clustering_precision_pairs": 0.985,
+  "merged_pairs": 66,
+  "false_merges": [
+    {
+      "parentId": "cluster_1_ab8c46327510299d",
+      "event": "FALSE MERGE: France heatwave drownings + ICC post-pregnancy cricket guidelines (Hindi) — UNRELATED",
+      "pairs": 1
+    }
+  ],
+  "cluster_level": {
+    "clusters": 10,
+    "with_false_merge": 1,
+    "clean": 9
+  },
+  "angle_accuracy": 0.267,
+  "angle_evaluated": 30,
+  "angle_correct": 8,
+  "top_miss_patterns": [
+    [
+      "base_report→official_response",
+      6
+    ],
+    [
+      "base_report→fact_update",
+      3
+    ],
+    [
+      "background_context→official_response",
+      2
+    ],
+    [
+      "fact_update→regional_followup",
+      2
+    ],
+    [
+      "base_report→regional_followup",
+      2
+    ],
+    [
+      "background_context→regional_followup",
+      1
+    ]
+  ],
+  "ranking": {
+    "minor_in_top3": 0,
+    "conformance_pass": true,
+    "top3_importance": [
+      "major",
+      "major",
+      "notable"
+    ],
+    "majors_outside_top3": []
+  },
+  "dedup_recall_nearident": 0.419,
+  "near_identical_pairs": 31,
+  "caught": 13,
+  "missed": 18,
+  "missed_examples": [
+    {
+      "a": "4dbb3b184644730b",
+      "b": "7631a543cef899fa",
+      "shared": 5,
+      "t": "Bengal Budget: FM proposes to support revival of Calcutta St"
+    },
+    {
+      "a": "60c1d2bebd74772a",
+      "b": "b610b87684c646c9",
+      "shared": 6,
+      "t": "India seeks tariff advantage over peers in push to finalise "
+    },
+    {
+      "a": "93180ef1e9e1256f",
+      "b": "e246e41823fed452",
+      "shared": 8,
+      "t": "SK Hynix Overtakes Samsung to Become South Korea's Most Valu"
+    },
+    {
+      "a": "2efcbac01f6ec7fa",
+      "b": "9c29632e2393a03f",
+      "shared": 10,
+      "t": "NEET Takes Another Political Turn After Students Miss Exam I"
+    },
+    {
+      "a": "80a573c73cd72691",
+      "b": "bb6ab187fa4a68de",
+      "shared": 6,
+      "t": "NTA dismisses video claiming paper leak as 'fake', says NEET"
+    },
+    {
+      "a": "81026d82053b8810",
+      "b": "b3c9d4405c6ac9ec",
+      "shared": 6,
+      "t": "CJP protesters remain at Jantar Mantar for third consecutive"
+    },
+    {
+      "a": "95a0110d6f7525ff",
+      "b": "f3b8e1c1334f8ec9",
+      "shared": 5,
+      "t": "Rebel BJP Leader Defeats Eknath Shinde Nominee In Maharashtr"
+    },
+    {
+      "a": "bdf23ff01173831d",
+      "b": "f614f9d008536f6d",
+      "shared": 5,
+      "t": "Tamil Nadu: Death toll in ammonia gas leak raises to nine at"
+    }
+  ]
+}

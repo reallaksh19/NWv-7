@@ -251,3 +251,21 @@
   User impact: static-host (majority) and live users can see materially different category assignments for the same items; the static/live divergence is the U9-7 risk quantified.
   Exit gate: U2.7 runs the JS path WITH sourceType on the same frozen raw items, computes per-field (category/date/location) disagreement, and that number decides the §V4 benchmark system-under-test. Reconcile or document the dual-implementation divergence.
 
+- ID: I023
+  Area: Weather-alert text gate defeated by keyword-list overlap (precision hole)
+  Severity: Medium
+  Owner file(s): src/services/upAheadService.js (311-324 isActualWeatherAlertText), src/config/settings_upahead.js (25 ambiguousKeywords, 56 weather_alerts positives)
+  Detection: audit/evidence/U2.6-WIN-02.yaml + U2.6-windowing-report.json (CAP-WEATHER-TEXT) — 'Cyber scam warning issued / beware of fraud' (zero weather context) ENTERS the Weather tab.
+  Root cause: isActualWeatherAlertText counts substring matches over contextKeywords + ambiguousKeywords + weather_alerts POSITIVES; 'warning'/'alert'/'advisory'/'watch' are in BOTH ambiguousKeywords and the weather positives list, so a SINGLE such word counts as 2 matches and clears minimumMatches:2. Documented ">=2 weather-context keywords" is effectively ">=1 ambiguous word".
+  User impact: non-weather "warning/alert/advisory/watch" items (health warning, scam alert, security advisory) are mis-shown as weather alerts -> Weather tab precision hole.
+  Exit gate: require >=1 genuine contextKeyword (not just ambiguous), or de-duplicate ambiguous vs positive weather words so one occurrence counts once; §V4 weather-tab precision guard.
+
+- ID: I024
+  Area: No upper display window on movies/events/festivals (far-future items pollute the 7-day horizon)
+  Severity: Low
+  Owner file(s): src/viewModels/useUpAheadPageViewModel.js (350-355 movieCards/festivalCards/eventItems — mapped with no date window)
+  Detection: audit/evidence/U2.6-WIN-02.yaml (NO-WINDOW-MOVIES) — a movie dated 5 YEARS in the future appears in movieCards; past-dated items ARE dropped upstream by sanitizeUpAheadData, but future items are unbounded.
+  Root cause: getVisibleUpAheadProjection age-filters only alerts/offers/civic; movies/events/festivals get no upper 7/14d bound. Plan §U2.6 "display 14d" is not enforced for these categories on the static path. (Corroborates I019: static Up Ahead is expiry/recency-driven, not a true event horizon.)
+  User impact: a release months/years out appears alongside this-week items in the "7-day" Up Ahead; low (data is currently date-poor) but a horizon-correctness gap.
+  Exit gate: add an upper display-window bound (14d) to movies/events/festivals; §V4 horizon-window stratum.
+

@@ -321,6 +321,26 @@ export function getAngleVariantDecision(
   return { eligible: true };
 }
 
+/**
+ * Strip source-attribution / syndication tails so near-identical syndicated copies
+ * canonicalize to the same title. Conservative: only removes trailing " - X" / " | X"
+ * / " — X" segments and a trailing "(... )" parenthetical (e.g. "(Google)"), plus
+ * common live/update prefixes. Does NOT touch the semantic body of the headline.
+ */
+function canonicalizeTitle(title: string): string {
+  let t = String(title || "").trim();
+  // drop a trailing parenthetical source tag e.g. "... - Reuters India (Google)"
+  t = t.replace(/\s*\([^)]*\)\s*$/, "");
+  // drop a trailing " - Source" / " | Source" / " — Source" attribution (<= 5 words)
+  t = t.replace(/\s*[-|–—]\s*[A-Za-z0-9.&'’ ]{2,40}$/, "");
+  return t
+    .toLowerCase()
+    .replace(/^(live|breaking|watch|video|update|updated)\b[:\s-]*/i, "")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export function removeHardDuplicates(
   stories: InsightStory[],
   cfg: InsightConfig,
@@ -370,6 +390,41 @@ export function removeHardDuplicates(
       );
 
       seenHashes.set(story.canonicalTextHash, winner);
+      continue;
+    }
+
+    // Syndication near-duplicate (cross-source): the same wire story republished by
+    // multiple feeds differs only by a source-attribution suffix, so it bypasses the
+    // URL and hash layers and — being a DIFFERENT sourceGroup — also bypasses the
+    // same-group title layer below, leaving the user with visible duplicates (recall
+    // leak measured at ~0.42 on real snapshots). Canonicalize the title (strip the
+    // syndication tail) and match at the SAME strict HARD_DUP_TITLE_SIM bar, with a
+    // length guard so short/generic headlines can't collide. Precision is protected
+    // by the 0.96 bar; this only adds recall, never lowers a threshold.
+    const canonTitle = canonicalizeTitle(story.title);
+    const syndicationMatch = canonTitle.length >= 20
+      ? kept.find(k => titleSimilarity(canonicalizeTitle(k.title), canonTitle) >= cfg.HARD_DUP_TITLE_SIM)
+      : undefined;
+    if (syndicationMatch) {
+      const score = titleSimilarity(canonicalizeTitle(syndicationMatch.title), canonTitle);
+      const winner = pickWinner(syndicationMatch, story);
+      const hidden = winner === story ? syndicationMatch : story;
+
+      hiddenIds.add(hidden.id);
+      recordDuplicateDecision(
+        diagnostics,
+        "HARD_TITLE_SIMILARITY",
+        hidden,
+        winner,
+        score,
+        syndicationMatch.id,
+        `cross-source syndication: canonical title similarity >= ${cfg.HARD_DUP_TITLE_SIM}`
+      );
+
+      if (winner !== syndicationMatch) {
+        const idx = kept.indexOf(syndicationMatch);
+        if (idx >= 0) kept[idx] = winner;
+      }
       continue;
     }
 

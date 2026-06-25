@@ -79,6 +79,10 @@ export function getStoryTopicTokens(story: InsightStory): string[] {
     .slice(0, 16);
 }
 
+// Generic geographic / filler tokens that appear across unrelated stories and must
+// NOT drive topic cohesion (kept in sync with hasSharedTopicSignature's exclusion).
+const GENERIC_TOPIC_TOKENS = /^(india|indian|world|global|country|countries|record|report|reports|people|year|years|national|international|news|update|updates|live|latest|today|breaking)$/;
+
 export function topicTokenOverlap(a: InsightStory, b: InsightStory): number {
   const aTokens = new Set(getStoryTopicTokens(a));
   const bTokens = new Set(getStoryTopicTokens(b));
@@ -86,15 +90,24 @@ export function topicTokenOverlap(a: InsightStory, b: InsightStory): number {
   if (aTokens.size === 0 || bTokens.size === 0) return 0;
 
   let intersection = 0;
+  let nonGenericShared = 0;
   for (const token of aTokens) {
-    if (bTokens.has(token)) intersection += 1;
+    if (bTokens.has(token)) {
+      intersection += 1;
+      if (!GENERIC_TOPIC_TOKENS.test(token)) nonGenericShared += 1;
+    }
   }
 
   const smallerSetSize = Math.min(aTokens.size, bTokens.size);
-  const containment = intersection / Math.max(1, smallerSetSize);
-
   const union = aTokens.size + bTokens.size - intersection;
   const jaccard = union === 0 ? 0 : intersection / union;
+
+  // Containment rewards subset relationships, but it must be backed by at least one
+  // SPECIFIC (non-generic) shared token. Otherwise an OOV/foreign-language headline
+  // reduced to a single generic geo token ("india") scored containment 1.0 → 0.72 and
+  // force-merged with any unrelated story (the France-heatwave + Hindi-cricket bug).
+  // Genuine overlaps (which always share specific tokens) are unchanged.
+  const containment = nonGenericShared >= 1 ? intersection / Math.max(1, smallerSetSize) : 0;
 
   return Math.max(jaccard, containment * 0.72);
 }

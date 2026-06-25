@@ -15,7 +15,7 @@
 
 ## Findings
 
-- 34 invalid/expired/duplicate Up Ahead item(s) suppressed
+- 31 invalid/expired/duplicate Up Ahead item(s) suppressed
 - no active offer items in ranked Up Ahead set
 - no ranked Up Ahead item for muscat
 - ranked Up Ahead set is category-dominated

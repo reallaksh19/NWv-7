@@ -233,3 +233,21 @@
   User impact: Low — rare Feb29 lands one day off; next-week divergence only bites a direct legacy caller / a Python port that mirrors the legacy formula. Both are wrong-day risks.
   Exit gate: guard Feb29 (reject or flag) ; converge the two next-week formulas OR document which is canonical; U2.7 checks the Python port's formula. Also document the (correct, consistent) DMY policy so future tuning doesn't add an MDY fallback.
 
+- ID: I021
+  Area: Intra-category positive double-count inflates confidence + weakens Phase-B
+  Severity: Low
+  Owner file(s): src/config/settings_upahead.js (49 movies positives 'release' & 'release date'), src/intelligence/classification.js (107-152 scoreCategory, 168-172 Phase-B)
+  Detection: audit/evidence/U2.2-CLS-01.yaml + U2.2-classification-report.json — 'release date' fires BOTH the multi-word positive 'release date' AND the single-word positive 'release' (\brelease\b inside it) -> positive=2 for one concept; confidence 0.5 vs 0.25. B-ESCAPE shows the inflation can lift a score past the 2.25 Phase-B ceiling.
+  Root cause: overlapping positives where a single token is a subset of a multi-word positive; matching counts both. Phase-B (planner-pollution guard) keys on score, so inflation weakens it.
+  User impact: marginal items gain confidence and can clear planner/eligibility thresholds and escape Phase-B suppression -> P001 planner-precision erosion. Low (one clear instance found; magnitude small).
+  Exit gate: de-duplicate overlapping positives (drop bare 'release', or longest-match-wins in countMatches); §V4 confidence-calibration + per-category precision guard.
+
+- ID: I022
+  Area: JS<->Python classification divergence on real items (U9-7) — static vs live are different products
+  Severity: Medium
+  Owner file(s): src/intelligence/classification.js (JS), scripts (Python prefetch categorizer — pin in U2.7), public/data/up_ahead*.json
+  Detection: audit/evidence/U2.2-CLS-02.yaml + U2.2-classification-report.json — JS-recomputed category (text-only, category field stripped) agrees with the stored Python category for only 22.8% (21/92). JS sends 65/92 to 'general' that Python filed into alerts/shopping. Quality is per-item mixed (some JS-general correct e.g. 'death toll' news; some wrong e.g. 'Rainbow Pride March' dropped).
+  Root cause: the two implementations classify differently; Python is far more permissive on this corpus. NOTE caveat: the JS run was TEXT-ONLY (frozen items lack feed sourceType), so detectBySourceType / source bonuses did not apply -> 22.8% is a LOWER BOUND on agreement; U2.7 refines with full feed context.
+  User impact: static-host (majority) and live users can see materially different category assignments for the same items; the static/live divergence is the U9-7 risk quantified.
+  Exit gate: U2.7 runs the JS path WITH sourceType on the same frozen raw items, computes per-field (category/date/location) disagreement, and that number decides the §V4 benchmark system-under-test. Reconcile or document the dual-implementation divergence.
+

@@ -53,14 +53,14 @@
     },
     "insight": {
       "actionableFindings": [
-        "2 base-report-heavy Insight parent(s) demoted"
+        "1 base-report-heavy Insight parent(s) demoted"
       ],
       "destination": "insight",
       "diagnosticReasons": [],
       "gateResults": [
         {
           "details": {
-            "itemCount": 11
+            "itemCount": 7
           },
           "name": "insightEventPool",
           "reason": "rankable Insight event pool",
@@ -77,16 +77,16 @@
       ],
       "gateSummary": {
         "avgAnglesPerParent": 0.0,
-        "baseReportHeavyParents": 2,
+        "baseReportHeavyParents": 1,
         "duplicateChildrenSuppressed": 0,
-        "inputCandidateCount": 11,
-        "parentClusters": 11,
-        "strongParents": 11,
+        "inputCandidateCount": 7,
+        "parentClusters": 7,
+        "strongParents": 7,
         "suppressedCandidateCount": 0,
         "weakParentsDemoted": 0
       },
       "qualityGrade": "F",
-      "qualityScore": 0.3865,
+      "qualityScore": 0.4112,
       "qualityStatus": "WARN",
       "rankedItems": [
         {
@@ -439,7 +439,7 @@
           "gates": [
             {
               "details": {
-                "storyCount": 2
+                "storyCount": 3
               },
               "name": "eventCoherence",
               "reason": "event sketch has repeated story count",
@@ -476,231 +476,11 @@
             },
             {
               "details": {
-                "childCount": 2
+                "childCount": 3
               },
               "name": "weakTree",
               "reason": "child tree has enough depth",
-              "score": 0.5,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "duplicateChildren",
-              "reason": "no child objects to dedup",
-              "score": 0.7,
-              "status": "PASS"
-            }
-          ],
-          "id": "sketch:fcde5c7120",
-          "item": {
-            "angleCount": 1,
-            "baseReportRatio": 0.0,
-            "childScores": [],
-            "id": "sketch:fcde5c7120",
-            "representativeId": "cefd0947496f8de7",
-            "representativeTitle": "Buy Bajaj Finance; target of Rs 9000: Emkay Global Financial",
-            "scoreBreakdown": {
-              "angleDiversityScore": 0.25,
-              "eventImportanceScore": 0.59,
-              "freshnessScore": 0.0,
-              "noveltyDeltaScore": 0.44999999999999996,
-              "sourceAuthorityScore": 0.38,
-              "sourceDiversityScore": 0.35,
-              "temporalEvolutionScore": 0.37
-            },
-            "slotCount": 1,
-            "slots": [
-              "minus24h"
-            ],
-            "sourceGroupCount": 1,
-            "sourceGroups": [
-              "moneycontrol"
-            ],
-            "storyCount": 2,
-            "storyIds": [
-              "cefd0947496f8de7",
-              "d0020e471404281a"
-            ],
-            "topAngles": [
-              {
-                "angle": "market_reaction",
-                "count": 2
-              }
-            ],
-            "topTokens": [
-              "bajaj",
-              "finance",
-              "target",
-              "emkay"
-            ],
-            "topicKey": "bajaj|finance|target"
-          },
-          "locationKey": "event",
-          "rankingReasons": [
-            "event sketch has repeated story count",
-            "weak child angle diversity",
-            "one-source event candidate"
-          ],
-          "score": 0.389,
-          "title": "Buy Bajaj Finance; target of Rs 9000: Emkay Global Financial"
-        },
-        {
-          "category": "insightEvent",
-          "gates": [
-            {
-              "details": {
-                "storyCount": 2
-              },
-              "name": "eventCoherence",
-              "reason": "event sketch has repeated story count",
-              "score": 0.62,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "baseReportRatio": 0.0,
-                "distinctAngles": 1
-              },
-              "name": "angleDiversity",
-              "reason": "weak child angle diversity",
-              "score": 0.25,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "sourceGroupCount": 1
-              },
-              "name": "sourceDiversity",
-              "reason": "one-source event candidate",
-              "score": 0.35,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "baseReportRatio": 0.0
-              },
-              "name": "baseReportCap",
-              "reason": "base-report ratio controlled",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "childCount": 2
-              },
-              "name": "weakTree",
-              "reason": "child tree has enough depth",
-              "score": 0.5,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "duplicateChildren",
-              "reason": "no child objects to dedup",
-              "score": 0.7,
-              "status": "PASS"
-            }
-          ],
-          "id": "sketch:48c6125b88",
-          "item": {
-            "angleCount": 1,
-            "baseReportRatio": 0.0,
-            "childScores": [],
-            "id": "sketch:48c6125b88",
-            "representativeId": "27b501284d6c2aa8",
-            "representativeTitle": "Dow Jones| Nasdaq | US Stock Market Today | Live: S&P 500, Nasdaq gain in volatile trade as Micron results loom",
-            "scoreBreakdown": {
-              "angleDiversityScore": 0.25,
-              "eventImportanceScore": 0.59,
-              "freshnessScore": 0.0,
-              "noveltyDeltaScore": 0.44999999999999996,
-              "sourceAuthorityScore": 0.38,
-              "sourceDiversityScore": 0.35,
-              "temporalEvolutionScore": 0.37
-            },
-            "slotCount": 1,
-            "slots": [
-              "now"
-            ],
-            "sourceGroupCount": 1,
-            "sourceGroups": [
-              "economic_times"
-            ],
-            "storyCount": 2,
-            "storyIds": [
-              "27b501284d6c2aa8",
-              "47afb87693adbdd6"
-            ],
-            "topAngles": [
-              {
-                "angle": "market_reaction",
-                "count": 2
-              }
-            ],
-            "topTokens": [
-              "nasdaq",
-              "jones",
-              "stock",
-              "market"
-            ],
-            "topicKey": "nasdaq|jones|stock"
-          },
-          "locationKey": "event",
-          "rankingReasons": [
-            "event sketch has repeated story count",
-            "weak child angle diversity",
-            "one-source event candidate"
-          ],
-          "score": 0.389,
-          "title": "Dow Jones| Nasdaq | US Stock Market Today | Live: S&P 500, Nasdaq gain in volatile trade as Micron results loom"
-        },
-        {
-          "category": "insightEvent",
-          "gates": [
-            {
-              "details": {
-                "storyCount": 2
-              },
-              "name": "eventCoherence",
-              "reason": "event sketch has repeated story count",
-              "score": 0.62,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "baseReportRatio": 0.0,
-                "distinctAngles": 1
-              },
-              "name": "angleDiversity",
-              "reason": "weak child angle diversity",
-              "score": 0.25,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "sourceGroupCount": 1
-              },
-              "name": "sourceDiversity",
-              "reason": "one-source event candidate",
-              "score": 0.35,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "baseReportRatio": 0.0
-              },
-              "name": "baseReportCap",
-              "reason": "base-report ratio controlled",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "childCount": 2
-              },
-              "name": "weakTree",
-              "reason": "child tree has enough depth",
-              "score": 0.5,
+              "score": 0.75,
               "status": "PASS"
             },
             {
@@ -721,7 +501,7 @@
             "representativeTitle": "India News Live Updates, 24 June 2026: Tourist bus overturns on NH in Tamil Nadu’s Viluppuram; 24 injured - The Indian Express",
             "scoreBreakdown": {
               "angleDiversityScore": 0.25,
-              "eventImportanceScore": 0.59,
+              "eventImportanceScore": 0.71,
               "freshnessScore": 0.0,
               "noveltyDeltaScore": 0.44999999999999996,
               "sourceAuthorityScore": 0.38,
@@ -736,15 +516,16 @@
             "sourceGroups": [
               "google_news"
             ],
-            "storyCount": 2,
+            "storyCount": 3,
             "storyIds": [
               "66cb3fa05e7aa7dd",
-              "aa312678d8b93aaf"
+              "aa312678d8b93aaf",
+              "86bca7bf4008bddc"
             ],
             "topAngles": [
               {
                 "angle": "fact_update",
-                "count": 2
+                "count": 3
               }
             ],
             "topTokens": [
@@ -761,119 +542,8 @@
             "weak child angle diversity",
             "one-source event candidate"
           ],
-          "score": 0.389,
+          "score": 0.419,
           "title": "India News Live Updates, 24 June 2026: Tourist bus overturns on NH in Tamil Nadu’s Viluppuram; 24 injured - The Indian Express"
-        },
-        {
-          "category": "insightEvent",
-          "gates": [
-            {
-              "details": {
-                "storyCount": 2
-              },
-              "name": "eventCoherence",
-              "reason": "event sketch has repeated story count",
-              "score": 0.62,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "baseReportRatio": 0.0,
-                "distinctAngles": 1
-              },
-              "name": "angleDiversity",
-              "reason": "weak child angle diversity",
-              "score": 0.25,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "sourceGroupCount": 1
-              },
-              "name": "sourceDiversity",
-              "reason": "one-source event candidate",
-              "score": 0.35,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "baseReportRatio": 0.0
-              },
-              "name": "baseReportCap",
-              "reason": "base-report ratio controlled",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "childCount": 2
-              },
-              "name": "weakTree",
-              "reason": "child tree has enough depth",
-              "score": 0.5,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "duplicateChildren",
-              "reason": "no child objects to dedup",
-              "score": 0.7,
-              "status": "PASS"
-            }
-          ],
-          "id": "sketch:0315e8690b",
-          "item": {
-            "angleCount": 1,
-            "baseReportRatio": 0.0,
-            "childScores": [],
-            "id": "sketch:0315e8690b",
-            "representativeId": "f6858622953b9b25",
-            "representativeTitle": "Indian shares rise as lower oil prices, uptick in banks aid - Reuters",
-            "scoreBreakdown": {
-              "angleDiversityScore": 0.25,
-              "eventImportanceScore": 0.59,
-              "freshnessScore": 0.0,
-              "noveltyDeltaScore": 0.44999999999999996,
-              "sourceAuthorityScore": 0.38,
-              "sourceDiversityScore": 0.35,
-              "temporalEvolutionScore": 0.37
-            },
-            "slotCount": 1,
-            "slots": [
-              "minus12h"
-            ],
-            "sourceGroupCount": 1,
-            "sourceGroups": [
-              "reuters"
-            ],
-            "storyCount": 2,
-            "storyIds": [
-              "f6858622953b9b25",
-              "89bc1c323a0ab5c2"
-            ],
-            "topAngles": [
-              {
-                "angle": "market_reaction",
-                "count": 2
-              }
-            ],
-            "topTokens": [
-              "indian",
-              "shares",
-              "rise",
-              "lower",
-              "reliance"
-            ],
-            "topicKey": "indian|shares|rise"
-          },
-          "locationKey": "event",
-          "rankingReasons": [
-            "event sketch has repeated story count",
-            "weak child angle diversity",
-            "one-source event candidate"
-          ],
-          "score": 0.389,
-          "title": "Indian shares rise as lower oil prices, uptick in banks aid - Reuters"
         },
         {
           "category": "insightEvent",
@@ -1106,7 +776,7 @@
           "gates": [
             {
               "details": {
-                "storyCount": 6
+                "storyCount": 4
               },
               "name": "eventCoherence",
               "reason": "event sketch has repeated story count",
@@ -1143,7 +813,7 @@
             },
             {
               "details": {
-                "childCount": 6
+                "childCount": 4
               },
               "name": "weakTree",
               "reason": "child tree has enough depth",
@@ -1168,7 +838,7 @@
             "representativeTitle": "Top news of the day June 12, 2026 - The Hindu",
             "scoreBreakdown": {
               "angleDiversityScore": 0.25,
-              "eventImportanceScore": 1.0,
+              "eventImportanceScore": 0.83,
               "freshnessScore": 0.0,
               "noveltyDeltaScore": 0.44999999999999996,
               "sourceAuthorityScore": 0.38,
@@ -1183,19 +853,17 @@
             "sourceGroups": [
               "google_news"
             ],
-            "storyCount": 6,
+            "storyCount": 4,
             "storyIds": [
               "799aa9b7edec72f4",
               "fff45325db82b942",
               "6a190a01e6364bd3",
-              "c6223898b19831d2",
-              "1efb28cd448db91a",
-              "fb3c6669dde3a2a9"
+              "1efb28cd448db91a"
             ],
             "topAngles": [
               {
                 "angle": "base_report",
-                "count": 6
+                "count": 4
               }
             ],
             "topTokens": [
@@ -1210,126 +878,19 @@
             "weak child angle diversity",
             "one-source event candidate"
           ],
-          "score": 0.2212,
+          "score": 0.2021,
           "title": "Top news of the day June 12, 2026 - The Hindu"
-        },
-        {
-          "category": "insightEvent",
-          "gates": [
-            {
-              "details": {
-                "storyCount": 2
-              },
-              "name": "eventCoherence",
-              "reason": "event sketch has repeated story count",
-              "score": 0.62,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "baseReportRatio": 1.0,
-                "distinctAngles": 0
-              },
-              "name": "angleDiversity",
-              "reason": "weak child angle diversity",
-              "score": 0.25,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "sourceGroupCount": 1
-              },
-              "name": "sourceDiversity",
-              "reason": "one-source event candidate",
-              "score": 0.35,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "baseReportRatio": 1.0
-              },
-              "name": "baseReportCap",
-              "reason": "base-report dominated event candidate",
-              "score": 0.25,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "childCount": 2
-              },
-              "name": "weakTree",
-              "reason": "child tree has enough depth",
-              "score": 0.5,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "duplicateChildren",
-              "reason": "no child objects to dedup",
-              "score": 0.7,
-              "status": "PASS"
-            }
-          ],
-          "id": "sketch:bbd7147cc9",
-          "item": {
-            "angleCount": 1,
-            "baseReportRatio": 1.0,
-            "childScores": [],
-            "id": "sketch:bbd7147cc9",
-            "representativeId": "f274ef9a4032ff70",
-            "representativeTitle": "Top news of the day: May 30, 2026 - The Hindu",
-            "scoreBreakdown": {
-              "angleDiversityScore": 0.25,
-              "eventImportanceScore": 0.59,
-              "freshnessScore": 0.0,
-              "noveltyDeltaScore": 0.44999999999999996,
-              "sourceAuthorityScore": 0.38,
-              "sourceDiversityScore": 0.35,
-              "temporalEvolutionScore": 0.37
-            },
-            "slotCount": 1,
-            "slots": [
-              "now"
-            ],
-            "sourceGroupCount": 1,
-            "sourceGroups": [
-              "google_news"
-            ],
-            "storyCount": 2,
-            "storyIds": [
-              "f274ef9a4032ff70",
-              "55bc91c985238054"
-            ],
-            "topAngles": [
-              {
-                "angle": "base_report",
-                "count": 2
-              }
-            ],
-            "topTokens": [
-              "hindu"
-            ],
-            "topicKey": "hindu"
-          },
-          "locationKey": "event",
-          "rankingReasons": [
-            "event sketch has repeated story count",
-            "weak child angle diversity",
-            "one-source event candidate"
-          ],
-          "score": 0.1751,
-          "title": "Top news of the day: May 30, 2026 - The Hindu"
         }
       ],
       "rankingProfile": "insight-v2-event-angle-tree",
       "scoreBreakdown": {
-        "angleDiversityScore": 0.3464,
-        "eventImportanceScore": 0.6273,
+        "angleDiversityScore": 0.4014,
+        "eventImportanceScore": 0.6414,
         "freshnessScore": 0.0,
-        "noveltyDeltaScore": 0.4773,
-        "sourceAuthorityScore": 0.4236,
-        "sourceDiversityScore": 0.4173,
-        "temporalEvolutionScore": 0.4136
+        "noveltyDeltaScore": 0.4929,
+        "sourceAuthorityScore": 0.4486,
+        "sourceDiversityScore": 0.4557,
+        "temporalEvolutionScore": 0.4386
       }
     },
     "localTravel": {
@@ -4502,7 +4063,7 @@
             },
             {
               "details": {
-                "hoursLeft": 7.64
+                "hoursLeft": 6.2
               },
               "name": "offerValidity",
               "reason": "offer expires soon",
@@ -4617,7 +4178,7 @@
             },
             {
               "details": {
-                "hoursLeft": 10.76
+                "hoursLeft": 9.32
               },
               "name": "offerValidity",
               "reason": "offer expires soon",
@@ -4732,7 +4293,7 @@
             },
             {
               "details": {
-                "hoursLeft": 21.0
+                "hoursLeft": 19.56
               },
               "name": "offerValidity",
               "reason": "offer expires soon",
@@ -4847,7 +4408,7 @@
             },
             {
               "details": {
-                "hoursLeft": 13.08
+                "hoursLeft": 11.64
               },
               "name": "offerValidity",
               "reason": "offer expires soon",
@@ -4930,7 +4491,7 @@
       }
     }
   },
-  "generatedAt": 1782346167454,
+  "generatedAt": 1782351347607,
   "implementedDestinations": [
     "upAhead",
     "buzz",
@@ -4958,11 +4519,11 @@
       "no ranked local/travel item for muscat",
       "no ranked local/travel item for chennai",
       "no ranked local/travel item for trichy",
-      "2 base-report-heavy Insight parent(s) demoted"
+      "1 base-report-heavy Insight parent(s) demoted"
     ],
     "destinationScores": {
       "buzz": 0.0,
-      "insight": 0.3865,
+      "insight": 0.4112,
       "localTravel": 0.0,
       "upAhead": 0.8446
     },
@@ -4972,7 +4533,7 @@
       "localTravel": "FAIL",
       "upAhead": "WARN"
     },
-    "overallScore": 0.3078,
+    "overallScore": 0.314,
     "overallStatus": "FAIL",
     "rankingProfiles": {
       "buzz": "buzz-v2-trend-local-travel",

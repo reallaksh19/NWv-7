@@ -1,84 +1,91 @@
 {
   "status": "PASS",
   "benchmarkVersion": "real-insight-snapshot-quality-v1",
-  "generatedAt": 1782351346325,
-  "contentHash": "cc024ee117062889",
+  "generatedAt": 1782366142164,
+  "contentHash": "61f7e5b05f5fabb5",
   "schemaVersion": 3,
   "collectorVersion": "insight-collector-json-v4",
   "storyCount": 587,
   "sourceGroupCount": 9,
-  "grade": "C",
+  "grade": "D",
   "parentCount": 10,
-  "avgAngles": 1.9,
-  "avgTemporalTiers": 1.8,
-  "avgEvolutionRoles": 1.9,
-  "baseReportShare": 0.3157894736842105,
-  "multiAngleCount": 9,
-  "weakParentCount": 1,
+  "avgAngles": 1.6,
+  "avgTemporalTiers": 1.5,
+  "avgEvolutionRoles": 1.6,
+  "baseReportShare": 0.25,
+  "multiAngleCount": 6,
+  "weakParentCount": 4,
   "runtimeQualityGate": {
-    "attempted": false,
+    "attempted": true,
     "recovered": false,
-    "reason": "first-pass acceptable",
+    "reason": "relaxed-tree recovery could not produce acceptable output",
     "before": {
-      "grade": "C",
-      "tone": "warn",
-      "title": "Thin but usable signal",
-      "signalScore": 61,
+      "grade": "D",
+      "tone": "danger",
+      "title": "Weak insight signal",
+      "signalScore": 42,
       "sourceLabel": "Live",
       "rankedCount": 10,
-      "storyCount": 545,
+      "storyCount": 540,
       "risingCount": 0,
-      "thinCount": 1,
-      "multiAngleCount": 9,
-      "lowAngleCount": 1,
+      "thinCount": 4,
+      "multiAngleCount": 6,
+      "lowAngleCount": 4,
       "strongAngleCount": 0,
-      "avgAngles": 1.9,
-      "avgChildren": 1.9,
-      "avgScore": 0.659887804061831,
-      "sourceDiversityCoverage": 9,
-      "snapshotCoverage": 5,
-      "coverageLabel": "9/10",
+      "avgAngles": 1.6,
+      "avgChildren": 1.6,
+      "avgScore": 0.6810084805268259,
+      "sourceDiversityCoverage": 6,
+      "snapshotCoverage": 3,
+      "coverageLabel": "6/10",
       "warnings": [
-        "1 cluster(s) have fewer than two visible child angles.",
+        "4 cluster(s) have fewer than two visible child angles.",
         "No cluster currently exposes three or more visible child angles.",
-        "1 cluster(s) are below source-diversity target.",
-        "5 cluster(s) have weak snapshot coverage.",
-        "1 cluster(s) are marked thin.",
-        "420 duplicate/near-duplicate item(s) were hidden or downgraded."
+        "4 cluster(s) are below source-diversity target.",
+        "7 cluster(s) have weak snapshot coverage.",
+        "4 cluster(s) are marked thin.",
+        "470 duplicate/near-duplicate item(s) were hidden or downgraded."
       ]
     },
     "after": {
-      "grade": "C",
-      "tone": "warn",
-      "title": "Thin but usable signal",
-      "signalScore": 61,
+      "grade": "D",
+      "tone": "danger",
+      "title": "Weak insight signal",
+      "signalScore": 42,
       "sourceLabel": "Live",
       "rankedCount": 10,
-      "storyCount": 545,
+      "storyCount": 540,
       "risingCount": 0,
-      "thinCount": 1,
-      "multiAngleCount": 9,
-      "lowAngleCount": 1,
+      "thinCount": 4,
+      "multiAngleCount": 6,
+      "lowAngleCount": 4,
       "strongAngleCount": 0,
-      "avgAngles": 1.9,
-      "avgChildren": 1.9,
-      "avgScore": 0.659887804061831,
-      "sourceDiversityCoverage": 9,
-      "snapshotCoverage": 5,
-      "coverageLabel": "9/10",
+      "avgAngles": 1.6,
+      "avgChildren": 1.6,
+      "avgScore": 0.6810084805268259,
+      "sourceDiversityCoverage": 6,
+      "snapshotCoverage": 3,
+      "coverageLabel": "6/10",
       "warnings": [
-        "1 cluster(s) have fewer than two visible child angles.",
+        "4 cluster(s) have fewer than two visible child angles.",
         "No cluster currently exposes three or more visible child angles.",
-        "1 cluster(s) are below source-diversity target.",
-        "5 cluster(s) have weak snapshot coverage.",
-        "1 cluster(s) are marked thin.",
-        "420 duplicate/near-duplicate item(s) were hidden or downgraded."
+        "4 cluster(s) are below source-diversity target.",
+        "7 cluster(s) have weak snapshot coverage.",
+        "4 cluster(s) are marked thin."
       ]
+    },
+    "recoveryConfig": {
+      "MIN_CHILD_INFO_GAIN": 0.08,
+      "WEAK_TREE_CHILD_MIN": 2,
+      "MIN_SOURCES_PER_TREE": 2,
+      "MAX_PER_SOURCE_GROUP": 3,
+      "MAX_PER_ANGLE": 4,
+      "TIER_D_EXCLUDE": false
     }
   },
   "parents": [
     {
-      "parentId": "cluster_228_71f0bb929e833712",
+      "parentId": "cluster_308_71f0bb929e833712",
       "headline": "India’s largest private gold mine set to yield a tonne of gold a year",
       "score": 0.712563386451665,
       "postTreeScore": 1.0926,
@@ -99,7 +106,7 @@
       "weakTree": false
     },
     {
-      "parentId": "cluster_351_93b90c256139db28",
+      "parentId": "cluster_432_93b90c256139db28",
       "headline": "India nears 50% domestic coal use in import-based power plants",
       "score": 0.6843266666666666,
       "postTreeScore": 1.0843,
@@ -119,7 +126,7 @@
       "weakTree": false
     },
     {
-      "parentId": "cluster_259_a730e37929796940",
+      "parentId": "cluster_339_a730e37929796940",
       "headline": "India slams Pakistan for 'unwarranted' remarks on J&K at UNSC’s Arria-formula meeting",
       "score": 0.6814967197849984,
       "postTreeScore": 1.0615,
@@ -140,14 +147,14 @@
       "weakTree": false
     },
     {
-      "parentId": "cluster_202_451d509881f02620",
-      "headline": "Flipkart, Amazon accelerate quick commerce expansion as competition heats up in India",
-      "score": 0.6583266666666667,
-      "postTreeScore": 1.0583,
+      "parentId": "cluster_111_2a682320f2bd7900",
+      "headline": "StartupTN CEO Sivarajah Ramanathan resigns",
+      "score": 0.6756467197849984,
+      "postTreeScore": 1.0556,
       "childCount": 2,
       "angles": [
-        "regional_followup",
-        "fact_update"
+        "base_report",
+        "investigative_detail"
       ],
       "temporalTiers": [
         "breaking",
@@ -155,55 +162,13 @@
       ],
       "evolutionRoles": [
         "first_report",
-        "fact_update"
-      ],
-      "baseReportShare": 0,
-      "weakTree": false
-    },
-    {
-      "parentId": "cluster_325_6c02a4b81e05699a",
-      "headline": "How an 'omega block' is supercharging Europe’s deadly heatwave",
-      "score": 0.6747467197849983,
-      "postTreeScore": 1.0547,
-      "childCount": 2,
-      "angles": [
-        "market_reaction",
-        "base_report"
-      ],
-      "temporalTiers": [
-        "breaking",
-        "reaction"
-      ],
-      "evolutionRoles": [
-        "first_report",
-        "corroboration"
+        "accountability"
       ],
       "baseReportShare": 0.5,
       "weakTree": false
     },
     {
-      "parentId": "cluster_408_b226eb44feaaac5d",
-      "headline": "PDP files complaint with SPC",
-      "score": 0.6736467197849983,
-      "postTreeScore": 1.0536,
-      "childCount": 2,
-      "angles": [
-        "base_report",
-        "official_response"
-      ],
-      "temporalTiers": [
-        "developing",
-        "breaking"
-      ],
-      "evolutionRoles": [
-        "corroboration",
-        "official_response"
-      ],
-      "baseReportShare": 0.5,
-      "weakTree": false
-    },
-    {
-      "parentId": "cluster_170_343fe757db98c64b",
+      "parentId": "cluster_248_343fe757db98c64b",
       "headline": "UN nuclear chief says inspectors will visit Iran sites as part of war deal",
       "score": 0.6052599999999999,
       "postTreeScore": 1.0053,
@@ -224,28 +189,7 @@
       "weakTree": false
     },
     {
-      "parentId": "cluster_38_2a682320f2bd7900",
-      "headline": "StartupTN CEO Sivarajah Ramanathan resigns",
-      "score": 0.5996600000000001,
-      "postTreeScore": 0.9997,
-      "childCount": 2,
-      "angles": [
-        "base_report",
-        "investigative_detail"
-      ],
-      "temporalTiers": [
-        "breaking",
-        "established"
-      ],
-      "evolutionRoles": [
-        "first_report",
-        "accountability"
-      ],
-      "baseReportShare": 0.5,
-      "weakTree": false
-    },
-    {
-      "parentId": "cluster_68_b8da2d55021e3ff1",
+      "parentId": "cluster_142_b8da2d55021e3ff1",
       "headline": "Pakistani man held French woman, children captive for 12 years; child's escape leads to rescue",
       "score": 0.58616,
       "postTreeScore": 0.9862,
@@ -266,7 +210,7 @@
       "weakTree": false
     },
     {
-      "parentId": "cluster_5_a824c25db73cc87a",
+      "parentId": "cluster_76_a824c25db73cc87a",
       "headline": "2 stocks that may give returns between 16-19%",
       "score": 0.7226911614783158,
       "postTreeScore": 0.4227,
@@ -282,22 +226,72 @@
       ],
       "baseReportShare": 0,
       "weakTree": true
+    },
+    {
+      "parentId": "cluster_338_4f0cf10907201af9",
+      "headline": "Why textile stocks are delivering up to 14% returns for investors on Wednesday?",
+      "score": 0.7226911614783158,
+      "postTreeScore": 0.4227,
+      "childCount": 1,
+      "angles": [
+        "market_reaction"
+      ],
+      "temporalTiers": [
+        "breaking"
+      ],
+      "evolutionRoles": [
+        "market_reaction"
+      ],
+      "baseReportShare": 0,
+      "weakTree": true
+    },
+    {
+      "parentId": "cluster_11_aa2aaca4ce59ea7c",
+      "headline": "Tata Chemicals shares rise 4% on hopes of Tata Sons listing after RBI’s new norms",
+      "score": 0.7096244948116492,
+      "postTreeScore": 0.4096,
+      "childCount": 1,
+      "angles": [
+        "fact_update"
+      ],
+      "temporalTiers": [
+        "breaking"
+      ],
+      "evolutionRoles": [
+        "fact_update"
+      ],
+      "baseReportShare": 0,
+      "weakTree": true
+    },
+    {
+      "parentId": "cluster_26_d8cb075c52918693",
+      "headline": "IndiGo, SpiceJet shares rally up to 4% as crude oil prices fall below pre-war levels after 42% crash",
+      "score": 0.7096244948116492,
+      "postTreeScore": 0.4096,
+      "childCount": 1,
+      "angles": [
+        "market_reaction"
+      ],
+      "temporalTiers": [
+        "breaking"
+      ],
+      "evolutionRoles": [
+        "market_reaction"
+      ],
+      "baseReportShare": 0,
+      "weakTree": true
     }
   ],
-  "warnings": [],
+  "warnings": [
+    "Real snapshot still produces low Insight grade."
+  ],
   "errors": [],
   "ratchetGate": {
-    "status": "PASS",
+    "status": "FAIL",
     "gateVersion": "real-insight-snapshot-ratchet-v1",
-    "grade": "C",
-    "score": 100,
+    "grade": "D",
+    "score": 52,
     "passed": [
-      {
-        "id": "grade-floor",
-        "label": "Real snapshot grade floor",
-        "actual": "C",
-        "required": "A/B/C"
-      },
       {
         "id": "parent-count",
         "label": "Parent cluster count",
@@ -307,31 +301,25 @@
       {
         "id": "avg-angle-count",
         "label": "Average visible angle count",
-        "actual": 1.9,
+        "actual": 1.6,
         "required": ">= 1.4"
-      },
-      {
-        "id": "avg-temporal-tier-count",
-        "label": "Average temporal tier count",
-        "actual": 1.8,
-        "required": ">= 1.8"
       },
       {
         "id": "avg-evolution-role-count",
         "label": "Average evolution role count",
-        "actual": 1.9,
+        "actual": 1.6,
         "required": ">= 1.6"
       },
       {
         "id": "base-report-share",
         "label": "Base report share",
-        "actual": 0.316,
+        "actual": 0.25,
         "required": "<= 0.55"
       },
       {
         "id": "multi-angle-parent-count",
         "label": "Multi-angle parent count",
-        "actual": 9,
+        "actual": 6,
         "required": ">= 1"
       },
       {
@@ -349,20 +337,37 @@
       {
         "id": "weak-parent-ratio",
         "label": "Weak parent ratio",
-        "actual": 0.1,
+        "actual": 0.4,
         "required": "<= 0.5"
       }
     ],
-    "failed": [],
+    "failed": [
+      {
+        "id": "grade-floor",
+        "label": "Real snapshot grade floor",
+        "actual": "D",
+        "required": "A/B/C",
+        "severity": "fail",
+        "fix": "Do not accept D/F real snapshot output. Improve child selection, parent rerank, or data intake."
+      },
+      {
+        "id": "avg-temporal-tier-count",
+        "label": "Average temporal tier count",
+        "actual": 1.5,
+        "required": ">= 1.8",
+        "severity": "fail",
+        "fix": "C+E output should cover multiple event-time tiers, not only source buckets."
+      }
+    ],
     "summary": {
       "parentCount": 10,
-      "avgAngles": 1.9,
-      "avgTemporalTiers": 1.8,
-      "avgEvolutionRoles": 1.9,
-      "baseReportShare": 0.316,
-      "multiAngleCount": 9,
-      "weakParentCount": 1,
-      "weakParentRatio": 0.1,
+      "avgAngles": 1.6,
+      "avgTemporalTiers": 1.5,
+      "avgEvolutionRoles": 1.6,
+      "baseReportShare": 0.25,
+      "multiAngleCount": 6,
+      "weakParentCount": 4,
+      "weakParentRatio": 0.4,
       "topParentAngles": 2,
       "topParentChildren": 2,
       "storyCount": 587,

@@ -202,14 +202,34 @@
   Exit gate: reconcile plan locators + cache-cadence comment during U6; annotate Agent-10 doc as historical.
 
 - ID: I018
-  Area: Location alias collision risk (input to U2.4)
+  Area: Location alias collision — 'cantonment' generic-word alias (refined by U2.4)
   Severity: Low
-  Owner file(s): src/config/locationLibrary.js (15 'cantonment'; 8 'omr'/'ecr'; 22-26 short Muscat aliases; 'nagar' shared tokens across Chennai+Trichy)
-  Detection: audit/evidence/U1.4-LOC-01.yaml
-  Root cause: 'cantonment' (Trichy alias) is a generic military-area term -> mechanism-INDEPENDENT mis-attribution of any 'X cantonment' item to Trichy (confirmed). Mechanism-DEPENDENT tail pending U2.4 match-ladder execution: short aliases omr/ecr/ruwi/seeb (0.82 substring rung), shared token 'nagar' (Chennai<->Trichy contamination), 'al hail' contains weather token 'hail'.
-  User impact: non-Trichy cantonment items mis-routed into Trichy locale (P004 falseLocation surface); remainder UNVERIFIED pending U2.4.
-  Exit gate: U2.4 executes alias probes on real data per locale vs falseLocationAcceptance 0.05; remove/qualify 'cantonment'; characterize the substring-rung risks.
+  Owner file(s): src/config/locationLibrary.js (15 'cantonment' under Trichy)
+  Detection: audit/evidence/U1.4-LOC-01.yaml (catalogue) + audit/evidence/U2.4-LOC-01.yaml (execution) + U2.4-location-probes-report.json
+  Root cause: 'cantonment' (Trichy alias) is a generic military-area term -> 'Delhi Cantonment' etc. map to Trichy @0.82 (mechanism-independent; CONFIRMED by execution). U2.4 NULLIFIED the rest of the U1 tail: the matcher uses a word-boundary regex `(^|\s)alias(\s|$)` (NOT substring) for both the 0.95 and 0.82 rungs, so 'omr'/'ecr' inside other words, weather 'hail' vs 'al hail', and unlisted 'X Nagar' do NOT match. Plan §U2.4's "0.82 substring" wording is incorrect (it is word-boundary, non-city alias) -> doc fix folded into I017.
+  User impact: any city's cantonment text mis-routes to the Trichy locale (P004 falseLocation surface). Narrow; no contamination seen on the real frozen cycle (0 mismatches / 11 accepts).
+  Exit gate: remove/qualify 'cantonment'; benchmark §V4 enforces falseLocationAcceptance 0.05 per locale on a gold set (true rate UNVERIFIED on the date-poor real cycle here).
 
 # NOTE: Phase U1 PASSES with findings (each U1 target has a ternary-verdict evidence record U1.1-U1.6). P005 trust-filter regression VERIFIED-NOT-PRESENT (U1.3-FEED-01). Keyword word-boundary matching neutralizes the U9-2 single-token substring class (U1.1-KWD-01). See audit/evidence/U1.{1-6}-*.yaml + audit/U1_CONTRACT_SUMMARY.md.
 # U1 EXIT GATE MET → keyword-collision report delivered (input to U2.2); alias collision catalogue delivered (input to U2.4); threshold/coverage/doc drift ticketed (I014-I018).
+
+# ── Stage-by-stage audit findings (Phase U2 — IN PROGRESS: U2.3 done) ──
+
+- ID: I019
+  Area: Static-host Up Ahead carries no event dates (expiry-driven) while the JS engine extracts real ones
+  Severity: Medium
+  Owner file(s): scripts (Python prefetch date layer — to be pinned in U2.7), src/intelligence/dateAware.js (JS engine, correct), public/data/up_ahead*.json
+  Detection: audit/evidence/U2.3-DTE-03.yaml + U2.3-date-battery-report.json — frozen static output up_ahead_2026-06-24.json has dateSource='none' (92/92), dateConfidence='unknown' (92/92), eventStartAt=null (92/92), yet plannerEligible=true (88/92) and expiryAt set (92/92). JS analyzeDateText on the SAME items extracts a real event date for 15/92 (incl. 'Rainbow Pride March on June 28' -> 2026-06-28, 'Madras Art Weekend exhibition' -> 2026-06-26).
+  Root cause: static Up Ahead is expiry-windowed (horizon.offerFallbackHours 48 / alertFallbackHours 24), not event-date-driven; the Python prefetch date extraction surfaces 0 dates where the JS engine finds 15. Full root cause is the U2.7 JS<->Python parity deliverable. Also: 88 items are plannerEligible WITHOUT an event date, contradicting the JS eligibility contract (no eventDate -> plannerEligible:false).
+  User impact: static-host users (the majority) see genuine upcoming events undated — not sortable by day, not placeable on the 7-day horizon, not addable to the planner with a date.
+  Exit gate: U2.7 runs the Python categorizer/date path on the same frozen raw items and quantifies the date-field disagreement per item; reconcile the static date layer to the JS engine OR document the expiry-only design; §V4 extraction-rate + wrong-day strata run on both implementations.
+
+- ID: I020
+  Area: Date engine edge-cases — Feb29 silent coercion + two-engine "next week" divergence
+  Severity: Low
+  Owner file(s): src/intelligence/dateAware.js (32-42 inferYearForShortDate, 77-88 next week), src/utils/dateExtractor.js (61-68 inferYear, 169-175 next week)
+  Detection: audit/evidence/U2.3-DTE-04.yaml — '29/02' in non-leap 2026 => 2027-03-01 (JS Date overflow Feb29->Mar1 + year flip, no error/flag); 'next week' at a Sunday ref => dateAware 2026-06-29 vs legacy extractDate 2026-07-06 (7-day disagreement; dateAware uses ((8-getDay())%7)||7, legacy uses 8-getDay()).
+  Root cause: invalid-date overflow is unguarded; the two JS date engines use different next-week formulas. Latent because dateAware parsers win ordering, but a concrete consistency gap and a candidate JS<->Python disagreement source.
+  User impact: Low — rare Feb29 lands one day off; next-week divergence only bites a direct legacy caller / a Python port that mirrors the legacy formula. Both are wrong-day risks.
+  Exit gate: guard Feb29 (reject or flag) ; converge the two next-week formulas OR document which is canonical; U2.7 checks the Python port's formula. Also document the (correct, consistent) DMY policy so future tuning doesn't add an MDY fallback.
 

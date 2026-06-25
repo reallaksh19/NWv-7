@@ -10,9 +10,9 @@
 - Base report share: `0.23529411764705882`
 - Multi-angle parents: `7`
 - Weak parents: `3`
-- Story count: `620`
+- Story count: `631`
 - Source groups: `9`
-- Content hash: `a4aecec5538d328b`
+- Content hash: `f7ff3da3dfc3f388`
 
 ## Top parents
 
@@ -25,9 +25,9 @@
 | 5 | Pakistani man held French woman, children captive for 12 years; child's escape leads to rescue | 2 | investigative_detail, base_report | NO | 0.6741467197849984 |
 | 6 | UN nuclear chief says inspectors will visit Iran sites as part of war deal | 2 | base_report, official_response | NO | 0.6052599999999999 |
 | 7 | World leaders offers solidarity and aid as country reels from quakes | 2 | official_response, fact_update | NO | 0.5935232802150019 |
-| 8 | Madhusudan Kela-backed fund buys stake in IPO-bound Steamhouse India for Rs 40 crore | 1 | fact_update | YES | 0.7226911614783158 |
-| 9 | India's institutional real estate investments jump 23% to $4.3 billion in H1 2026; domestic capital hits record 64% share: JLL | 1 | fact_update | YES | 0.7226911614783158 |
-| 10 | US Fed says large banks well-positioned to weather hypothetical downturn, several raise dividends | 1 | fact_update | YES | 0.7226911614783158 |
+| 8 | Housing sales rise 19% in Apr-Jun across 9 cities despite global uncertainties | 1 | fact_update | YES | 0.7226911614783158 |
+| 9 | Madhusudan Kela-backed fund buys stake in IPO-bound Steamhouse India for Rs 40 crore | 1 | fact_update | YES | 0.7226911614783158 |
+| 10 | India's institutional real estate investments jump 23% to $4.3 billion in H1 2026; domestic capital hits record 64% share: JLL | 1 | fact_update | YES | 0.7226911614783158 |
 
 ## Real Snapshot Ratchet Gate
 

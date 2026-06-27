@@ -400,10 +400,10 @@
             "storyCount": 6,
             "storyIds": [
               "68960f2753704105",
-              "c6215fc9dda48735",
               "799aa9b7edec72f4",
               "fff45325db82b942",
               "6a190a01e6364bd3",
+              "c6223898b19831d2",
               "1efb28cd448db91a"
             ],
             "topAngles": [
@@ -607,7 +607,7 @@
     },
     "upAhead": {
       "actionableFindings": [
-        "33 invalid/expired/duplicate Up Ahead item(s) suppressed"
+        "35 invalid/expired/duplicate Up Ahead item(s) suppressed"
       ],
       "destination": "upAhead",
       "diagnosticReasons": [
@@ -621,6 +621,8 @@
         "Best Amazon Prime Day Echo and Alexa deals 2026: Shop smart speakers, smart displays, and bedside clocks - Mashable: location failed — offline/local item lacks configured location match",
         "Prime Day MacBook deals guide 2026: What to buy before prices increase - Mashable: location failed — offline/local item lacks configured location match",
         "Flipkart GOAT Sale & Amazon Prime Day Sale 2026 🔥Full Details, Discounts & Card Offers Explained! Bear Attack (fUYqXKdqNU) - Fathom Journal: location failed — offline/local item lacks configured location match",
+        "T.N. Finance Minister reviews development works, stresses inter-departmental coordination: futureValidity failed — expired display window",
+        "T.N. Finance Minister reviews development works, stresses inter-departmental coordination: alertUrgency failed — alert expired",
         "I Rarely Shop on Amazon, But When I Do, It’s for This - Vogue: location failed — offline/local item lacks configured location match",
         "DVAC books former DMK Minister E.V. Velu in ‘corruption’ case; launches raids in Tamil Nadu: futureValidity failed — expired display window",
         "DVAC books former DMK Minister E.V. Velu in ‘corruption’ case; launches raids in Tamil Nadu: alertUrgency failed — alert expired",
@@ -628,9 +630,7 @@
         "Pelvic Health Clinic launched at Sri Ramachandra Medical Centre: alertUrgency failed — alert expired",
         "Consumers fret as rice prices shoot up: futureValidity failed — expired display window",
         "Consumers fret as rice prices shoot up: alertUrgency failed — alert expired",
-        "Two Chennai parks to be upgraded for kids with disabilities: futureValidity failed — expired display window",
-        "Two Chennai parks to be upgraded for kids with disabilities: alertUrgency failed — alert expired",
-        "Smart traffic system set to be launched by August, says official: futureValidity failed — expired display window"
+        "Two Chennai parks to be upgraded for kids with disabilities: futureValidity failed — expired display window"
       ],
       "gateResults": [
         {
@@ -680,10 +680,10 @@
         "onlineOffers": 0,
         "plannerAdvisoryItems": 29,
         "rankedItemCount": 30,
-        "suppressedItemCount": 33
+        "suppressedItemCount": 35
       },
       "qualityGrade": "B",
-      "qualityScore": 0.8516,
+      "qualityScore": 0.8506,
       "qualityStatus": "WARN",
       "rankedItems": [
         {
@@ -3721,7 +3721,7 @@
             },
             {
               "details": {
-                "hoursLeft": 15.94
+                "hoursLeft": 13.15
               },
               "name": "offerValidity",
               "reason": "offer expires soon",
@@ -3790,121 +3790,6 @@
           ],
           "score": 0.8225,
           "title": "Dubai Summer Surprises 2026 opens July 2 with 90 per cent sales, concerts and cash prizes - Gulf News"
-        },
-        {
-          "category": "alerts",
-          "gates": [
-            {
-              "details": {
-                "dedupKey": "35affb0f81a22ed4"
-              },
-              "name": "dedup",
-              "reason": "unique item",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "displayUntil": 1782509480000
-              },
-              "name": "futureValidity",
-              "reason": "valid undated item with active display window",
-              "score": 0.65,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "matchScore": 0.72,
-                "matchedLocation": "online",
-                "relevance": "onlineOnly",
-                "scope": "online"
-              },
-              "name": "location",
-              "reason": "online/global item allowed without city match",
-              "score": 0.72,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "hasPlace": true,
-                "hasTime": true
-              },
-              "name": "actionability",
-              "reason": "item has enough action fields",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "offerValidity",
-              "reason": "not an offer",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "severe": true
-              },
-              "name": "alertUrgency",
-              "reason": "severe/active alert",
-              "score": 1.0,
-              "status": "PASS"
-            }
-          ],
-          "id": "d5d35176ab4bf9b4",
-          "item": {
-            "actionabilityScore": 0.7,
-            "category": "alerts",
-            "city": "Chennai",
-            "contentClass": "upahead_alert",
-            "dateConfidence": "unknown",
-            "dateSource": "none",
-            "eventEndAt": null,
-            "eventStartAt": null,
-            "expiryAt": 1782509480000,
-            "id": "d5d35176ab4bf9b4",
-            "language": "en",
-            "lifecycle": {
-              "archiveUntil": 1783114280000,
-              "contentClass": "upahead_alert",
-              "displayUntil": 1782509480000,
-              "isActionValid": true,
-              "isVisible": true,
-              "plannerEligibleByLifecycle": true,
-              "plannerPastGraceHours": 6,
-              "retentionReason": "expiryAt",
-              "withinSevenDayHorizon": true
-            },
-            "localityScore": 1.0,
-            "normalizedCategory": "alerts",
-            "plannerEligible": true,
-            "publishedAt": 1782423080000,
-            "region": "tn",
-            "scoreBreakdown": {
-              "actionabilityScore": 1.0,
-              "categoryPriorityScore": 1.0,
-              "lifecycleScore": 0.65,
-              "locationScore": 0.72,
-              "plannerFitScore": 1.0,
-              "sourceConfidenceScore": 0.58,
-              "urgencyOrExpiryScore": 1.0
-            },
-            "source": "The Hindu Chennai",
-            "sourceGroup": "the_hindu",
-            "summary": "With the Northeast monsoon approaching, he asked officials to expedite stormwater drain construction, canal desilting and other flood-mitigation measures.",
-            "suppressionReason": null,
-            "title": "T.N. Finance Minister reviews development works, stresses inter-departmental coordination",
-            "url": "https://www.thehindu.com/news/cities/chennai/tn-finance-minister-reviews-development-works-stresses-inter-departmental-coordination/article71146996.ece"
-          },
-          "locationKey": "chennai",
-          "rankingReasons": [
-            "alerts",
-            "valid undated item with active display window",
-            "online/global item allowed without city match",
-            "planner advisory fit"
-          ],
-          "score": 0.8145,
-          "title": "T.N. Finance Minister reviews development works, stresses inter-departmental coordination"
         },
         {
           "category": "alerts",
@@ -4134,6 +4019,121 @@
           ],
           "score": 0.7925,
           "title": "Man from Rajasthan arrested for creating fake websites of Yatri Nivas at Srirangam"
+        },
+        {
+          "category": "alerts",
+          "gates": [
+            {
+              "details": {
+                "dedupKey": "d4f065ce250f17bb"
+              },
+              "name": "dedup",
+              "reason": "unique item",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "displayUntil": 1782562804000
+              },
+              "name": "futureValidity",
+              "reason": "valid undated item with active display window",
+              "score": 0.65,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "matchScore": 0.72,
+                "matchedLocation": "online",
+                "relevance": "onlineOnly",
+                "scope": "online"
+              },
+              "name": "location",
+              "reason": "online/global item allowed without city match",
+              "score": 0.72,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "hasPlace": true,
+                "hasTime": true
+              },
+              "name": "actionability",
+              "reason": "item has enough action fields",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "offerValidity",
+              "reason": "not an offer",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "severe": false
+              },
+              "name": "alertUrgency",
+              "reason": "active alert",
+              "score": 0.78,
+              "status": "PASS"
+            }
+          ],
+          "id": "acf557ea451226e5",
+          "item": {
+            "actionabilityScore": 0.7,
+            "category": "alerts",
+            "city": "Chennai",
+            "contentClass": "upahead_alert",
+            "dateConfidence": "unknown",
+            "dateSource": "none",
+            "eventEndAt": null,
+            "eventStartAt": null,
+            "expiryAt": 1782562804000,
+            "id": "acf557ea451226e5",
+            "language": "en",
+            "lifecycle": {
+              "archiveUntil": 1783167604000,
+              "contentClass": "upahead_alert",
+              "displayUntil": 1782562804000,
+              "isActionValid": true,
+              "isVisible": true,
+              "plannerEligibleByLifecycle": true,
+              "plannerPastGraceHours": 6,
+              "retentionReason": "expiryAt",
+              "withinSevenDayHorizon": true
+            },
+            "localityScore": 1.0,
+            "normalizedCategory": "alerts",
+            "plannerEligible": true,
+            "publishedAt": 1782476404000,
+            "region": "tn",
+            "scoreBreakdown": {
+              "actionabilityScore": 1.0,
+              "categoryPriorityScore": 1.0,
+              "lifecycleScore": 0.65,
+              "locationScore": 0.72,
+              "plannerFitScore": 1.0,
+              "sourceConfidenceScore": 0.58,
+              "urgencyOrExpiryScore": 0.78
+            },
+            "source": "The Hindu Chennai",
+            "sourceGroup": "the_hindu",
+            "summary": "Officials of the WRD said work is in progress to issue fresh NOCs through the online portal in about a month",
+            "suppressionReason": null,
+            "title": "T.N. Water Resources Department to move groundwater extraction NOC process online",
+            "url": "https://www.thehindu.com/news/national/tamil-nadu/tn-water-resources-department-to-move-groundwater-extraction-noc-process-online/article71146535.ece"
+          },
+          "locationKey": "chennai",
+          "rankingReasons": [
+            "alerts",
+            "valid undated item with active display window",
+            "online/global item allowed without city match",
+            "planner advisory fit"
+          ],
+          "score": 0.7925,
+          "title": "T.N. Water Resources Department to move groundwater extraction NOC process online"
         }
       ],
       "rankingProfile": "upAhead-v2-lifecycle-location-category",
@@ -4144,11 +4144,11 @@
         "locationScore": 0.9813,
         "plannerFitScore": 0.9667,
         "sourceConfidenceScore": 0.58,
-        "urgencyOrExpiryScore": 0.7947
+        "urgencyOrExpiryScore": 0.7873
       }
     }
   },
-  "generatedAt": 1782508663043,
+  "generatedAt": 1782518690139,
   "implementedDestinations": [
     "upAhead",
     "buzz",
@@ -4167,7 +4167,7 @@
   "schemaVersion": 1,
   "summary": {
     "actionRequired": [
-      "33 invalid/expired/duplicate Up Ahead item(s) suppressed",
+      "35 invalid/expired/duplicate Up Ahead item(s) suppressed",
       "no local Buzz item in ranked set",
       "no travel Buzz item in ranked set",
       "no active local/travel disruption item",
@@ -4181,7 +4181,7 @@
       "buzz": 0.0,
       "insight": 0.39,
       "localTravel": 0.0,
-      "upAhead": 0.8516
+      "upAhead": 0.8506
     },
     "destinationStatuses": {
       "buzz": "FAIL",
@@ -4189,7 +4189,7 @@
       "localTravel": "FAIL",
       "upAhead": "WARN"
     },
-    "overallScore": 0.3104,
+    "overallScore": 0.3102,
     "overallStatus": "FAIL",
     "rankingProfiles": {
       "buzz": "buzz-v2-trend-local-travel",
@@ -4208,6 +4208,8 @@
       "Best Amazon Prime Day Echo and Alexa deals 2026: Shop smart speakers, smart displays, and bedside clocks - Mashable: location failed — offline/local item lacks configured location match",
       "Prime Day MacBook deals guide 2026: What to buy before prices increase - Mashable: location failed — offline/local item lacks configured location match",
       "Flipkart GOAT Sale & Amazon Prime Day Sale 2026 🔥Full Details, Discounts & Card Offers Explained! Bear Attack (fUYqXKdqNU) - Fathom Journal: location failed — offline/local item lacks configured location match",
+      "T.N. Finance Minister reviews development works, stresses inter-departmental coordination: futureValidity failed — expired display window",
+      "T.N. Finance Minister reviews development works, stresses inter-departmental coordination: alertUrgency failed — alert expired",
       "I Rarely Shop on Amazon, But When I Do, It’s for This - Vogue: location failed — offline/local item lacks configured location match",
       "DVAC books former DMK Minister E.V. Velu in ‘corruption’ case; launches raids in Tamil Nadu: futureValidity failed — expired display window",
       "DVAC books former DMK Minister E.V. Velu in ‘corruption’ case; launches raids in Tamil Nadu: alertUrgency failed — alert expired",
@@ -4215,9 +4217,7 @@
       "Pelvic Health Clinic launched at Sri Ramachandra Medical Centre: alertUrgency failed — alert expired",
       "Consumers fret as rice prices shoot up: futureValidity failed — expired display window",
       "Consumers fret as rice prices shoot up: alertUrgency failed — alert expired",
-      "Two Chennai parks to be upgraded for kids with disabilities: futureValidity failed — expired display window",
-      "Two Chennai parks to be upgraded for kids with disabilities: alertUrgency failed — alert expired",
-      "Smart traffic system set to be launched by August, says official: futureValidity failed — expired display window"
+      "Two Chennai parks to be upgraded for kids with disabilities: futureValidity failed — expired display window"
     ]
   }
 }

@@ -12,5 +12,5 @@
 
 - alerts: 39
 - movies: 1
-- shopping: 40
-- weather_alerts: 2
+- shopping: 41
+- weather_alerts: 1

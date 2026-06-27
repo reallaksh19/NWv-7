@@ -4,15 +4,15 @@
 - Reason: -
 - Grade: `B`
 - Parents: `10`
-- Average angles: `2.1`
+- Average angles: `2`
 - Average temporal tiers: `1.9`
 - Average evolution roles: `2`
-- Base report share: `0.2727272727272727`
-- Multi-angle parents: `10`
-- Weak parents: `0`
-- Story count: `591`
+- Base report share: `0.3181818181818182`
+- Multi-angle parents: `9`
+- Weak parents: `1`
+- Story count: `570`
 - Source groups: `9`
-- Content hash: `9a62a542986d7667`
+- Content hash: `85211c09a1229b97`
 
 ## Top parents
 
@@ -22,12 +22,12 @@
 | 2 | Powerful earthquake hits Afghanistan, sending tremors across Pakistan, Delhi | 3 | regional_followup, official_response | NO | 0.6212939846283527 |
 | 3 | Japan PM to visit India next week | 2 | fact_update, official_response | NO | 0.7012467197849983 |
 | 4 | Muharram processions held across Kashmir; CM Omar, L-G Sinha join mourners | 2 | base_report, official_response | NO | 0.6814967197849984 |
-| 5 | What's a 'doublet' earthquake? Science behind Venezuela’s strongest quake in over a century | 2 | official_response, base_report | NO | 0.6814967197849984 |
-| 6 | Sebi rejects Anil Ambani's Reliance Infra settlement application | 2 | official_response, investigative_detail | NO | 0.6583266666666667 |
-| 7 | Govt. to launch affordable digital health management system for small clinics across India | 2 | base_report, fact_update | NO | 0.62151 |
-| 8 | India Sends Relief Material To Quake-Hit Venezuela Under 'Operation Amistad' - The Quint | 2 | official_response, base_report | NO | 0.6254800531183317 |
-| 9 | Israel and Lebanon sign framework agreement after US-brokered talks | 2 | base_report, official_response | NO | 0.6052599999999999 |
-| 10 | Trump adviser-turned-critic John Bolton pleads guilty to mishandling classified documents | 2 | regional_followup, official_response | NO | 0.5952599999999999 |
+| 5 | Sebi rejects Anil Ambani's Reliance Infra settlement application | 2 | official_response, investigative_detail | NO | 0.6583266666666667 |
+| 6 | Govt. to launch affordable digital health management system for small clinics across India | 2 | base_report, fact_update | NO | 0.64151 |
+| 7 | India Sends Relief Material To Quake-Hit Venezuela Under 'Operation Amistad' - The Quint | 2 | official_response, base_report | NO | 0.6254800531183317 |
+| 8 | Israel and Lebanon sign framework agreement after US-brokered talks | 2 | base_report, official_response | NO | 0.6052599999999999 |
+| 9 | Trump adviser-turned-critic John Bolton pleads guilty to mishandling classified documents | 2 | regional_followup, official_response | NO | 0.5952599999999999 |
+| 10 | Fragments fall after an aircraft hits Beijing’s tallest building. | 2 | base_report | YES | 0.6803967197849983 |
 
 ## Real Snapshot Ratchet Gate
 
@@ -36,11 +36,11 @@
 - Grade: `B`
 - Score: `100`
 - Parents: `10`
-- Average angles: `2.1`
+- Average angles: `2`
 - Average temporal tiers: `1.9`
 - Average evolution roles: `2`
-- Base report share: `0.273`
-- Multi-angle parents: `10`
+- Base report share: `0.318`
+- Multi-angle parents: `9`
 - Top parent angles: `3`
 - Top parent children: `3`
 
@@ -52,11 +52,11 @@
 
 - Real snapshot grade floor: `B` / `A/B/C`
 - Parent cluster count: `10` / `>= 3`
-- Average visible angle count: `2.1` / `>= 1.4`
+- Average visible angle count: `2` / `>= 1.4`
 - Average temporal tier count: `1.9` / `>= 1.8`
 - Average evolution role count: `2` / `>= 1.6`
-- Base report share: `0.273` / `<= 0.55`
-- Multi-angle parent count: `10` / `>= 1`
+- Base report share: `0.318` / `<= 0.55`
+- Multi-angle parent count: `9` / `>= 1`
 - Top parent angle count: `3` / `>= 2`
 - Top parent child depth: `3` / `>= 2`
-- Weak parent ratio: `0` / `<= 0.5`
+- Weak parent ratio: `0.1` / `<= 0.5`

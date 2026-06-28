@@ -53,7 +53,7 @@
     },
     "insight": {
       "actionableFindings": [
-        "2 base-report-heavy Insight parent(s) demoted"
+        "1 base-report-heavy Insight parent(s) demoted"
       ],
       "destination": "insight",
       "diagnosticReasons": [],
@@ -77,7 +77,7 @@
       ],
       "gateSummary": {
         "avgAnglesPerParent": 0.0,
-        "baseReportHeavyParents": 2,
+        "baseReportHeavyParents": 1,
         "duplicateChildrenSuppressed": 0,
         "inputCandidateCount": 6,
         "parentClusters": 6,
@@ -86,7 +86,7 @@
         "weakParentsDemoted": 0
       },
       "qualityGrade": "F",
-      "qualityScore": 0.3998,
+      "qualityScore": 0.4026,
       "qualityStatus": "WARN",
       "rankedItems": [
         {
@@ -322,6 +322,123 @@
           "gates": [
             {
               "details": {
+                "storyCount": 5
+              },
+              "name": "eventCoherence",
+              "reason": "event sketch has repeated story count",
+              "score": 0.62,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "baseReportRatio": 0.0,
+                "distinctAngles": 1
+              },
+              "name": "angleDiversity",
+              "reason": "weak child angle diversity",
+              "score": 0.25,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "sourceGroupCount": 1
+              },
+              "name": "sourceDiversity",
+              "reason": "one-source event candidate",
+              "score": 0.35,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "baseReportRatio": 0.0
+              },
+              "name": "baseReportCap",
+              "reason": "base-report ratio controlled",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "childCount": 5
+              },
+              "name": "weakTree",
+              "reason": "child tree has enough depth",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "duplicateChildren",
+              "reason": "no child objects to dedup",
+              "score": 0.7,
+              "status": "PASS"
+            }
+          ],
+          "id": "sketch:313fbb8095",
+          "item": {
+            "angleCount": 1,
+            "baseReportRatio": 0.0,
+            "childScores": [],
+            "id": "sketch:313fbb8095",
+            "representativeId": "6059fed96a28aa3b",
+            "representativeTitle": "Breaking News Live Updates: 'I humbly accept this honor', says PM Modi after being conferred with Seychelles's top honour - The Times of India",
+            "scoreBreakdown": {
+              "angleDiversityScore": 0.25,
+              "eventImportanceScore": 0.95,
+              "freshnessScore": 0.0,
+              "noveltyDeltaScore": 0.44999999999999996,
+              "sourceAuthorityScore": 0.38,
+              "sourceDiversityScore": 0.35,
+              "temporalEvolutionScore": 0.37
+            },
+            "slotCount": 1,
+            "slots": [
+              "now"
+            ],
+            "sourceGroupCount": 1,
+            "sourceGroups": [
+              "google_news"
+            ],
+            "storyCount": 5,
+            "storyIds": [
+              "6059fed96a28aa3b",
+              "94e4dc6c97b9a6d5",
+              "47dd58ab8d93edca",
+              "c0b89c693126f623",
+              "55cf58dd032da79f"
+            ],
+            "topAngles": [
+              {
+                "angle": "fact_update",
+                "count": 5
+              }
+            ],
+            "topTokens": [
+              "breaking",
+              "live",
+              "updates",
+              "humbly",
+              "modi",
+              "calls",
+              "strong",
+              "govt"
+            ],
+            "topicKey": "breaking|live|updates"
+          },
+          "locationKey": "event",
+          "rankingReasons": [
+            "event sketch has repeated story count",
+            "weak child angle diversity",
+            "one-source event candidate"
+          ],
+          "score": 0.479,
+          "title": "Breaking News Live Updates: 'I humbly accept this honor', says PM Modi after being conferred with Seychelles's top honour - The Times of India"
+        },
+        {
+          "category": "insightEvent",
+          "gates": [
+            {
+              "details": {
                 "storyCount": 2
               },
               "name": "eventCoherence",
@@ -374,14 +491,14 @@
               "status": "PASS"
             }
           ],
-          "id": "sketch:313fbb8095",
+          "id": "sketch:ceded8ded0",
           "item": {
             "angleCount": 1,
             "baseReportRatio": 0.0,
             "childScores": [],
-            "id": "sketch:313fbb8095",
-            "representativeId": "6059fed96a28aa3b",
-            "representativeTitle": "Breaking News Live Updates: 'I humbly accept this honor', says PM Modi after being conferred with Seychelles's top honour - The Times of India",
+            "id": "sketch:ceded8ded0",
+            "representativeId": "d11ed117f0d92414",
+            "representativeTitle": "Couple found dead at home in Mokila, police suspect financial distress",
             "scoreBreakdown": {
               "angleDiversityScore": 0.25,
               "eventImportanceScore": 0.59,
@@ -389,20 +506,21 @@
               "noveltyDeltaScore": 0.44999999999999996,
               "sourceAuthorityScore": 0.38,
               "sourceDiversityScore": 0.35,
-              "temporalEvolutionScore": 0.37
+              "temporalEvolutionScore": 0.49
             },
-            "slotCount": 1,
+            "slotCount": 2,
             "slots": [
+              "minus4h",
               "now"
             ],
             "sourceGroupCount": 1,
             "sourceGroups": [
-              "google_news"
+              "the_hindu"
             ],
             "storyCount": 2,
             "storyIds": [
-              "6059fed96a28aa3b",
-              "94e4dc6c97b9a6d5"
+              "d11ed117f0d92414",
+              "6dcb09c9467754fa"
             ],
             "topAngles": [
               {
@@ -411,13 +529,13 @@
               }
             ],
             "topTokens": [
-              "breaking",
-              "live",
-              "updates",
-              "humbly",
-              "modi"
+              "couple",
+              "found",
+              "dead",
+              "home",
+              "muvattupuzha"
             ],
-            "topicKey": "breaking|live|updates"
+            "topicKey": "couple|found|dead"
           },
           "locationKey": "event",
           "rankingReasons": [
@@ -425,8 +543,8 @@
             "weak child angle diversity",
             "one-source event candidate"
           ],
-          "score": 0.389,
-          "title": "Breaking News Live Updates: 'I humbly accept this honor', says PM Modi after being conferred with Seychelles's top honour - The Times of India"
+          "score": 0.401,
+          "title": "Couple found dead at home in Mokila, police suspect financial distress"
         },
         {
           "category": "insightEvent",
@@ -537,117 +655,6 @@
           ],
           "score": 0.389,
           "title": "When to book profits and when to sit tight: Timeless investing lessons from Jesse Livermore"
-        },
-        {
-          "category": "insightEvent",
-          "gates": [
-            {
-              "details": {
-                "storyCount": 5
-              },
-              "name": "eventCoherence",
-              "reason": "event sketch has repeated story count",
-              "score": 0.62,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "baseReportRatio": 1.0,
-                "distinctAngles": 0
-              },
-              "name": "angleDiversity",
-              "reason": "weak child angle diversity",
-              "score": 0.25,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "sourceGroupCount": 1
-              },
-              "name": "sourceDiversity",
-              "reason": "one-source event candidate",
-              "score": 0.35,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "baseReportRatio": 1.0
-              },
-              "name": "baseReportCap",
-              "reason": "base-report dominated event candidate",
-              "score": 0.25,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "childCount": 5
-              },
-              "name": "weakTree",
-              "reason": "child tree has enough depth",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "duplicateChildren",
-              "reason": "no child objects to dedup",
-              "score": 0.7,
-              "status": "PASS"
-            }
-          ],
-          "id": "sketch:c1c58008d6",
-          "item": {
-            "angleCount": 1,
-            "baseReportRatio": 1.0,
-            "childScores": [],
-            "id": "sketch:c1c58008d6",
-            "representativeId": "c6215fc9dda48735",
-            "representativeTitle": "Top news of the day | June 14, 2026 - The Hindu",
-            "scoreBreakdown": {
-              "angleDiversityScore": 0.25,
-              "eventImportanceScore": 0.95,
-              "freshnessScore": 0.0,
-              "noveltyDeltaScore": 0.44999999999999996,
-              "sourceAuthorityScore": 0.38,
-              "sourceDiversityScore": 0.35,
-              "temporalEvolutionScore": 0.37
-            },
-            "slotCount": 1,
-            "slots": [
-              "now"
-            ],
-            "sourceGroupCount": 1,
-            "sourceGroups": [
-              "google_news"
-            ],
-            "storyCount": 5,
-            "storyIds": [
-              "c6215fc9dda48735",
-              "799aa9b7edec72f4",
-              "fff45325db82b942",
-              "6a190a01e6364bd3",
-              "c6223898b19831d2"
-            ],
-            "topAngles": [
-              {
-                "angle": "base_report",
-                "count": 5
-              }
-            ],
-            "topTokens": [
-              "june",
-              "hindu"
-            ],
-            "topicKey": "june|hindu"
-          },
-          "locationKey": "event",
-          "rankingReasons": [
-            "event sketch has repeated story count",
-            "weak child angle diversity",
-            "one-source event candidate"
-          ],
-          "score": 0.2155,
-          "title": "Top news of the day | June 14, 2026 - The Hindu"
         },
         {
           "category": "insightEvent",
@@ -768,7 +775,7 @@
         "noveltyDeltaScore": 0.4667,
         "sourceAuthorityScore": 0.46,
         "sourceDiversityScore": 0.4733,
-        "temporalEvolutionScore": 0.41
+        "temporalEvolutionScore": 0.43
       }
     },
     "localTravel": {
@@ -828,26 +835,22 @@
     },
     "upAhead": {
       "actionableFindings": [
-        "17 invalid/expired/duplicate Up Ahead item(s) suppressed",
+        "16 invalid/expired/duplicate Up Ahead item(s) suppressed",
         "no active offer items in ranked Up Ahead set",
-        "no ranked Up Ahead item for muscat",
-        "ranked Up Ahead set is category-dominated"
+        "no ranked Up Ahead item for muscat"
       ],
       "destination": "upAhead",
       "diagnosticReasons": [
-        "Best Prime Day iPad deals 2026: Prices start at just $299 - Mashable: location failed — offline/local item lacks configured location match",
-        "Best Prime Day DJI deals 2026: Save on drones, cameras, pocket mics - Mashable: location failed — offline/local item lacks configured location match",
-        "Prime Day Is Over, But 62 of Our Favorite Deals Are Still Available - WIRED: location failed — offline/local item lacks configured location match",
         "The best Pokémon deals as Prime Day wraps up — Pokémon TCG, books, games, and more on sale - Mashable: location failed — offline/local item lacks configured location match",
+        "Best expert-vetted Amazon device Prime Day deals 2026: Shop Fire TVs, Kindles, and Blink cameras - Mashable: location failed — offline/local item lacks configured location match",
+        "Best Prime Day iPad deals 2026: Prices start at just $299 - Mashable: location failed — offline/local item lacks configured location match",
+        "Prime Day Is Over, But 62 of Our Favorite Deals Are Still Available - WIRED: location failed — offline/local item lacks configured location match",
+        "Best Prime Day DJI deals 2026: Save on drones, cameras, pocket mics - Mashable: location failed — offline/local item lacks configured location match",
         "Shop 200+ of the best Prime Day 2026 deals still available before the sale ends tonight - About Amazon: location failed — offline/local item lacks configured location match",
         "Post-Prime Day earbuds deals 2026: Save on AirPods, Bose, and Nothing - Mashable: location failed — offline/local item lacks configured location match",
         "The best Prime Day drone deals: Last chance to save on DJI, Antigravity, and Holy Stone - Mashable: location failed — offline/local item lacks configured location match",
         "Amazon Prime Day officially ended last night, but these 131+ deals are still available for late shoppers - NBC News: location failed — offline/local item lacks configured location match",
         "Amazon Prime Day 2026 deals go live: Nothing Phone (3), OnePlus 13, Galaxy S25 Plus to see major price... - Moneycontrol.com: location failed — offline/local item lacks configured location match",
-        "India’s FTA with many countries has opened up export potential, says Union Minister: futureValidity failed — expired display window",
-        "India’s FTA with many countries has opened up export potential, says Union Minister: alertUrgency failed — alert expired",
-        "K. Bhagyaraj passes away: 5 must-watch films of the master writer-director: futureValidity failed — expired display window",
-        "K. Bhagyaraj passes away: 5 must-watch films of the master writer-director: alertUrgency failed — alert expired",
         "Prime Day is over, but Bose Ultra Open Earbuds are still $100 off at Amazon - Mashable: location failed — offline/local item lacks configured location match",
         "We’re Still Deal Hunting Even Though Prime Day Is Over — 60+ Deals to Shop ASAP - TODAY.com: location failed — offline/local item lacks configured location match",
         "Amazon Prime Day 2026: Top deals and biggest discounts to avail - CNBC TV18: location failed — offline/local item lacks configured location match",
@@ -868,23 +871,25 @@
         {
           "details": {
             "categoryCounts": {
-              "alerts": 30
+              "alerts": 29,
+              "weather_alerts": 1
             }
           },
           "name": "categoryCoverage",
           "reason": "category coverage available",
-          "score": 0.25,
+          "score": 0.5,
           "status": "PASS"
         }
       ],
       "gateSummary": {
         "alerts": 30,
         "categoryCounts": {
-          "alerts": 30
+          "alerts": 29,
+          "weather_alerts": 1
         },
         "events": 0,
         "festivals": 0,
-        "inputItemCount": 72,
+        "inputItemCount": 67,
         "locationCounts": {
           "chennai": 24,
           "trichy": 6
@@ -897,10 +902,10 @@
         "onlineOffers": 0,
         "plannerAdvisoryItems": 30,
         "rankedItemCount": 30,
-        "suppressedItemCount": 17
+        "suppressedItemCount": 16
       },
       "qualityGrade": "B",
-      "qualityScore": 0.8596,
+      "qualityScore": 0.8579,
       "qualityStatus": "WARN",
       "rankedItems": [
         {
@@ -2403,121 +2408,6 @@
           "gates": [
             {
               "details": {
-                "dedupKey": "c7bdc6f52e838a55"
-              },
-              "name": "dedup",
-              "reason": "unique item",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "displayUntil": 1782663987000
-              },
-              "name": "futureValidity",
-              "reason": "valid undated item with active display window",
-              "score": 0.65,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "matchScore": 1.0,
-                "matchedLocation": "chennai",
-                "relevance": "primary",
-                "scope": "exactCity"
-              },
-              "name": "location",
-              "reason": "location matches configured profile",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "hasPlace": true,
-                "hasTime": true
-              },
-              "name": "actionability",
-              "reason": "item has enough action fields",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "offerValidity",
-              "reason": "not an offer",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "severe": false
-              },
-              "name": "alertUrgency",
-              "reason": "active alert",
-              "score": 0.78,
-              "status": "PASS"
-            }
-          ],
-          "id": "22f1b81c5de4887c",
-          "item": {
-            "actionabilityScore": 0.7,
-            "category": "alerts",
-            "city": "Chennai",
-            "contentClass": "upahead_alert",
-            "dateConfidence": "unknown",
-            "dateSource": "none",
-            "eventEndAt": null,
-            "eventStartAt": null,
-            "expiryAt": 1782663987000,
-            "id": "22f1b81c5de4887c",
-            "language": "en",
-            "lifecycle": {
-              "archiveUntil": 1783268787000,
-              "contentClass": "upahead_alert",
-              "displayUntil": 1782663987000,
-              "isActionValid": true,
-              "isVisible": true,
-              "plannerEligibleByLifecycle": true,
-              "plannerPastGraceHours": 6,
-              "retentionReason": "expiryAt",
-              "withinSevenDayHorizon": true
-            },
-            "localityScore": 1.0,
-            "normalizedCategory": "alerts",
-            "plannerEligible": true,
-            "publishedAt": 1782577587000,
-            "region": "tn",
-            "scoreBreakdown": {
-              "actionabilityScore": 1.0,
-              "categoryPriorityScore": 1.0,
-              "lifecycleScore": 0.65,
-              "locationScore": 1.0,
-              "plannerFitScore": 1.0,
-              "sourceConfidenceScore": 0.58,
-              "urgencyOrExpiryScore": 0.78
-            },
-            "source": "The Hindu Chennai",
-            "sourceGroup": "the_hindu",
-            "summary": "The institutions recently won the Sivanthi Adityan Rolling Trophy",
-            "suppressionReason": null,
-            "title": "MOP Vaishnav, DG Vaishnav lead in tournament participation",
-            "url": "https://www.thehindu.com/news/cities/chennai/mop-vaishnav-dg-vaishnav-lead-in-tournament-participation/article71155295.ece"
-          },
-          "locationKey": "chennai",
-          "rankingReasons": [
-            "alerts",
-            "valid undated item with active display window",
-            "location matches configured profile",
-            "planner advisory fit"
-          ],
-          "score": 0.8485,
-          "title": "MOP Vaishnav, DG Vaishnav lead in tournament participation"
-        },
-        {
-          "category": "alerts",
-          "gates": [
-            {
-              "details": {
                 "dedupKey": "e7e58dc813f357d7"
               },
               "name": "dedup",
@@ -3087,121 +2977,6 @@
           ],
           "score": 0.8485,
           "title": "Outgoing IPS officer Seema Agrawal urges T.N. police to be a citizen-centric force"
-        },
-        {
-          "category": "alerts",
-          "gates": [
-            {
-              "details": {
-                "dedupKey": "7371a4d39d977eef"
-              },
-              "name": "dedup",
-              "reason": "unique item",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "displayUntil": 1782664173000
-              },
-              "name": "futureValidity",
-              "reason": "valid undated item with active display window",
-              "score": 0.65,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "matchScore": 1.0,
-                "matchedLocation": "chennai",
-                "relevance": "primary",
-                "scope": "exactCity"
-              },
-              "name": "location",
-              "reason": "location matches configured profile",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "hasPlace": true,
-                "hasTime": true
-              },
-              "name": "actionability",
-              "reason": "item has enough action fields",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "offerValidity",
-              "reason": "not an offer",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "severe": false
-              },
-              "name": "alertUrgency",
-              "reason": "active alert",
-              "score": 0.78,
-              "status": "PASS"
-            }
-          ],
-          "id": "797fd09d2c677322",
-          "item": {
-            "actionabilityScore": 0.7,
-            "category": "alerts",
-            "city": "Chennai",
-            "contentClass": "upahead_alert",
-            "dateConfidence": "unknown",
-            "dateSource": "none",
-            "eventEndAt": null,
-            "eventStartAt": null,
-            "expiryAt": 1782664173000,
-            "id": "797fd09d2c677322",
-            "language": "en",
-            "lifecycle": {
-              "archiveUntil": 1783268973000,
-              "contentClass": "upahead_alert",
-              "displayUntil": 1782664173000,
-              "isActionValid": true,
-              "isVisible": true,
-              "plannerEligibleByLifecycle": true,
-              "plannerPastGraceHours": 6,
-              "retentionReason": "expiryAt",
-              "withinSevenDayHorizon": true
-            },
-            "localityScore": 1.0,
-            "normalizedCategory": "alerts",
-            "plannerEligible": true,
-            "publishedAt": 1782577773000,
-            "region": "tn",
-            "scoreBreakdown": {
-              "actionabilityScore": 1.0,
-              "categoryPriorityScore": 1.0,
-              "lifecycleScore": 0.65,
-              "locationScore": 1.0,
-              "plannerFitScore": 1.0,
-              "sourceConfidenceScore": 0.58,
-              "urgencyOrExpiryScore": 0.78
-            },
-            "source": "The Hindu Chennai",
-            "sourceGroup": "the_hindu",
-            "summary": "Vignesh Raghavan points out that the lack of a countdown timer at three signals on Third Avenue in Anna Nagar catches motorists on the wrong side of the stop line; and they end up with a traffic challan for no fault of theirs",
-            "suppressionReason": null,
-            "title": "Parkour athlete ‘stumped’ by Anna Nagar signals",
-            "url": "https://www.thehindu.com/news/cities/chennai/parkour-athlete-stumped-by-anna-nagar-signals/article71155320.ece"
-          },
-          "locationKey": "chennai",
-          "rankingReasons": [
-            "alerts",
-            "valid undated item with active display window",
-            "location matches configured profile",
-            "planner advisory fit"
-          ],
-          "score": 0.8485,
-          "title": "Parkour athlete ‘stumped’ by Anna Nagar signals"
         },
         {
           "category": "alerts",
@@ -4239,11 +4014,11 @@
           "title": "Toll in ammonia leak incident rises to 16"
         },
         {
-          "category": "alerts",
+          "category": "weather_alerts",
           "gates": [
             {
               "details": {
-                "dedupKey": "aa02c370223f9a2f"
+                "dedupKey": "003bc68afb6bc4e6"
               },
               "name": "dedup",
               "reason": "unique item",
@@ -4252,7 +4027,7 @@
             },
             {
               "details": {
-                "displayUntil": 1782663906000
+                "displayUntil": 1782716011000
               },
               "name": "futureValidity",
               "reason": "valid undated item with active display window",
@@ -4298,7 +4073,122 @@
               "status": "PASS"
             }
           ],
-          "id": "e2fa533bb3dc943b",
+          "id": "ad9665462b95584b",
+          "item": {
+            "actionabilityScore": 0.7,
+            "category": "weather_alerts",
+            "city": "Chennai",
+            "contentClass": "upahead_alert",
+            "dateConfidence": "unknown",
+            "dateSource": "none",
+            "eventEndAt": null,
+            "eventStartAt": null,
+            "expiryAt": 1782716011000,
+            "id": "ad9665462b95584b",
+            "language": "en",
+            "lifecycle": {
+              "archiveUntil": 1783320811000,
+              "contentClass": "upahead_alert",
+              "displayUntil": 1782716011000,
+              "isActionValid": true,
+              "isVisible": true,
+              "plannerEligibleByLifecycle": true,
+              "plannerPastGraceHours": 6,
+              "retentionReason": "expiryAt",
+              "withinSevenDayHorizon": true
+            },
+            "localityScore": 1.0,
+            "normalizedCategory": "weather_alerts",
+            "plannerEligible": true,
+            "publishedAt": 1782629611000,
+            "region": "tn",
+            "scoreBreakdown": {
+              "actionabilityScore": 1.0,
+              "categoryPriorityScore": 0.98,
+              "lifecycleScore": 0.65,
+              "locationScore": 1.0,
+              "plannerFitScore": 1.0,
+              "sourceConfidenceScore": 0.58,
+              "urgencyOrExpiryScore": 0.78
+            },
+            "source": "Google News Chennai Weather",
+            "sourceGroup": "google_news",
+            "summary": "<a href=\"https://news.google.com/rss/articles/CBMivAFBVV95cUxPZDlBZXpIdDVUb3JTak5saXBBZnViWldQaktnaUMzRWV4eUlUV3JFa1Y2VmItckpMdmRfWWpUalljQVNYNzZGemlPZkFfeDJHY0I3LXRqR21oaDNUcWFwZUlycUZrT0xMdXBHWHpCU1p1OTk5WkhmQm9Gc0dQZHR5RlFNQWV4ZDhLQUIzZF9mODk0aXgtX2d6UXpLZldRdXBtMHRmTUFwTUNHaU1XalVKck5oNk1zSXlOTjVjNg?oc=5\" target=\"_blank\">Chennai, Nilgiris Among 15 Districts to Receive Heavy Rainfall as IMD Issues Alert</a>&nbsp;&nbsp;<font color=\"#6f6f6f\">The Morning Voice</font>",
+            "suppressionReason": null,
+            "title": "Chennai, Nilgiris Among 15 Districts to Receive Heavy Rainfall as IMD Issues Alert - The Morning Voice",
+            "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxPZDlBZXpIdDVUb3JTak5saXBBZnViWldQaktnaUMzRWV4eUlUV3JFa1Y2VmItckpMdmRfWWpUalljQVNYNzZGemlPZkFfeDJHY0I3LXRqR21oaDNUcWFwZUlycUZrT0xMdXBHWHpCU1p1OTk5WkhmQm9Gc0dQZHR5RlFNQWV4ZDhLQUIzZF9mODk0aXgtX2d6UXpLZldRdXBtMHRmTUFwTUNHaU1XalVKck5oNk1zSXlOTjVjNg?oc=5"
+          },
+          "locationKey": "chennai",
+          "rankingReasons": [
+            "weather_alerts",
+            "valid undated item with active display window",
+            "location matches configured profile",
+            "planner advisory fit"
+          ],
+          "score": 0.8455,
+          "title": "Chennai, Nilgiris Among 15 Districts to Receive Heavy Rainfall as IMD Issues Alert - The Morning Voice"
+        },
+        {
+          "category": "alerts",
+          "gates": [
+            {
+              "details": {
+                "dedupKey": "0ba2723d07ca7b35"
+              },
+              "name": "dedup",
+              "reason": "unique item",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "displayUntil": 1782714751000
+              },
+              "name": "futureValidity",
+              "reason": "valid undated item with active display window",
+              "score": 0.65,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "matchScore": 0.72,
+                "matchedLocation": "online",
+                "relevance": "onlineOnly",
+                "scope": "online"
+              },
+              "name": "location",
+              "reason": "online/global item allowed without city match",
+              "score": 0.72,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "hasPlace": true,
+                "hasTime": true
+              },
+              "name": "actionability",
+              "reason": "item has enough action fields",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "offerValidity",
+              "reason": "not an offer",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "severe": true
+              },
+              "name": "alertUrgency",
+              "reason": "severe/active alert",
+              "score": 1.0,
+              "status": "PASS"
+            }
+          ],
+          "id": "98ae1d0f79669f11",
           "item": {
             "actionabilityScore": 0.7,
             "category": "alerts",
@@ -4308,13 +4198,13 @@
             "dateSource": "none",
             "eventEndAt": null,
             "eventStartAt": null,
-            "expiryAt": 1782663906000,
-            "id": "e2fa533bb3dc943b",
+            "expiryAt": 1782714751000,
+            "id": "98ae1d0f79669f11",
             "language": "en",
             "lifecycle": {
-              "archiveUntil": 1783268706000,
+              "archiveUntil": 1783319551000,
               "contentClass": "upahead_alert",
-              "displayUntil": 1782663906000,
+              "displayUntil": 1782714751000,
               "isActionValid": true,
               "isVisible": true,
               "plannerEligibleByLifecycle": true,
@@ -4325,48 +4215,163 @@
             "localityScore": 1.0,
             "normalizedCategory": "alerts",
             "plannerEligible": true,
-            "publishedAt": 1782577506000,
+            "publishedAt": 1782628351000,
             "region": "tn",
             "scoreBreakdown": {
               "actionabilityScore": 1.0,
               "categoryPriorityScore": 1.0,
               "lifecycleScore": 0.65,
-              "locationScore": 1.0,
+              "locationScore": 0.72,
+              "plannerFitScore": 1.0,
+              "sourceConfidenceScore": 0.58,
+              "urgencyOrExpiryScore": 1.0
+            },
+            "source": "The Hindu Chennai",
+            "sourceGroup": "the_hindu",
+            "summary": "The ammonia gas leak at a seafood processing unit in Tiruvallur district, near Chennai, has emerged as one of Tamil Nadu’s deadliest industrial disasters in recent years. This report traces what exactly happened, through eyewitness accounts, survivor testimonies, and medical evidence. The incident also raises serious questions about industrial safety, emergency preparedness, and the conditions of migrants employed far away from home",
+            "suppressionReason": null,
+            "title": "Inside Tiruvallur’s ammonia gas leak nightmare",
+            "url": "https://www.thehindu.com/news/national/tamil-nadu/inside-tiruvallur-ammonia-gas-leak-nightmare-june-2026/article71154138.ece"
+          },
+          "locationKey": "chennai",
+          "rankingReasons": [
+            "alerts",
+            "valid undated item with active display window",
+            "online/global item allowed without city match",
+            "planner advisory fit"
+          ],
+          "score": 0.8145,
+          "title": "Inside Tiruvallur’s ammonia gas leak nightmare"
+        },
+        {
+          "category": "alerts",
+          "gates": [
+            {
+              "details": {
+                "dedupKey": "19d89f86e381cceb"
+              },
+              "name": "dedup",
+              "reason": "unique item",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "displayUntil": 1782675747000
+              },
+              "name": "futureValidity",
+              "reason": "valid undated item with active display window",
+              "score": 0.65,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "matchScore": 0.72,
+                "matchedLocation": "online",
+                "relevance": "onlineOnly",
+                "scope": "online"
+              },
+              "name": "location",
+              "reason": "online/global item allowed without city match",
+              "score": 0.72,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "hasPlace": true,
+                "hasTime": true
+              },
+              "name": "actionability",
+              "reason": "item has enough action fields",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "offerValidity",
+              "reason": "not an offer",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "severe": false
+              },
+              "name": "alertUrgency",
+              "reason": "active alert",
+              "score": 0.78,
+              "status": "PASS"
+            }
+          ],
+          "id": "ad1b5a08abc29f19",
+          "item": {
+            "actionabilityScore": 0.7,
+            "category": "alerts",
+            "city": "Chennai",
+            "contentClass": "upahead_alert",
+            "dateConfidence": "unknown",
+            "dateSource": "none",
+            "eventEndAt": null,
+            "eventStartAt": null,
+            "expiryAt": 1782675747000,
+            "id": "ad1b5a08abc29f19",
+            "language": "en",
+            "lifecycle": {
+              "archiveUntil": 1783280547000,
+              "contentClass": "upahead_alert",
+              "displayUntil": 1782675747000,
+              "isActionValid": true,
+              "isVisible": true,
+              "plannerEligibleByLifecycle": true,
+              "plannerPastGraceHours": 6,
+              "retentionReason": "expiryAt",
+              "withinSevenDayHorizon": true
+            },
+            "localityScore": 1.0,
+            "normalizedCategory": "alerts",
+            "plannerEligible": true,
+            "publishedAt": 1782589347000,
+            "region": "tn",
+            "scoreBreakdown": {
+              "actionabilityScore": 1.0,
+              "categoryPriorityScore": 1.0,
+              "lifecycleScore": 0.65,
+              "locationScore": 0.72,
               "plannerFitScore": 1.0,
               "sourceConfidenceScore": 0.58,
               "urgencyOrExpiryScore": 0.78
             },
             "source": "The Hindu Chennai",
             "sourceGroup": "the_hindu",
-            "summary": "Mentored by the late Bharathiraja, Bhagyaraj changed the perception of the Tamil film hero, proving that wit, intelligence, and ordinariness could be as compelling as physical prowess and a striking presence",
+            "summary": "The webinar was part of The Hindu’s Health Webinar Series",
             "suppressionReason": null,
-            "title": "Versatile actor, director, screenwriter K. Bhagyaraj no more",
-            "url": "https://www.thehindu.com/entertainment/movies/tamil-actor-and-director-k-bhagyaraj-passes-away-in-chennai/article71153422.ece"
+            "title": "Experts stress need for measures to tackle global emergencies",
+            "url": "https://www.thehindu.com/news/cities/chennai/experts-stress-need-for-measures-to-tackle-global-emergencies/article71154115.ece"
           },
           "locationKey": "chennai",
           "rankingReasons": [
             "alerts",
             "valid undated item with active display window",
-            "location matches configured profile",
+            "online/global item allowed without city match",
             "planner advisory fit"
           ],
-          "score": 0.8485,
-          "title": "Versatile actor, director, screenwriter K. Bhagyaraj no more"
+          "score": 0.7925,
+          "title": "Experts stress need for measures to tackle global emergencies"
         }
       ],
       "rankingProfile": "upAhead-v2-lifecycle-location-category",
       "scoreBreakdown": {
         "actionabilityScore": 1.0,
-        "categoryPriorityScore": 1.0,
+        "categoryPriorityScore": 0.9993,
         "lifecycleScore": 0.65,
-        "locationScore": 1.0,
+        "locationScore": 0.9813,
         "plannerFitScore": 1.0,
         "sourceConfidenceScore": 0.58,
-        "urgencyOrExpiryScore": 0.7873
+        "urgencyOrExpiryScore": 0.7947
       }
     }
   },
-  "generatedAt": 1782662947972,
+  "generatedAt": 1782669864247,
   "implementedDestinations": [
     "upAhead",
     "buzz",
@@ -4385,10 +4390,9 @@
   "schemaVersion": 1,
   "summary": {
     "actionRequired": [
-      "17 invalid/expired/duplicate Up Ahead item(s) suppressed",
+      "16 invalid/expired/duplicate Up Ahead item(s) suppressed",
       "no active offer items in ranked Up Ahead set",
       "no ranked Up Ahead item for muscat",
-      "ranked Up Ahead set is category-dominated",
       "no local Buzz item in ranked set",
       "no travel Buzz item in ranked set",
       "no active local/travel disruption item",
@@ -4396,13 +4400,13 @@
       "no ranked local/travel item for muscat",
       "no ranked local/travel item for chennai",
       "no ranked local/travel item for trichy",
-      "2 base-report-heavy Insight parent(s) demoted"
+      "1 base-report-heavy Insight parent(s) demoted"
     ],
     "destinationScores": {
       "buzz": 0.0,
-      "insight": 0.3998,
+      "insight": 0.4026,
       "localTravel": 0.0,
-      "upAhead": 0.8596
+      "upAhead": 0.8579
     },
     "destinationStatuses": {
       "buzz": "FAIL",
@@ -4410,7 +4414,7 @@
       "localTravel": "FAIL",
       "upAhead": "WARN"
     },
-    "overallScore": 0.3149,
+    "overallScore": 0.3151,
     "overallStatus": "FAIL",
     "rankingProfiles": {
       "buzz": "buzz-v2-trend-local-travel",
@@ -4419,19 +4423,16 @@
       "upAhead": "upAhead-v2-lifecycle-location-category"
     },
     "topFindings": [
-      "Best Prime Day iPad deals 2026: Prices start at just $299 - Mashable: location failed — offline/local item lacks configured location match",
-      "Best Prime Day DJI deals 2026: Save on drones, cameras, pocket mics - Mashable: location failed — offline/local item lacks configured location match",
-      "Prime Day Is Over, But 62 of Our Favorite Deals Are Still Available - WIRED: location failed — offline/local item lacks configured location match",
       "The best Pokémon deals as Prime Day wraps up — Pokémon TCG, books, games, and more on sale - Mashable: location failed — offline/local item lacks configured location match",
+      "Best expert-vetted Amazon device Prime Day deals 2026: Shop Fire TVs, Kindles, and Blink cameras - Mashable: location failed — offline/local item lacks configured location match",
+      "Best Prime Day iPad deals 2026: Prices start at just $299 - Mashable: location failed — offline/local item lacks configured location match",
+      "Prime Day Is Over, But 62 of Our Favorite Deals Are Still Available - WIRED: location failed — offline/local item lacks configured location match",
+      "Best Prime Day DJI deals 2026: Save on drones, cameras, pocket mics - Mashable: location failed — offline/local item lacks configured location match",
       "Shop 200+ of the best Prime Day 2026 deals still available before the sale ends tonight - About Amazon: location failed — offline/local item lacks configured location match",
       "Post-Prime Day earbuds deals 2026: Save on AirPods, Bose, and Nothing - Mashable: location failed — offline/local item lacks configured location match",
       "The best Prime Day drone deals: Last chance to save on DJI, Antigravity, and Holy Stone - Mashable: location failed — offline/local item lacks configured location match",
       "Amazon Prime Day officially ended last night, but these 131+ deals are still available for late shoppers - NBC News: location failed — offline/local item lacks configured location match",
       "Amazon Prime Day 2026 deals go live: Nothing Phone (3), OnePlus 13, Galaxy S25 Plus to see major price... - Moneycontrol.com: location failed — offline/local item lacks configured location match",
-      "India’s FTA with many countries has opened up export potential, says Union Minister: futureValidity failed — expired display window",
-      "India’s FTA with many countries has opened up export potential, says Union Minister: alertUrgency failed — alert expired",
-      "K. Bhagyaraj passes away: 5 must-watch films of the master writer-director: futureValidity failed — expired display window",
-      "K. Bhagyaraj passes away: 5 must-watch films of the master writer-director: alertUrgency failed — alert expired",
       "Prime Day is over, but Bose Ultra Open Earbuds are still $100 off at Amazon - Mashable: location failed — offline/local item lacks configured location match",
       "We’re Still Deal Hunting Even Though Prime Day Is Over — 60+ Deals to Shop ASAP - TODAY.com: location failed — offline/local item lacks configured location match",
       "Amazon Prime Day 2026: Top deals and biggest discounts to avail - CNBC TV18: location failed — offline/local item lacks configured location match",

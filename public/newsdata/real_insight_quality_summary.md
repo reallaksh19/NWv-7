@@ -4,30 +4,30 @@
 - Reason: -
 - Grade: `D`
 - Parents: `10`
-- Average angles: `1.3`
-- Average temporal tiers: `2`
+- Average angles: `1.4`
+- Average temporal tiers: `1.9`
 - Average evolution roles: `1.7`
-- Base report share: `0.14285714285714285`
-- Multi-angle parents: `3`
-- Weak parents: `7`
-- Story count: `587`
+- Base report share: `0.2`
+- Multi-angle parents: `4`
+- Weak parents: `6`
+- Story count: `613`
 - Source groups: `10`
-- Content hash: `49b7e506b30ee78e`
+- Content hash: `05af84ea74a58e55`
 
 ## Top parents
 
 | # | Headline | Children | Angles | Weak | Score |
 |---:|---|---:|---|---|---:|
 | 1 | Chief Election Commissioner | 2 | base_report, official_response | NO | 0.6874967197849983 |
-| 2 | India rejects Pakistan’s allegations on Karachi attack | 2 | investigative_detail, official_response | NO | 0.6265800531183316 |
-| 3 | Pakistan says carried out strikes along Afghanistan border, 29 militants killed | 2 | fact_update, official_response | NO | 0.5705933333333333 |
-| 4 | Over 1.6 lakh children given polio vaccine in Kozhikode | 2 | fact_update | YES | 0.7111800531183317 |
+| 2 | Pakistan says carried out strikes along Afghanistan border, 29 militants killed | 2 | fact_update, official_response | NO | 0.6385800531183317 |
+| 3 | India rejects Pakistan’s allegations on Karachi attack | 2 | investigative_detail, official_response | NO | 0.6265800531183316 |
+| 4 | TVS Cheema Foundation to provide interest-free loans to Engineering, nursing and diploma students | 2 | regional_followup, base_report | NO | 0.6019100000000001 |
 | 5 | Indian humanitarian assistance reaches quake-hit Venezuela: Jaishankar | 2 | base_report | YES | 0.6814967197849984 |
-| 6 | Three firefighters die battling huge wildfires on Colorado-Utah border | 2 | fact_update | YES | 0.6292600000000002 |
-| 7 | ₹1.10 crore donated to TTD for two schemes | 2 | fact_update | YES | 0.6018933333333334 |
+| 6 | Three firefighters die battling huge wildfires on Colorado-Utah border | 2 | fact_update | YES | 0.6732467197849983 |
+| 7 | ₹1.10 crore donated to TTD for two schemes | 2 | fact_update | YES | 0.6218933333333334 |
 | 8 | Iran war developments, Fed rate path cues in focus for rupee and bonds | 2 | market_reaction | YES | 0.59626 |
-| 9 | Zelenskyy condemns ’horrific attacks’ as Russian strikes kill 8, wound 35 in Ukraine | 3 | fact_update | YES | 0.5752583349983151 |
-| 10 | Private channel suspended in Pakistan for 15 days over sectarian content | 2 | official_response | YES | 0.5555933333333334 |
+| 9 | Zelenskyy condemns ’horrific attacks’ as Russian strikes kill 8, wound 35 in Ukraine | 2 | fact_update | YES | 0.5705933333333333 |
+| 10 | US Supreme Court expands presidential powers, backs Trump's firing; Fed's Lisa Cook spared for now | 2 | official_response | YES | 0.56426 |
 
 ## Warnings
 
@@ -38,28 +38,28 @@
 - Status: **FAIL**
 - Gate version: `real-insight-snapshot-ratchet-v1`
 - Grade: `D`
-- Score: `42`
+- Score: `66`
 - Parents: `10`
-- Average angles: `1.3`
-- Average temporal tiers: `2`
+- Average angles: `1.4`
+- Average temporal tiers: `1.9`
 - Average evolution roles: `1.7`
-- Base report share: `0.143`
-- Multi-angle parents: `3`
+- Base report share: `0.2`
+- Multi-angle parents: `4`
 - Top parent angles: `2`
 - Top parent children: `2`
 
 ### Failed gates
 
 - **Real snapshot grade floor** — actual `D`, required `A/B/C`. Fix: Do not accept D/F real snapshot output. Improve child selection, parent rerank, or data intake.
-- **Average visible angle count** — actual `1.3`, required `>= 1.4`. Fix: Angle-diverse child selection is not strong enough on real data.
-- **Weak parent ratio** — actual `0.7`, required `<= 0.5`. Fix: Too many weak trees remain. Repair or demote weak trees after diversity repair.
+- **Weak parent ratio** — actual `0.6`, required `<= 0.5`. Fix: Too many weak trees remain. Repair or demote weak trees after diversity repair.
 
 ### Passed gates
 
 - Parent cluster count: `10` / `>= 3`
-- Average temporal tier count: `2` / `>= 1.8`
+- Average visible angle count: `1.4` / `>= 1.4`
+- Average temporal tier count: `1.9` / `>= 1.8`
 - Average evolution role count: `1.7` / `>= 1.6`
-- Base report share: `0.143` / `<= 0.55`
-- Multi-angle parent count: `3` / `>= 1`
+- Base report share: `0.2` / `<= 0.55`
+- Multi-angle parent count: `4` / `>= 1`
 - Top parent angle count: `2` / `>= 2`
 - Top parent child depth: `2` / `>= 2`

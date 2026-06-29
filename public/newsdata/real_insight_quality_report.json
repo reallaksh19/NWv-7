@@ -1,20 +1,20 @@
 {
   "status": "PASS",
   "benchmarkVersion": "real-insight-snapshot-quality-v1",
-  "generatedAt": 1782754464768,
-  "contentHash": "49b7e506b30ee78e",
+  "generatedAt": 1782762812697,
+  "contentHash": "05af84ea74a58e55",
   "schemaVersion": 3,
   "collectorVersion": "insight-collector-json-v4",
-  "storyCount": 587,
+  "storyCount": 613,
   "sourceGroupCount": 10,
   "grade": "D",
   "parentCount": 10,
-  "avgAngles": 1.3,
-  "avgTemporalTiers": 2,
+  "avgAngles": 1.4,
+  "avgTemporalTiers": 1.9,
   "avgEvolutionRoles": 1.7,
-  "baseReportShare": 0.14285714285714285,
-  "multiAngleCount": 3,
-  "weakParentCount": 7,
+  "baseReportShare": 0.2,
+  "multiAngleCount": 4,
+  "weakParentCount": 6,
   "runtimeQualityGate": {
     "attempted": true,
     "recovered": false,
@@ -23,53 +23,53 @@
       "grade": "D",
       "tone": "danger",
       "title": "Weak insight signal",
-      "signalScore": 39,
+      "signalScore": 42,
       "sourceLabel": "Live",
       "rankedCount": 10,
-      "storyCount": 533,
+      "storyCount": 551,
       "risingCount": 0,
-      "thinCount": 7,
-      "multiAngleCount": 3,
-      "lowAngleCount": 7,
+      "thinCount": 6,
+      "multiAngleCount": 4,
+      "lowAngleCount": 6,
       "strongAngleCount": 0,
-      "avgAngles": 1.3,
-      "avgChildren": 2.1,
-      "avgScore": 0.6235611880804974,
+      "avgAngles": 1.4,
+      "avgChildren": 2,
+      "avgScore": 0.6262316932258325,
       "sourceDiversityCoverage": 10,
-      "snapshotCoverage": 6,
-      "coverageLabel": "3/10",
+      "snapshotCoverage": 5,
+      "coverageLabel": "4/10",
       "warnings": [
-        "7 cluster(s) have fewer than two visible child angles.",
+        "6 cluster(s) have fewer than two visible child angles.",
         "No cluster currently exposes three or more visible child angles.",
-        "4 cluster(s) have weak snapshot coverage.",
-        "7 cluster(s) are marked thin.",
-        "540 duplicate/near-duplicate item(s) were hidden or downgraded."
+        "5 cluster(s) have weak snapshot coverage.",
+        "6 cluster(s) are marked thin.",
+        "620 duplicate/near-duplicate item(s) were hidden or downgraded."
       ]
     },
     "after": {
       "grade": "D",
       "tone": "danger",
       "title": "Weak insight signal",
-      "signalScore": 39,
+      "signalScore": 42,
       "sourceLabel": "Live",
       "rankedCount": 10,
-      "storyCount": 533,
+      "storyCount": 551,
       "risingCount": 0,
-      "thinCount": 7,
-      "multiAngleCount": 3,
-      "lowAngleCount": 7,
+      "thinCount": 6,
+      "multiAngleCount": 4,
+      "lowAngleCount": 6,
       "strongAngleCount": 0,
-      "avgAngles": 1.3,
-      "avgChildren": 2.1,
-      "avgScore": 0.6235611880804974,
+      "avgAngles": 1.4,
+      "avgChildren": 2,
+      "avgScore": 0.6262316932258325,
       "sourceDiversityCoverage": 10,
-      "snapshotCoverage": 6,
-      "coverageLabel": "3/10",
+      "snapshotCoverage": 5,
+      "coverageLabel": "4/10",
       "warnings": [
-        "7 cluster(s) have fewer than two visible child angles.",
+        "6 cluster(s) have fewer than two visible child angles.",
         "No cluster currently exposes three or more visible child angles.",
-        "4 cluster(s) have weak snapshot coverage.",
-        "7 cluster(s) are marked thin."
+        "5 cluster(s) have weak snapshot coverage.",
+        "6 cluster(s) are marked thin."
       ]
     },
     "recoveryConfig": {
@@ -83,7 +83,7 @@
   },
   "parents": [
     {
-      "parentId": "cluster_105_4d0740f57e7ac641",
+      "parentId": "cluster_132_4d0740f57e7ac641",
       "headline": "Chief Election Commissioner",
       "score": 0.6874967197849983,
       "postTreeScore": 1.0675,
@@ -104,7 +104,28 @@
       "weakTree": false
     },
     {
-      "parentId": "cluster_402_739a1574dcd03caa",
+      "parentId": "cluster_234_1a521dcb4549981a",
+      "headline": "Pakistan says carried out strikes along Afghanistan border, 29 militants killed",
+      "score": 0.6385800531183317,
+      "postTreeScore": 1.0186,
+      "childCount": 2,
+      "angles": [
+        "fact_update",
+        "official_response"
+      ],
+      "temporalTiers": [
+        "breaking",
+        "established"
+      ],
+      "evolutionRoles": [
+        "first_report",
+        "official_response"
+      ],
+      "baseReportShare": 0,
+      "weakTree": false
+    },
+    {
+      "parentId": "cluster_432_739a1574dcd03caa",
       "headline": "India rejects Pakistan’s allegations on Karachi attack",
       "score": 0.6265800531183316,
       "postTreeScore": 1.0066,
@@ -125,34 +146,14 @@
       "weakTree": false
     },
     {
-      "parentId": "cluster_206_1a521dcb4549981a",
-      "headline": "Pakistan says carried out strikes along Afghanistan border, 29 militants killed",
-      "score": 0.5705933333333333,
-      "postTreeScore": 0.9706,
+      "parentId": "cluster_8_2bb5e0d8d98e67e5",
+      "headline": "TVS Cheema Foundation to provide interest-free loans to Engineering, nursing and diploma students",
+      "score": 0.6019100000000001,
+      "postTreeScore": 1.0019,
       "childCount": 2,
       "angles": [
-        "fact_update",
-        "official_response"
-      ],
-      "temporalTiers": [
-        "breaking",
-        "established"
-      ],
-      "evolutionRoles": [
-        "first_report",
-        "official_response"
-      ],
-      "baseReportShare": 0,
-      "weakTree": false
-    },
-    {
-      "parentId": "cluster_387_6bc2098a979974ac",
-      "headline": "Over 1.6 lakh children given polio vaccine in Kozhikode",
-      "score": 0.7111800531183317,
-      "postTreeScore": 0.6012,
-      "childCount": 2,
-      "angles": [
-        "fact_update"
+        "regional_followup",
+        "base_report"
       ],
       "temporalTiers": [
         "breaking",
@@ -162,11 +163,11 @@
         "first_report",
         "corroboration"
       ],
-      "baseReportShare": 0,
-      "weakTree": true
+      "baseReportShare": 0.5,
+      "weakTree": false
     },
     {
-      "parentId": "cluster_266_8c32eda3ef46844e",
+      "parentId": "cluster_295_8c32eda3ef46844e",
       "headline": "Indian humanitarian assistance reaches quake-hit Venezuela: Jaishankar",
       "score": 0.6814967197849984,
       "postTreeScore": 0.5715,
@@ -186,10 +187,10 @@
       "weakTree": true
     },
     {
-      "parentId": "cluster_374_74d773cb552ac5f6",
+      "parentId": "cluster_402_74d773cb552ac5f6",
       "headline": "Three firefighters die battling huge wildfires on Colorado-Utah border",
-      "score": 0.6292600000000002,
-      "postTreeScore": 0.5393,
+      "score": 0.6732467197849983,
+      "postTreeScore": 0.5632,
       "childCount": 2,
       "angles": [
         "fact_update"
@@ -206,10 +207,10 @@
       "weakTree": true
     },
     {
-      "parentId": "cluster_41_e9acf58194f1f4e0",
+      "parentId": "cluster_67_e9acf58194f1f4e0",
       "headline": "₹1.10 crore donated to TTD for two schemes",
-      "score": 0.6018933333333334,
-      "postTreeScore": 0.5119,
+      "score": 0.6218933333333334,
+      "postTreeScore": 0.5319,
       "childCount": 2,
       "angles": [
         "fact_update"
@@ -225,7 +226,7 @@
       "weakTree": true
     },
     {
-      "parentId": "cluster_283_60ab80e68940f12b",
+      "parentId": "cluster_311_60ab80e68940f12b",
       "headline": "Iran war developments, Fed rate path cues in focus for rupee and bonds",
       "score": 0.59626,
       "postTreeScore": 0.5063,
@@ -243,17 +244,16 @@
       "weakTree": true
     },
     {
-      "parentId": "cluster_71_0af375be1a2cca8a",
+      "parentId": "cluster_98_0af375be1a2cca8a",
       "headline": "Zelenskyy condemns ’horrific attacks’ as Russian strikes kill 8, wound 35 in Ukraine",
-      "score": 0.5752583349983151,
-      "postTreeScore": 0.5053,
-      "childCount": 3,
+      "score": 0.5705933333333333,
+      "postTreeScore": 0.4806,
+      "childCount": 2,
       "angles": [
         "fact_update"
       ],
       "temporalTiers": [
         "breaking",
-        "established",
         "analysis"
       ],
       "evolutionRoles": [
@@ -264,17 +264,17 @@
       "weakTree": true
     },
     {
-      "parentId": "cluster_79_afcf0fbdf251916a",
-      "headline": "Private channel suspended in Pakistan for 15 days over sectarian content",
-      "score": 0.5555933333333334,
-      "postTreeScore": 0.4656,
+      "parentId": "cluster_73_6f0a9b17cea3c757",
+      "headline": "US Supreme Court expands presidential powers, backs Trump's firing; Fed's Lisa Cook spared for now",
+      "score": 0.56426,
+      "postTreeScore": 0.4743,
       "childCount": 2,
       "angles": [
         "official_response"
       ],
       "temporalTiers": [
         "breaking",
-        "analysis"
+        "developing"
       ],
       "evolutionRoles": [
         "official_response"
@@ -291,7 +291,7 @@
     "status": "FAIL",
     "gateVersion": "real-insight-snapshot-ratchet-v1",
     "grade": "D",
-    "score": 42,
+    "score": 66,
     "passed": [
       {
         "id": "parent-count",
@@ -300,9 +300,15 @@
         "required": ">= 3"
       },
       {
+        "id": "avg-angle-count",
+        "label": "Average visible angle count",
+        "actual": 1.4,
+        "required": ">= 1.4"
+      },
+      {
         "id": "avg-temporal-tier-count",
         "label": "Average temporal tier count",
-        "actual": 2,
+        "actual": 1.9,
         "required": ">= 1.8"
       },
       {
@@ -314,13 +320,13 @@
       {
         "id": "base-report-share",
         "label": "Base report share",
-        "actual": 0.143,
+        "actual": 0.2,
         "required": "<= 0.55"
       },
       {
         "id": "multi-angle-parent-count",
         "label": "Multi-angle parent count",
-        "actual": 3,
+        "actual": 4,
         "required": ">= 1"
       },
       {
@@ -346,17 +352,9 @@
         "fix": "Do not accept D/F real snapshot output. Improve child selection, parent rerank, or data intake."
       },
       {
-        "id": "avg-angle-count",
-        "label": "Average visible angle count",
-        "actual": 1.3,
-        "required": ">= 1.4",
-        "severity": "fail",
-        "fix": "Angle-diverse child selection is not strong enough on real data."
-      },
-      {
         "id": "weak-parent-ratio",
         "label": "Weak parent ratio",
-        "actual": 0.7,
+        "actual": 0.6,
         "required": "<= 0.5",
         "severity": "warn",
         "fix": "Too many weak trees remain. Repair or demote weak trees after diversity repair."
@@ -364,16 +362,16 @@
     ],
     "summary": {
       "parentCount": 10,
-      "avgAngles": 1.3,
-      "avgTemporalTiers": 2,
+      "avgAngles": 1.4,
+      "avgTemporalTiers": 1.9,
       "avgEvolutionRoles": 1.7,
-      "baseReportShare": 0.143,
-      "multiAngleCount": 3,
-      "weakParentCount": 7,
-      "weakParentRatio": 0.7,
+      "baseReportShare": 0.2,
+      "multiAngleCount": 4,
+      "weakParentCount": 6,
+      "weakParentRatio": 0.6,
       "topParentAngles": 2,
       "topParentChildren": 2,
-      "storyCount": 587,
+      "storyCount": 613,
       "sourceGroupCount": 10
     }
   }

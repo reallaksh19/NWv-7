@@ -10,9 +10,9 @@
 - Base report share: `0.14285714285714285`
 - Multi-angle parents: `3`
 - Weak parents: `7`
-- Story count: `618`
-- Source groups: `11`
-- Content hash: `252077fe680a4309`
+- Story count: `587`
+- Source groups: `10`
+- Content hash: `49b7e506b30ee78e`
 
 ## Top parents
 
@@ -24,7 +24,7 @@
 | 4 | Over 1.6 lakh children given polio vaccine in Kozhikode | 2 | fact_update | YES | 0.7111800531183317 |
 | 5 | Indian humanitarian assistance reaches quake-hit Venezuela: Jaishankar | 2 | base_report | YES | 0.6814967197849984 |
 | 6 | Three firefighters die battling huge wildfires on Colorado-Utah border | 2 | fact_update | YES | 0.6292600000000002 |
-| 7 | ₹1.10 crore donated to TTD for two schemes | 2 | fact_update | YES | 0.6218933333333334 |
+| 7 | ₹1.10 crore donated to TTD for two schemes | 2 | fact_update | YES | 0.6018933333333334 |
 | 8 | Iran war developments, Fed rate path cues in focus for rupee and bonds | 2 | market_reaction | YES | 0.59626 |
 | 9 | Zelenskyy condemns ’horrific attacks’ as Russian strikes kill 8, wound 35 in Ukraine | 3 | fact_update | YES | 0.5752583349983151 |
 | 10 | Private channel suspended in Pakistan for 15 days over sectarian content | 2 | official_response | YES | 0.5555933333333334 |

@@ -60,7 +60,7 @@
       "gateResults": [
         {
           "details": {
-            "itemCount": 10
+            "itemCount": 9
           },
           "name": "insightEventPool",
           "reason": "rankable Insight event pool",
@@ -79,14 +79,14 @@
         "avgAnglesPerParent": 0.0,
         "baseReportHeavyParents": 2,
         "duplicateChildrenSuppressed": 0,
-        "inputCandidateCount": 10,
-        "parentClusters": 10,
-        "strongParents": 10,
+        "inputCandidateCount": 9,
+        "parentClusters": 9,
+        "strongParents": 9,
         "suppressedCandidateCount": 0,
         "weakParentsDemoted": 0
       },
       "qualityGrade": "F",
-      "qualityScore": 0.3856,
+      "qualityScore": 0.3924,
       "qualityStatus": "WARN",
       "rankedItems": [
         {
@@ -310,116 +310,6 @@
           ],
           "score": 0.389,
           "title": "Breaking News, World News and Video from Al Jazeera - Al Jazeera"
-        },
-        {
-          "category": "insightEvent",
-          "gates": [
-            {
-              "details": {
-                "storyCount": 2
-              },
-              "name": "eventCoherence",
-              "reason": "event sketch has repeated story count",
-              "score": 0.62,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "baseReportRatio": 0.0,
-                "distinctAngles": 1
-              },
-              "name": "angleDiversity",
-              "reason": "weak child angle diversity",
-              "score": 0.25,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "sourceGroupCount": 1
-              },
-              "name": "sourceDiversity",
-              "reason": "one-source event candidate",
-              "score": 0.35,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "baseReportRatio": 0.0
-              },
-              "name": "baseReportCap",
-              "reason": "base-report ratio controlled",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "childCount": 2
-              },
-              "name": "weakTree",
-              "reason": "child tree has enough depth",
-              "score": 0.5,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "duplicateChildren",
-              "reason": "no child objects to dedup",
-              "score": 0.7,
-              "status": "PASS"
-            }
-          ],
-          "id": "sketch:fcde5c7120",
-          "item": {
-            "angleCount": 1,
-            "baseReportRatio": 0.0,
-            "childScores": [],
-            "id": "sketch:fcde5c7120",
-            "representativeId": "cefd0947496f8de7",
-            "representativeTitle": "Buy Bajaj Finance; target of Rs 9000: Emkay Global Financial",
-            "scoreBreakdown": {
-              "angleDiversityScore": 0.25,
-              "eventImportanceScore": 0.59,
-              "freshnessScore": 0.0,
-              "noveltyDeltaScore": 0.44999999999999996,
-              "sourceAuthorityScore": 0.38,
-              "sourceDiversityScore": 0.35,
-              "temporalEvolutionScore": 0.37
-            },
-            "slotCount": 1,
-            "slots": [
-              "minus24h"
-            ],
-            "sourceGroupCount": 1,
-            "sourceGroups": [
-              "moneycontrol"
-            ],
-            "storyCount": 2,
-            "storyIds": [
-              "cefd0947496f8de7",
-              "d0020e471404281a"
-            ],
-            "topAngles": [
-              {
-                "angle": "market_reaction",
-                "count": 2
-              }
-            ],
-            "topTokens": [
-              "bajaj",
-              "finance",
-              "target",
-              "emkay"
-            ],
-            "topicKey": "bajaj|finance|target"
-          },
-          "locationKey": "event",
-          "rankingReasons": [
-            "event sketch has repeated story count",
-            "weak child angle diversity",
-            "one-source event candidate"
-          ],
-          "score": 0.389,
-          "title": "Buy Bajaj Finance; target of Rs 9000: Emkay Global Financial"
         },
         {
           "category": "insightEvent",
@@ -1159,14 +1049,14 @@
               "status": "PASS"
             }
           ],
-          "id": "sketch:bbd7147cc9",
+          "id": "sketch:c4ed63b613",
           "item": {
             "angleCount": 1,
             "baseReportRatio": 1.0,
             "childScores": [],
-            "id": "sketch:bbd7147cc9",
-            "representativeId": "55bc91c985238054",
-            "representativeTitle": "Top news of the day: May 24, 2026 - The Hindu",
+            "id": "sketch:c4ed63b613",
+            "representativeId": "36d64ad5075450cb",
+            "representativeTitle": "32 fall ill after eating snacks in Kakinada",
             "scoreBreakdown": {
               "angleDiversityScore": 0.25,
               "eventImportanceScore": 0.59,
@@ -1174,20 +1064,21 @@
               "noveltyDeltaScore": 0.44999999999999996,
               "sourceAuthorityScore": 0.38,
               "sourceDiversityScore": 0.35,
-              "temporalEvolutionScore": 0.37
+              "temporalEvolutionScore": 0.49
             },
-            "slotCount": 1,
+            "slotCount": 2,
             "slots": [
+              "minus4h",
               "now"
             ],
             "sourceGroupCount": 1,
             "sourceGroups": [
-              "google_news"
+              "the_hindu"
             ],
             "storyCount": 2,
             "storyIds": [
-              "55bc91c985238054",
-              "9e0466ab28f6112e"
+              "36d64ad5075450cb",
+              "ece6a0df9e874f19"
             ],
             "topAngles": [
               {
@@ -1196,9 +1087,12 @@
               }
             ],
             "topTokens": [
-              "hindu"
+              "fall",
+              "eating",
+              "snacks",
+              "kakinada"
             ],
-            "topicKey": "hindu"
+            "topicKey": "fall|eating|snacks"
           },
           "locationKey": "event",
           "rankingReasons": [
@@ -1206,19 +1100,19 @@
             "weak child angle diversity",
             "one-source event candidate"
           ],
-          "score": 0.1751,
-          "title": "Top news of the day: May 24, 2026 - The Hindu"
+          "score": 0.1805,
+          "title": "32 fall ill after eating snacks in Kakinada"
         }
       ],
       "rankingProfile": "insight-v2-event-angle-tree",
       "scoreBreakdown": {
         "angleDiversityScore": 0.25,
-        "eventImportanceScore": 0.626,
+        "eventImportanceScore": 0.63,
         "freshnessScore": 0.0,
-        "noveltyDeltaScore": 0.48,
-        "sourceAuthorityScore": 0.452,
-        "sourceDiversityScore": 0.461,
-        "temporalEvolutionScore": 0.43
+        "noveltyDeltaScore": 0.4833,
+        "sourceAuthorityScore": 0.46,
+        "sourceDiversityScore": 0.4733,
+        "temporalEvolutionScore": 0.45
       }
     },
     "localTravel": {
@@ -1278,7 +1172,7 @@
     },
     "upAhead": {
       "actionableFindings": [
-        "22 invalid/expired/duplicate Up Ahead item(s) suppressed",
+        "24 invalid/expired/duplicate Up Ahead item(s) suppressed",
         "no active offer items in ranked Up Ahead set",
         "no ranked Up Ahead item for muscat",
         "ranked Up Ahead set is category-dominated"
@@ -1295,16 +1189,16 @@
         "Best Prime Day DJI deals 2026: Save on drones, cameras, pocket mics - Mashable: location failed — offline/local item lacks configured location match",
         "Prime Day Is Over, But 62 of Our Favorite Deals Are Still Available - WIRED: location failed — offline/local item lacks configured location match",
         "Best Amazon Prime Day Echo and Alexa deals 2026: Shop smart speakers, smart displays, and bedside clocks - Mashable: location failed — offline/local item lacks configured location match",
+        "Teachers, parents worry over lack of clarity on three-language policy: futureValidity failed — expired display window",
+        "Teachers, parents worry over lack of clarity on three-language policy: alertUrgency failed — alert expired",
+        "Fans and family bid a tearful farewell to Bhagyaraj, funeral held with full state honours: futureValidity failed — expired display window",
+        "Fans and family bid a tearful farewell to Bhagyaraj, funeral held with full state honours: alertUrgency failed — alert expired",
         "Last-chance Prime Day drone deal: Save $60 on DJI Neo 4K drone - Mashable: location failed — offline/local item lacks configured location match",
         "Best expert-vetted Amazon device Prime Day deals 2026: Shop Fire TVs, Kindles, and Blink cameras - Mashable: location failed — offline/local item lacks configured location match",
         "Students take part in Young Indians Tiruchi’s mock Parliament session: futureValidity failed — expired display window",
         "Students take part in Young Indians Tiruchi’s mock Parliament session: alertUrgency failed — alert expired",
         "Best Prime Day iPad deals 2026: Prices start at just $299 - Mashable: location failed — offline/local item lacks configured location match",
-        "The best Prime Day drone deals: Last chance to save on DJI, Antigravity, and Holy Stone - Mashable: location failed — offline/local item lacks configured location match",
-        "Amazon Prime Day officially ended last night, but these 131+ deals are still available for late shoppers - NBC News: location failed — offline/local item lacks configured location match",
-        "Amazon Prime Day 2026 deals go live: Nothing Phone (3), OnePlus 13, Galaxy S25 Plus to see major price... - Moneycontrol.com: location failed — offline/local item lacks configured location match",
-        "Prime Day is over, but secret savings remain. Here's what we found - Gulf Coast News and Weather: futureValidity failed — expired display window",
-        "Prime Day is over, but secret savings remain. Here's what we found - Gulf Coast News and Weather: offerValidity failed — offer expired"
+        "The best Prime Day drone deals: Last chance to save on DJI, Antigravity, and Holy Stone - Mashable: location failed — offline/local item lacks configured location match"
       ],
       "gateResults": [
         {
@@ -1337,8 +1231,8 @@
         "festivals": 0,
         "inputItemCount": 68,
         "locationCounts": {
-          "chennai": 22,
-          "trichy": 8
+          "chennai": 21,
+          "trichy": 9
         },
         "locationsCovered": [
           "chennai",
@@ -1348,7 +1242,7 @@
         "onlineOffers": 0,
         "plannerAdvisoryItems": 30,
         "rankedItemCount": 30,
-        "suppressedItemCount": 22
+        "suppressedItemCount": 24
       },
       "qualityGrade": "B",
       "qualityScore": 0.8607,
@@ -2273,121 +2167,6 @@
           ],
           "score": 0.8485,
           "title": "Death of boy: Pudukottai police register murder case, nab a juvenile"
-        },
-        {
-          "category": "alerts",
-          "gates": [
-            {
-              "details": {
-                "dedupKey": "6a9ca8255b23afbf"
-              },
-              "name": "dedup",
-              "reason": "unique item",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "displayUntil": 1782753612000
-              },
-              "name": "futureValidity",
-              "reason": "valid undated item with active display window",
-              "score": 0.65,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "matchScore": 1.0,
-                "matchedLocation": "chennai",
-                "relevance": "primary",
-                "scope": "exactCity"
-              },
-              "name": "location",
-              "reason": "location matches configured profile",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "hasPlace": true,
-                "hasTime": true
-              },
-              "name": "actionability",
-              "reason": "item has enough action fields",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "offerValidity",
-              "reason": "not an offer",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "severe": false
-              },
-              "name": "alertUrgency",
-              "reason": "active alert",
-              "score": 0.78,
-              "status": "PASS"
-            }
-          ],
-          "id": "6edbc3c64af5ce48",
-          "item": {
-            "actionabilityScore": 0.7,
-            "category": "alerts",
-            "city": "Chennai",
-            "contentClass": "upahead_alert",
-            "dateConfidence": "unknown",
-            "dateSource": "none",
-            "eventEndAt": null,
-            "eventStartAt": null,
-            "expiryAt": 1782753612000,
-            "id": "6edbc3c64af5ce48",
-            "language": "en",
-            "lifecycle": {
-              "archiveUntil": 1783358412000,
-              "contentClass": "upahead_alert",
-              "displayUntil": 1782753612000,
-              "isActionValid": true,
-              "isVisible": true,
-              "plannerEligibleByLifecycle": true,
-              "plannerPastGraceHours": 6,
-              "retentionReason": "expiryAt",
-              "withinSevenDayHorizon": true
-            },
-            "localityScore": 1.0,
-            "normalizedCategory": "alerts",
-            "plannerEligible": true,
-            "publishedAt": 1782667212000,
-            "region": "tn",
-            "scoreBreakdown": {
-              "actionabilityScore": 1.0,
-              "categoryPriorityScore": 1.0,
-              "lifecycleScore": 0.65,
-              "locationScore": 1.0,
-              "plannerFitScore": 1.0,
-              "sourceConfidenceScore": 0.58,
-              "urgencyOrExpiryScore": 0.78
-            },
-            "source": "The Hindu Chennai",
-            "sourceGroup": "the_hindu",
-            "summary": "",
-            "suppressionReason": null,
-            "title": "Fans and family bid a tearful farewell to Bhagyaraj, funeral held with full state honours",
-            "url": "https://www.thehindu.com/news/cities/chennai/fans-and-family-bid-a-tearful-farewell-to-bhagyaraj-funeral-held-with-full-state-honours/article71157878.ece"
-          },
-          "locationKey": "chennai",
-          "rankingReasons": [
-            "alerts",
-            "valid undated item with active display window",
-            "location matches configured profile",
-            "planner advisory fit"
-          ],
-          "score": 0.8485,
-          "title": "Fans and family bid a tearful farewell to Bhagyaraj, funeral held with full state honours"
         },
         {
           "category": "alerts",
@@ -4349,121 +4128,6 @@
           "gates": [
             {
               "details": {
-                "dedupKey": "2bd65312a21cd80a"
-              },
-              "name": "dedup",
-              "reason": "unique item",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "displayUntil": 1782754413000
-              },
-              "name": "futureValidity",
-              "reason": "valid undated item with active display window",
-              "score": 0.65,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "matchScore": 1.0,
-                "matchedLocation": "chennai",
-                "relevance": "primary",
-                "scope": "exactCity"
-              },
-              "name": "location",
-              "reason": "location matches configured profile",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "hasPlace": true,
-                "hasTime": true
-              },
-              "name": "actionability",
-              "reason": "item has enough action fields",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "offerValidity",
-              "reason": "not an offer",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "severe": false
-              },
-              "name": "alertUrgency",
-              "reason": "active alert",
-              "score": 0.78,
-              "status": "PASS"
-            }
-          ],
-          "id": "9cc36e1b0290a6ed",
-          "item": {
-            "actionabilityScore": 0.7,
-            "category": "alerts",
-            "city": "Chennai",
-            "contentClass": "upahead_alert",
-            "dateConfidence": "unknown",
-            "dateSource": "none",
-            "eventEndAt": null,
-            "eventStartAt": null,
-            "expiryAt": 1782754413000,
-            "id": "9cc36e1b0290a6ed",
-            "language": "en",
-            "lifecycle": {
-              "archiveUntil": 1783359213000,
-              "contentClass": "upahead_alert",
-              "displayUntil": 1782754413000,
-              "isActionValid": true,
-              "isVisible": true,
-              "plannerEligibleByLifecycle": true,
-              "plannerPastGraceHours": 6,
-              "retentionReason": "expiryAt",
-              "withinSevenDayHorizon": true
-            },
-            "localityScore": 1.0,
-            "normalizedCategory": "alerts",
-            "plannerEligible": true,
-            "publishedAt": 1782668013000,
-            "region": "tn",
-            "scoreBreakdown": {
-              "actionabilityScore": 1.0,
-              "categoryPriorityScore": 1.0,
-              "lifecycleScore": 0.65,
-              "locationScore": 1.0,
-              "plannerFitScore": 1.0,
-              "sourceConfidenceScore": 0.58,
-              "urgencyOrExpiryScore": 0.78
-            },
-            "source": "The Hindu Chennai",
-            "sourceGroup": "the_hindu",
-            "summary": "Parents of Class IX and X students are frustrated with the lack of direction from CBSE and school authorities as students have to make changes to their second language",
-            "suppressionReason": null,
-            "title": "Teachers, parents worry over lack of clarity on three-language policy",
-            "url": "https://www.thehindu.com/news/cities/chennai/teachers-parents-worry-over-lack-of-clarity-on-three-language-policy/article71105711.ece"
-          },
-          "locationKey": "chennai",
-          "rankingReasons": [
-            "alerts",
-            "valid undated item with active display window",
-            "location matches configured profile",
-            "planner advisory fit"
-          ],
-          "score": 0.8485,
-          "title": "Teachers, parents worry over lack of clarity on three-language policy"
-        },
-        {
-          "category": "alerts",
-          "gates": [
-            {
-              "details": {
                 "dedupKey": "b79ef959a1d77580"
               },
               "name": "dedup",
@@ -4803,6 +4467,236 @@
           ],
           "score": 0.8485,
           "title": "Why are more institutes switching to co-educational system?"
+        },
+        {
+          "category": "alerts",
+          "gates": [
+            {
+              "details": {
+                "dedupKey": "0e4cdffb86d9a0eb"
+              },
+              "name": "dedup",
+              "reason": "unique item",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "displayUntil": 1782806263000
+              },
+              "name": "futureValidity",
+              "reason": "valid undated item with active display window",
+              "score": 0.65,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "matchScore": 1.0,
+                "matchedLocation": "chennai",
+                "relevance": "primary",
+                "scope": "exactCity"
+              },
+              "name": "location",
+              "reason": "location matches configured profile",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "hasPlace": true,
+                "hasTime": true
+              },
+              "name": "actionability",
+              "reason": "item has enough action fields",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "offerValidity",
+              "reason": "not an offer",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "severe": false
+              },
+              "name": "alertUrgency",
+              "reason": "active alert",
+              "score": 0.78,
+              "status": "PASS"
+            }
+          ],
+          "id": "a4036f771959e780",
+          "item": {
+            "actionabilityScore": 0.7,
+            "category": "alerts",
+            "city": "Chennai",
+            "contentClass": "upahead_alert",
+            "dateConfidence": "unknown",
+            "dateSource": "none",
+            "eventEndAt": null,
+            "eventStartAt": null,
+            "expiryAt": 1782806263000,
+            "id": "a4036f771959e780",
+            "language": "en",
+            "lifecycle": {
+              "archiveUntil": 1783411063000,
+              "contentClass": "upahead_alert",
+              "displayUntil": 1782806263000,
+              "isActionValid": true,
+              "isVisible": true,
+              "plannerEligibleByLifecycle": true,
+              "plannerPastGraceHours": 6,
+              "retentionReason": "expiryAt",
+              "withinSevenDayHorizon": true
+            },
+            "localityScore": 1.0,
+            "normalizedCategory": "alerts",
+            "plannerEligible": true,
+            "publishedAt": 1782719863000,
+            "region": "tn",
+            "scoreBreakdown": {
+              "actionabilityScore": 1.0,
+              "categoryPriorityScore": 1.0,
+              "lifecycleScore": 0.65,
+              "locationScore": 1.0,
+              "plannerFitScore": 1.0,
+              "sourceConfidenceScore": 0.58,
+              "urgencyOrExpiryScore": 0.78
+            },
+            "source": "The Hindu Chennai",
+            "sourceGroup": "the_hindu",
+            "summary": "",
+            "suppressionReason": null,
+            "title": "Women, elderly bear brunt of nuisance near Tasmac outlet, say Chennai’s Kasturba Nagar residents",
+            "url": "https://www.thehindu.com/news/cities/chennai/close-this-tasmac-outlet-too-residents-of-kasturba-nagar-urge-cm-vijay/article71062573.ece"
+          },
+          "locationKey": "chennai",
+          "rankingReasons": [
+            "alerts",
+            "valid undated item with active display window",
+            "location matches configured profile",
+            "planner advisory fit"
+          ],
+          "score": 0.8485,
+          "title": "Women, elderly bear brunt of nuisance near Tasmac outlet, say Chennai’s Kasturba Nagar residents"
+        },
+        {
+          "category": "alerts",
+          "gates": [
+            {
+              "details": {
+                "dedupKey": "dd9b26a2805248d8"
+              },
+              "name": "dedup",
+              "reason": "unique item",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "displayUntil": 1782826147000
+              },
+              "name": "futureValidity",
+              "reason": "valid undated item with active display window",
+              "score": 0.65,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "matchScore": 1.0,
+                "matchedLocation": "trichy",
+                "relevance": "primary",
+                "scope": "exactCity"
+              },
+              "name": "location",
+              "reason": "location matches configured profile",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "hasPlace": true,
+                "hasTime": true
+              },
+              "name": "actionability",
+              "reason": "item has enough action fields",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "offerValidity",
+              "reason": "not an offer",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "severe": false
+              },
+              "name": "alertUrgency",
+              "reason": "active alert",
+              "score": 0.78,
+              "status": "PASS"
+            }
+          ],
+          "id": "280955a963862a78",
+          "item": {
+            "actionabilityScore": 0.7,
+            "category": "alerts",
+            "city": "Trichy",
+            "contentClass": "upahead_alert",
+            "dateConfidence": "unknown",
+            "dateSource": "none",
+            "eventEndAt": null,
+            "eventStartAt": null,
+            "expiryAt": 1782826147000,
+            "id": "280955a963862a78",
+            "language": "en",
+            "lifecycle": {
+              "archiveUntil": 1783430947000,
+              "contentClass": "upahead_alert",
+              "displayUntil": 1782826147000,
+              "isActionValid": true,
+              "isVisible": true,
+              "plannerEligibleByLifecycle": true,
+              "plannerPastGraceHours": 6,
+              "retentionReason": "expiryAt",
+              "withinSevenDayHorizon": true
+            },
+            "localityScore": 0.9,
+            "normalizedCategory": "alerts",
+            "plannerEligible": true,
+            "publishedAt": 1782739747000,
+            "region": "tn",
+            "scoreBreakdown": {
+              "actionabilityScore": 1.0,
+              "categoryPriorityScore": 1.0,
+              "lifecycleScore": 0.65,
+              "locationScore": 1.0,
+              "plannerFitScore": 1.0,
+              "sourceConfidenceScore": 0.58,
+              "urgencyOrExpiryScore": 0.78
+            },
+            "source": "The Hindu Trichy",
+            "sourceGroup": "the_hindu",
+            "summary": "The Corporation allocated ₹16.25 crore in its 2022–23 budget to construct one multipurpose ward office in each of the 65 wards and each 1,000 sq. ft. building was constructed at a cost of ₹25 lakh",
+            "suppressionReason": null,
+            "title": "e-Sevai centres in Tiruchi ward offices yet to become functional",
+            "url": "https://www.thehindu.com/news/cities/Tiruchirapalli/e-sevai-centres-in-tiruchi-ward-offices-yet-to-become-functional/article71161457.ece"
+          },
+          "locationKey": "trichy",
+          "rankingReasons": [
+            "alerts",
+            "valid undated item with active display window",
+            "location matches configured profile",
+            "planner advisory fit"
+          ],
+          "score": 0.8485,
+          "title": "e-Sevai centres in Tiruchi ward offices yet to become functional"
         }
       ],
       "rankingProfile": "upAhead-v2-lifecycle-location-category",
@@ -4817,7 +4711,7 @@
       }
     }
   },
-  "generatedAt": 1782750305805,
+  "generatedAt": 1782754465506,
   "implementedDestinations": [
     "upAhead",
     "buzz",
@@ -4836,7 +4730,7 @@
   "schemaVersion": 1,
   "summary": {
     "actionRequired": [
-      "22 invalid/expired/duplicate Up Ahead item(s) suppressed",
+      "24 invalid/expired/duplicate Up Ahead item(s) suppressed",
       "no active offer items in ranked Up Ahead set",
       "no ranked Up Ahead item for muscat",
       "ranked Up Ahead set is category-dominated",
@@ -4851,7 +4745,7 @@
     ],
     "destinationScores": {
       "buzz": 0.0,
-      "insight": 0.3856,
+      "insight": 0.3924,
       "localTravel": 0.0,
       "upAhead": 0.8607
     },
@@ -4861,7 +4755,7 @@
       "localTravel": "FAIL",
       "upAhead": "WARN"
     },
-    "overallScore": 0.3116,
+    "overallScore": 0.3133,
     "overallStatus": "FAIL",
     "rankingProfiles": {
       "buzz": "buzz-v2-trend-local-travel",
@@ -4880,16 +4774,16 @@
       "Best Prime Day DJI deals 2026: Save on drones, cameras, pocket mics - Mashable: location failed — offline/local item lacks configured location match",
       "Prime Day Is Over, But 62 of Our Favorite Deals Are Still Available - WIRED: location failed — offline/local item lacks configured location match",
       "Best Amazon Prime Day Echo and Alexa deals 2026: Shop smart speakers, smart displays, and bedside clocks - Mashable: location failed — offline/local item lacks configured location match",
+      "Teachers, parents worry over lack of clarity on three-language policy: futureValidity failed — expired display window",
+      "Teachers, parents worry over lack of clarity on three-language policy: alertUrgency failed — alert expired",
+      "Fans and family bid a tearful farewell to Bhagyaraj, funeral held with full state honours: futureValidity failed — expired display window",
+      "Fans and family bid a tearful farewell to Bhagyaraj, funeral held with full state honours: alertUrgency failed — alert expired",
       "Last-chance Prime Day drone deal: Save $60 on DJI Neo 4K drone - Mashable: location failed — offline/local item lacks configured location match",
       "Best expert-vetted Amazon device Prime Day deals 2026: Shop Fire TVs, Kindles, and Blink cameras - Mashable: location failed — offline/local item lacks configured location match",
       "Students take part in Young Indians Tiruchi’s mock Parliament session: futureValidity failed — expired display window",
       "Students take part in Young Indians Tiruchi’s mock Parliament session: alertUrgency failed — alert expired",
       "Best Prime Day iPad deals 2026: Prices start at just $299 - Mashable: location failed — offline/local item lacks configured location match",
-      "The best Prime Day drone deals: Last chance to save on DJI, Antigravity, and Holy Stone - Mashable: location failed — offline/local item lacks configured location match",
-      "Amazon Prime Day officially ended last night, but these 131+ deals are still available for late shoppers - NBC News: location failed — offline/local item lacks configured location match",
-      "Amazon Prime Day 2026 deals go live: Nothing Phone (3), OnePlus 13, Galaxy S25 Plus to see major price... - Moneycontrol.com: location failed — offline/local item lacks configured location match",
-      "Prime Day is over, but secret savings remain. Here's what we found - Gulf Coast News and Weather: futureValidity failed — expired display window",
-      "Prime Day is over, but secret savings remain. Here's what we found - Gulf Coast News and Weather: offerValidity failed — offer expired"
+      "The best Prime Day drone deals: Last chance to save on DJI, Antigravity, and Holy Stone - Mashable: location failed — offline/local item lacks configured location match"
     ]
   }
 }

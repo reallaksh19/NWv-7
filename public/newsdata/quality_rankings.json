@@ -60,7 +60,7 @@
       "gateResults": [
         {
           "details": {
-            "itemCount": 10
+            "itemCount": 11
           },
           "name": "insightEventPool",
           "reason": "rankable Insight event pool",
@@ -79,14 +79,14 @@
         "avgAnglesPerParent": 0.0,
         "baseReportHeavyParents": 3,
         "duplicateChildrenSuppressed": 0,
-        "inputCandidateCount": 10,
-        "parentClusters": 10,
-        "strongParents": 10,
+        "inputCandidateCount": 11,
+        "parentClusters": 11,
+        "strongParents": 11,
         "suppressedCandidateCount": 0,
         "weakParentsDemoted": 0
       },
       "qualityGrade": "F",
-      "qualityScore": 0.382,
+      "qualityScore": 0.3783,
       "qualityStatus": "WARN",
       "rankedItems": [
         {
@@ -539,6 +539,116 @@
           ],
           "score": 0.389,
           "title": "Ahead of Market: 10 things that will decide stock market action on Thursday"
+        },
+        {
+          "category": "insightEvent",
+          "gates": [
+            {
+              "details": {
+                "storyCount": 2
+              },
+              "name": "eventCoherence",
+              "reason": "event sketch has repeated story count",
+              "score": 0.62,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "baseReportRatio": 0.0,
+                "distinctAngles": 1
+              },
+              "name": "angleDiversity",
+              "reason": "weak child angle diversity",
+              "score": 0.25,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "sourceGroupCount": 1
+              },
+              "name": "sourceDiversity",
+              "reason": "one-source event candidate",
+              "score": 0.35,
+              "status": "WARN"
+            },
+            {
+              "details": {
+                "baseReportRatio": 0.0
+              },
+              "name": "baseReportCap",
+              "reason": "base-report ratio controlled",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "childCount": 2
+              },
+              "name": "weakTree",
+              "reason": "child tree has enough depth",
+              "score": 0.5,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "duplicateChildren",
+              "reason": "no child objects to dedup",
+              "score": 0.7,
+              "status": "PASS"
+            }
+          ],
+          "id": "sketch:fcde5c7120",
+          "item": {
+            "angleCount": 1,
+            "baseReportRatio": 0.0,
+            "childScores": [],
+            "id": "sketch:fcde5c7120",
+            "representativeId": "cefd0947496f8de7",
+            "representativeTitle": "Buy Bajaj Finance; target of Rs 9000: Emkay Global Financial",
+            "scoreBreakdown": {
+              "angleDiversityScore": 0.25,
+              "eventImportanceScore": 0.59,
+              "freshnessScore": 0.0,
+              "noveltyDeltaScore": 0.44999999999999996,
+              "sourceAuthorityScore": 0.38,
+              "sourceDiversityScore": 0.35,
+              "temporalEvolutionScore": 0.37
+            },
+            "slotCount": 1,
+            "slots": [
+              "minus24h"
+            ],
+            "sourceGroupCount": 1,
+            "sourceGroups": [
+              "moneycontrol"
+            ],
+            "storyCount": 2,
+            "storyIds": [
+              "cefd0947496f8de7",
+              "d0020e471404281a"
+            ],
+            "topAngles": [
+              {
+                "angle": "market_reaction",
+                "count": 2
+              }
+            ],
+            "topTokens": [
+              "bajaj",
+              "finance",
+              "target",
+              "emkay"
+            ],
+            "topicKey": "bajaj|finance|target"
+          },
+          "locationKey": "event",
+          "rankingReasons": [
+            "event sketch has repeated story count",
+            "weak child angle diversity",
+            "one-source event candidate"
+          ],
+          "score": 0.389,
+          "title": "Buy Bajaj Finance; target of Rs 9000: Emkay Global Financial"
         },
         {
           "category": "insightEvent",
@@ -1214,13 +1324,13 @@
       ],
       "rankingProfile": "insight-v2-event-angle-tree",
       "scoreBreakdown": {
-        "angleDiversityScore": 0.303,
-        "eventImportanceScore": 0.655,
+        "angleDiversityScore": 0.2982,
+        "eventImportanceScore": 0.6491,
         "freshnessScore": 0.0,
-        "noveltyDeltaScore": 0.47,
-        "sourceAuthorityScore": 0.428,
-        "sourceDiversityScore": 0.424,
-        "temporalEvolutionScore": 0.394
+        "noveltyDeltaScore": 0.4682,
+        "sourceAuthorityScore": 0.4236,
+        "sourceDiversityScore": 0.4173,
+        "temporalEvolutionScore": 0.3918
       }
     },
     "localTravel": {
@@ -4048,7 +4158,7 @@
             },
             {
               "details": {
-                "hoursLeft": 14.13
+                "hoursLeft": 12.54
               },
               "name": "offerValidity",
               "reason": "offer expires soon",
@@ -4163,7 +4273,7 @@
             },
             {
               "details": {
-                "hoursLeft": 2.27
+                "hoursLeft": 0.68
               },
               "name": "offerValidity",
               "reason": "offer expires soon",
@@ -4278,7 +4388,7 @@
             },
             {
               "details": {
-                "hoursLeft": 10.6
+                "hoursLeft": 9.02
               },
               "name": "offerValidity",
               "reason": "offer expires soon",
@@ -4393,7 +4503,7 @@
             },
             {
               "details": {
-                "hoursLeft": 17.45
+                "hoursLeft": 15.86
               },
               "name": "offerValidity",
               "reason": "offer expires soon",
@@ -4508,7 +4618,7 @@
             },
             {
               "details": {
-                "hoursLeft": 7.16
+                "hoursLeft": 5.58
               },
               "name": "offerValidity",
               "reason": "offer expires soon",
@@ -4623,7 +4733,7 @@
             },
             {
               "details": {
-                "hoursLeft": 8.43
+                "hoursLeft": 6.84
               },
               "name": "offerValidity",
               "reason": "offer expires soon",
@@ -4698,7 +4808,7 @@
           "gates": [
             {
               "details": {
-                "dedupKey": "4497d3f357a766b5"
+                "dedupKey": "d5cbea97e658ef99"
               },
               "name": "dedup",
               "reason": "unique item",
@@ -4707,7 +4817,7 @@
             },
             {
               "details": {
-                "displayUntil": 1782963097000
+                "displayUntil": 1783022580000
               },
               "name": "futureValidity",
               "reason": "valid undated item with active display window",
@@ -4738,7 +4848,7 @@
             },
             {
               "details": {
-                "hoursLeft": 7.68
+                "hoursLeft": 22.61
               },
               "name": "offerValidity",
               "reason": "offer expires soon",
@@ -4753,7 +4863,7 @@
               "status": "PASS"
             }
           ],
-          "id": "cc96ed6e61746905",
+          "id": "ae01c057c4e6781a",
           "item": {
             "actionabilityScore": 0.65,
             "category": "shopping",
@@ -4763,13 +4873,13 @@
             "dateSource": "none",
             "eventEndAt": null,
             "eventStartAt": null,
-            "expiryAt": 1782963097000,
-            "id": "cc96ed6e61746905",
+            "expiryAt": 1783022580000,
+            "id": "ae01c057c4e6781a",
             "language": "en",
             "lifecycle": {
-              "archiveUntil": 1783567897000,
+              "archiveUntil": 1783627380000,
               "contentClass": "upahead_offer",
-              "displayUntil": 1782963097000,
+              "displayUntil": 1783022580000,
               "isActionValid": true,
               "isVisible": true,
               "plannerEligibleByLifecycle": true,
@@ -4780,7 +4890,7 @@
             "localityScore": 0.3,
             "normalizedCategory": "shopping",
             "plannerEligible": true,
-            "publishedAt": 1782790297000,
+            "publishedAt": 1782849780000,
             "region": null,
             "scoreBreakdown": {
               "actionabilityScore": 0.8500000000000001,
@@ -4793,10 +4903,10 @@
             },
             "source": "Google News Shopping",
             "sourceGroup": "google_news",
-            "summary": "<a href=\"https://news.google.com/rss/articles/CBMisgFBVV95cUxNbEozMENSMU9JNmNrdkZveGxORVY4bWQyUDMyLWtxRVJETXFKRURGeGdsZGFMeUJNUnB5ZGRZU2NkUkZqUjNqMTJ4djd3WU5ubWxraUJHWjBRS0JWOHloRVhUUy13T0VyRU8tRU9mV2g5a0JEdFpwNkI0VnVOX0wwdGdrZ1R4eXVGOHRFLWdCRFlEbW9aYVMzSkRkY0NDTTlZSE1wLThydHZhcGk4dnQ2SldB0gG3AUFVX3lxTE9oU3JkQVlRSTJ1Qkx4NW9vOG90bm41NElqT0JuNHJWX2c1UnlQUDNaVUdRcmgyZzJTODl2U183aFJDM1ZlV2wtaVowbEQ4eUtoSFpQd2FaSkQ5TjFVbEktNWx3Sk9qajNMaWNZbVJ6QUtnZHZPd2Q3TXVMdml6SS1NT25KMVMwQzVodlJwRFNrbERzTXVGbWk4VGJvVVFfSGtKVnA1QzdUdkk0TF9NWklrU3B1cVZBOA?oc=5\" target=\"_blank\">Samsung Galaxy S25 Ultra Price Drops Below Rs. 85,000 During Amazon Prime Day Sale</a>&nbsp;&nbsp;<font color=\"#6f6f6f\">Gadgets 360</font>",
+            "summary": "<a href=\"https://news.google.com/rss/articles/CBMiigFBVV95cUxNWE1sdTlGVUVqQ2hjU0dCTUNkbnd0U21CTHNSUGtFaTNXZnoyUDVOU1o0SlZra0tzZHNXU3hLUXl6T0FNb3BwbEVmMVRiN09hWlR0ejNOalVmWEl1TUN4OVMzNkR1M0pHMjUtSjBDVGZpZ2ZfZHZIOTN3cmlpSFZYWkJxbTR6ZkhJNFE?oc=5\" target=\"_blank\">Post-Prime Day Savings Are Still Going Strong. Take up to 50% off Editor-Tested Tools, Grills, TVs, and More</a>&nbsp;&nbsp;<font color=\"#6f6f6f\">Popular Mechanics</font>",
             "suppressionReason": null,
-            "title": "Samsung Galaxy S25 Ultra Price Drops Below Rs. 85,000 During Amazon Prime Day Sale - Gadgets 360",
-            "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxNbEozMENSMU9JNmNrdkZveGxORVY4bWQyUDMyLWtxRVJETXFKRURGeGdsZGFMeUJNUnB5ZGRZU2NkUkZqUjNqMTJ4djd3WU5ubWxraUJHWjBRS0JWOHloRVhUUy13T0VyRU8tRU9mV2g5a0JEdFpwNkI0VnVOX0wwdGdrZ1R4eXVGOHRFLWdCRFlEbW9aYVMzSkRkY0NDTTlZSE1wLThydHZhcGk4dnQ2SldB0gG3AUFVX3lxTE9oU3JkQVlRSTJ1Qkx4NW9vOG90bm41NElqT0JuNHJWX2c1UnlQUDNaVUdRcmgyZzJTODl2U183aFJDM1ZlV2wtaVowbEQ4eUtoSFpQd2FaSkQ5TjFVbEktNWx3Sk9qajNMaWNZbVJ6QUtnZHZPd2Q3TXVMdml6SS1NT25KMVMwQzVodlJwRFNrbERzTXVGbWk4VGJvVVFfSGtKVnA1QzdUdkk0TF9NWklrU3B1cVZBOA?oc=5"
+            "title": "Post-Prime Day Savings Are Still Going Strong. Take up to 50% off Editor-Tested Tools, Grills, TVs, and More - Popular Mechanics",
+            "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxNWE1sdTlGVUVqQ2hjU0dCTUNkbnd0U21CTHNSUGtFaTNXZnoyUDVOU1o0SlZra0tzZHNXU3hLUXl6T0FNb3BwbEVmMVRiN09hWlR0ejNOalVmWEl1TUN4OVMzNkR1M0pHMjUtSjBDVGZpZ2ZfZHZIOTN3cmlpSFZYWkJxbTR6ZkhJNFE?oc=5"
           },
           "locationKey": "chennai",
           "rankingReasons": [
@@ -4806,7 +4916,7 @@
             "planner advisory fit"
           ],
           "score": 0.744,
-          "title": "Samsung Galaxy S25 Ultra Price Drops Below Rs. 85,000 During Amazon Prime Day Sale - Gadgets 360"
+          "title": "Post-Prime Day Savings Are Still Going Strong. Take up to 50% off Editor-Tested Tools, Grills, TVs, and More - Popular Mechanics"
         }
       ],
       "rankingProfile": "upAhead-v2-lifecycle-location-category",
@@ -4821,7 +4931,7 @@
       }
     }
   },
-  "generatedAt": 1782935453597,
+  "generatedAt": 1782941175231,
   "implementedDestinations": [
     "upAhead",
     "buzz",
@@ -4853,7 +4963,7 @@
     ],
     "destinationScores": {
       "buzz": 0.0,
-      "insight": 0.382,
+      "insight": 0.3783,
       "localTravel": 0.0,
       "upAhead": 0.8395
     },
@@ -4863,7 +4973,7 @@
       "localTravel": "FAIL",
       "upAhead": "WARN"
     },
-    "overallScore": 0.3054,
+    "overallScore": 0.3044,
     "overallStatus": "FAIL",
     "rankingProfiles": {
       "buzz": "buzz-v2-trend-local-travel",

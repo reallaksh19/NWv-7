@@ -53,14 +53,14 @@
     },
     "insight": {
       "actionableFindings": [
-        "3 base-report-heavy Insight parent(s) demoted"
+        "1 base-report-heavy Insight parent(s) demoted"
       ],
       "destination": "insight",
       "diagnosticReasons": [],
       "gateResults": [
         {
           "details": {
-            "itemCount": 11
+            "itemCount": 7
           },
           "name": "insightEventPool",
           "reason": "rankable Insight event pool",
@@ -77,16 +77,16 @@
       ],
       "gateSummary": {
         "avgAnglesPerParent": 0.0,
-        "baseReportHeavyParents": 3,
+        "baseReportHeavyParents": 1,
         "duplicateChildrenSuppressed": 0,
-        "inputCandidateCount": 11,
-        "parentClusters": 11,
-        "strongParents": 11,
+        "inputCandidateCount": 7,
+        "parentClusters": 7,
+        "strongParents": 7,
         "suppressedCandidateCount": 0,
         "weakParentsDemoted": 0
       },
       "qualityGrade": "F",
-      "qualityScore": 0.3783,
+      "qualityScore": 0.3861,
       "qualityStatus": "WARN",
       "rankedItems": [
         {
@@ -322,119 +322,6 @@
           "gates": [
             {
               "details": {
-                "storyCount": 4
-              },
-              "name": "eventCoherence",
-              "reason": "event sketch has repeated story count",
-              "score": 0.62,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "baseReportRatio": 0.0,
-                "distinctAngles": 1
-              },
-              "name": "angleDiversity",
-              "reason": "weak child angle diversity",
-              "score": 0.25,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "sourceGroupCount": 1
-              },
-              "name": "sourceDiversity",
-              "reason": "one-source event candidate",
-              "score": 0.35,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "baseReportRatio": 0.0
-              },
-              "name": "baseReportCap",
-              "reason": "base-report ratio controlled",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "childCount": 4
-              },
-              "name": "weakTree",
-              "reason": "child tree has enough depth",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "duplicateChildren",
-              "reason": "no child objects to dedup",
-              "score": 0.7,
-              "status": "PASS"
-            }
-          ],
-          "id": "sketch:768c327fc1",
-          "item": {
-            "angleCount": 1,
-            "baseReportRatio": 0.0,
-            "childScores": [],
-            "id": "sketch:768c327fc1",
-            "representativeId": "240966d425ad24be",
-            "representativeTitle": "India news LIVE updates, 1 July 2026: Commercial LPG cylinder price cut by Rs 183.50 - The Indian Express",
-            "scoreBreakdown": {
-              "angleDiversityScore": 0.25,
-              "eventImportanceScore": 0.83,
-              "freshnessScore": 0.0,
-              "noveltyDeltaScore": 0.44999999999999996,
-              "sourceAuthorityScore": 0.38,
-              "sourceDiversityScore": 0.35,
-              "temporalEvolutionScore": 0.37
-            },
-            "slotCount": 1,
-            "slots": [
-              "now"
-            ],
-            "sourceGroupCount": 1,
-            "sourceGroups": [
-              "google_news"
-            ],
-            "storyCount": 4,
-            "storyIds": [
-              "240966d425ad24be",
-              "7012a00d0ec76844",
-              "bd25101176b1696b",
-              "4a51fd91e947db1c"
-            ],
-            "topAngles": [
-              {
-                "angle": "fact_update",
-                "count": 4
-              }
-            ],
-            "topTokens": [
-              "india",
-              "live",
-              "updates",
-              "june",
-              "july"
-            ],
-            "topicKey": "india|live|updates"
-          },
-          "locationKey": "event",
-          "rankingReasons": [
-            "event sketch has repeated story count",
-            "weak child angle diversity",
-            "one-source event candidate"
-          ],
-          "score": 0.449,
-          "title": "India news LIVE updates, 1 July 2026: Commercial LPG cylinder price cut by Rs 183.50 - The Indian Express"
-        },
-        {
-          "category": "insightEvent",
-          "gates": [
-            {
-              "details": {
                 "storyCount": 2
               },
               "name": "eventCoherence",
@@ -539,116 +426,6 @@
           ],
           "score": 0.389,
           "title": "Ahead of Market: 10 things that will decide stock market action on Thursday"
-        },
-        {
-          "category": "insightEvent",
-          "gates": [
-            {
-              "details": {
-                "storyCount": 2
-              },
-              "name": "eventCoherence",
-              "reason": "event sketch has repeated story count",
-              "score": 0.62,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "baseReportRatio": 0.0,
-                "distinctAngles": 1
-              },
-              "name": "angleDiversity",
-              "reason": "weak child angle diversity",
-              "score": 0.25,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "sourceGroupCount": 1
-              },
-              "name": "sourceDiversity",
-              "reason": "one-source event candidate",
-              "score": 0.35,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "baseReportRatio": 0.0
-              },
-              "name": "baseReportCap",
-              "reason": "base-report ratio controlled",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "childCount": 2
-              },
-              "name": "weakTree",
-              "reason": "child tree has enough depth",
-              "score": 0.5,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "duplicateChildren",
-              "reason": "no child objects to dedup",
-              "score": 0.7,
-              "status": "PASS"
-            }
-          ],
-          "id": "sketch:fcde5c7120",
-          "item": {
-            "angleCount": 1,
-            "baseReportRatio": 0.0,
-            "childScores": [],
-            "id": "sketch:fcde5c7120",
-            "representativeId": "cefd0947496f8de7",
-            "representativeTitle": "Buy Bajaj Finance; target of Rs 9000: Emkay Global Financial",
-            "scoreBreakdown": {
-              "angleDiversityScore": 0.25,
-              "eventImportanceScore": 0.59,
-              "freshnessScore": 0.0,
-              "noveltyDeltaScore": 0.44999999999999996,
-              "sourceAuthorityScore": 0.38,
-              "sourceDiversityScore": 0.35,
-              "temporalEvolutionScore": 0.37
-            },
-            "slotCount": 1,
-            "slots": [
-              "minus24h"
-            ],
-            "sourceGroupCount": 1,
-            "sourceGroups": [
-              "moneycontrol"
-            ],
-            "storyCount": 2,
-            "storyIds": [
-              "cefd0947496f8de7",
-              "d0020e471404281a"
-            ],
-            "topAngles": [
-              {
-                "angle": "market_reaction",
-                "count": 2
-              }
-            ],
-            "topTokens": [
-              "bajaj",
-              "finance",
-              "target",
-              "emkay"
-            ],
-            "topicKey": "bajaj|finance|target"
-          },
-          "locationKey": "event",
-          "rankingReasons": [
-            "event sketch has repeated story count",
-            "weak child angle diversity",
-            "one-source event candidate"
-          ],
-          "score": 0.389,
-          "title": "Buy Bajaj Finance; target of Rs 9000: Emkay Global Financial"
         },
         {
           "category": "insightEvent",
@@ -987,120 +764,6 @@
           "gates": [
             {
               "details": {
-                "storyCount": 8
-              },
-              "name": "eventCoherence",
-              "reason": "event sketch has repeated story count",
-              "score": 0.62,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "baseReportRatio": 1.0,
-                "distinctAngles": 0
-              },
-              "name": "angleDiversity",
-              "reason": "weak child angle diversity",
-              "score": 0.25,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "sourceGroupCount": 1
-              },
-              "name": "sourceDiversity",
-              "reason": "one-source event candidate",
-              "score": 0.35,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "baseReportRatio": 1.0
-              },
-              "name": "baseReportCap",
-              "reason": "base-report dominated event candidate",
-              "score": 0.25,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "childCount": 8
-              },
-              "name": "weakTree",
-              "reason": "child tree has enough depth",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "duplicateChildren",
-              "reason": "no child objects to dedup",
-              "score": 0.7,
-              "status": "PASS"
-            }
-          ],
-          "id": "sketch:c1c58008d6",
-          "item": {
-            "angleCount": 1,
-            "baseReportRatio": 1.0,
-            "childScores": [],
-            "id": "sketch:c1c58008d6",
-            "representativeId": "df71bc9e8f9d5353",
-            "representativeTitle": "Top news of the day on June 20, 2026 - The Hindu",
-            "scoreBreakdown": {
-              "angleDiversityScore": 0.25,
-              "eventImportanceScore": 1.0,
-              "freshnessScore": 0.0,
-              "noveltyDeltaScore": 0.44999999999999996,
-              "sourceAuthorityScore": 0.38,
-              "sourceDiversityScore": 0.35,
-              "temporalEvolutionScore": 0.37
-            },
-            "slotCount": 1,
-            "slots": [
-              "now"
-            ],
-            "sourceGroupCount": 1,
-            "sourceGroups": [
-              "google_news"
-            ],
-            "storyCount": 8,
-            "storyIds": [
-              "df71bc9e8f9d5353",
-              "573c76f7c04320cb",
-              "dadd53c1bc76741b",
-              "4cca4280284d2e54",
-              "bf952c0b99344c4d",
-              "c6215fc9dda48735",
-              "799aa9b7edec72f4",
-              "fff45325db82b942"
-            ],
-            "topAngles": [
-              {
-                "angle": "base_report",
-                "count": 8
-              }
-            ],
-            "topTokens": [
-              "june",
-              "hindu"
-            ],
-            "topicKey": "june|hindu"
-          },
-          "locationKey": "event",
-          "rankingReasons": [
-            "event sketch has repeated story count",
-            "weak child angle diversity",
-            "one-source event candidate"
-          ],
-          "score": 0.2212,
-          "title": "Top news of the day on June 20, 2026 - The Hindu"
-        },
-        {
-          "category": "insightEvent",
-          "gates": [
-            {
-              "details": {
                 "storyCount": 2
               },
               "name": "eventCoherence",
@@ -1210,127 +873,17 @@
           ],
           "score": 0.2195,
           "title": "Birthright citizenship was for children of slaves, not for world to 'pile' into U.S.: Trump"
-        },
-        {
-          "category": "insightEvent",
-          "gates": [
-            {
-              "details": {
-                "storyCount": 2
-              },
-              "name": "eventCoherence",
-              "reason": "event sketch has repeated story count",
-              "score": 0.62,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "baseReportRatio": 1.0,
-                "distinctAngles": 0
-              },
-              "name": "angleDiversity",
-              "reason": "weak child angle diversity",
-              "score": 0.25,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "sourceGroupCount": 1
-              },
-              "name": "sourceDiversity",
-              "reason": "one-source event candidate",
-              "score": 0.35,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "baseReportRatio": 1.0
-              },
-              "name": "baseReportCap",
-              "reason": "base-report dominated event candidate",
-              "score": 0.25,
-              "status": "WARN"
-            },
-            {
-              "details": {
-                "childCount": 2
-              },
-              "name": "weakTree",
-              "reason": "child tree has enough depth",
-              "score": 0.5,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "duplicateChildren",
-              "reason": "no child objects to dedup",
-              "score": 0.7,
-              "status": "PASS"
-            }
-          ],
-          "id": "sketch:d12e5ab321",
-          "item": {
-            "angleCount": 1,
-            "baseReportRatio": 1.0,
-            "childScores": [],
-            "id": "sketch:d12e5ab321",
-            "representativeId": "97b8dcbf3fc153a7",
-            "representativeTitle": "Best Laser Printers in India: Top Office Workhorses from HP, Brother and More for High Volume Printing",
-            "scoreBreakdown": {
-              "angleDiversityScore": 0.25,
-              "eventImportanceScore": 0.59,
-              "freshnessScore": 0.0,
-              "noveltyDeltaScore": 0.44999999999999996,
-              "sourceAuthorityScore": 0.38,
-              "sourceDiversityScore": 0.35,
-              "temporalEvolutionScore": 0.37
-            },
-            "slotCount": 1,
-            "slots": [
-              "minus12h"
-            ],
-            "sourceGroupCount": 1,
-            "sourceGroups": [
-              "gadgets360"
-            ],
-            "storyCount": 2,
-            "storyIds": [
-              "97b8dcbf3fc153a7",
-              "5f770a1ed768ca9d"
-            ],
-            "topAngles": [
-              {
-                "angle": "base_report",
-                "count": 2
-              }
-            ],
-            "topTokens": [
-              "best",
-              "laser",
-              "printers",
-              "india"
-            ],
-            "topicKey": "best|laser|printers"
-          },
-          "locationKey": "event",
-          "rankingReasons": [
-            "event sketch has repeated story count",
-            "weak child angle diversity",
-            "one-source event candidate"
-          ],
-          "score": 0.1751,
-          "title": "Best Laser Printers in India: Top Office Workhorses from HP, Brother and More for High Volume Printing"
         }
       ],
       "rankingProfile": "insight-v2-event-angle-tree",
       "scoreBreakdown": {
-        "angleDiversityScore": 0.2982,
-        "eventImportanceScore": 0.6491,
+        "angleDiversityScore": 0.3257,
+        "eventImportanceScore": 0.59,
         "freshnessScore": 0.0,
-        "noveltyDeltaScore": 0.4682,
-        "sourceAuthorityScore": 0.4236,
-        "sourceDiversityScore": 0.4173,
-        "temporalEvolutionScore": 0.3918
+        "noveltyDeltaScore": 0.4786,
+        "sourceAuthorityScore": 0.4486,
+        "sourceDiversityScore": 0.4557,
+        "temporalEvolutionScore": 0.4043
       }
     },
     "localTravel": {
@@ -1390,7 +943,7 @@
     },
     "upAhead": {
       "actionableFindings": [
-        "27 invalid/expired/duplicate Up Ahead item(s) suppressed",
+        "28 invalid/expired/duplicate Up Ahead item(s) suppressed",
         "no ranked Up Ahead item for muscat"
       ],
       "destination": "upAhead",
@@ -1462,7 +1015,7 @@
         "onlineOffers": 0,
         "plannerAdvisoryItems": 30,
         "rankedItemCount": 30,
-        "suppressedItemCount": 27
+        "suppressedItemCount": 28
       },
       "qualityGrade": "B",
       "qualityScore": 0.8395,
@@ -4158,7 +3711,7 @@
             },
             {
               "details": {
-                "hoursLeft": 12.54
+                "hoursLeft": 9.86
               },
               "name": "offerValidity",
               "reason": "offer expires soon",
@@ -4233,121 +3786,6 @@
           "gates": [
             {
               "details": {
-                "dedupKey": "bd2ec8a15339ab52"
-              },
-              "name": "dedup",
-              "reason": "unique item",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "displayUntil": 1782943629000
-              },
-              "name": "futureValidity",
-              "reason": "valid undated item with active display window",
-              "score": 0.65,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "matchScore": 0.72,
-                "matchedLocation": "chennai",
-                "relevance": "secondary",
-                "scope": "region"
-              },
-              "name": "location",
-              "reason": "location matches configured profile",
-              "score": 0.72,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "hasPlace": false,
-                "hasTime": true
-              },
-              "name": "actionability",
-              "reason": "item has enough action fields",
-              "score": 0.85,
-              "status": "PASS"
-            },
-            {
-              "details": {
-                "hoursLeft": 0.68
-              },
-              "name": "offerValidity",
-              "reason": "offer expires soon",
-              "score": 1.0,
-              "status": "PASS"
-            },
-            {
-              "details": {},
-              "name": "alertUrgency",
-              "reason": "not an alert",
-              "score": 0.6,
-              "status": "PASS"
-            }
-          ],
-          "id": "e511e2d9458192fa",
-          "item": {
-            "actionabilityScore": 0.65,
-            "category": "shopping",
-            "city": null,
-            "contentClass": "upahead_offer",
-            "dateConfidence": "unknown",
-            "dateSource": "none",
-            "eventEndAt": null,
-            "eventStartAt": null,
-            "expiryAt": 1782943629000,
-            "id": "e511e2d9458192fa",
-            "language": "en",
-            "lifecycle": {
-              "archiveUntil": 1783548429000,
-              "contentClass": "upahead_offer",
-              "displayUntil": 1782943629000,
-              "isActionValid": true,
-              "isVisible": true,
-              "plannerEligibleByLifecycle": true,
-              "plannerPastGraceHours": 6,
-              "retentionReason": "expiryAt",
-              "withinSevenDayHorizon": true
-            },
-            "localityScore": 0.3,
-            "normalizedCategory": "shopping",
-            "plannerEligible": true,
-            "publishedAt": 1782770829000,
-            "region": null,
-            "scoreBreakdown": {
-              "actionabilityScore": 0.8500000000000001,
-              "categoryPriorityScore": 0.68,
-              "lifecycleScore": 0.65,
-              "locationScore": 0.72,
-              "plannerFitScore": 1.0,
-              "sourceConfidenceScore": 0.58,
-              "urgencyOrExpiryScore": 1.0
-            },
-            "source": "Google News Shopping",
-            "sourceGroup": "google_news",
-            "summary": "<a href=\"https://news.google.com/rss/articles/CBMimgFBVV95cUxPWFVYZUtrOHc2M2JQM252NmxVUTJDRTgzUGR2SXBYOWVMa3o0dzdxaGx3Z0ZqTXhPMEh5aFpLRGozV1phSS1VNzRfSUx0Zm85TG8xaGVVRWdzejdFSEQtUGxla2lRSTJHTWU1MTRtNXZCYkkwYUVjODhoNFhfU0RwcmtzNW5vaHlZa0lITDJCZzhwR0RWcUc3R2xn?oc=5\" target=\"_blank\">Amazon Announces Prime Day 2026 Deals on Smartphones and Electronics</a>&nbsp;&nbsp;<font color=\"#6f6f6f\">The CSR Journal</font>",
-            "suppressionReason": null,
-            "title": "Amazon Announces Prime Day 2026 Deals on Smartphones and Electronics - The CSR Journal",
-            "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxPWFVYZUtrOHc2M2JQM252NmxVUTJDRTgzUGR2SXBYOWVMa3o0dzdxaGx3Z0ZqTXhPMEh5aFpLRGozV1phSS1VNzRfSUx0Zm85TG8xaGVVRWdzejdFSEQtUGxla2lRSTJHTWU1MTRtNXZCYkkwYUVjODhoNFhfU0RwcmtzNW5vaHlZa0lITDJCZzhwR0RWcUc3R2xn?oc=5"
-          },
-          "locationKey": "chennai",
-          "rankingReasons": [
-            "shopping",
-            "valid undated item with active display window",
-            "location matches configured profile",
-            "planner advisory fit"
-          ],
-          "score": 0.744,
-          "title": "Amazon Announces Prime Day 2026 Deals on Smartphones and Electronics - The CSR Journal"
-        },
-        {
-          "category": "shopping",
-          "gates": [
-            {
-              "details": {
                 "dedupKey": "63abe3f0969a3e72"
               },
               "name": "dedup",
@@ -4388,7 +3826,7 @@
             },
             {
               "details": {
-                "hoursLeft": 9.02
+                "hoursLeft": 6.33
               },
               "name": "offerValidity",
               "reason": "offer expires soon",
@@ -4503,7 +3941,7 @@
             },
             {
               "details": {
-                "hoursLeft": 15.86
+                "hoursLeft": 13.18
               },
               "name": "offerValidity",
               "reason": "offer expires soon",
@@ -4618,7 +4056,7 @@
             },
             {
               "details": {
-                "hoursLeft": 5.58
+                "hoursLeft": 2.89
               },
               "name": "offerValidity",
               "reason": "offer expires soon",
@@ -4733,7 +4171,7 @@
             },
             {
               "details": {
-                "hoursLeft": 6.84
+                "hoursLeft": 4.16
               },
               "name": "offerValidity",
               "reason": "offer expires soon",
@@ -4848,7 +4286,7 @@
             },
             {
               "details": {
-                "hoursLeft": 22.61
+                "hoursLeft": 19.93
               },
               "name": "offerValidity",
               "reason": "offer expires soon",
@@ -4917,6 +4355,121 @@
           ],
           "score": 0.744,
           "title": "Post-Prime Day Savings Are Still Going Strong. Take up to 50% off Editor-Tested Tools, Grills, TVs, and More - Popular Mechanics"
+        },
+        {
+          "category": "shopping",
+          "gates": [
+            {
+              "details": {
+                "dedupKey": "4497d3f357a766b5"
+              },
+              "name": "dedup",
+              "reason": "unique item",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "displayUntil": 1782963097000
+              },
+              "name": "futureValidity",
+              "reason": "valid undated item with active display window",
+              "score": 0.65,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "matchScore": 0.72,
+                "matchedLocation": "chennai",
+                "relevance": "secondary",
+                "scope": "region"
+              },
+              "name": "location",
+              "reason": "location matches configured profile",
+              "score": 0.72,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "hasPlace": false,
+                "hasTime": true
+              },
+              "name": "actionability",
+              "reason": "item has enough action fields",
+              "score": 0.85,
+              "status": "PASS"
+            },
+            {
+              "details": {
+                "hoursLeft": 3.4
+              },
+              "name": "offerValidity",
+              "reason": "offer expires soon",
+              "score": 1.0,
+              "status": "PASS"
+            },
+            {
+              "details": {},
+              "name": "alertUrgency",
+              "reason": "not an alert",
+              "score": 0.6,
+              "status": "PASS"
+            }
+          ],
+          "id": "cc96ed6e61746905",
+          "item": {
+            "actionabilityScore": 0.65,
+            "category": "shopping",
+            "city": null,
+            "contentClass": "upahead_offer",
+            "dateConfidence": "unknown",
+            "dateSource": "none",
+            "eventEndAt": null,
+            "eventStartAt": null,
+            "expiryAt": 1782963097000,
+            "id": "cc96ed6e61746905",
+            "language": "en",
+            "lifecycle": {
+              "archiveUntil": 1783567897000,
+              "contentClass": "upahead_offer",
+              "displayUntil": 1782963097000,
+              "isActionValid": true,
+              "isVisible": true,
+              "plannerEligibleByLifecycle": true,
+              "plannerPastGraceHours": 6,
+              "retentionReason": "expiryAt",
+              "withinSevenDayHorizon": true
+            },
+            "localityScore": 0.3,
+            "normalizedCategory": "shopping",
+            "plannerEligible": true,
+            "publishedAt": 1782790297000,
+            "region": null,
+            "scoreBreakdown": {
+              "actionabilityScore": 0.8500000000000001,
+              "categoryPriorityScore": 0.68,
+              "lifecycleScore": 0.65,
+              "locationScore": 0.72,
+              "plannerFitScore": 1.0,
+              "sourceConfidenceScore": 0.58,
+              "urgencyOrExpiryScore": 1.0
+            },
+            "source": "Google News Shopping",
+            "sourceGroup": "google_news",
+            "summary": "<a href=\"https://news.google.com/rss/articles/CBMisgFBVV95cUxNbEozMENSMU9JNmNrdkZveGxORVY4bWQyUDMyLWtxRVJETXFKRURGeGdsZGFMeUJNUnB5ZGRZU2NkUkZqUjNqMTJ4djd3WU5ubWxraUJHWjBRS0JWOHloRVhUUy13T0VyRU8tRU9mV2g5a0JEdFpwNkI0VnVOX0wwdGdrZ1R4eXVGOHRFLWdCRFlEbW9aYVMzSkRkY0NDTTlZSE1wLThydHZhcGk4dnQ2SldB0gG3AUFVX3lxTE9oU3JkQVlRSTJ1Qkx4NW9vOG90bm41NElqT0JuNHJWX2c1UnlQUDNaVUdRcmgyZzJTODl2U183aFJDM1ZlV2wtaVowbEQ4eUtoSFpQd2FaSkQ5TjFVbEktNWx3Sk9qajNMaWNZbVJ6QUtnZHZPd2Q3TXVMdml6SS1NT25KMVMwQzVodlJwRFNrbERzTXVGbWk4VGJvVVFfSGtKVnA1QzdUdkk0TF9NWklrU3B1cVZBOA?oc=5\" target=\"_blank\">Samsung Galaxy S25 Ultra Price Drops Below Rs. 85,000 During Amazon Prime Day Sale</a>&nbsp;&nbsp;<font color=\"#6f6f6f\">Gadgets 360</font>",
+            "suppressionReason": null,
+            "title": "Samsung Galaxy S25 Ultra Price Drops Below Rs. 85,000 During Amazon Prime Day Sale - Gadgets 360",
+            "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxNbEozMENSMU9JNmNrdkZveGxORVY4bWQyUDMyLWtxRVJETXFKRURGeGdsZGFMeUJNUnB5ZGRZU2NkUkZqUjNqMTJ4djd3WU5ubWxraUJHWjBRS0JWOHloRVhUUy13T0VyRU8tRU9mV2g5a0JEdFpwNkI0VnVOX0wwdGdrZ1R4eXVGOHRFLWdCRFlEbW9aYVMzSkRkY0NDTTlZSE1wLThydHZhcGk4dnQ2SldB0gG3AUFVX3lxTE9oU3JkQVlRSTJ1Qkx4NW9vOG90bm41NElqT0JuNHJWX2c1UnlQUDNaVUdRcmgyZzJTODl2U183aFJDM1ZlV2wtaVowbEQ4eUtoSFpQd2FaSkQ5TjFVbEktNWx3Sk9qajNMaWNZbVJ6QUtnZHZPd2Q3TXVMdml6SS1NT25KMVMwQzVodlJwRFNrbERzTXVGbWk4VGJvVVFfSGtKVnA1QzdUdkk0TF9NWklrU3B1cVZBOA?oc=5"
+          },
+          "locationKey": "chennai",
+          "rankingReasons": [
+            "shopping",
+            "valid undated item with active display window",
+            "location matches configured profile",
+            "planner advisory fit"
+          ],
+          "score": 0.744,
+          "title": "Samsung Galaxy S25 Ultra Price Drops Below Rs. 85,000 During Amazon Prime Day Sale - Gadgets 360"
         }
       ],
       "rankingProfile": "upAhead-v2-lifecycle-location-category",
@@ -4931,7 +4484,7 @@
       }
     }
   },
-  "generatedAt": 1782941175231,
+  "generatedAt": 1782950845425,
   "implementedDestinations": [
     "upAhead",
     "buzz",
@@ -4950,7 +4503,7 @@
   "schemaVersion": 1,
   "summary": {
     "actionRequired": [
-      "27 invalid/expired/duplicate Up Ahead item(s) suppressed",
+      "28 invalid/expired/duplicate Up Ahead item(s) suppressed",
       "no ranked Up Ahead item for muscat",
       "no local Buzz item in ranked set",
       "no travel Buzz item in ranked set",
@@ -4959,11 +4512,11 @@
       "no ranked local/travel item for muscat",
       "no ranked local/travel item for chennai",
       "no ranked local/travel item for trichy",
-      "3 base-report-heavy Insight parent(s) demoted"
+      "1 base-report-heavy Insight parent(s) demoted"
     ],
     "destinationScores": {
       "buzz": 0.0,
-      "insight": 0.3783,
+      "insight": 0.3861,
       "localTravel": 0.0,
       "upAhead": 0.8395
     },
@@ -4973,7 +4526,7 @@
       "localTravel": "FAIL",
       "upAhead": "WARN"
     },
-    "overallScore": 0.3044,
+    "overallScore": 0.3064,
     "overallStatus": "FAIL",
     "rankingProfiles": {
       "buzz": "buzz-v2-trend-local-travel",
